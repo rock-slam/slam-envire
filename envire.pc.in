@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: envire
+Description: Library for the Environment Representation
+Version: @PROJECT_VERSION@
+Libs: -L${libdir} -lenvire
+Cflags: -I${includedir}
+
