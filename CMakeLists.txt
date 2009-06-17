@@ -28,3 +28,6 @@ add_custom_target(doc doxygen Doxyfile)
 configure_file(envire.pc.in envire.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/envire.pc DESTINATION lib/pkgconfig)
 
+include_directories(${PROJECT_SOURCE_DIR})
+add_subdirectory(test)
+
