@@ -10,10 +10,10 @@ find_package(Eigen2 REQUIRED)
 include_directories(${EIGEN2_INCLUDE_DIR})
 
 set(ENVMAP_HDRS
-    envire.h)
+    envire/core.h)
 
 set(ENVMAP_SRCS
-    envire.cpp)
+    envire/core.cpp)
 
 add_library(envire SHARED ${ENVMAP_SRCS})
 
