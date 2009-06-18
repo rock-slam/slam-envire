@@ -5,7 +5,18 @@
 
 BOOST_AUTO_TEST_CASE( framenode ) 
 {
-   BOOST_CHECK( true ); 
+    envire::Environment env;
+
+    envire::LaserScan *scan = new envire::LaserScan(env.getRootNode());
+    env.addLayer(scan);
+    scan.parseScanFile("test/test.scan");
+
+    envire::TriMesh *mesh = new envire::TriMesh(env.getRootNode());
+    env.addLayer(mesh);
+
+    envire::ScanMeshingOperator op( scan, mesh );
+    op.setMaxEdgeLength(0.5);
+    op.updateAll();
 }
 
 // EOF
