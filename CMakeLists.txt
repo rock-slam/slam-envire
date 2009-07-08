@@ -10,10 +10,12 @@ find_package(Eigen2 REQUIRED)
 include_directories(${EIGEN2_INCLUDE_DIR})
 
 set(ENVMAP_HDRS
-    envire/core.h)
+    envire/LaserScan.hpp
+    envire/TriMesh.hpp
+    envire/Core.hpp)
 
 set(ENVMAP_SRCS
-    envire/core.cpp)
+    envire/Core.cpp)
 
 add_library(envire SHARED ${ENVMAP_SRCS})
 

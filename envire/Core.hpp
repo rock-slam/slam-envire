@@ -7,6 +7,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <boost/shared_ptr.hpp>
+
 // TODO: use shared_ptr if it is the decided way
 //   - to reference input maps in Operator
 //   - to reference the FrameNodes from the maps
@@ -17,6 +19,13 @@ namespace envire
 {
     class Layer;
     class CartesianMap;
+    class FrameNode;
+    class Operator;
+
+    typedef boost::shared_ptr<Layer> Layer_Ptr;
+    typedef boost::shared_ptr<CartesianMap> CartesianMap_Ptr;
+    typedef boost::shared_ptr<FrameNode> FrameNode_Ptr;
+    typedef boost::shared_ptr<Operator> Operator_Ptr;
 
     /** A 3D transformation 
      * Uses Eigen2 types for rotation and translation.  Internally the Frame
@@ -39,12 +48,12 @@ namespace envire
     class FrameNode
     {
         /** The parent frame, or NULL for the root frame */
-        FrameNode*               parent;
+        FrameNode_Ptr parent;
         /** The 3D transformation that leads from the parent frame to this one
         */
-        Frame      frame;
+        Frame frame;
         /** The list of maps that are expressed in this frame */
-        std::list<CartesianMap*> maps;
+        std::list<CartesianMap_Ptr> maps;
 
     public:
         /** Returns true if this frame is the root frame (i.e. has no parent) */
@@ -83,7 +92,7 @@ namespace envire
     {
         /** The set of layers available on this environment
          */
-        std::list<Layer*>    layers;
+        std::list<Layer_Ptr>    layers;
 
         /** The definition of the global frame of this environment, represented
          * w.r.t. a "universal frame". That universal frame can for instance be
@@ -107,32 +116,50 @@ namespace envire
          *
          * @see removeLayer
          */
-        void addLayer(Layer* layer);
+        void addLayer(Layer_Ptr layer);
 
         /** De-references this layer from the environment representation.
          * This deletes the layer instance.
          *
          * @see addLayer
          */
-        void removeLayer(Layer* layer);
+        void removeLayer(Layer_Ptr layer);
+
+        /** @return a reference to the root FrameNode of the Environment
+         */
+        FrameNode& getRootNode() { return frame_tree; }
+
+        /** will import the scene file specified by @param file
+         * uses @param node as the parent FrameNode where the scene is
+         * attached.
+         */
+        bool loadSceneFile( const std::string& file, FrameNode& node );
+        
+        /** imports scene and attaches it to the root node
+         */
+        bool loadSceneFile( const std::string& file);
     };
 
     /** An operator generates a set of output maps based on a set of input maps
      */
     class Operator
     {
-        std::list<Layer*> inputs;
-        std::list<Layer*> outputs;
+        std::list<Layer_Ptr> inputs;
+        std::list<Layer_Ptr> outputs;
 
     public:
+        /** Update the output layer(s) according to the defined operation.
+         */
+        virtual bool updateAll();
+
         /** Adds a new input to this operator. The operator may not support
          * this, in which case it will return false
          */
-        virtual bool addInput(Layer* layer);
+        virtual bool addInput(Layer_Ptr layer);
         /** Removes an input from this operator. The operator may not support
          * this, in which case it will return false
          */
-        virtual void removeInput(Layer* layer);
+        virtual void removeInput(Layer_Ptr layer);
         /** Removes an input from this operator. The operator may not support
          * this, in which case it will return false.
          *
@@ -143,7 +170,7 @@ namespace envire
          *  right to modify it for instance), then use Layer::detachOperator()
          * </ul>
          */
-        void removeOutput(Layer* layer);
+        void removeOutput(Layer_Ptr layer);
     };
 
     /** The layer is the base object that holds map data. It can be a cartesian
@@ -153,14 +180,14 @@ namespace envire
     {
         std::string id;
         bool      immutable;
-        Operator* generator;
+        Operator_Ptr generator;
 
     public:
         /** Create a new layer and adds it to the given environment */
         explicit Layer(std::string const& id = "");
         /** Create a new layer which is an output of @a generator, and adds it
          * to the given environment. */
-        explicit Layer(Operator* generator, std::string const& id = "");
+        explicit Layer(Operator_Ptr generator, std::string const& id = "");
         virtual ~Layer();
 
         /** Returns a string identifier that can be used for debugging purposes
@@ -178,7 +205,7 @@ namespace envire
          * detached from any operator and is not immutable. It is not added to
          * any environment either.
          */
-        virtual Layer* clone(std::string const& id) = 0;
+        virtual Layer_Ptr clone(std::string const& id) = 0;
 
         /** Unsets the dirty flag on this layer
          * @see isDirty
@@ -220,14 +247,14 @@ namespace envire
      */
     class CartesianMap : public Layer
     {
-        FrameNode* frame;
+        FrameNode_Ptr frame;
 
     public:
         CartesianMap(FrameNode& node, std::string const& id = "");
         CartesianMap(FrameNode& node, Operator& generator, std::string const& id = "");
 
         /** Sets the frame node on which this map is attached */
-        void setFrameNode(FrameNode* frame);
+        void setFrameNode(FrameNode_Ptr frame);
         /** Returns the frame node on which this map is attached */
         FrameNode& getFrameNode();
         /** Returns the frame node on which this map is attached */
