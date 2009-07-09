@@ -2,7 +2,9 @@
 #define __LASERSCAN_HPP__
 
 #include <boost/shared_ptr.hpp>
+#include <Eigen/Core>
 #include "Core.hpp"
+#include <vector>
 
 namespace envire {
 
@@ -12,7 +14,36 @@ namespace envire {
     class LaserScan : public CartesianMap
     {
         public:
-            static LaserScan_Ptr createFromScanFile(const std::string& file, FrameNode& node);
+            /** scanline typedef, first in tuple specifies the delta_phi. This is
+             * the step size in rads perpendicular to the scan direction of the
+             * laser scanner (normally axis of the pan unit */
+            typedef std::pair< float, std::vector<int> > scanline_t;
+
+            /** angular stepsize in rad between scan points in scan direction of
+             * the laser scan */
+            float delta_psi;
+
+            /** starting angle for psi */
+            float origin_psi;
+
+            /** starting angle for phi */
+            float origin_phi;
+
+            /** offset of the scanner from the rotational center */
+            Eigen::Vector3f center_offset;
+
+            /** scan points per scan line */
+            int points_per_line;
+
+            /** list of lines in the scan */
+            std::vector<scanline_t> lines;
+
+        public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+            
+            bool parseScan( std::istream& data );
+
+            static LaserScan_Ptr createFromScanFile(const std::string& file, FrameNode_Ptr node);
     };
                 
 };
