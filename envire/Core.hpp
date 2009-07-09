@@ -10,10 +10,6 @@
 #include <boost/shared_ptr.hpp>
 
 // TODO: use shared_ptr if it is the decided way
-//   - to reference input maps in Operator
-//   - to reference the FrameNodes from the maps
-//   - to reference the frame_tree attribute in Environment
-//   - to reference Operator in Layer
 //   - update documentation to explain memory management
 namespace envire
 {
@@ -23,9 +19,13 @@ namespace envire
     class Operator;
 
     typedef boost::shared_ptr<Layer> Layer_Ptr;
+    typedef boost::shared_ptr<const Layer> Layer_ConstPtr;
     typedef boost::shared_ptr<CartesianMap> CartesianMap_Ptr;
+    typedef boost::shared_ptr<const CartesianMap> CartesianMap_ConstPtr;
     typedef boost::shared_ptr<FrameNode> FrameNode_Ptr;
+    typedef boost::shared_ptr<const FrameNode> FrameNode_ConstPtr;
     typedef boost::shared_ptr<Operator> Operator_Ptr;
+    typedef boost::shared_ptr<const Operator> Operator_ConstPtr;
 
     /** A 3D transformation 
      * Uses Eigen2 types for rotation and translation.  Internally the Frame
@@ -61,11 +61,11 @@ namespace envire
         /** Returns the frame that is parent of this one, or raises
          * std::runtime_error if it is a root frame
          */
-        FrameNode const& getParent() const;
+        FrameNode_ConstPtr getParent() const;
         /** Returns the frame that is parent of this one, or raises
          * std::runtime_error if it is a root frame
          */
-        FrameNode& getParent();
+        FrameNode_Ptr getParent();
         /** Returns the Transformation that leads from the parent frame to
          * this one
          * std::runtime_error if it is a root frame
@@ -127,13 +127,13 @@ namespace envire
 
         /** @return a reference to the root FrameNode of the Environment
          */
-        FrameNode& getRootNode() { return frame_tree; }
+        FrameNode_Ptr getRootNode();
 
         /** will import the scene file specified by @param file
          * uses @param node as the parent FrameNode where the scene is
          * attached.
          */
-        bool loadSceneFile( const std::string& file, FrameNode& node );
+        bool loadSceneFile( const std::string& file, FrameNode_Ptr node );
         
         /** imports scene and attaches it to the root node
          */
@@ -150,7 +150,7 @@ namespace envire
     public:
         /** Update the output layer(s) according to the defined operation.
          */
-        virtual bool updateAll();
+        virtual bool updateAll() = 0;
 
         /** Adds a new input to this operator. The operator may not support
          * this, in which case it will return false
@@ -160,7 +160,11 @@ namespace envire
          * this, in which case it will return false
          */
         virtual void removeInput(Layer_Ptr layer);
-        /** Removes an input from this operator. The operator may not support
+         /** Adds a new input to this operator. The operator may not support
+         * this, in which case it will return false
+         */
+        virtual bool addOutput(Layer_Ptr layer);
+        /** Removes an output from this operator. The operator may not support
          * this, in which case it will return false.
          *
          * You usually don't have to call this yourself:
@@ -179,7 +183,8 @@ namespace envire
     class Layer
     {
         std::string id;
-        bool      immutable;
+        bool immutable;
+        bool dirty; 
         Operator_Ptr generator;
 
     public:
@@ -230,7 +235,7 @@ namespace envire
         /** Returns the operator that generated this layer, or raises
          * std::runtime_error if it is not a generated map
          */
-        Operator& getGenerator() const;
+        Operator_Ptr getGenerator() const;
         /** Recomputes this layer by applying the operator that has already
          * generated this map. The actual operation will only be called if the
          * dirty flag is set, so it is optimal to call it whenever an updated
@@ -250,15 +255,15 @@ namespace envire
         FrameNode_Ptr frame;
 
     public:
-        CartesianMap(FrameNode& node, std::string const& id = "");
-        CartesianMap(FrameNode& node, Operator& generator, std::string const& id = "");
+        CartesianMap(FrameNode_Ptr node, std::string const& id = "");
+        CartesianMap(FrameNode_Ptr node, Operator_Ptr generator, std::string const& id = "");
 
         /** Sets the frame node on which this map is attached */
         void setFrameNode(FrameNode_Ptr frame);
         /** Returns the frame node on which this map is attached */
-        FrameNode& getFrameNode();
+        FrameNode_Ptr getFrameNode();
         /** Returns the frame node on which this map is attached */
-        FrameNode const& getFrameNode() const;
+        FrameNode_ConstPtr getFrameNode() const;
     };
 }
 
