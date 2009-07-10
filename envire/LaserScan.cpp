@@ -1,14 +1,29 @@
 #include "LaserScan.hpp"
 
+#include <string>
+#include <fstream>
+
+#include <stdexcept>
+
 using namespace envire;
 
-static LaserScan_Ptr LaserScan::createFromScanFile(const std::string& file, FrameNode_Ptr node)
+LaserScan::LaserScan(FrameNode_Ptr node, std::string const& id) :
+    CartesianMap(node, id)
 {
-    LaserScan_Ptr scan(new LaserScan());
-    std::ifstream ifstream(file);
+}
+
+LaserScan::LaserScan(FrameNode_Ptr node, Operator_Ptr generator, std::string const& id) :
+    CartesianMap(node, generator, id)
+{
+}
+
+LaserScan_Ptr LaserScan::createFromScanFile(const std::string& file, FrameNode_Ptr node)
+{
+    LaserScan_Ptr scan(new LaserScan(node, file));
+    std::ifstream ifstream(file.c_str());
     if( ifstream.fail() )  
     {
-        throw runtime_error("Could not open file '" + file + "'.");
+        throw std::runtime_error("Could not open file '" + file + "'.");
     }
     else
     {
@@ -17,10 +32,10 @@ static LaserScan_Ptr LaserScan::createFromScanFile(const std::string& file, Fram
         }
         catch( ... )
         {
-            file.close();
+            ifstream.close();
             throw;
         }
-        file.close();
+        ifstream.close();
     }
     return scan;
 }
@@ -34,16 +49,23 @@ bool LaserScan::parseScan( std::istream& data ) {
         std::string key;
         iline >> key;
 
+        // construct a new FrameNode if either origin or rotation are
+        // specified in the scan file, uses the current FrameNode as parent
+        if( key == "rotation" || key == "origin" ) {
+            if( !frame )
+                frame = FrameNode_Ptr( new FrameNode(frame) );
+        }
+
         if( key == "rotation" ) {
             float x, u, v, w;
             iline >> x >> u >> v >> w;
-            rotation = Eigen::Quaternionf(x, u, v, w);
+            frame->getTransform().rotation = Eigen::Quaternionf(x, u, v, w);
         }
 
         if( key == "origin" ) {
             float x,y,z;
             iline >> x >> y >> z;
-            translation = Eigen::Vector3f(x,y,z);
+            frame->getTransform().translation = Eigen::Vector3f(x,y,z);
         }
 
         if( key == "delta_psi" ) {
@@ -65,7 +87,7 @@ bool LaserScan::parseScan( std::istream& data ) {
         if( key == "line" ) {
             scanline_t scanline;
             iline >> scanline.first;
-            
+
             while( !iline.eof() ) {
                 int dist;
                 iline >> dist;
@@ -79,4 +101,10 @@ bool LaserScan::parseScan( std::istream& data ) {
     }
 
     return true;
+}
+
+Layer_Ptr LaserScan::clone(const std::string& id) 
+{
+    Layer_Ptr clone(new LaserScan(*this));
+    return clone;
 }

@@ -3,9 +3,18 @@
 
 using namespace envire;
 
+FrameNode::FrameNode( FrameNode_Ptr parent ) :
+    parent(parent)
+{
+}
+
+FrameNode::FrameNode()
+{
+}
+
 bool FrameNode::isRoot() const
 {
-    return parent == NULL;
+    return parent;
 }
 
 FrameNode_ConstPtr FrameNode::getParent() const
@@ -37,6 +46,11 @@ void FrameNode::setTransform(Frame const& transform)
     frame = transform;
 }
 
+Environment::Environment() 
+{
+    frame_tree = FrameNode_Ptr( new FrameNode() );
+}
+
 Frame Environment::relativeTransform(FrameNode const& from, FrameNode const& to)
 {
     throw std::runtime_error("relativeTransform() Not implemented yet.");
@@ -54,7 +68,7 @@ void Environment::removeLayer(Layer_Ptr layer)
 
 FrameNode_Ptr Environment::getRootNode()
 {
-    return FrameNode_Ptr(&frame_tree);
+    return frame_tree;
 }
 
 bool Environment::loadSceneFile( const std::string& file, FrameNode_Ptr node )
@@ -78,6 +92,12 @@ bool Operator::addOutput( Layer_Ptr layer )
     outputs.push_back( layer );
     return true;
 }
+
+void Operator::removeInput( Layer_Ptr layer )
+{
+    inputs.remove( layer );
+}
+
 
 void Operator::removeOutput( Layer_Ptr layer )
 {
@@ -131,7 +151,7 @@ bool Layer::isDirty() const
 bool Layer::detachFromOperator()
 {
     if( isGenerated() ) 
-        generator->removeOutput( Layer_Ptr(this) );
+        generator->removeOutput( shared_from_this() );
 
     generator = Operator_Ptr();
 }

@@ -8,6 +8,7 @@
 #include <Eigen/Geometry>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 // TODO: use shared_ptr if it is the decided way
 //   - update documentation to explain memory management
@@ -56,6 +57,14 @@ namespace envire
         std::list<CartesianMap_Ptr> maps;
 
     public:
+        /** constructs a new FrameNode Object with the @param node as parent
+         * node
+         */
+        FrameNode( FrameNode_Ptr parent );
+
+        /** default constructor */
+        FrameNode();
+
         /** Returns true if this frame is the root frame (i.e. has no parent) */
         bool isRoot() const;
         /** Returns the frame that is parent of this one, or raises
@@ -100,9 +109,11 @@ namespace envire
          *
          * From there, one can access the whole frame tree
          */
-        FrameNode frame_tree;
+        FrameNode_Ptr frame_tree;
 
     public:
+        Environment();
+        
         /** Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
          * transformation, as the frames are sorted in a tree
@@ -144,6 +155,7 @@ namespace envire
      */
     class Operator
     {
+    protected:
         std::list<Layer_Ptr> inputs;
         std::list<Layer_Ptr> outputs;
 
@@ -179,8 +191,10 @@ namespace envire
 
     /** The layer is the base object that holds map data. It can be a cartesian
      * map (CartesianMap) or a non-cartesian one (AttributeList, TopologicalMap)
+     *
+     * The Layer class assumes to be owned by a shared_ptr. 
      */
-    class Layer
+    class Layer : public boost::enable_shared_from_this<Layer>
     {
         std::string id;
         bool immutable;
@@ -252,6 +266,7 @@ namespace envire
      */
     class CartesianMap : public Layer
     {
+    protected:
         FrameNode_Ptr frame;
 
     public:

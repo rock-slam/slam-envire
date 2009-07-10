@@ -2,6 +2,9 @@
 #define __SCANMESHING_HPP__
 
 #include <boost/smart_ptr.hpp>
+#include "Core.hpp" 
+#include "LaserScan.hpp" 
+#include "TriMesh.hpp" 
 
 namespace envire {
     class ScanMeshing;
@@ -9,11 +12,14 @@ namespace envire {
 
     class ScanMeshing : public Operator
     {
-        public:
-            ScanMeshing( TriMesh_Ptr mesh );
+            float maxEdgeLength;
 
+        public:
             void addInput( LaserScan_Ptr scan ); 
+            void addOutput( TriMesh_Ptr mesh ); 
+
             void setMaxEdgeLength( float value );
+            bool updateAll();
     };
 }
 

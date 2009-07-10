@@ -41,7 +41,11 @@ namespace envire {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             
+            LaserScan(FrameNode_Ptr node, std::string const& id = "");
+            LaserScan(FrameNode_Ptr node, Operator_Ptr generator, std::string const& id = "");
+            
             bool parseScan( std::istream& data );
+            Layer_Ptr clone( const std::string& id = "");
 
             static LaserScan_Ptr createFromScanFile(const std::string& file, FrameNode_Ptr node);
     };
