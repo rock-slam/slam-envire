@@ -23,16 +23,16 @@ BOOST_AUTO_TEST_CASE( framenode )
             envire::LaserScan::createFromScanFile("test/test.scan", env.getRootNode());
     env.addLayer(scan);
 
+    // create a TriMesh Layer and attach it to the root Node.
+    envire::TriMesh_Ptr mesh(new envire::TriMesh(env.getRootNode()));
+    env.addLayer(mesh);
+
     // set up a meshing operator on the output mesh. Add then an input
     // and parametrize the meshing operation. 
     envire::ScanMeshing_Ptr op( new envire::ScanMeshing());
-    op->addInput( scan );
-    op->setMaxEdgeLength(0.5);
-
-    // create a TriMesh Layer and attach it to the root Node.
-    envire::TriMesh_Ptr mesh(new envire::TriMesh(env.getRootNode(), op));
+    op->addInput(scan);
     op->addOutput(mesh);
-    env.addLayer(mesh);
+    op->setMaxEdgeLength(0.5);
 
     op->updateAll();
 }

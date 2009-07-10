@@ -12,11 +12,6 @@ LaserScan::LaserScan(FrameNode_Ptr node, std::string const& id) :
 {
 }
 
-LaserScan::LaserScan(FrameNode_Ptr node, Operator_Ptr generator, std::string const& id) :
-    CartesianMap(node, generator, id)
-{
-}
-
 LaserScan_Ptr LaserScan::createFromScanFile(const std::string& file, FrameNode_Ptr node)
 {
     LaserScan_Ptr scan(new LaserScan(node, file));

@@ -109,11 +109,6 @@ Layer::Layer(std::string const& id) :
 {
 }
 
-Layer::Layer(Operator_Ptr generator, std::string const& id) : 
-    id(id), immutable(false), generator(generator)
-{
-}
-
 Layer::~Layer()
 {
 }
@@ -161,6 +156,11 @@ bool Layer::isGenerated() const
     return (generator != NULL);
 }
 
+bool Layer::setGenerator( Operator_Ptr generator ) 
+{
+   this->generator = generator; 
+}
+
 Operator_Ptr Layer::getGenerator() const
 {
     return generator;
@@ -176,11 +176,6 @@ void Layer::updateFromOperator()
 
 CartesianMap::CartesianMap(FrameNode_Ptr node, std::string const& id) :
     Layer(id), frame(node)
-{
-}
-
-CartesianMap::CartesianMap(FrameNode_Ptr node, Operator_Ptr generator, std::string const& id ) :
-    Layer(generator, id), frame(node)
 {
 }
 

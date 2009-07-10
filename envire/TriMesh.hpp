@@ -20,7 +20,6 @@ namespace envire {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             
             TriMesh(FrameNode_Ptr node, std::string const& id = "");
-            TriMesh(FrameNode_Ptr node, Operator_Ptr generator, std::string const& id = "");
 
             Layer_Ptr clone(std::string const& id = "");
 
