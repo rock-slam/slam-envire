@@ -153,7 +153,7 @@ namespace envire
 
     /** An operator generates a set of output maps based on a set of input maps
      */
-    class Operator
+    class Operator : public boost::enable_shared_from_this<Operator>
     {
     protected:
         std::list<Layer_Ptr> inputs;

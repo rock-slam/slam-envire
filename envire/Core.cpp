@@ -1,5 +1,12 @@
 #include "Core.hpp"
+#include "LaserScan.hpp"
+
+#include <Eigen/Geometry>
+#include <Eigen/SVD>
+
 #include <stdexcept>
+#include <fstream>
+#include <string>
 
 using namespace envire;
 
@@ -71,9 +78,51 @@ FrameNode_Ptr Environment::getRootNode()
     return frame_tree;
 }
 
-bool Environment::loadSceneFile( const std::string& file, FrameNode_Ptr node )
+bool Environment::loadSceneFile( const std::string& fileName, FrameNode_Ptr node )
 {
-    throw std::runtime_error("load scene file not implemented yet.");
+    // TODO: define a better format for a scene file, which supports
+    // hierarchical scenes
+    std::ifstream ifile(fileName.c_str());
+    if( ifile.fail() )
+    {
+        throw std::runtime_error("Could not open file '" + fileName + "'.");
+    }
+    else try
+    {
+        std::string line;
+        while( !ifile.eof() ) {
+            getline( ifile, line );
+            std::istringstream iline( line );
+
+            if( line.length() > 0 ) {
+                std::string filePath;
+                Eigen::Transform3f t;
+
+                iline >> filePath;
+                for(int j=0;j<16;j++) {
+                    iline >> t.data()[j];
+                }
+
+                // TODO this is really a bit messy as it assumes that the
+                // createFromScanFile creates a new FrameNode, which it might not.
+                // since this code will change anyway, this has been left out so
+                // far.
+                LaserScan_Ptr scan = LaserScan::createFromScanFile( filePath, getRootNode() );
+                Eigen::Quaternionf q = Eigen::Quaternionf(t.matrix().corner<3,3>(Eigen::TopLeft));
+                Eigen::Vector3f v = t.translation();
+
+                scan->getFrameNode()->getTransform().rotation = q;
+                scan->getFrameNode()->getTransform().translation = v;
+            }
+        }
+
+        ifile.close();
+    } 
+    catch( ... )
+    {
+        ifile.close();
+        throw;
+    }
 }
 
 bool Environment::loadSceneFile( const std::string& file ) 
@@ -89,6 +138,7 @@ bool Operator::addInput( Layer_Ptr layer )
 
 bool Operator::addOutput( Layer_Ptr layer ) 
 {
+    layer->setGenerator( shared_from_this() );
     outputs.push_back( layer );
     return true;
 }
@@ -153,7 +203,7 @@ bool Layer::detachFromOperator()
 
 bool Layer::isGenerated() const 
 {
-    return (generator != NULL);
+    return generator;
 }
 
 bool Layer::setGenerator( Operator_Ptr generator ) 

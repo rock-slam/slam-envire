@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE( environment )
     envire::Environment env;
 
     // populate the environment using a scene file
-    env.loadSceneFile( "test/scene.esf" );
+    env.loadSceneFile( "test/scene.pcs" );
 }
 // EOF
 //
