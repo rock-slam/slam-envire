@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE( functional )
 
     // create a TriMesh Layer and attach it to the root Node.
     envire::TriMesh_Ptr mesh(new envire::TriMesh(env->getFrameNode(), "mesh1"));
-    mesh->setParent( mesh );
+    mesh->setParent( env );
 
     // set up a meshing operator on the output mesh. Add then an input
     // and parametrize the meshing operation. 
