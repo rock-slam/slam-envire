@@ -129,6 +129,13 @@ bool Environment::loadSceneFile( const std::string& fileName, FrameNode_Ptr node
                 Eigen::Quaternionf q = Eigen::Quaternionf(t.matrix().corner<3,3>(Eigen::TopLeft));
                 Eigen::Vector3f v = t.translation();
 
+                if( scan->getFrameNode()->isRoot() )
+                {
+                    FrameNode_Ptr node = FrameNode_Ptr( new envire::FrameNode() );
+                    node->setParent( scan->getFrameNode() );
+                    scan->setFrameNode( node );
+                }
+
                 scan->getFrameNode()->getTransform().getRotation() = q;
                 scan->getFrameNode()->getTransform().getTranslation() = v;
             }
