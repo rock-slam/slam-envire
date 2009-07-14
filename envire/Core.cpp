@@ -10,18 +10,13 @@
 
 using namespace envire;
 
-FrameNode::FrameNode( FrameNode_Ptr parent ) :
-    parent(parent)
-{
-}
-
 FrameNode::FrameNode()
 {
 }
 
 bool FrameNode::isRoot() const
 {
-    return parent;
+    return !parent;
 }
 
 FrameNode_ConstPtr FrameNode::getParent() const
@@ -34,6 +29,17 @@ FrameNode_Ptr FrameNode::getParent()
     if( isRoot() )
         throw std::runtime_error("Called getParent() on root FrameNode.");
     return parent;
+}
+
+void FrameNode::setParent(FrameNode_Ptr node) 
+{
+    if( parent ) 
+        parent->frameNodes.remove( shared_from_this() );
+
+    if( node ) 
+        node->frameNodes.push_back( shared_from_this() );
+
+    parent = node;
 }
 
 Frame const& FrameNode::getTransform() const 
@@ -53,29 +59,41 @@ void FrameNode::setTransform(Frame const& transform)
     frame = transform;
 }
 
-Environment::Environment() 
+std::list<FrameNode_Ptr>::const_iterator FrameNode::beginNodes()
 {
-    frame_tree = FrameNode_Ptr( new FrameNode() );
+    return frameNodes.begin();
+}
+
+std::list<FrameNode_Ptr>::const_iterator FrameNode::endNodes()
+{
+    return frameNodes.end();
+}
+
+std::list<CartesianMap_Ptr>::const_iterator FrameNode::beginMaps()
+{
+    return maps.begin();
+}
+
+std::list<CartesianMap_Ptr>::const_iterator FrameNode::endMaps()
+{
+    return maps.end();
+}
+
+Environment::Environment(FrameNode_Ptr node, std::string const& id) : 
+    CartesianMap(node, id)
+{
+}
+
+Environment::Environment(const std::string& id) :
+    CartesianMap(id)
+{
+    // provide a FrameNode if there is none provided
+    frame = FrameNode_Ptr( new FrameNode() );
 }
 
 Frame Environment::relativeTransform(FrameNode const& from, FrameNode const& to)
 {
     throw std::runtime_error("relativeTransform() Not implemented yet.");
-}
-
-void Environment::addLayer(Layer_Ptr layer)
-{
-    layers.push_back( layer );
-}
-
-void Environment::removeLayer(Layer_Ptr layer)
-{
-    layers.remove( layer );
-}
-
-FrameNode_Ptr Environment::getRootNode()
-{
-    return frame_tree;
 }
 
 bool Environment::loadSceneFile( const std::string& fileName, FrameNode_Ptr node )
@@ -107,12 +125,12 @@ bool Environment::loadSceneFile( const std::string& fileName, FrameNode_Ptr node
                 // createFromScanFile creates a new FrameNode, which it might not.
                 // since this code will change anyway, this has been left out so
                 // far.
-                LaserScan_Ptr scan = LaserScan::createFromScanFile( filePath, getRootNode() );
+                LaserScan_Ptr scan = LaserScan::createFromScanFile( filePath, getFrameNode() );
                 Eigen::Quaternionf q = Eigen::Quaternionf(t.matrix().corner<3,3>(Eigen::TopLeft));
                 Eigen::Vector3f v = t.translation();
 
-                scan->getFrameNode()->getTransform().rotation = q;
-                scan->getFrameNode()->getTransform().translation = v;
+                scan->getFrameNode()->getTransform().getRotation() = q;
+                scan->getFrameNode()->getTransform().getTranslation() = v;
             }
         }
 
@@ -127,7 +145,15 @@ bool Environment::loadSceneFile( const std::string& fileName, FrameNode_Ptr node
 
 bool Environment::loadSceneFile( const std::string& file ) 
 { 
-    return loadSceneFile( file, getRootNode() );
+    return loadSceneFile( file, getFrameNode() );
+}
+
+Layer_Ptr Environment::clone(const std::string& id)
+{
+    Environment *c = new Environment(*this);
+    c->id = id;
+    Layer_Ptr clone = Layer_Ptr(c);
+    return clone;
 }
 
 bool Operator::addInput( Layer_Ptr layer ) 
@@ -155,12 +181,53 @@ void Operator::removeOutput( Layer_Ptr layer )
 }
 
 Layer::Layer(std::string const& id) : 
-    id(id), immutable(false)
+    id(id), immutable(false), generator(Operator_Ptr())
 {
 }
 
 Layer::~Layer()
 {
+}
+
+void Layer::setParent( Layer_Ptr parent ) 
+{
+    if( this->parent )
+        this->parent->removeLayer( shared_from_this() );
+    
+    if( parent )
+        parent->addLayer( shared_from_this() );
+
+    this->parent = parent;
+}
+
+Layer_Ptr Layer::getParent()
+{
+    return parent;
+}
+
+void Layer::addLayer( Layer_Ptr layer )
+{
+    if( layer->parent )
+        layer->parent->removeLayer( shared_from_this() );
+    
+    layers.push_back( layer );
+    layer->parent = shared_from_this();
+}
+
+void Layer::removeLayer( Layer_Ptr layer )
+{
+    layers.remove( layer );
+    layer->parent = Layer_Ptr();
+}
+
+std::list<Layer_Ptr>::const_iterator Layer::beginLayers()
+{
+    return layers.begin();
+}
+
+std::list<Layer_Ptr>::const_iterator Layer::endLayers()
+{
+    return layers.end();
 }
 
 std::string Layer::getID() const
@@ -229,9 +296,18 @@ CartesianMap::CartesianMap(FrameNode_Ptr node, std::string const& id) :
 {
 }
 
+CartesianMap::CartesianMap(std::string const& id) :
+    Layer(id)
+{
+}
+
 void CartesianMap::setFrameNode(FrameNode_Ptr frame)
 {
-    frame = frame;
+    if( this->frame )
+        this->frame->maps.remove( boost::static_pointer_cast<envire::CartesianMap>(shared_from_this()) );
+
+    this->frame = frame;
+    frame->maps.push_back( boost::static_pointer_cast<envire::CartesianMap>(shared_from_this()) );
 }
 
 FrameNode_Ptr CartesianMap::getFrameNode() 

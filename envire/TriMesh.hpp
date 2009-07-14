@@ -19,9 +19,10 @@ namespace envire {
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             
-            TriMesh(FrameNode_Ptr node, std::string const& id = "");
+            TriMesh(std::string const& id);
+            TriMesh(FrameNode_Ptr node, std::string const& id);
 
-            Layer_Ptr clone(std::string const& id = "");
+            Layer_Ptr clone(std::string const& id);
 
             typedef boost::tuple<int, int, int> triangle_t;
 

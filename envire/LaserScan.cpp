@@ -12,6 +12,11 @@ LaserScan::LaserScan(FrameNode_Ptr node, std::string const& id) :
 {
 }
 
+LaserScan::LaserScan(std::string const& id) :
+    CartesianMap(id)
+{
+}
+
 LaserScan_Ptr LaserScan::createFromScanFile(const std::string& file, FrameNode_Ptr node)
 {
     LaserScan_Ptr scan(new LaserScan(node, file));
@@ -48,19 +53,24 @@ bool LaserScan::parseScan( std::istream& data ) {
         // specified in the scan file, uses the current FrameNode as parent
         if( key == "rotation" || key == "origin" ) {
             if( !frame )
-                frame = FrameNode_Ptr( new FrameNode(frame) );
+            {   
+                FrameNode_Ptr new_frame = FrameNode_Ptr( new FrameNode() );
+                frame->setParent( frame );
+                frame = new_frame;
+
+            }
         }
 
         if( key == "rotation" ) {
             float x, u, v, w;
             iline >> x >> u >> v >> w;
-            frame->getTransform().rotation = Eigen::Quaternionf(x, u, v, w);
+            frame->getTransform().getRotation() = Eigen::Quaternionf(x, u, v, w);
         }
 
         if( key == "origin" ) {
             float x,y,z;
             iline >> x >> y >> z;
-            frame->getTransform().translation = Eigen::Vector3f(x,y,z);
+            frame->getTransform().getTranslation() = Eigen::Vector3f(x,y,z);
         }
 
         if( key == "delta_psi" ) {
