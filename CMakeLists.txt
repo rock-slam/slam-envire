@@ -16,10 +16,15 @@ set(ENVMAP_HDRS
     envire/Core.hpp)
 
 set(ENVMAP_SRCS
-    envire/ScanMeshing.cpp
-    envire/TriMesh.cpp
-    envire/LaserScan.cpp
-    envire/Core.cpp)
+    envire/Environment.cpp
+    envire/FrameNode.cpp
+    envire/Layer.cpp
+    envire/Operator.cpp
+    # envire/ScanMeshing.cpp
+    # envire/TriMesh.cpp
+    # envire/LaserScan.cpp
+    #envire/Core.cpp)
+    )
 
 add_library(envire SHARED ${ENVMAP_SRCS})
 

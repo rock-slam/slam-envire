@@ -1,15 +1,15 @@
 #include "envire/Core.hpp"
-#include "envire/LaserScan.hpp"
-#include "envire/TriMesh.hpp"
-#include "envire/ScanMeshing.hpp"
+//#include "envire/LaserScan.hpp"
+//#include "envire/TriMesh.hpp"
+//#include "envire/ScanMeshing.hpp"
 
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
-
    
 /** Test scenario, for setting up an environment, and meshing a scan file
  * using the scanmeshing operator 
- */
+*/
+#if 0
 BOOST_AUTO_TEST_CASE( functional ) 
 {
     // Set up the environment, which holds a pointer to the root FrameNode and
@@ -36,62 +36,111 @@ BOOST_AUTO_TEST_CASE( functional )
 
     op->updateAll();
 }
+#endif
 
-BOOST_AUTO_TEST_CASE( structure ) 
+using namespace envire;
+using namespace std;
+
+template<class T> bool contains(const std::list<T>& list, const T& element)
 {
-    envire::Environment_Ptr env = envire::Environment_Ptr(new envire::Environment("scene1"));
-    BOOST_CHECK_EQUAL( "scene1", env->getID() );
-    BOOST_CHECK( env->getFrameNode() );
-   
-    // create a child node of the root frame node
-    envire::FrameNode_Ptr node1 = envire::FrameNode_Ptr(new envire::FrameNode());
-    node1->setParent( env->getFrameNode() );
-    BOOST_CHECK_EQUAL( node1->getParent(), env->getFrameNode() );
-    BOOST_CHECK( env->getFrameNode()->beginNodes() !=  env->getFrameNode()->endNodes() );
-    BOOST_CHECK_EQUAL( node1, *env->getFrameNode()->beginNodes() );
-    BOOST_CHECK_EQUAL( std::distance( env->getFrameNode()->beginNodes(), env->getFrameNode()->endNodes() ), 1 );
+    return find( list.begin(), list.end(), element ) != list.end();
+};
 
-    // create a new layer
-    envire::TriMesh_Ptr map1 = envire::TriMesh_Ptr(new envire::TriMesh("mesh1"));
-    BOOST_CHECK_EQUAL( "mesh1", map1->getID() );
-    BOOST_CHECK_EQUAL( map1->getFrameNode(), envire::FrameNode_Ptr() );
+class DummyOperator : public Operator 
+{
+public:
+    bool updateAll() {};
+};
+
+class DummyLayer : public Layer 
+{
+public:
+    Layer* clone() {return new DummyLayer(*this);};
+};
+
+class DummyCartesianMap : public CartesianMap 
+{
+public:
+    CartesianMap* clone() {return new DummyCartesianMap(*this);};
+};
+
+
+BOOST_AUTO_TEST_CASE( environment )
+{
+    // set up an environment
+    Environment* env = new Environment();
+
+    // an environment should always have a root node 
+    BOOST_CHECK( env->getRootNode() );
+
+    // create some child framenodes
+    FrameNode *fn1, *fn2, *fn3;
+    fn1 = new FrameNode();
+    fn1->getTransform().getTranslation() += Eigen::Vector3f( 0.0, 0.0, 0.5 );
+    fn2 = new FrameNode();
+    fn2->getTransform().getRotation() = Eigen::Quaternionf( 0.0, 1.0, 0.0, 0.0 );
+    fn3 = new FrameNode();
+
+    // attach explicitely
+    env->attachItem( fn1 );
+    BOOST_CHECK( fn1->isAttached() );
+    BOOST_CHECK_EQUAL( fn1->getEnvironment(), env );
+    env->addChild( env->getRootNode(), fn1 );
+    BOOST_CHECK_EQUAL( env->getRootNode(), env->getParent(fn1) );
+    BOOST_CHECK( contains(env->getChildren(env->getRootNode()),fn1) );
+
+    // implicit attachment
+    env->addChild( fn1, fn2 );
+    BOOST_CHECK( fn2->isAttached() );
     
-    // attach layer to environment
-    map1->setParent( env );
-    BOOST_CHECK_EQUAL( map1->getParent(), env );
-    BOOST_CHECK_EQUAL( *env->beginLayers(), map1 );
-    BOOST_CHECK_EQUAL( std::distance( env->beginLayers(), env->endLayers() ), 1 );
+    // setup the rest of the framenodes
+    env->addChild( fn3, env->getRootNode() );
+
+    // now do the same for layers
+    Layer *l1, *l2, *l3;
+    l1 = new DummyLayer();
+    l2 = new DummyLayer();
+    l3 = new DummyLayer();
+
+    env->attachItem( l1 );
+    BOOST_CHECK( l1->isAttached() );
+    BOOST_CHECK_EQUAL( l1->getEnvironment(), env );
+
+    env->addChild( l1, l2 );
+    BOOST_CHECK_EQUAL( l1, env->getParent(l2) );
+    BOOST_CHECK( contains(env->getChildren(l1),l2) );
+
+    env->attachItem(l3);
+
+    // CartesianMaps should work the same
+    CartesianMap *m1, *m2;
+    m1 = new DummyCartesianMap();
+    m2 = new DummyCartesianMap();
+
+    env->attachItem( m1 );
+    env->attachItem( m2 );
+
+    env->setFrameNode( m1, fn1 );
+    env->setFrameNode( m2, fn1 );
+
+    BOOST_CHECK_EQUAL( env->getFrameNode( m1 ), fn1 );
+    BOOST_CHECK( contains(env->getMaps(fn1),m1) );
+    BOOST_CHECK( contains(env->getMaps(fn1),m2) );
     
-    // associate layer with FrameNode
-    map1->setFrameNode( node1 );
-    BOOST_CHECK_EQUAL( map1->getFrameNode(), node1 );
-    BOOST_CHECK_EQUAL( *node1->beginMaps(), map1 );
-    BOOST_CHECK_EQUAL( std::distance( node1->beginMaps(), node1->endMaps() ), 1 );
+    // now to operators
+    Operator *o1;
+    o1 = new DummyOperator();
+    env->attachItem( o1 );
 
-    // reassociation to different framenode
-    map1->setFrameNode( env->getFrameNode() );
-    BOOST_CHECK_EQUAL( map1->getFrameNode(), env->getFrameNode() );
-    BOOST_CHECK_EQUAL( std::distance( node1->beginMaps(), node1->endMaps() ), 0 );
-    BOOST_CHECK_EQUAL( std::distance( env->getFrameNode()->beginMaps(), env->getFrameNode()->endMaps() ), 1 );
+    env->addInput( o1, l1 );
+    env->addInput( o1, l2 );
+    env->addOutput( o1, l3 );
 
-    // create a new layer
-    envire::LaserScan_Ptr map2 = envire::LaserScan_Ptr(new envire::LaserScan("scan1"));
-    BOOST_CHECK_EQUAL( "scan1", map2->getID() );
-    map2->setParent( env );
-    BOOST_CHECK_EQUAL( std::distance( env->beginLayers(), env->endLayers() ), 2 );
+    BOOST_CHECK( contains(env->getInputs(o1),l1) );
+    BOOST_CHECK( contains(env->getOutputs(o1),l3) );
 
-    // create operator
-    BOOST_CHECK( !map2->isGenerated() );
-    BOOST_CHECK( !map1->isGenerated() );
-    envire::ScanMeshing_Ptr op1 = envire::ScanMeshing_Ptr(new envire::ScanMeshing());
-    op1->addInput( map2 );
-    op1->addOutput( map1 );
-    BOOST_CHECK( map1->isGenerated() );
-    BOOST_CHECK_EQUAL( map1->getGenerator(), op1 );
-
-    map1->detachFromOperator();
-    BOOST_CHECK( !map2->isGenerated() );
-    BOOST_CHECK( !map1->isGenerated() );
+    delete env;
 }
+
 // EOF
 //

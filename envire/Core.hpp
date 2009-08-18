@@ -2,16 +2,12 @@
 #define __ENVMAP_H__
 
 #include <list>
+#include <map>
 #include <string>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-
-// TODO: use shared_ptr if it is the decided way
-//   - update documentation to explain memory management
 namespace envire
 {
     class Layer;
@@ -19,21 +15,6 @@ namespace envire
     class FrameNode;
     class Operator;
     class Environment;
-
-    // definition of shared pointers to the classes that envire uses
-    // the reason that they are called Layer_Ptr and not Layer::Ptr is that
-    // including the typedef in the classes makes it difficult to forward
-    // reference them.
-    typedef boost::shared_ptr<Layer> Layer_Ptr;
-    typedef boost::shared_ptr<const Layer> Layer_ConstPtr;
-    typedef boost::shared_ptr<CartesianMap> CartesianMap_Ptr;
-    typedef boost::shared_ptr<const CartesianMap> CartesianMap_ConstPtr;
-    typedef boost::shared_ptr<FrameNode> FrameNode_Ptr;
-    typedef boost::shared_ptr<const FrameNode> FrameNode_ConstPtr;
-    typedef boost::shared_ptr<Operator> Operator_Ptr;
-    typedef boost::shared_ptr<const Operator> Operator_ConstPtr;
-    typedef boost::shared_ptr<Environment> Environment_Ptr;
-    typedef boost::shared_ptr<const Environment> Environment_ConstPtr;
 
     /** A 3D transformation 
      * Uses Eigen2 types for rotation and translation.  Internally the Frame
@@ -60,36 +41,50 @@ namespace envire
         //TODO: add conversion from and to transformation types. 
     };
 
-    /** A node in the frame tree. It represents a single frame of reference, and
-     * contains a list of maps that represent information in this frame of reference.
-     */
-    class FrameNode : public boost::enable_shared_from_this<FrameNode>
+    class EnvironmentItem 
     {
-        friend class CartesianMap;
     protected:
-        /** since we will only create one instance of this class, and
-         * otherwise handle it through our smart_ptr reference, we can use a
-         * static variable to handle to uniqe criterion for the id. Note, this
-         * is not thread safe!
-         */
-        static long unique_id;
+	friend class Environment;
 
-        /** the id of the FrameNode. This needs to be unique for all
-         * framenodes in the environment
-         */
-        long id;
+	/** we track the last id given for assigning new id's
+	 */
+	static long last_id;
 
-        /** The parent frame, or NULL for the root frame */
-        FrameNode_Ptr parent;
+	/** each environment item must have a unique id.
+	 */
+	long unique_id;
+	
+	/** store pointer to environment to allow convenience methods
+	 */
+	Environment* env;
 
+    public:
+	EnvironmentItem();	
+	explicit EnvironmentItem(Environment* env);	
+	virtual ~EnvironmentItem();
+
+	/** return the environment this object is associated with 
+	 */
+	Environment* getEnvironment();	
+
+	/** returns true if attached to an environment
+	 */	
+	bool isAttached() const;
+
+	/** returns the unique id of this environmentitem
+	 */
+	long getUniqueId() const;
+    };
+
+
+    /** A node in the frame tree. It represents a single frame of reference.
+     */
+    class FrameNode : public EnvironmentItem
+    {
+    protected:
         /** The 3D transformation that leads from the parent frame to this one
         */
         Frame frame;
-
-        /** The list of maps that are expressed in this frame */
-        std::list<CartesianMap_Ptr> maps;
-        
-        std::list<FrameNode_Ptr> frameNodes;
 
     public:
         /** default constructor */
@@ -101,14 +96,12 @@ namespace envire
         /** Returns the frame that is parent of this one, or raises
          * std::runtime_error if it is a root frame
          */
-        FrameNode_ConstPtr getParent() const;
+        const FrameNode* getParent() const;
 
         /** Returns the frame that is parent of this one, or raises
          * std::runtime_error if it is a root frame
          */
-        FrameNode_Ptr getParent();
-
-        void setParent( FrameNode_Ptr );
+        FrameNode* getParent();
 
         /** Returns the Transformation that leads from the parent frame to
          * this one
@@ -128,32 +121,18 @@ namespace envire
          */
         void setTransform(Frame const& transform);
 
-        std::list<CartesianMap_Ptr>::const_iterator beginMaps();
-        std::list<CartesianMap_Ptr>::const_iterator endMaps();
-
-        std::list<FrameNode_Ptr>::const_iterator beginNodes();
-        std::list<FrameNode_Ptr>::const_iterator endNodes();
-
     };
     
     /** The layer is the base object that holds map data. It can be a cartesian
      * map (CartesianMap) or a non-cartesian one (AttributeList, TopologicalMap)
-     *
-     * The Layer class assumes to be owned by a shared_ptr. 
      */
-    class Layer : public boost::enable_shared_from_this<Layer>
+    class Layer : public EnvironmentItem
     {
     protected:
-        Layer_Ptr parent;
-
-        /** The set of child layers for this layer
-         */
-        std::list<Layer_Ptr> layers;
-       
-        /** the id of the layer. This needs to be unique for the environment
-         * the layer is used in.
-         */
-        std::string id;
+        /** the id of the layer. This is a non-unique identifier which can 
+	 * be used for easy identification of the layer
+	 */ 
+        std::string name;
 
         /** TODO: explain immutability for layer */
         bool immutable;
@@ -161,26 +140,14 @@ namespace envire
         /** TODO: explain dirty for a layer */
         bool dirty; 
 
-        /** A layer might be generated by an Operator. */
-        Operator_Ptr generator;
-
     public:
-        /** Create a new layer and adds it to the given environment, the id
-         * must be unique for the given environment. It is up to the caller to
-         * ensure uniqueness. Using non unique ids will result in undefined
-         * behaviour.
-         */
-        explicit Layer(std::string const& id);
-        
-        virtual ~Layer();
-
-        void addLayer(Layer_Ptr layer);
-
-        void removeLayer(Layer_Ptr layer);
+	Layer();
+	Layer(std::string const& name);
+	virtual ~Layer();
 
         /** Returns a string identifier that can be used for debugging purposes
          */
-        std::string getID() const;
+        std::string getName() const;
 
         /** True if this layer cannot be changed by any means */
         bool isImmutable() const;
@@ -194,7 +161,7 @@ namespace envire
          * detached from any operator and is not immutable. It is not added to
          * any environment either.
          */
-        virtual Layer_Ptr clone(std::string const& id) = 0;
+        virtual Layer* clone() = 0;
 
         /** Unsets the dirty flag on this layer
          * @see isDirty
@@ -221,15 +188,10 @@ namespace envire
         /** True if this layer has been generated by an operator */
         bool isGenerated() const;
         
-        /** if this layer is being generated, the operators addOutput will
-         * call this method to register the operator. 
-         */
-        bool setGenerator( Operator_Ptr );
-        
         /** Returns the operator that generated this layer, or raises
          * std::runtime_error if it is not a generated map
          */
-        Operator_Ptr getGenerator() const;
+        Operator* getGenerator() const;
 
         /** Recomputes this layer by applying the operator that has already
          * generated this map. The actual operation will only be called if the
@@ -239,14 +201,8 @@ namespace envire
          */
         void updateFromOperator();
 
-        /** returns an iterator for the list of layers with are children of
-         * this layer
-         */
-        std::list<Layer_Ptr>::const_iterator beginLayers();
-        std::list<Layer_Ptr>::const_iterator endLayers();
-
-        Layer_Ptr getParent();
-        void setParent(Layer_Ptr parent);
+	void addChild(Layer* child);
+        Layer* getParent();
     };
 
     /** This is a special type of layer that describes a map in a cartesian
@@ -256,61 +212,24 @@ namespace envire
      */
     class CartesianMap : public Layer
     {
-    protected:
-        FrameNode_Ptr frame;
-
     public:
-        CartesianMap(std::string const& id);
-        CartesianMap(FrameNode_Ptr node, std::string const& id);
+	CartesianMap();
+        CartesianMap(std::string const& name);
 
         /** Sets the frame node on which this map is attached */
-        void setFrameNode(FrameNode_Ptr frame);
+        void setFrameNode(FrameNode* frame);
 
         /** Returns the frame node on which this map is attached */
-        FrameNode_Ptr getFrameNode();
+        FrameNode* getFrameNode();
 
         /** Returns the frame node on which this map is attached */
-        FrameNode_ConstPtr getFrameNode() const;
-    };
-
-    /** An environment representation is basically a set of Layer. Moreover, one
-     * specific type of layers, CartesianMap layers, are managed in a frame
-     * tree where relative 3D transformations between the CartesianMap are
-     * managed
-     */
-    class Environment : public CartesianMap
-    {
-    public:
-        Environment(FrameNode_Ptr node, std::string const& id);
-        Environment(const std::string& id);
-        
-        /** Returns the transformation from the frame represented by @a from to
-         * the frame represented by @a to. This always defines an unique
-         * transformation, as the frames are sorted in a tree
-         */
-        Frame relativeTransform(FrameNode const& from, FrameNode const& to);
-
-        /** will import the scene file specified by @param file
-         * uses @param node as the parent FrameNode where the scene is
-         * attached.
-         */
-        bool loadSceneFile( const std::string& file, FrameNode_Ptr node );
-        
-        /** imports scene and attaches it to the root node
-         */
-        bool loadSceneFile( const std::string& file);
-
-        Layer_Ptr clone(std::string const& id);
+        const FrameNode* getFrameNode() const;
     };
 
     /** An operator generates a set of output maps based on a set of input maps
      */
-    class Operator : public boost::enable_shared_from_this<Operator>
+    class Operator : public EnvironmentItem
     {
-    protected:
-        std::list<Layer_Ptr> inputs;
-        std::list<Layer_Ptr> outputs;
-
     public:
         /** Update the output layer(s) according to the defined operation.
          */
@@ -319,22 +238,105 @@ namespace envire
         /** Adds a new input to this operator. The operator may not support
          * this, in which case it will return false
          */
-        virtual bool addInput(Layer_Ptr layer);
+        virtual bool addInput(Layer* layer);
 
         /** Removes an input from this operator. The operator may not support
          * this, in which case it will return false
          */
-        virtual void removeInput(Layer_Ptr layer);
+        virtual void removeInput(Layer* layer);
 
          /** Adds a new input to this operator. The operator may not support
          * this, in which case it will return false
          */
-        virtual bool addOutput(Layer_Ptr layer);
+        virtual bool addOutput(Layer* layer);
 
         /** Removes an output from this operator. The operator may not support
          * this, in which case it will return false.
          */
-        virtual void removeOutput(Layer_Ptr layer);
+        virtual void removeOutput(Layer* layer);
+    };
+
+    /** The environment class manages EnvironmentItem objects and has ownership of these. 
+     * all dependencies between the objects are handled in the environment class, and convenience
+     * methods of the individual objects are available to simplify usage.
+     */
+    class Environment
+    {
+    protected:
+	typedef std::list<EnvironmentItem*> itemListType;
+	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
+	typedef std::map<Layer*, Layer*> layerTreeType;
+	typedef std::multimap<Operator*, Layer*> operatorGraphType;
+	typedef std::map<CartesianMap*, FrameNode*> cartesianMapGraphType;
+
+	itemListType items;
+	frameNodeTreeType frameNodeTree;
+	layerTreeType layerTree;
+	operatorGraphType operatorGraphInput;
+	operatorGraphType operatorGraphOutput;
+	cartesianMapGraphType cartesianMapGraph;
+
+	FrameNode* rootNode;
+
+    public:
+        Environment();
+	virtual ~Environment();
+        
+	/** attaches an EnvironmentItem and puts it under the control of the Environment.
+	 * Object ownership is passed to the environment in this way.
+	 */
+	void attachItem(EnvironmentItem* item);
+
+	/** detaches an object from the environment. After this, the object is no longer owned by
+	 * by the environment. All links to this object from other objects in the environment are
+	 * removed.
+	 */
+	void detachItem(EnvironmentItem* item);
+
+	void addChild(FrameNode* parent, FrameNode* child);
+	void addChild(Layer* parent, Layer* child);
+
+	void removeChild(FrameNode* parent, FrameNode* child);
+	void removeChild(Layer* parent, Layer* child);
+
+	FrameNode* getParent(FrameNode* node);
+	Layer* getParent(Layer* layer);
+
+	FrameNode* getRootNode();
+	std::list<FrameNode*> getChildren(FrameNode* parent);
+	std::list<Layer*> getChildren(Layer* parent);
+
+	void setFrameNode(CartesianMap* map, FrameNode* node);
+	FrameNode* getFrameNode(CartesianMap* map);
+	std::list<CartesianMap*> getMaps(FrameNode* node);
+	
+	bool addInput(Operator* op, Layer* input);
+	bool addOutput(Operator* op, Layer* output);
+
+	bool removeInput(Operator* op, Layer* input);
+	bool removeOutput(Operator* op, Layer* output);
+
+	std::list<Layer*> getInputs(Operator* op);
+	std::list<Layer*> getOutputs(Operator* op);
+
+	Operator* getGenerator(Layer* output);
+
+
+        /** Returns the transformation from the frame represented by @a from to
+         * the frame represented by @a to. This always defines an unique
+         * transformation, as the frames are sorted in a tree
+         */
+        Frame relativeTransform(const FrameNode* from, const FrameNode* to);
+
+        /** will import the scene file specified by @param file
+         * uses @param node as the parent FrameNode where the scene is
+         * attached.
+         */
+        bool loadSceneFile( const std::string& file );
+
+	/** will save the environment into a scene file.
+	 */
+	bool saveSceneFile( const std::string& file );
     };
 
 }
