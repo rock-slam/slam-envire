@@ -15,8 +15,9 @@ EnvironmentItem::EnvironmentItem()
 }
 
 EnvironmentItem::EnvironmentItem(Environment* envPtr)
-    : env(envPtr), unique_id(last_id++)
+    :  unique_id(last_id++)
 {
+    envPtr->attachItem( this );
 }
 
 EnvironmentItem::~EnvironmentItem()
@@ -227,7 +228,7 @@ Operator* Environment::getGenerator(Layer* output)
 }
 
 
-Frame Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
+FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
 {
     throw std::runtime_error("relativeTransform() Not implemented yet.");
 }

@@ -28,19 +28,19 @@ FrameNode* FrameNode::getParent()
     return const_cast<FrameNode*>(static_cast<const FrameNode&>(*this).getParent());
 }
 
-Frame const& FrameNode::getTransform() const 
+FrameNode::TransformType const& FrameNode::getTransform() const 
 {
-    return const_cast<Frame&>(static_cast<const FrameNode&>(*this).getTransform());
+    return const_cast<TransformType&>(static_cast<const FrameNode&>(*this).getTransform());
 }
 
-Frame& FrameNode::getTransform()
+FrameNode::TransformType& FrameNode::getTransform()
 {
     if( isRoot() )
         throw std::runtime_error("Called getTransform() on root FrameNode.");
     return frame;
 }
 
-void FrameNode::setTransform(Frame const& transform)
+void FrameNode::setTransform(TransformType const& transform)
 {
     frame = transform;
 }

@@ -7,6 +7,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <Eigen/SVD>
 
 namespace envire
 {
@@ -16,37 +17,32 @@ namespace envire
     class Operator;
     class Environment;
 
-    /** A 3D transformation 
-     * Uses Eigen2 types for rotation and translation.  Internally the Frame
-     * is represented as translation and rotation separated, and not in a 4x4
-     * Transformation matrix.
+    /** Base class for alle items that are defined in the envire framework.
+     * Mainly handles the unique_id feature and the pointer to the environment
+     * object.
+     *
+     * Ownership of objects is managed as follows: Objects are owned by the user
+     * as long as they are not attached to the environment.
+     *
+     * Ownership is passed to the Environment object, once the item is attached
+     * to the environment in one of the following ways:
+     *
+     * - explicit: env->attachItem( item )
+     * - implicit: using the item as parameter to a call like item2->addChild(
+     *   item )
+     *
+     * When the ownership is passed, it is not allowed to free the memory of the
+     * object, this is now done by the Environment on destruction.
+     *
+     * The ownership of the items can be passed back to the user by calling
+     * env->detachItem( item )
      */
-    class Frame
-    {
-    protected:
-        Eigen::Vector3f translation;
-        Eigen::Quaternionf rotation;
-
-    public:
-        Frame(const Eigen::Vector3f& translation = Eigen::Vector3f::Zero(),
-                const Eigen::Quaternionf& rotation = Eigen::Quaternionf() )
-            : translation(translation), rotation(rotation) {}
-
-        Eigen::Vector3f& getTranslation() { return translation; }
-        const Eigen::Vector3f& getTranslation() const { return translation; }
-        
-        Eigen::Quaternionf& getRotation() { return rotation; }
-        const Eigen::Quaternionf& getRotation() const { return rotation; }
-
-        //TODO: add conversion from and to transformation types. 
-    };
-
     class EnvironmentItem 
     {
     protected:
 	friend class Environment;
 
-	/** we track the last id given for assigning new id's
+	/** we track the last id given to an item, for assigning new id's.
 	 */
 	static long last_id;
 
@@ -55,36 +51,50 @@ namespace envire
 	long unique_id;
 	
 	/** store pointer to environment to allow convenience methods
+	 * referencing the environment object the item is attached to.
 	 */
 	Environment* env;
 
     public:
 	EnvironmentItem();	
+
+	/** will attach the newly created object to the given Environment.
+	 */ 
 	explicit EnvironmentItem(Environment* env);	
+
 	virtual ~EnvironmentItem();
 
-	/** return the environment this object is associated with 
+	/** @return the environment this object is associated with 
 	 */
 	Environment* getEnvironment();	
 
-	/** returns true if attached to an environment
+	/** @return true if attached to an environment
 	 */	
 	bool isAttached() const;
 
-	/** returns the unique id of this environmentitem
+	/** @return the unique id of this environmentitem
 	 */
 	long getUniqueId() const;
     };
 
 
-    /** A node in the frame tree. It represents a single frame of reference.
+    /** An object of this class represents a node in the FrameTree. The
+     * FrameTree has one root node (call to env->getRootNode()), which
+     * represents the global frame. Each child defines a new frame of reference,
+     * that is connected to its parent frame through the transformation object.
+     *
+     * So for P being the parent Frame and F the frame associated with the
+     * FrameNode, and T the Transformation, we get F = T*P.
      */
     class FrameNode : public EnvironmentItem
     {
+    public:
+	typedef Eigen::Transform<float,3> TransformType;
+
     protected:
         /** The 3D transformation that leads from the parent frame to this one
         */
-        Frame frame;
+	TransformType frame;
 
     public:
         /** default constructor */
@@ -94,33 +104,32 @@ namespace envire
         bool isRoot() const;
 
         /** Returns the frame that is parent of this one, or raises
-         * std::runtime_error if it is a root frame
+         * @throw std::runtime_error if it is a root frame
          */
         const FrameNode* getParent() const;
 
         /** Returns the frame that is parent of this one, or raises
-         * std::runtime_error if it is a root frame
+         * @throw std::runtime_error if it is a root frame
          */
         FrameNode* getParent();
 
         /** Returns the Transformation that leads from the parent frame to
          * this one
-         * std::runtime_error if it is a root frame
+         * @throw std::runtime_error if it is a root frame
          */
-        Frame const& getTransform() const;
+	TransformType const& getTransform() const;
 
         /** Returns the Transformation that leads from the parent frame to
          * this one
-         * std::runtime_error if it is a root frame
+         * @throw std::runtime_error if it is a root frame
          */
-        Frame& getTransform();
+        TransformType& getTransform();
 
         /** Updates the transformation between that node and its parent.
          * Relevant operators will be notified of that change, and all data that
          * has been generated based on that information will be marked as dirty
          */
-        void setTransform(Frame const& transform);
-
+        void setTransform(TransformType const& transform);
     };
     
     /** The layer is the base object that holds map data. It can be a cartesian
@@ -129,15 +138,15 @@ namespace envire
     class Layer : public EnvironmentItem
     {
     protected:
-        /** the id of the layer. This is a non-unique identifier which can 
+        /** the name of the layer. This is a non-unique identifier which can 
 	 * be used for easy identification of the layer
 	 */ 
         std::string name;
 
-        /** TODO: explain immutability for layer */
+        /** @todo explain immutability for layer */
         bool immutable;
 
-        /** TODO: explain dirty for a layer */
+        /** @todo explain dirty for a layer */
         bool dirty; 
 
     public:
@@ -145,11 +154,11 @@ namespace envire
 	Layer(std::string const& name);
 	virtual ~Layer();
 
-        /** Returns a string identifier that can be used for debugging purposes
+	/** @return a string identifier that can be used for debugging purposes
          */
         std::string getName() const;
 
-        /** True if this layer cannot be changed by any means */
+        /** @return True if this layer cannot be changed by any means */
         bool isImmutable() const;
 
         /** Marks this frame as being immutable. This cannot be changed
@@ -193,15 +202,22 @@ namespace envire
          */
         Operator* getGenerator() const;
 
-        /** Recomputes this layer by applying the operator that has already
-         * generated this map. The actual operation will only be called if the
-         * dirty flag is set, so it is optimal to call it whenever an updated
-         * map is needed. After this call, it is guaranteed that isDirty()
-         * returns false.
+	/** Recomputes this layer by applying the operator that has already
+	 * generated this map. The actual operation will only be called if the
+	 * dirty flag is set, so it is optimal to call it whenever an updated
+	 * map is needed. After this call, it is guaranteed that isDirty()
+	 * returns false.
          */
         void updateFromOperator();
-
+	
+	/** Layers can have hierarchical relationships. This function will add
+	 * a child layer to this object.
+	 * @param child - the child layer to add
+	 */
 	void addChild(Layer* child);
+
+	/** @return the parent of this layer or NULL if the layer has no parent
+	 */
         Layer* getParent();
     };
 
@@ -226,7 +242,17 @@ namespace envire
         const FrameNode* getFrameNode() const;
     };
 
-    /** An operator generates a set of output maps based on a set of input maps
+    /** An operator generates a set of output maps based on a set of input maps.
+     * Operators are also managed by the Environment and can represent
+     * operational releationsships between layers. Through the features of the
+     * layer, which holds information about the update state (e.g. dirty), the
+     * operators can be executed automatically on data that requires updates. 
+     *
+     * The links between operators and layers form a graph, which can represent
+     * convenient operation chains. 
+     *
+     * E.g. <raw_data> -> [convert to map] -> <map> -> [merge into global map]
+     * with <map> and [operator]
      */
     class Operator : public EnvironmentItem
     {
@@ -256,9 +282,10 @@ namespace envire
         virtual void removeOutput(Layer* layer);
     };
 
-    /** The environment class manages EnvironmentItem objects and has ownership of these. 
-     * all dependencies between the objects are handled in the environment class, and convenience
-     * methods of the individual objects are available to simplify usage.
+    /** The environment class manages EnvironmentItem objects and has ownership
+     * of these.  all dependencies between the objects are handled in the
+     * environment class, and convenience methods of the individual objects are
+     * available to simplify usage.
      */
     class Environment
     {
@@ -293,6 +320,9 @@ namespace envire
 	 */
 	void detachItem(EnvironmentItem* item);
 
+	/** @defgroup structure_op Operations on the structure
+	 *  @{
+	 */
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
 
@@ -320,13 +350,13 @@ namespace envire
 	std::list<Layer*> getOutputs(Operator* op);
 
 	Operator* getGenerator(Layer* output);
-
+	/** @} */
 
         /** Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
          * transformation, as the frames are sorted in a tree
          */
-        Frame relativeTransform(const FrameNode* from, const FrameNode* to);
+	FrameNode::TransformType relativeTransform(const FrameNode* from, const FrameNode* to);
 
         /** will import the scene file specified by @param file
          * uses @param node as the parent FrameNode where the scene is
