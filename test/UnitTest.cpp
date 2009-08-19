@@ -6,38 +6,6 @@
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
    
-/** Test scenario, for setting up an environment, and meshing a scan file
- * using the scanmeshing operator 
-*/
-#if 0
-BOOST_AUTO_TEST_CASE( functional ) 
-{
-    // Set up the environment, which holds a pointer to the root FrameNode and
-    // knows about all the layers
-    envire::Environment_Ptr env = envire::Environment_Ptr( new envire::Environment("scene1") );
-
-    // Create a laserscan layer from a scanfile and attach it to the rootnode
-    // if the scan file has its own frame, the FrameNode will be generated and
-    // used as the framenode for the LaserScan Layer.
-    envire::LaserScan_Ptr scan = 
-            envire::LaserScan::createFromScanFile("test/test.scan", env->getFrameNode());
-    scan->setParent( env );
-
-    // create a TriMesh Layer and attach it to the root Node.
-    envire::TriMesh_Ptr mesh(new envire::TriMesh(env->getFrameNode(), "mesh1"));
-    mesh->setParent( env );
-
-    // set up a meshing operator on the output mesh. Add then an input
-    // and parametrize the meshing operation. 
-    envire::ScanMeshing_Ptr op( new envire::ScanMeshing());
-    op->addInput(scan);
-    op->addOutput(mesh);
-    op->setMaxEdgeLength(0.5);
-
-    op->updateAll();
-}
-#endif
-
 using namespace envire;
 using namespace std;
 
@@ -140,6 +108,40 @@ BOOST_AUTO_TEST_CASE( environment )
     BOOST_CHECK( contains(env->getOutputs(o1),l3) );
 
     delete env;
+}
+
+
+BOOST_AUTO_TEST_CASE( functional ) 
+{
+    Environment* env = Environment(); 
+
+    
+
+
+
+    // Set up the environment, which holds a pointer to the root FrameNode and
+    // knows about all the layers
+    envire::Environment_Ptr env = envire::Environment_Ptr( new envire::Environment("scene1") );
+
+    // Create a laserscan layer from a scanfile and attach it to the rootnode
+    // if the scan file has its own frame, the FrameNode will be generated and
+    // used as the framenode for the LaserScan Layer.
+    envire::LaserScan_Ptr scan = 
+            envire::LaserScan::createFromScanFile("test/test.scan", env->getFrameNode());
+    scan->setParent( env );
+
+    // create a TriMesh Layer and attach it to the root Node.
+    envire::TriMesh_Ptr mesh(new envire::TriMesh(env->getFrameNode(), "mesh1"));
+    mesh->setParent( env );
+
+    // set up a meshing operator on the output mesh. Add then an input
+    // and parametrize the meshing operation. 
+    envire::ScanMeshing_Ptr op( new envire::ScanMeshing());
+    op->addInput(scan);
+    op->addOutput(mesh);
+    op->setMaxEdgeLength(0.5);
+
+    op->updateAll();
 }
 
 // EOF

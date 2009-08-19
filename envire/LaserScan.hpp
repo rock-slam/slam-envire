@@ -1,15 +1,11 @@
 #ifndef __LASERSCAN_HPP__
 #define __LASERSCAN_HPP__
 
-#include <boost/shared_ptr.hpp>
 #include <Eigen/Core>
 #include "Core.hpp"
 #include <vector>
 
 namespace envire {
-
-    class LaserScan;
-    typedef boost::shared_ptr<LaserScan> LaserScan_Ptr;
 
     class LaserScan : public CartesianMap
     {
@@ -42,12 +38,10 @@ namespace envire {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             
             LaserScan(std::string const& id);
-            LaserScan(FrameNode_Ptr node, std::string const& id);
             
+	    bool parseScan( std::string& file );
             bool parseScan( std::istream& data );
-            Layer_Ptr clone( const std::string& id);
-
-            static LaserScan_Ptr createFromScanFile(const std::string& file, FrameNode_Ptr node);
+            Layer* clone( const std::string& id);
     };
                 
 };

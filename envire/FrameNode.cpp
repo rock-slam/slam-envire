@@ -23,6 +23,17 @@ const FrameNode* FrameNode::getParent() const
     return env->getParent(const_cast<FrameNode*>(this));
 }
 
+void FrameNode::serialize(std::ostream& os, std::string& path)
+{
+    std::cerr << "serialisation not implemented yet";
+}
+
+FrameNode* FrameNode::create(std::istream& is, std::string& path)
+{
+    std::cerr << "unserialisation not implemented yet";
+    return new FrameNode();
+}
+
 FrameNode* FrameNode::getParent()
 {
     return const_cast<FrameNode*>(static_cast<const FrameNode&>(*this).getParent());
