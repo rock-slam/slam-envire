@@ -35,8 +35,6 @@ FrameNode::TransformType const& FrameNode::getTransform() const
 
 FrameNode::TransformType& FrameNode::getTransform()
 {
-    if( isRoot() )
-        throw std::runtime_error("Called getTransform() on root FrameNode.");
     return frame;
 }
 
