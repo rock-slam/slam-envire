@@ -97,6 +97,9 @@ namespace envire
 	TransformType frame;
 
     public:
+	/** class needs to be 16byte aligned for Eigen vectorisation */
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
         /** default constructor */
         FrameNode();
 
@@ -109,19 +112,16 @@ namespace envire
         const FrameNode* getParent() const;
 
         /** Returns the frame that is parent of this one, or raises
-         * @throw std::runtime_error if it is a root frame
          */
         FrameNode* getParent();
 
         /** Returns the Transformation that leads from the parent frame to
          * this one
-         * @throw std::runtime_error if it is a root frame
          */
 	TransformType const& getTransform() const;
 
         /** Returns the Transformation that leads from the parent frame to
          * this one
-         * @throw std::runtime_error if it is a root frame
          */
         TransformType& getTransform();
 
@@ -320,9 +320,6 @@ namespace envire
 	 */
 	void detachItem(EnvironmentItem* item);
 
-	/** @defgroup structure_op Operations on the structure
-	 *  @{
-	 */
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
 
@@ -350,7 +347,6 @@ namespace envire
 	std::list<Layer*> getOutputs(Operator* op);
 
 	Operator* getGenerator(Layer* output);
-	/** @} */
 
         /** Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
