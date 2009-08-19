@@ -78,11 +78,17 @@ void Environment::detachItem(EnvironmentItem* item)
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
 {
+    if( !child->isAttached() )
+	attachItem( child );
+
     frameNodeTree.insert(make_pair(child, parent));
 }
 
 void Environment::addChild(Layer* parent, Layer* child)
 {
+    if( !child->isAttached() )
+	attachItem( child );
+
     layerTree.insert(make_pair(child, parent));
 }
 
@@ -145,6 +151,9 @@ std::list<Layer*> Environment::getChildren(Layer* parent)
 
 void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 {
+    if( !node->isAttached() )
+	attachItem( node );
+
     cartesianMapGraph.insert( make_pair( map, node ) );
 }
 
@@ -166,11 +175,17 @@ std::list<CartesianMap*> Environment::getMaps(FrameNode* node)
 
 bool Environment::addInput(Operator* op, Layer* input)
 {
+    if( !input->isAttached() )
+	attachItem( input );
+    
     operatorGraphInput.insert( make_pair(op, input) );
 }
 
 bool Environment::addOutput(Operator* op, Layer* output)
 {
+    if( !output->isAttached() )
+	attachItem( output );
+
     operatorGraphOutput.insert( make_pair(op, output) );
 }
 
