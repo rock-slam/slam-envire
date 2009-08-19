@@ -1,5 +1,5 @@
-#ifndef __ENVMAP_H__
-#define __ENVMAP_H__
+#ifndef __ENVIRE_H__
+#define __ENVIRE_H__
 
 #include <list>
 #include <map>
