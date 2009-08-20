@@ -18,18 +18,21 @@ class DummyOperator : public Operator
 {
 public:
     bool updateAll() {};
+    void serialize(Serialization &) {};
 };
 
 class DummyLayer : public Layer 
 {
 public:
     Layer* clone() {return new DummyLayer(*this);};
+    void serialize(Serialization &) {};
 };
 
 class DummyCartesianMap : public CartesianMap 
 {
 public:
     CartesianMap* clone() {return new DummyCartesianMap(*this);};
+    void serialize(Serialization &) {};
 };
 
 
@@ -110,13 +113,37 @@ BOOST_AUTO_TEST_CASE( environment )
     delete env;
 }
 
+BOOST_AUTO_TEST_CASE( serialization )
+{
+    Serialization so;
 
+    Environment* env = new Environment();
+
+    // create some child framenodes
+    FrameNode *fn1, *fn2, *fn3;
+    fn1 = new FrameNode();
+    fn1->getTransform().translation() += Eigen::Vector3f( 0.0, 0.0, 0.5 );
+    fn2 = new FrameNode();
+    fn2->getTransform().rotate(Eigen::Quaternionf( 0.0, 1.0, 0.0, 0.0 ));
+    fn3 = new FrameNode();
+    
+    // attach explicitely
+    env->attachItem( fn1 );
+    env->addChild( env->getRootNode(), fn1 );
+    env->addChild( fn1, fn2 );
+    env->addChild( fn3, env->getRootNode() );
+
+    // TODO get cmake to somehow add an absolute path here
+    std::string path("build/test");
+    so.serialize(env, path);
+}
+
+#if 0
 BOOST_AUTO_TEST_CASE( functional ) 
 {
-    Environment* env = Environment(); 
+    Environment* env = new Environment(); 
 
     
-
 
 
     // Set up the environment, which holds a pointer to the root FrameNode and
@@ -143,6 +170,7 @@ BOOST_AUTO_TEST_CASE( functional )
 
     op->updateAll();
 }
+#endif
 
 // EOF
 //

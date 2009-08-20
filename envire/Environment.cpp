@@ -39,6 +39,10 @@ Environment* EnvironmentItem::getEnvironment()
     return env;
 }
 
+void EnvironmentItem::serialize(Serialization &so)
+{
+    std::cerr << "not implemented yet";
+}
 
 
 Environment::Environment()

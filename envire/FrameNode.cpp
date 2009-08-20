@@ -13,6 +13,11 @@ FrameNode::FrameNode()
 {
 }
 
+FrameNode::FrameNode(Serialization &so)
+{
+    std::cerr << "serialisation not implemented";
+}
+
 bool FrameNode::isRoot() const
 {
     return !getParent();
@@ -23,15 +28,9 @@ const FrameNode* FrameNode::getParent() const
     return env->getParent(const_cast<FrameNode*>(this));
 }
 
-void FrameNode::serialize(std::ostream& os, std::string& path)
+void FrameNode::serialize(Serialization &so)
 {
     std::cerr << "serialisation not implemented yet";
-}
-
-FrameNode* FrameNode::create(std::istream& is, std::string& path)
-{
-    std::cerr << "unserialisation not implemented yet";
-    return new FrameNode();
 }
 
 FrameNode* FrameNode::getParent()

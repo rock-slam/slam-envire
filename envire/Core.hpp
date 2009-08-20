@@ -16,6 +16,37 @@ namespace envire
     class FrameNode;
     class Operator;
     class Environment;
+    class EnvironmentItem;
+
+    class Serialization
+    {
+	class SerializationImpl *impl;
+
+	/** Factory typedef, which needs to be implemented by all EnvironmentItems
+	 * that are serialized.
+	 */
+	typedef EnvironmentItem* (*Factory)(Serialization &);
+
+	/** Stores the mapping for all classes that can be serialized, and a function
+	 * pointer to the Factory method of that class.
+	 */
+	static std::map<std::string, Factory> classMap;
+
+	static const std::string STRUCTURE_FILE;
+
+    public:
+	Serialization();
+	~Serialization();
+
+	void serialize(Environment* env, std::string &path);
+	Environment* unserialize(std::string &path);
+	
+	void write(std::string& key, std::string& value);
+	void write(std::string& key, long value);
+
+	std::string readString(std::string& key);
+	long readLong(std::string& key);
+    };
 
     /** Base class for alle items that are defined in the envire framework.
      * Mainly handles the unique_id feature and the pointer to the environment
@@ -42,16 +73,6 @@ namespace envire
     protected:
 	friend class Environment;
 
-	/** Factory typedef, which needs to be implemented by all EnvironmentItems
-	 * that are serialized.
-	 */
-	typedef EnvironmentItem* (*Factory)(std::istream &, std::string &);
-
-	/** Stores the mapping for all classes that can be serialized, and a function
-	 * pointer to the Factory method of that class.
-	 */
-	static std::map<std::string, Factory> classMap;
-
 	/** we track the last id given to an item, for assigning new id's.
 	 */
 	static long last_id;
@@ -67,6 +88,7 @@ namespace envire
 
     public:
 	EnvironmentItem();	
+	explicit EnvironmentItem(Serialization &so);	
 
 	/** will attach the newly created object to the given Environment.
 	 */ 
@@ -74,23 +96,7 @@ namespace envire
 
 	virtual ~EnvironmentItem();
 
-	/** virtual function for serialisation of the descriptive members of
-	 * the objects. This will usually mean anything that is not actual bulk
-	 * data. The reason to differentiate is, that bulk data is stored in a
-	 * different manner, using the serializeData function.
-	 *
-	 * @param os[in] output stream in which to write data of the object to be
-	 * serialised
-	 * @param path[in] path to data directory, which can be used by the 
-	 * serialisation method to store bulk data 
-	 */
-	virtual void serialize(std::ostream &os, std::string &path);
-
-	/** counterpart to the serialize function.
-	 * This is a static function, and requires that each class that can be 
-	 * serialized to have a static Factory method, which is added into the classMap.
-	 */
-	static void unserialize(std::istream &is, std::string &path);
+	virtual void serialize(Serialization &so);
 
 	/** @return the environment this object is associated with 
 	 */
@@ -130,13 +136,9 @@ namespace envire
 
         /** default constructor */
         FrameNode();
+        FrameNode(Serialization &so);
 
-	virtual void serialize(std::ostream &os, std::string &path);
-
-	/** will create a FrameNode object from a serialisation 
-	 * data stream.
-	 */
-	static FrameNode* create(std::istream &is, std::string &path);
+	virtual void serialize(Serialization &so);
 
         /** Returns true if this frame is the root frame (i.e. has no parent) */
         bool isRoot() const;
@@ -324,6 +326,8 @@ namespace envire
      */
     class Environment
     {
+	friend class Serialisation;
+
     protected:
 	typedef std::list<EnvironmentItem*> itemListType;
 	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
