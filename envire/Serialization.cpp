@@ -28,15 +28,20 @@ namespace envire
 	yaml_event_t event;
 	yaml_document_t document;
 
-	yaml_node_t* object;
+	int current_node;
 
     public:
 	SerializationImpl(Serialization &so);
 	Environment* readFromFile(const std::string &path);
-	std::string getScalar(yaml_node_t* node);
+
 	yaml_node_t* getNode(int index);
-	yaml_node_t* findNodeInMap( yaml_node_t* map, const std::string &key );
-	yaml_node_t* findNodeInMap( const std::string &key );
+
+	std::string getScalar(int node_index);
+	int findNodeInMap( int map_index, const std::string &key );
+	int findNodeInMap( const std::string &key );
+	bool addNodeToMap( const std::string &key, int value_index );
+	bool addNodeToMap( const std::string &key, const std::string &value );
+	bool addNodeToMap( int map_index, const std::string &key, int value_index );
     };
 }
 
@@ -73,6 +78,7 @@ void Serialization::write(const std::string& key, long value)
 
 void Serialization::write(const std::string& key, const FrameNode::TransformType &value)
 {
+
 }
 
 void Serialization::read(const std::string &key, std::string &value)
@@ -87,7 +93,8 @@ void Serialization::read(const std::string &key, long &value)
 
 void Serialization::read(const std::string& key, FrameNode::TransformType &value)
 {
-    yaml_node_t* node = impl->findNodeInMap( key );
+    int node_index = impl->findNodeInMap( key );
+    yaml_node_t* node = impl->getNode( node_index );
     
     if( node->type != YAML_SEQUENCE_NODE )
 	throw std::runtime_error("can't read TransformType");
@@ -96,7 +103,7 @@ void Serialization::read(const std::string& key, FrameNode::TransformType &value
     for(yaml_node_item_t* item=node->data.sequence.items.start;
 	    item < node->data.sequence.items.top; item++)
     {
-	std::string t(impl->getScalar( impl->getNode( *item ) ) );
+	std::string t(impl->getScalar( *item ) );
 
 	value( i / value.matrix().rows(), i % value.matrix().rows() ) =
 	    boost::lexical_cast<FrameNode::TransformType::Scalar>( t );
@@ -168,7 +175,7 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 	for(yaml_node_pair_t* pair=root->data.mapping.pairs.start;
 		pair < root->data.mapping.pairs.top; pair++)
 	{
-	    std::string key = getScalar( getNode( pair->key ) );
+	    std::string key = getScalar( pair->key );
 	    yaml_node_t* list = yaml_document_get_node(&document, pair->value );
 
 	    if( list->type == YAML_SEQUENCE_NODE )
@@ -177,16 +184,14 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 		for(yaml_node_item_t* item=list->data.sequence.items.start;
 			item < list->data.sequence.items.top; item++)
 		{
-		    yaml_node_t* node = yaml_document_get_node(&document, *item);
-
 		    if( key == "objects" )
 		    {
 			// this is an object node. 
 			// find the classname first
-			std::string className = getScalar( findNodeInMap( node, "class" ) );
+			std::string className = getScalar( findNodeInMap( *item, "class" ) );
 			
 			// store current state in class
-			object = node;
+			current_node = *item;
 
 			Serialization::Factory f = 0;
 			f = Serialization::classMap[className];
@@ -221,27 +226,55 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
     return env;
 }
 
-yaml_node_t* SerializationImpl::findNodeInMap( const std::string &key )
+bool SerializationImpl::addNodeToMap( const std::string &key, int value_index )
 {
-    return findNodeInMap( object, key );
+    addNodeToMap( current_node, key, value_index );
 }
 
-yaml_node_t* SerializationImpl::findNodeInMap( yaml_node_t* map, const std::string &key )
+bool SerializationImpl::addNodeToMap( const std::string &key, const std::string &value )
 {
+    yaml_char_t* buf = new yaml_char_t[value.length()];
+    value.copy(reinterpret_cast<char*>(buf), value.length());
+
+    int index = yaml_document_add_scalar( &document, NULL,
+	    buf, value.length(),
+	    YAML_ANY_SCALAR_STYLE ); 
+    addNodeToMap( current_node, key, index ); 
+}
+
+bool SerializationImpl::addNodeToMap( int map_index, const std::string &key, int value_index )
+{
+    yaml_char_t* buf = new yaml_char_t[key.length()];
+    key.copy(reinterpret_cast<char*>(buf), key.length());
+
+    int key_index = yaml_document_add_scalar( &document, NULL, buf, key.length(), YAML_ANY_SCALAR_STYLE );
+    yaml_document_append_mapping_pair(&document, map_index, key_index, value_index);
+}
+
+int SerializationImpl::findNodeInMap( const std::string &key )
+{
+    return findNodeInMap( current_node, key );
+}
+
+int SerializationImpl::findNodeInMap( int map_index, const std::string &key )
+{
+    yaml_node_t *map = getNode( map_index );
+
     assert( map->type == YAML_MAPPING_NODE );
 
-    yaml_node_t* node = NULL;
+    int node = 0;
 
     for(yaml_node_pair_t* pair=map->data.mapping.pairs.start;
 	    pair < map->data.mapping.pairs.top; pair++)
     {
-	std::string _key = getScalar( getNode( pair->key ) );
+	std::string _key = getScalar( pair->key );
 
 	if( _key == key )
 	{
 	    if( node )
 		std::cerr << "found more than one key " << key << " for the mapping. This is almost certainly bad!" << std::endl;
-	    node = getNode( pair->value );
+
+	    node = pair->value;
 	}
     }
 
@@ -253,8 +286,10 @@ yaml_node_t* SerializationImpl::getNode( int index )
     return yaml_document_get_node(&document, index);
 }
 
-std::string SerializationImpl::getScalar( yaml_node_t* node )
+std::string SerializationImpl::getScalar( int node_index )
 {
+    yaml_node_t* node = yaml_document_get_node(&document, node_index);
+
     if( node && node->type == YAML_SCALAR_NODE )
     {
 	return std::string( reinterpret_cast<const char*>(node->data.scalar.value) );
@@ -262,4 +297,5 @@ std::string SerializationImpl::getScalar( yaml_node_t* node )
 
     return NULL;
 }
+
 
