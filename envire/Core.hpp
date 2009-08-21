@@ -17,36 +17,8 @@ namespace envire
     class Operator;
     class Environment;
     class EnvironmentItem;
+    class Serialization;
 
-    class Serialization
-    {
-	class SerializationImpl *impl;
-
-	/** Factory typedef, which needs to be implemented by all EnvironmentItems
-	 * that are serialized.
-	 */
-	typedef EnvironmentItem* (*Factory)(Serialization &);
-
-	/** Stores the mapping for all classes that can be serialized, and a function
-	 * pointer to the Factory method of that class.
-	 */
-	static std::map<std::string, Factory> classMap;
-
-	static const std::string STRUCTURE_FILE;
-
-    public:
-	Serialization();
-	~Serialization();
-
-	void serialize(Environment* env, std::string &path);
-	Environment* unserialize(std::string &path);
-	
-	void write(std::string& key, std::string& value);
-	void write(std::string& key, long value);
-
-	std::string readString(std::string& key);
-	long readLong(std::string& key);
-    };
 
     /** Base class for alle items that are defined in the envire framework.
      * Mainly handles the unique_id feature and the pointer to the environment
@@ -404,6 +376,38 @@ namespace envire
 	bool saveSceneFile( const std::string& file );
     };
 
+    class Serialization
+    {
+	friend class SerializationImpl;
+	class SerializationImpl *impl;
+
+	/** Factory typedef, which needs to be implemented by all EnvironmentItems
+	 * that are serialized.
+	 */
+	typedef EnvironmentItem* (*Factory)(Serialization &);
+
+	/** Stores the mapping for all classes that can be serialized, and a function
+	 * pointer to the Factory method of that class.
+	 */
+	static std::map<std::string, Factory> classMap;
+
+	static const std::string STRUCTURE_FILE;
+
+    public:
+	Serialization();
+	~Serialization();
+
+	void serialize(Environment* env, const std::string &path);
+	Environment* unserialize(const std::string &path);
+	
+	void write(const std::string &key, const std::string &value);
+	void write(const std::string &key, long value);
+	void write(const std::string &key, const FrameNode::TransformType &value);
+
+	void read(const std::string &key, std::string &value);
+	void read(const std::string &key, long &value);
+	void read(const std::string &key, FrameNode::TransformType &value);
+    };
 }
 
 #endif

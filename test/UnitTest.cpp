@@ -117,6 +117,15 @@ BOOST_AUTO_TEST_CASE( serialization )
 {
     Serialization so;
 
+    Environment* env = 
+	so.unserialize( "test" );
+}
+
+#if 0
+BOOST_AUTO_TEST_CASE( serialization )
+{
+    Serialization so;
+
     Environment* env = new Environment();
 
     // create some child framenodes
@@ -138,7 +147,6 @@ BOOST_AUTO_TEST_CASE( serialization )
     so.serialize(env, path);
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( functional ) 
 {
     Environment* env = new Environment(); 

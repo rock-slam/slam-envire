@@ -14,8 +14,9 @@ FrameNode::FrameNode()
 }
 
 FrameNode::FrameNode(Serialization &so)
+    : EnvironmentItem( so )
 {
-    std::cerr << "serialisation not implemented";
+    so.read("transform", frame);
 }
 
 bool FrameNode::isRoot() const

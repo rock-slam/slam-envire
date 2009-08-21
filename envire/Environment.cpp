@@ -39,6 +39,11 @@ Environment* EnvironmentItem::getEnvironment()
     return env;
 }
 
+EnvironmentItem::EnvironmentItem(Serialization &so)
+{
+    so.read( "id", unique_id );
+}
+
 void EnvironmentItem::serialize(Serialization &so)
 {
     std::cerr << "not implemented yet";
