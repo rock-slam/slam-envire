@@ -20,7 +20,7 @@ set(ENVMAP_SRCS
     envire/FrameNode.cpp
     envire/Layer.cpp
     envire/Operator.cpp
-    envire/Serialisation.cpp
+    envire/Serialization.cpp
     # envire/ScanMeshing.cpp
     # envire/TriMesh.cpp
     # envire/LaserScan.cpp
