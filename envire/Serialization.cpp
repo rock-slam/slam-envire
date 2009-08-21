@@ -87,7 +87,24 @@ void Serialization::read(const std::string &key, long &value)
 
 void Serialization::read(const std::string& key, FrameNode::TransformType &value)
 {
-    std::cerr << "read transform not yet implemented." << std::endl;
+    yaml_node_t* node = impl->findNodeInMap( key );
+    
+    if( node->type != YAML_SEQUENCE_NODE )
+	throw std::runtime_error("can't read TransformType");
+
+    int i=0;
+    for(yaml_node_item_t* item=node->data.sequence.items.start;
+	    item < node->data.sequence.items.top; item++)
+    {
+	std::string t(impl->getScalar( impl->getNode( *item ) ) );
+
+	value( i / value.matrix().rows(), i % value.matrix().rows() ) =
+	    boost::lexical_cast<FrameNode::TransformType::Scalar>( t );
+	i++;
+    }
+   
+    if( i != value.matrix().rows() * value.matrix().cols() )
+       throw std::runtime_error("matrix dimension incompatible");	
 }
 
 void Serialization::serialize(Environment *env, const std::string &path_str) 
