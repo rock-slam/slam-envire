@@ -10,6 +10,7 @@
 using namespace envire;
 
 FrameNode::FrameNode()
+    : frame( Eigen::Matrix4f::Identity() )
 {
 }
 
