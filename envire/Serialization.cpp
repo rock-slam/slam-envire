@@ -218,7 +218,7 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
     yaml_emitter_set_output_file(&emitter, output);
 
     // build up document
-    if( !yaml_document_initialize(&document, NULL, NULL, NULL, 0, 0) )
+    if( !yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1) )
 	throw std::runtime_error("could not generate yaml document");
     
     // same as with readFile, creating a dom structure for new is easier.
