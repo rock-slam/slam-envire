@@ -76,7 +76,7 @@ void Environment::attachItem(EnvironmentItem* item)
 	return;
 
     // add item to internal list
-    items.insert(make_pair(item->getUniqueId(), item));
+    items[item->getUniqueId()] = item;
 
     // set a pointer to environment object
     item->env = this;
