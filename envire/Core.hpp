@@ -332,8 +332,8 @@ namespace envire
 	 */
 	void detachItem(EnvironmentItem* item);
 	
-	template<class T> T* getItem(int uniqueId) 
-	    { return reinterpret_cast<T*>(items[uniqueId]); };
+	template<class T> T getItem(int uniqueId) 
+	    { return reinterpret_cast<T>(items[uniqueId]); };
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
