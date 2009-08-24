@@ -254,8 +254,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("frameNodeTree") );
-	addNodeToMap( "parent", (*it).first->getUniqueId() );
-	addNodeToMap( "child", (*it).second->getUniqueId() );
+	addNodeToMap( "parent", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "child", addScalar((*it).second->getUniqueId()) );
     }
 
     for( Environment::layerTreeType::iterator it = env->layerTree.begin();
@@ -265,8 +265,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("layerTree") );
-	addNodeToMap( "parent", (*it).first->getUniqueId() );
-	addNodeToMap( "child", (*it).second->getUniqueId() );
+	addNodeToMap( "parent", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "child", addScalar((*it).second->getUniqueId()) );
     }
 
     for( Environment::operatorGraphType::iterator it = env->operatorGraphInput.begin();
@@ -276,8 +276,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("operatorGraphInput") );
-	addNodeToMap( "operator", (*it).first->getUniqueId() );
-	addNodeToMap( "layer", (*it).second->getUniqueId() );
+	addNodeToMap( "operator", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "layer", addScalar((*it).second->getUniqueId()) );
     }
 
     for( Environment::operatorGraphType::iterator it = env->operatorGraphOutput.begin();
@@ -287,8 +287,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("operatorGraphOutput") );
-	addNodeToMap( "operator", (*it).first->getUniqueId() );
-	addNodeToMap( "layer", (*it).second->getUniqueId() );
+	addNodeToMap( "operator", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "layer", addScalar((*it).second->getUniqueId()) );
     }
 
     for( Environment::cartesianMapGraphType::iterator it = env->cartesianMapGraph.begin();
@@ -298,8 +298,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("cartesianMapGraph") );
-	addNodeToMap( "map", (*it).first->getUniqueId() );
-	addNodeToMap( "node", (*it).second->getUniqueId() );
+	addNodeToMap( "map", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "node", addScalar((*it).second->getUniqueId()) );
     }
 
     int result = yaml_emitter_dump( &emitter, &document );
