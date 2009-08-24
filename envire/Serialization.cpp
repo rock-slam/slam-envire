@@ -25,24 +25,52 @@ namespace envire
 	Serialization& so;
 
 	yaml_parser_t parser;
+	yaml_emitter_t emitter;
 	yaml_event_t event;
 	yaml_document_t document;
 
 	int current_node;
+	std::string className;
+	bool serialize;
 
     public:
 	SerializationImpl(Serialization &so);
 	Environment* readFromFile(const std::string &path);
+	bool writeToFile( Environment* env, const std::string &path );
 
 	yaml_node_t* getNode(int index);
 
 	std::string getScalar(int node_index);
 	int findNodeInMap( int map_index, const std::string &key );
 	int findNodeInMap( const std::string &key );
+
+	void setClassName( const std::string &key );
 	bool addNodeToMap( const std::string &key, int value_index );
-	bool addNodeToMap( const std::string &key, const std::string &value );
 	bool addNodeToMap( int map_index, const std::string &key, int value_index );
+
+	template<class T> int addScalar(const T &value, yaml_scalar_style_t style = YAML_SINGLE_QUOTED_SCALAR_STYLE);
+	int addSequenceNode(yaml_sequence_style_t style = YAML_ANY_SEQUENCE_STYLE);
+	int addMapNode(yaml_mapping_style_t style = YAML_ANY_MAPPING_STYLE);
+	int addToSequence(int seq_id, int node_id);
     };
+
+    template<>
+	int SerializationImpl::addScalar( const std::string &value, yaml_scalar_style_t style )
+	{
+	    yaml_char_t* buf = new yaml_char_t[value.length()];
+	    value.copy(reinterpret_cast<char*>(buf), value.length());
+
+	    int key_index = yaml_document_add_scalar( &document, NULL, buf, value.length(), style );
+
+	    return key_index;
+	}
+
+    template<class T>
+	int SerializationImpl::addScalar( const T &v, yaml_scalar_style_t style )
+	{
+	    std::string value = boost::lexical_cast<std::string>(v);
+	    return addScalar( value, YAML_PLAIN_SCALAR_STYLE );
+	}
 }
 
 
@@ -68,17 +96,34 @@ Serialization::~Serialization()
     delete impl;
 }
 
+void Serialization::setClassName(const std::string &key)
+{
+    impl->setClassName(key);
+}
+
 void Serialization::write(const std::string& key, const std::string& value)
 {
+    impl->addNodeToMap( key, impl->addScalar(value) );
 }
 
 void Serialization::write(const std::string& key, long value)
 {
+    impl->addNodeToMap( key, impl->addScalar(value) );
 }
 
 void Serialization::write(const std::string& key, const FrameNode::TransformType &value)
 {
+    // create a sequence node with all the elements
+    int seq_id = impl->addSequenceNode( YAML_FLOW_SEQUENCE_STYLE );
+    impl->addNodeToMap( key, seq_id );
 
+    for(int i=0;i<value.matrix().rows();i++)
+    {
+	for(int j=0;j<value.matrix().cols();j++)
+	{
+	    impl->addToSequence( seq_id, impl->addScalar( value.matrix()(i,j) ) );
+	}
+    }
 }
 
 void Serialization::read(const std::string &key, std::string &value)
@@ -116,7 +161,16 @@ void Serialization::read(const std::string& key, FrameNode::TransformType &value
 
 void Serialization::serialize(Environment *env, const std::string &path_str) 
 {
-        
+    fs::path path( path_str ); 
+    fs::path scene( path / STRUCTURE_FILE );
+
+    if( !fs::is_directory( path ) )
+    {
+	std::cerr << "is not a directory " << path_str << std::endl;
+	throw std::runtime_error("Path is not a directory");
+    }
+
+    impl->writeToFile( env, scene.string() );
 }
 
 Environment* Serialization::unserialize(const std::string &path_str) 
@@ -135,12 +189,71 @@ Environment* Serialization::unserialize(const std::string &path_str)
 
 
 SerializationImpl::SerializationImpl(Serialization &_so)
-    : so( _so ) 
+    : so( _so )
 {
+}
+
+void SerializationImpl::setClassName(const std::string &key)
+{
+    // for now only store the top level class name in the hierarchy
+    // also note, this call can arrive from serialisation and deserialisation
+    if( serialize && className.empty() )
+    {
+	className = key;
+	addNodeToMap( "class", addScalar(key) );
+    }
+}
+
+bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
+{
+    serialize = true;
+
+    yaml_emitter_initialize(&emitter);
+    FILE *output = fopen(path.c_str(), "wb");
+    if( !output )
+	throw runtime_error("could not open file for writing");
+
+    yaml_emitter_set_output_file(&emitter, output);
+
+    // build up document
+    if( !yaml_document_initialize(&document, NULL, NULL, NULL, 0, 0) )
+	throw std::runtime_error("could not generate yaml document");
+    
+    // same as with readFile, creating a dom structure for new is easier.
+    int obj_id, link_id, root_id;
+    root_id = yaml_document_add_mapping(
+	    &document, NULL, YAML_ANY_MAPPING_STYLE);
+
+    obj_id = yaml_document_add_sequence(
+	    &document, NULL, YAML_ANY_SEQUENCE_STYLE);
+
+    link_id = yaml_document_add_sequence(
+	    &document, NULL, YAML_ANY_SEQUENCE_STYLE);
+
+    addNodeToMap( root_id, "objects", obj_id );
+    addNodeToMap( root_id, "links", link_id );
+
+    // dump all objects now
+    for( Environment::itemListType::iterator it = env->items.begin();
+	    it != env->items.end(); )
+    {
+	current_node = addMapNode();
+	addToSequence( obj_id, current_node );
+
+	className.clear();
+	(*it++)->serialize( so );
+    }
+
+    // and all the links
+
+    int result = yaml_emitter_dump( &emitter, &document );
+    return result;
 }
 
 Environment* SerializationImpl::readFromFile( const std::string& path )
 {
+    serialize = false;
+
     Environment* env;
 
     FILE *input = fopen(path.c_str(), "rb");
@@ -231,24 +344,25 @@ bool SerializationImpl::addNodeToMap( const std::string &key, int value_index )
     addNodeToMap( current_node, key, value_index );
 }
 
-bool SerializationImpl::addNodeToMap( const std::string &key, const std::string &value )
-{
-    yaml_char_t* buf = new yaml_char_t[value.length()];
-    value.copy(reinterpret_cast<char*>(buf), value.length());
-
-    int index = yaml_document_add_scalar( &document, NULL,
-	    buf, value.length(),
-	    YAML_ANY_SCALAR_STYLE ); 
-    addNodeToMap( current_node, key, index ); 
-}
-
 bool SerializationImpl::addNodeToMap( int map_index, const std::string &key, int value_index )
 {
-    yaml_char_t* buf = new yaml_char_t[key.length()];
-    key.copy(reinterpret_cast<char*>(buf), key.length());
-
-    int key_index = yaml_document_add_scalar( &document, NULL, buf, key.length(), YAML_ANY_SCALAR_STYLE );
+    int key_index = addScalar( key, YAML_PLAIN_SCALAR_STYLE );
     yaml_document_append_mapping_pair(&document, map_index, key_index, value_index);
+}
+
+int SerializationImpl::addSequenceNode(yaml_sequence_style_t style)
+{
+    return yaml_document_add_sequence(&document, NULL, style);
+}
+
+int SerializationImpl::addMapNode(yaml_mapping_style_t style)
+{
+    return yaml_document_add_mapping(&document, NULL, style);
+}
+
+int SerializationImpl::addToSequence(int seq_id, int node_id)
+{
+    yaml_document_append_sequence_item( &document, seq_id, node_id );
 }
 
 int SerializationImpl::findNodeInMap( const std::string &key )
@@ -295,7 +409,7 @@ std::string SerializationImpl::getScalar( int node_index )
 	return std::string( reinterpret_cast<const char*>(node->data.scalar.value) );
     }
 
-    return NULL;
+    throw std::runtime_error("not a scalar node");
 }
 
 

@@ -298,7 +298,8 @@ namespace envire
      */
     class Environment
     {
-	friend class Serialisation;
+	friend class Serialization;
+	friend class SerializationImpl;
 
     protected:
 	typedef std::list<EnvironmentItem*> itemListType;
@@ -400,6 +401,8 @@ namespace envire
 	void serialize(Environment* env, const std::string &path);
 	Environment* unserialize(const std::string &path);
 	
+	void setClassName(const std::string &key);
+
 	void write(const std::string &key, const std::string &value);
 	void write(const std::string &key, long value);
 	void write(const std::string &key, const FrameNode::TransformType &value);

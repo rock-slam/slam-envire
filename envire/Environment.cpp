@@ -41,12 +41,14 @@ Environment* EnvironmentItem::getEnvironment()
 
 EnvironmentItem::EnvironmentItem(Serialization &so)
 {
+    so.setClassName("envire::EnvironmentItem");
     so.read( "id", unique_id );
 }
 
 void EnvironmentItem::serialize(Serialization &so)
 {
-    std::cerr << "not implemented yet";
+    so.setClassName("envire::EnvironmentItem");
+    so.write( "id", unique_id );
 }
 
 

@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE( environment )
     delete env;
 }
 
-BOOST_AUTO_TEST_CASE( serialization )
+BOOST_AUTO_TEST_CASE( unserialization )
 {
     Serialization so;
 
@@ -121,7 +121,6 @@ BOOST_AUTO_TEST_CASE( serialization )
 	so.unserialize( "test" );
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( serialization )
 {
     Serialization so;
@@ -147,6 +146,7 @@ BOOST_AUTO_TEST_CASE( serialization )
     so.serialize(env, path);
 }
 
+#if 0
 BOOST_AUTO_TEST_CASE( functional ) 
 {
     Environment* env = new Environment(); 

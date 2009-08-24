@@ -17,7 +17,16 @@ FrameNode::FrameNode()
 FrameNode::FrameNode(Serialization &so)
     : EnvironmentItem( so )
 {
+    so.setClassName("envire::FrameNode");
     so.read("transform", frame);
+}
+
+void FrameNode::serialize(Serialization &so)
+{
+    so.setClassName("envire::FrameNode");
+    so.write("transform", frame);
+
+    EnvironmentItem::serialize( so );
 }
 
 bool FrameNode::isRoot() const
@@ -28,11 +37,6 @@ bool FrameNode::isRoot() const
 const FrameNode* FrameNode::getParent() const
 {
     return env->getParent(const_cast<FrameNode*>(this));
-}
-
-void FrameNode::serialize(Serialization &so)
-{
-    std::cerr << "serialisation not implemented yet";
 }
 
 FrameNode* FrameNode::getParent()
