@@ -235,16 +235,70 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 
     // dump all objects now
     for( Environment::itemListType::iterator it = env->items.begin();
-	    it != env->items.end(); )
+	    it != env->items.end();it++ )
     {
 	current_node = addMapNode();
 	addToSequence( obj_id, current_node );
 
 	className.clear();
-	(*it++)->serialize( so );
+	(*it).second->serialize( so );
     }
 
     // and all the links
+    for( Environment::frameNodeTreeType::iterator it = env->frameNodeTree.begin();
+	    it != env->frameNodeTree.end(); it++ )
+    {
+	current_node = addMapNode();
+	addToSequence( link_id, current_node );
+	
+	addNodeToMap( "type", addScalar("frameNodeTree") );
+	addNodeToMap( "parent", (*it).first->getUniqueId() );
+	addNodeToMap( "child", (*it).second->getUniqueId() );
+    }
+
+    for( Environment::layerTreeType::iterator it = env->layerTree.begin();
+	    it != env->layerTree.end(); it++ )
+    {
+	current_node = addMapNode();
+	addToSequence( link_id, current_node );
+	
+	addNodeToMap( "type", addScalar("layerTree") );
+	addNodeToMap( "parent", (*it).first->getUniqueId() );
+	addNodeToMap( "child", (*it).second->getUniqueId() );
+    }
+
+    for( Environment::operatorGraphType::iterator it = env->operatorGraphInput.begin();
+	    it != env->operatorGraphInput.end(); it++ )
+    {
+	current_node = addMapNode();
+	addToSequence( link_id, current_node );
+	
+	addNodeToMap( "type", addScalar("operatorGraphInput") );
+	addNodeToMap( "operator", (*it).first->getUniqueId() );
+	addNodeToMap( "layer", (*it).second->getUniqueId() );
+    }
+
+    for( Environment::operatorGraphType::iterator it = env->operatorGraphOutput.begin();
+	    it != env->operatorGraphOutput.end(); it++ )
+    {
+	current_node = addMapNode();
+	addToSequence( link_id, current_node );
+	
+	addNodeToMap( "type", addScalar("operatorGraphOutput") );
+	addNodeToMap( "operator", (*it).first->getUniqueId() );
+	addNodeToMap( "layer", (*it).second->getUniqueId() );
+    }
+
+    for( Environment::cartesianMapGraphType::iterator it = env->cartesianMapGraph.begin();
+	    it != env->cartesianMapGraph.end(); it++ )
+    {
+	current_node = addMapNode();
+	addToSequence( link_id, current_node );
+	
+	addNodeToMap( "type", addScalar("cartesianMapGraph") );
+	addNodeToMap( "map", (*it).first->getUniqueId() );
+	addNodeToMap( "node", (*it).second->getUniqueId() );
+    }
 
     int result = yaml_emitter_dump( &emitter, &document );
     return result;

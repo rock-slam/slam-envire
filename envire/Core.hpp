@@ -302,7 +302,7 @@ namespace envire
 	friend class SerializationImpl;
 
     protected:
-	typedef std::list<EnvironmentItem*> itemListType;
+	typedef std::map<long, EnvironmentItem*> itemListType;
 	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
 	typedef std::map<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
@@ -331,6 +331,9 @@ namespace envire
 	 * removed.
 	 */
 	void detachItem(EnvironmentItem* item);
+	
+	template<class T> T* getItem(int uniqueId) 
+	    { return reinterpret_cast<T*>(items[uniqueId]); };
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
@@ -411,6 +414,7 @@ namespace envire
 	void read(const std::string &key, long &value);
 	void read(const std::string &key, FrameNode::TransformType &value);
     };
+
 }
 
 #endif

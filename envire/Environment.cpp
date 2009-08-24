@@ -65,18 +65,18 @@ Environment::~Environment()
     // perform a delete on all the owned objects
     for(itemListType::iterator it=items.begin();it!=items.end();++it)
     {
-	delete *it;
+	delete (*it).second;
     }
 }
 
 void Environment::attachItem(EnvironmentItem* item)
 {
     // first make sure item not already present
-    if( find( items.begin(), items.end(), item ) != items.end() )
+    if( items[item->getUniqueId()] )
 	return;
 
     // add item to internal list
-    items.push_back(item);
+    items.insert(make_pair(item->getUniqueId(), item));
 
     // set a pointer to environment object
     item->env = this;
@@ -84,7 +84,7 @@ void Environment::attachItem(EnvironmentItem* item)
 
 void Environment::detachItem(EnvironmentItem* item)
 {
-    items.remove(item);
+    items.erase( item->getUniqueId() );
 }
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
