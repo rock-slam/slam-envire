@@ -113,14 +113,6 @@ BOOST_AUTO_TEST_CASE( environment )
     delete env;
 }
 
-BOOST_AUTO_TEST_CASE( unserialization )
-{
-    Serialization so;
-
-    Environment* env = 
-	so.unserialize( "test" );
-}
-
 BOOST_AUTO_TEST_CASE( serialization )
 {
     Serialization so;
@@ -144,6 +136,10 @@ BOOST_AUTO_TEST_CASE( serialization )
     // TODO get cmake to somehow add an absolute path here
     std::string path("build/test");
     so.serialize(env, path);
+
+    // now try to parse the thing again
+    Environment* env2 = 
+	so.unserialize( "build/test" );
 }
 
 #if 0
