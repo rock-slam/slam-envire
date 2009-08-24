@@ -41,6 +41,8 @@ namespace envire
 	yaml_node_t* getNode(int index);
 
 	std::string getScalar(int node_index);
+	template<class T> T getScalarInMap(const std::string &key)
+	    { return boost::lexical_cast<T>( getScalar( findNodeInMap(key) ) ); };
 	int findNodeInMap( int map_index, const std::string &key );
 	int findNodeInMap( const std::string &key );
 
@@ -374,6 +376,40 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 		    }
 		    else if( key == "links" )
 		    {
+			if( getScalarInMap<std::string>("type") == "frameNodeTree" )
+			{
+			    env->frameNodeTree.insert( make_pair( 
+					env->getItem<FrameNode*>( getScalarInMap<long>("parent") ), 
+					env->getItem<FrameNode*>( getScalarInMap<long>("child") ) ) );
+			}
+
+			if( getScalarInMap<std::string>("type") == "layerTree" )
+			{
+			    env->layerTree.insert( make_pair( 
+					env->getItem<Layer*>( getScalarInMap<long>("parent") ), 
+					env->getItem<Layer*>( getScalarInMap<long>("child") ) ) );
+			}
+
+			if( getScalarInMap<std::string>("type") == "operatorGraphInput" )
+			{
+			    env->operatorGraphInput.insert( make_pair( 
+					env->getItem<Operator*>( getScalarInMap<long>("operator") ), 
+					env->getItem<Layer*>( getScalarInMap<long>("layer") ) ) );
+			}
+
+			if( getScalarInMap<std::string>("type") == "operatorGraphOutput" )
+			{
+			    env->operatorGraphOutput.insert( make_pair( 
+					env->getItem<Operator*>( getScalarInMap<long>("operator") ), 
+					env->getItem<Layer*>( getScalarInMap<long>("layer") ) ) );
+			}
+
+			if( getScalarInMap<std::string>("type") == "cartesianMapGraph" )
+			{
+			    env->cartesianMapGraph.insert( make_pair( 
+					env->getItem<CartesianMap*>( getScalarInMap<long>("map") ), 
+					env->getItem<FrameNode*>( getScalarInMap<long>("node") ) ) );
+			}
 		    }
 		}
 	    }
