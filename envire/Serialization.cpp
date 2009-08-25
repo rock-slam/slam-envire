@@ -219,7 +219,10 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 
     // build up document
     if( !yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1) )
+    {
+	fclose( output );
 	throw std::runtime_error("could not generate yaml document");
+    }
     
     // same as with readFile, creating a dom structure for new is easier.
     int obj_id, link_id, root_id;
@@ -303,6 +306,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
     }
 
     int result = yaml_emitter_dump( &emitter, &document );
+
+    fclose( output );
     return result;
 }
 
@@ -376,6 +381,8 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 		    }
 		    else if( key == "links" )
 		    {
+			current_node = *item;
+
 			if( getScalarInMap<std::string>("type") == "frameNodeTree" )
 			{
 			    env->frameNodeTree.insert( make_pair( 
