@@ -257,8 +257,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("frameNodeTree") );
-	addNodeToMap( "parent", addScalar((*it).first->getUniqueId()) );
-	addNodeToMap( "child", addScalar((*it).second->getUniqueId()) );
+	addNodeToMap( "child", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "parent", addScalar((*it).second->getUniqueId()) );
     }
 
     for( Environment::layerTreeType::iterator it = env->layerTree.begin();
@@ -268,8 +268,8 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addToSequence( link_id, current_node );
 	
 	addNodeToMap( "type", addScalar("layerTree") );
-	addNodeToMap( "parent", addScalar((*it).first->getUniqueId()) );
-	addNodeToMap( "child", addScalar((*it).second->getUniqueId()) );
+	addNodeToMap( "child", addScalar((*it).first->getUniqueId()) );
+	addNodeToMap( "parent", addScalar((*it).second->getUniqueId()) );
     }
 
     for( Environment::operatorGraphType::iterator it = env->operatorGraphInput.begin();
@@ -386,15 +386,15 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			if( getScalarInMap<std::string>("type") == "frameNodeTree" )
 			{
 			    env->frameNodeTree.insert( make_pair( 
-					env->getItem<FrameNode*>( getScalarInMap<long>("parent") ), 
-					env->getItem<FrameNode*>( getScalarInMap<long>("child") ) ) );
+					env->getItem<FrameNode*>( getScalarInMap<long>("child") ), 
+					env->getItem<FrameNode*>( getScalarInMap<long>("parent") ) ) );
 			}
 
 			if( getScalarInMap<std::string>("type") == "layerTree" )
 			{
 			    env->layerTree.insert( make_pair( 
-					env->getItem<Layer*>( getScalarInMap<long>("parent") ), 
-					env->getItem<Layer*>( getScalarInMap<long>("child") ) ) );
+					env->getItem<Layer*>( getScalarInMap<long>("child") ), 
+					env->getItem<Layer*>( getScalarInMap<long>("parent") ) ) );
 			}
 
 			if( getScalarInMap<std::string>("type") == "operatorGraphInput" )
