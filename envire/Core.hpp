@@ -45,10 +45,6 @@ namespace envire
     protected:
 	friend class Environment;
 
-	/** we track the last id given to an item, for assigning new id's.
-	 */
-	static long last_id;
-
 	/** each environment item must have a unique id.
 	 */
 	long unique_id;
@@ -300,6 +296,12 @@ namespace envire
     {
 	friend class Serialization;
 	friend class SerializationImpl;
+
+	/** we track the last id given to an item, for assigning new id's.
+	 */
+	long last_id;
+    public:
+	static const long ITEM_NOT_ATTACHED = -1;
 
     protected:
 	typedef std::map<long, EnvironmentItem*> itemListType;

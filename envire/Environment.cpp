@@ -7,15 +7,14 @@
 using namespace std;
 using namespace envire;
 
-long EnvironmentItem::last_id = 0;
 
 EnvironmentItem::EnvironmentItem()
-    : env(NULL), unique_id(last_id++)
+    : env(NULL), unique_id( Environment::ITEM_NOT_ATTACHED )
 {
 }
 
 EnvironmentItem::EnvironmentItem(Environment* envPtr)
-    :  unique_id(last_id++)
+   : unique_id( Environment::ITEM_NOT_ATTACHED ) 
 {
     envPtr->attachItem( this );
 }
@@ -52,7 +51,8 @@ void EnvironmentItem::serialize(Serialization &so)
 }
 
 
-Environment::Environment()
+Environment::Environment() :
+    last_id(0)
 {
     // each environment has a root node
     rootNode = new FrameNode();
@@ -71,9 +71,12 @@ Environment::~Environment()
 
 void Environment::attachItem(EnvironmentItem* item)
 {
-    // first make sure item not already present
+    if( item->getUniqueId() == ITEM_NOT_ATTACHED )
+	item->unique_id = last_id++;
+
+    // make sure item not already present
     if( items[item->getUniqueId()] )
-	return;
+	throw runtime_error("unique_id of item already in environment");
 
     // add item to internal list
     items[item->getUniqueId()] = item;
@@ -85,6 +88,7 @@ void Environment::attachItem(EnvironmentItem* item)
 void Environment::detachItem(EnvironmentItem* item)
 {
     items.erase( item->getUniqueId() );
+    item->unique_id = ITEM_NOT_ATTACHED;
 }
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
