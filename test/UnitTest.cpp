@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( environment )
     BOOST_CHECK( fn2->isAttached() );
     
     // setup the rest of the framenodes
-    env->addChild( fn3, env->getRootNode() );
+    env->addChild( env->getRootNode(), fn3 );
 
     // now do the same for layers
     Layer *l1, *l2, *l3;
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE( serialization )
     env->attachItem( fn1 );
     env->addChild( env->getRootNode(), fn1 );
     env->addChild( fn1, fn2 );
-    env->addChild( fn3, env->getRootNode() );
+    env->addChild( env->getRootNode(), fn3 );
 
     // TODO get cmake to somehow add an absolute path here
     std::string path("build/test");
