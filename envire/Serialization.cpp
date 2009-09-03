@@ -371,7 +371,9 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			f = Serialization::classMap[className];
 			if( f )
 			{
-			    (*f)(so);
+			    // create item and attach to environment
+			    EnvironmentItem* envItem = (*f)(so);
+			    env->attachItem( envItem );
 			}	    
 			else 
 			{
