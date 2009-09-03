@@ -140,6 +140,9 @@ BOOST_AUTO_TEST_CASE( serialization )
     // now try to parse the thing again
     Environment* env2 = 
 	so.unserialize( "build/test" );
+
+    delete env;
+    delete env2;
 }
 
 #if 0

@@ -33,6 +33,8 @@ namespace envire
 	std::string className;
 	bool serialize;
 
+	vector<yaml_char_t*> buffers;
+
     public:
 	SerializationImpl(Serialization &so);
 	Environment* readFromFile(const std::string &path);
@@ -59,10 +61,13 @@ namespace envire
     template<>
 	int SerializationImpl::addScalar( const std::string &value, yaml_scalar_style_t style )
 	{
-	    yaml_char_t* buf = new yaml_char_t[value.length()];
-	    value.copy(reinterpret_cast<char*>(buf), value.length());
+	    size_t len = value.length();
 
-	    int key_index = yaml_document_add_scalar( &document, NULL, buf, value.length(), style );
+	    yaml_char_t* buf = new yaml_char_t[len];
+	    value.copy(reinterpret_cast<char*>(buf), len);
+	    buffers.push_back( buf );
+
+	    int key_index = yaml_document_add_scalar( &document, NULL, buf, len, style );
 
 	    return key_index;
 	}
@@ -220,6 +225,7 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
     // build up document
     if( !yaml_document_initialize(&document, NULL, NULL, NULL, 1, 1) )
     {
+	yaml_emitter_delete(&emitter);
 	fclose( output );
 	throw std::runtime_error("could not generate yaml document");
     }
@@ -305,7 +311,21 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	addNodeToMap( "node", addScalar((*it).second->getUniqueId()) );
     }
 
+    // the emitter will destroy the document objects for us.
+    // what it will not do however, is destroy the buffers for the scalar values.
+    // (damn... maybe using an object was not the smartest choice. Events would
+    // have done just as fine... next time)
+    // So what we have to do is extract a list of all the scalars here and free them
+    // afterwards
+
     int result = yaml_emitter_dump( &emitter, &document );
+
+    for(vector<yaml_char_t*>::iterator it=buffers.begin();it<buffers.end();it++)
+    {
+	delete[] *it;
+    }
+
+    yaml_emitter_delete(&emitter);
 
     fclose( output );
     return result;
@@ -344,6 +364,10 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
     {
 	// create a new environment
 	env = new Environment();
+	// and remove the root node
+	EnvironmentItem* rootNode = env->getRootNode();
+	env->detachItem( rootNode );
+	delete rootNode;
 
 	// browse root mapping for object or links	
 	for(yaml_node_pair_t* pair=root->data.mapping.pairs.start;
