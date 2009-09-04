@@ -7,6 +7,7 @@
 using namespace std;
 using namespace envire;
 
+const std::string EnvironmentItem::className = "envire::EnvironmentItem";
 
 EnvironmentItem::EnvironmentItem()
     : env(NULL), unique_id( Environment::ITEM_NOT_ATTACHED )
@@ -40,13 +41,13 @@ Environment* EnvironmentItem::getEnvironment()
 
 EnvironmentItem::EnvironmentItem(Serialization &so)
 {
-    so.setClassName("envire::EnvironmentItem");
+    so.setClassName(className);
     so.read( "id", unique_id );
 }
 
 void EnvironmentItem::serialize(Serialization &so)
 {
-    so.setClassName("envire::EnvironmentItem");
+    so.setClassName(className);
     so.write( "id", unique_id );
 }
 

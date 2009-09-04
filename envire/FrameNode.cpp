@@ -9,6 +9,8 @@
 
 using namespace envire;
 
+const std::string FrameNode::className = "envire::FrameNode";
+
 FrameNode::FrameNode()
     : frame( Eigen::Matrix4f::Identity() )
 {
@@ -17,16 +19,16 @@ FrameNode::FrameNode()
 FrameNode::FrameNode(Serialization &so)
     : EnvironmentItem( so )
 {
-    so.setClassName("envire::FrameNode");
+    so.setClassName(className);
     so.read("transform", frame);
 }
 
 void FrameNode::serialize(Serialization &so)
 {
-    so.setClassName("envire::FrameNode");
-    so.write("transform", frame);
-
     EnvironmentItem::serialize( so );
+
+    so.setClassName(className);
+    so.write("transform", frame);
 }
 
 bool FrameNode::isRoot() const

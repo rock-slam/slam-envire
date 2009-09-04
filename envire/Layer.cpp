@@ -6,6 +6,8 @@
 
 using namespace envire;
 
+const std::string Layer::className = "envire::Layer";
+
 Layer::Layer() :
     immutable(false)
 {
@@ -82,6 +84,7 @@ void Layer::updateFromOperator()
         getGenerator()->updateAll();
 }
 
+const std::string CartesianMap::className = "envire::CartesianMap";
 
 CartesianMap::CartesianMap() 
 {

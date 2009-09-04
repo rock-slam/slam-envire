@@ -202,13 +202,7 @@ SerializationImpl::SerializationImpl(Serialization &_so)
 
 void SerializationImpl::setClassName(const std::string &key)
 {
-    // for now only store the top level class name in the hierarchy
-    // also note, this call can arrive from serialisation and deserialisation
-    if( serialize && className.empty() )
-    {
-	className = key;
-	addNodeToMap( "class", addScalar(key) );
-    }
+    className = key;
 }
 
 bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
@@ -251,7 +245,7 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
 	current_node = addMapNode();
 	addToSequence( obj_id, current_node );
 
-	className.clear();
+	addNodeToMap( "class", addScalar((*it).second->getClassName()) );
 	(*it).second->serialize( so );
     }
 

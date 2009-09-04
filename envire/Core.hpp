@@ -54,6 +54,9 @@ namespace envire
 	 */
 	Environment* env;
 
+    private:
+	static const std::string className;
+
     public:
 	EnvironmentItem();	
 	explicit EnvironmentItem(Serialization &so);	
@@ -65,6 +68,8 @@ namespace envire
 	virtual ~EnvironmentItem();
 
 	virtual void serialize(Serialization &so);
+
+	virtual const std::string& getClassName() const {return className;};
 
 	/** @return the environment this object is associated with 
 	 */
@@ -98,6 +103,9 @@ namespace envire
         */
 	TransformType frame;
 
+    private:
+	static const std::string className;
+
     public:
 	/** class needs to be 16byte aligned for Eigen vectorisation */
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -107,6 +115,7 @@ namespace envire
         FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
+	virtual const std::string& getClassName() const {return className;};
 
         /** Returns true if this frame is the root frame (i.e. has no parent) */
         bool isRoot() const;
@@ -154,10 +163,14 @@ namespace envire
         /** @todo explain dirty for a layer */
         bool dirty; 
 
+    private:
+	static const std::string className;
+
     public:
 	Layer();
 	Layer(std::string const& name);
 	virtual ~Layer();
+	virtual const std::string& getClassName() const {return className;};
 
 	/** @return a string identifier that can be used for debugging purposes
          */
@@ -233,9 +246,14 @@ namespace envire
      */
     class CartesianMap : public Layer
     {
+    private:
+	static const std::string className;
+
     public:
 	CartesianMap();
         CartesianMap(std::string const& name);
+
+	virtual const std::string& getClassName() const {return className;};
 
         /** Sets the frame node on which this map is attached */
         void setFrameNode(FrameNode* frame);
@@ -261,7 +279,11 @@ namespace envire
      */
     class Operator : public EnvironmentItem
     {
+    private:
+	static const std::string className;
     public:
+	virtual const std::string& getClassName() const {return className;};
+
         /** Update the output layer(s) according to the defined operation.
          */
         virtual bool updateAll() = 0;

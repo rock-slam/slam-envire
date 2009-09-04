@@ -2,6 +2,8 @@
 
 using namespace envire;
 
+const std::string Operator::className = "envire::Operator";
+
 bool Operator::addInput( Layer* layer ) 
 {
     env->addInput( this, layer );
