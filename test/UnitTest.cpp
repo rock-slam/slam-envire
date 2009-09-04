@@ -1,7 +1,7 @@
 #include "envire/Core.hpp"
-//#include "envire/LaserScan.hpp"
-//#include "envire/TriMesh.hpp"
-//#include "envire/ScanMeshing.hpp"
+#include "envire/LaserScan.hpp"
+#include "envire/TriMesh.hpp"
+#include "envire/ScanMeshing.hpp"
 
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
@@ -141,43 +141,37 @@ BOOST_AUTO_TEST_CASE( serialization )
     Environment* env2 = 
 	so.unserialize( "build/test" );
 
+    // TODO check that the structure is the same
+
     delete env;
     delete env2;
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE( functional ) 
 {
     Environment* env = new Environment(); 
 
-    
-
-
-    // Set up the environment, which holds a pointer to the root FrameNode and
-    // knows about all the layers
-    envire::Environment_Ptr env = envire::Environment_Ptr( new envire::Environment("scene1") );
-
-    // Create a laserscan layer from a scanfile and attach it to the rootnode
-    // if the scan file has its own frame, the FrameNode will be generated and
-    // used as the framenode for the LaserScan Layer.
-    envire::LaserScan_Ptr scan = 
-            envire::LaserScan::createFromScanFile("test/test.scan", env->getFrameNode());
-    scan->setParent( env );
+    LaserScan* scan = LaserScan::importScanFile("test/test.scan", env->getRootNode() );
 
     // create a TriMesh Layer and attach it to the root Node.
-    envire::TriMesh_Ptr mesh(new envire::TriMesh(env->getFrameNode(), "mesh1"));
-    mesh->setParent( env );
+    TriMesh* mesh = new TriMesh();
+    env->attachItem( mesh );
 
     // set up a meshing operator on the output mesh. Add then an input
     // and parametrize the meshing operation. 
-    envire::ScanMeshing_Ptr op( new envire::ScanMeshing());
-    op->addInput(scan);
-    op->addOutput(mesh);
-    op->setMaxEdgeLength(0.5);
+    ScanMeshing* mop = new ScanMeshing();
+    env->attachItem( mop );
 
-    op->updateAll();
+    mop->setMaxEdgeLength(0.5);
+
+    mop->addInput(scan);
+    mop->addOutput(mesh);
+
+    mop->updateAll();
+
+    Serialization so;
+    so.serialize(env, "build/test");
 }
-#endif
 
 // EOF
 //

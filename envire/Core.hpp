@@ -9,6 +9,8 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
+#include <boost/lexical_cast.hpp>
+
 namespace envire
 {
     class Layer;
@@ -168,8 +170,11 @@ namespace envire
 
     public:
 	Layer();
-	Layer(std::string const& name);
 	virtual ~Layer();
+
+	Layer(Serialization& so);
+	void serialize(Serialization& so);
+
 	virtual const std::string& getClassName() const {return className;};
 
 	/** @return a string identifier that can be used for debugging purposes
@@ -237,6 +242,8 @@ namespace envire
 	/** @return the parent of this layer or NULL if the layer has no parent
 	 */
         Layer* getParent();
+
+	const std::string getMapFileName( const std::string& path ) const;
     };
 
     /** This is a special type of layer that describes a map in a cartesian
@@ -251,7 +258,7 @@ namespace envire
 
     public:
 	CartesianMap();
-        CartesianMap(std::string const& name);
+        CartesianMap(Serialization& so);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -263,6 +270,7 @@ namespace envire
 
         /** Returns the frame node on which this map is attached */
         const FrameNode* getFrameNode() const;
+
     };
 
     /** An operator generates a set of output maps based on a set of input maps.
@@ -282,6 +290,9 @@ namespace envire
     private:
 	static const std::string className;
     public:
+	Operator();
+	Operator(Serialization& so);
+
 	virtual const std::string& getClassName() const {return className;};
 
         /** Update the output layer(s) according to the defined operation.
@@ -430,15 +441,30 @@ namespace envire
 	
 	void setClassName(const std::string &key);
 
+	const std::string getMapPath() const;
+
+	template <class T> void write(const std::string &key, T value);
 	void write(const std::string &key, const std::string &value);
-	void write(const std::string &key, long value);
 	void write(const std::string &key, const FrameNode::TransformType &value);
 
+	template <class T> void read(const std::string &key, T& value);
 	void read(const std::string &key, std::string &value);
-	void read(const std::string &key, long &value);
 	void read(const std::string &key, FrameNode::TransformType &value);
     };
 
+    template <class T> void Serialization::read(const std::string &key, T& value)
+    {
+	std::string tmp;
+	read( key, tmp );
+	value = boost::lexical_cast<T>(tmp);
+    }
+    
+    template <class T> void Serialization::write(const std::string &key, T value)
+    {
+	write( key, boost::lexical_cast<std::string>(value) );
+    }
 }
+
+
 
 #endif

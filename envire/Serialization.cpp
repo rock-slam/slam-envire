@@ -21,8 +21,12 @@ namespace envire
 {
     class SerializationImpl
     {
+	friend class Serialization;
+
     protected:
 	Serialization& so;
+
+	fs::path sceneDir;
 
 	yaml_parser_t parser;
 	yaml_emitter_t emitter;
@@ -103,17 +107,17 @@ Serialization::~Serialization()
     delete impl;
 }
 
+const std::string Serialization::getMapPath() const
+{
+    return impl->sceneDir.string();
+}
+
 void Serialization::setClassName(const std::string &key)
 {
     impl->setClassName(key);
 }
 
 void Serialization::write(const std::string& key, const std::string& value)
-{
-    impl->addNodeToMap( key, impl->addScalar(value) );
-}
-
-void Serialization::write(const std::string& key, long value)
 {
     impl->addNodeToMap( key, impl->addScalar(value) );
 }
@@ -136,11 +140,6 @@ void Serialization::write(const std::string& key, const FrameNode::TransformType
 void Serialization::read(const std::string &key, std::string &value)
 {
     value = impl->getScalar( impl->findNodeInMap( key ) );
-}
-
-void Serialization::read(const std::string &key, long &value)
-{
-    value = boost::lexical_cast<long>( impl->getScalar( impl->findNodeInMap( key ) ) );
 }
 
 void Serialization::read(const std::string& key, FrameNode::TransformType &value)
@@ -177,6 +176,7 @@ void Serialization::serialize(Environment *env, const std::string &path_str)
 	throw std::runtime_error("Path is not a directory");
     }
 
+    impl->sceneDir = path;
     impl->writeToFile( env, scene.string() );
 }
 
@@ -191,6 +191,7 @@ Environment* Serialization::unserialize(const std::string &path_str)
 	throw std::runtime_error("Could not open file");
     }
 
+    impl->sceneDir = path;
     return impl->readFromFile( scene.string() );
 }
 

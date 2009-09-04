@@ -29,10 +29,9 @@ set(ENVMAP_SRCS
     envire/Layer.cpp
     envire/Operator.cpp
     envire/Serialization.cpp
-    # envire/ScanMeshing.cpp
-    # envire/TriMesh.cpp
-    # envire/LaserScan.cpp
-    #envire/Core.cpp)
+    envire/ScanMeshing.cpp
+    envire/TriMesh.cpp
+    envire/LaserScan.cpp
     )
 
 add_library(envire SHARED ${ENVMAP_SRCS})

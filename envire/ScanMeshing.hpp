@@ -1,25 +1,30 @@
 #ifndef __SCANMESHING_HPP__
 #define __SCANMESHING_HPP__
 
-#include <boost/smart_ptr.hpp>
 #include "Core.hpp" 
 #include "LaserScan.hpp" 
 #include "TriMesh.hpp" 
 
 namespace envire {
-    class ScanMeshing;
-    typedef boost::shared_ptr<ScanMeshing> ScanMeshing_Ptr;
-
     class ScanMeshing : public Operator
     {
-            float maxEdgeLength;
+	static const std::string className;
 
-        public:
-            void addInput( LaserScan_Ptr scan ); 
-            void addOutput( TriMesh_Ptr mesh ); 
+	float maxEdgeLength;
 
-            void setMaxEdgeLength( float value );
-            bool updateAll();
+    public:
+	ScanMeshing();
+
+	ScanMeshing(Serialization& so);
+	void serialize(Serialization& so);
+
+	const std::string& getClassName() const {return className;};
+
+	void addInput( LaserScan* scan ); 
+	void addOutput( TriMesh* mesh ); 
+
+	void setMaxEdgeLength( float value );
+	bool updateAll();
     };
 }
 

@@ -2,15 +2,38 @@
 #include <stdexcept>
 
 using namespace envire;
+using namespace std;
 
-void ScanMeshing::addInput( LaserScan_Ptr scan ) 
+const std::string ScanMeshing::className = "ScanMeshing";
+
+ScanMeshing::ScanMeshing()
+{
+}
+
+ScanMeshing::ScanMeshing(Serialization& so)
+    : Operator(so)
+{
+    so.setClassName(className);
+    so.read("maxEdgeLength", maxEdgeLength ); 
+}
+
+void ScanMeshing::serialize(Serialization& so)
+{
+    Operator::serialize(so);
+    so.setClassName(className);
+    so.write("maxEdgeLength", maxEdgeLength ); 
+}
+
+
+void ScanMeshing::addInput( LaserScan* scan ) 
 {
     Operator::addInput(scan);
 }
 
-void ScanMeshing::addOutput( TriMesh_Ptr mesh )
+void ScanMeshing::addOutput( TriMesh* mesh )
 {
-    if( outputs.size() > 0 )
+    
+    if( env->getOutputs(this).size() > 0 )
         throw std::runtime_error("ScanMeshing can only have one output.");
 
     Operator::addOutput(mesh);
@@ -24,11 +47,11 @@ void ScanMeshing::setMaxEdgeLength( float value )
 bool ScanMeshing::updateAll() 
 {
     // this implementation can handle only one input at the moment
-    if( inputs.size() != 1 || outputs.size() != 1 )
+    if( env->getInputs(this).size() != 1 || env->getOutputs(this).size() != 1 )
         throw std::runtime_error("Scanmeshing needs to have exactly 1 input and 1 output for now.");
     
-    TriMesh_Ptr meshPtr = boost::static_pointer_cast<envire::TriMesh>(*outputs.begin());
-    LaserScan_Ptr scanPtr = boost::static_pointer_cast<envire::LaserScan>(*inputs.begin());
+    TriMesh* meshPtr = static_cast<envire::TriMesh*>(*env->getOutputs(this).begin());
+    LaserScan* scanPtr = static_cast<envire::LaserScan*>(*env->getInputs(this).begin());
 
     const double PI = 3.141592;
 

@@ -5,24 +5,27 @@
 
 using namespace envire;
 
-TriMesh::TriMesh(FrameNode_Ptr node, std::string const& id) :
-    CartesianMap(node, id)
+const std::string TriMesh::className = "envire::TriMesh";
+
+TriMesh::TriMesh()
 {
 }
 
-TriMesh::TriMesh(std::string const& id) :
-    CartesianMap(id)
+TriMesh::TriMesh(Serialization& so)
+    : CartesianMap(so)
 {
+    so.setClassName(className);
 }
 
-Layer_Ptr TriMesh::clone(std::string const& id) 
+void TriMesh::serialize(Serialization& so)
 {
-    TriMesh* c = new TriMesh(*this);
-//    Layer_Ptr clone = Layer_Ptr(new TriMesh(*this));
-//   clone->id = id;
-    c->id = id;
-    Layer_Ptr clone = Layer_Ptr(c);
-    return clone;
+    CartesianMap::serialize(so);
+    so.setClassName(className);
+}
+
+TriMesh* TriMesh::clone() 
+{
+    return new TriMesh(*this);
 }
 
 

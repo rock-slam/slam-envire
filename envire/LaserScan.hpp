@@ -34,14 +34,24 @@ namespace envire {
             /** list of lines in the scan */
             std::vector<scanline_t> lines;
 
+	private:
+	    static const std::string className;
+	    bool parseScan( const std::string& file, envire::FrameNode::TransformType& transform );
+
         public:
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	    LaserScan();
             
-            LaserScan(std::string const& id);
+            LaserScan(Serialization& so);
+	    void serialize(Serialization& so);
+	    const std::string& getClassName() const {return className;};
             
-	    bool parseScan( std::string& file );
-            bool parseScan( std::istream& data );
-            Layer* clone( const std::string& id);
+	    bool readScan( const std::string& file );
+	    bool writeScan( const std::string& file ); 
+
+            LaserScan* clone();
+
+	    static LaserScan* importScanFile( const std::string& file, FrameNode* frame );
     };
                 
 };

@@ -2,7 +2,6 @@
 #define __TRIMESH_HPP__
 
 #include "Core.hpp"
-#include <boost/shared_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -10,24 +9,27 @@
 #include <vector>
 
 namespace envire {
-   
-    class TriMesh;
-    typedef boost::shared_ptr<TriMesh> TriMesh_Ptr;
 
     class TriMesh : public CartesianMap 
     {
-        public:
-            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-            
-            TriMesh(std::string const& id);
-            TriMesh(FrameNode_Ptr node, std::string const& id);
+    public:
+	typedef boost::tuple<int, int, int> triangle_t;
 
-            Layer_Ptr clone(std::string const& id);
+	std::vector<Eigen::Vector3f> points;
+	std::vector<triangle_t> faces;
 
-            typedef boost::tuple<int, int, int> triangle_t;
+	static const std::string className;
+    public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	
+	TriMesh();
 
-            std::vector<Eigen::Vector3f> points;
-            std::vector<triangle_t> faces;
+	TriMesh(Serialization& so);
+	void serialize(Serialization& so);
+
+	const std::string& getClassName() const {return className;};
+
+	TriMesh* clone();
     };
 }
 

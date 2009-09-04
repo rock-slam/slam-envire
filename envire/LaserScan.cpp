@@ -6,41 +6,73 @@
 #include <stdexcept>
 
 using namespace envire;
+using namespace std;
 
-LaserScan::LaserScan(FrameNode_Ptr node, std::string const& id) :
-    CartesianMap(node, id)
+const std::string LaserScan::className = "envire::LaserScan";
+
+LaserScan::LaserScan()
 {
 }
 
-LaserScan::LaserScan(std::string const& id) :
-    CartesianMap(id)
+LaserScan::LaserScan(Serialization& so) :
+    CartesianMap(so)
 {
+    so.setClassName(className);
+    readScan( getMapFileName(so.getMapPath()) );
 }
 
-LaserScan_Ptr LaserScan::createFromScanFile(const std::string& file, FrameNode_Ptr node)
+void LaserScan::serialize(Serialization& so)
 {
-    LaserScan_Ptr scan(new LaserScan(node, file));
-    std::ifstream ifstream(file.c_str());
-    if( ifstream.fail() )  
-    {
-        throw std::runtime_error("Could not open file '" + file + "'.");
+    CartesianMap::serialize(so);
+
+    so.setClassName(className);
+    writeScan( getMapFileName(so.getMapPath()) );
+}
+
+LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
+{
+    if( !node->isAttached() )
+	throw std::runtime_error("node needs to be attached to environment");
+
+    Environment* env = node->getEnvironment();
+    LaserScan* scan = new LaserScan();
+
+    FrameNode::TransformType transform( Eigen::Matrix4f::Identity() );
+
+    try {
+	scan->parseScan( file, transform );
     }
-    else
+    catch( ... )
     {
-        try {
-            scan->parseScan( ifstream );
-        }
-        catch( ... )
-        {
-            ifstream.close();
-            throw;
-        }
-        ifstream.close();
+	delete scan;
+	throw;
     }
+
+    env->attachItem( scan );
+
+    if( transform.matrix() != Eigen::Matrix4f::Identity() )
+    {
+	FrameNode* fm = new FrameNode();
+	fm->setTransform( transform );
+	env->addChild( node, fm );
+	scan->setFrameNode( fm );
+    }
+    else 
+    {
+	scan->setFrameNode( node );
+    }
+
     return scan;
 }
 
-bool LaserScan::parseScan( std::istream& data ) {
+
+bool LaserScan::parseScan( const std::string& file, FrameNode::TransformType& transform ) {
+    std::ifstream data(file.c_str());
+    if( data.fail() )  
+    {
+        throw std::runtime_error("Could not open file '" + file + "'.");
+    }
+
     std::string line;
     while( !data.eof() ) {
         getline( data, line );
@@ -49,28 +81,16 @@ bool LaserScan::parseScan( std::istream& data ) {
         std::string key;
         iline >> key;
 
-        // construct a new FrameNode if either origin or rotation are
-        // specified in the scan file, uses the current FrameNode as parent
-        if( key == "rotation" || key == "origin" ) {
-            if( !frame )
-            {   
-                FrameNode_Ptr new_frame = FrameNode_Ptr( new FrameNode() );
-                frame->setParent( frame );
-                frame = new_frame;
-
-            }
-        }
-
-        if( key == "rotation" ) {
+        if( key == "orientation" ) {
             float x, u, v, w;
             iline >> x >> u >> v >> w;
-            frame->getTransform().getRotation() = Eigen::Quaternionf(x, u, v, w);
+            transform.rotate( Eigen::Quaternionf(x, u, v, w) );
         }
 
         if( key == "origin" ) {
             float x,y,z;
             iline >> x >> y >> z;
-            frame->getTransform().getTranslation() = Eigen::Vector3f(x,y,z);
+            transform.pretranslate( Eigen::Vector3f(x,y,z) );
         }
 
         if( key == "delta_psi" ) {
@@ -105,11 +125,51 @@ bool LaserScan::parseScan( std::istream& data ) {
         }
     }
 
+    data.close();
+
     return true;
 }
 
-Layer_Ptr LaserScan::clone(const std::string& id) 
+
+bool LaserScan::readScan( const std::string& file ) 
 {
-    Layer_Ptr clone(new LaserScan(*this));
-    return clone;
+    FrameNode::TransformType t;
+    return parseScan( file, t );
 }
+
+bool LaserScan::writeScan( const std::string& file )
+{
+    std::ofstream data(file.c_str());
+    if( data.fail() )  
+    {
+        throw std::runtime_error("Could not open file '" + file + "' for writing.");
+    }
+
+    data << "delta_psi " << delta_psi << endl;
+    data << "origin_psi " << origin_psi << endl;
+    data << "origin_phi " << origin_phi << endl;
+    data << "center_offset " 
+	<< center_offset.x() << " " 
+	<< center_offset.y() << " " 
+	<< center_offset.z() << endl;
+
+    for( vector<scanline_t>::iterator it=lines.begin();it!=lines.end();it++)
+    {
+	data << "line " << (*it).first;
+	for( vector<int>::iterator pi=(*it).second.begin();pi!=(*it).second.end();pi++)
+	{
+	    data << " " << (*pi);
+	}
+	data << endl;
+    }	
+
+    data.close();
+
+    return true;
+}
+
+LaserScan* LaserScan::clone() 
+{
+    return new LaserScan(*this);
+}
+

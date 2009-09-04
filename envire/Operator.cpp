@@ -4,6 +4,15 @@ using namespace envire;
 
 const std::string Operator::className = "envire::Operator";
 
+Operator::Operator()
+{
+}
+
+Operator::Operator(Serialization& so)
+    : EnvironmentItem(so)
+{
+}
+
 bool Operator::addInput( Layer* layer ) 
 {
     env->addInput( this, layer );

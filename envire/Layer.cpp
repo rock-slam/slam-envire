@@ -4,7 +4,10 @@
 #include <fstream>
 #include <string>
 
+#include "boost/filesystem/path.hpp"
+
 using namespace envire;
+namespace fs = boost::filesystem;
 
 const std::string Layer::className = "envire::Layer";
 
@@ -13,9 +16,22 @@ Layer::Layer() :
 {
 }
 
-Layer::Layer(std::string const& id) : 
-    name(id), immutable(false)
+Layer::Layer(Serialization& so) : 
+    EnvironmentItem(so)
 {
+    so.setClassName(className);
+
+    so.read( "name", name );
+    so.read( "immutable", immutable );
+}
+
+void Layer::serialize(Serialization& so)
+{
+    EnvironmentItem::serialize(so);
+    so.setClassName(className);
+
+    so.write( "name", name );
+    so.write( "immutable", immutable );
 }
 
 Layer::~Layer()
@@ -84,14 +100,25 @@ void Layer::updateFromOperator()
         getGenerator()->updateAll();
 }
 
+const std::string Layer::getMapFileName(const std::string& path) const 
+{
+    fs::path scenePath(path); 
+
+    std::string fileName = getClassName() + "_" + boost::lexical_cast<std::string>(getUniqueId());
+    if( !getName().empty() )
+	fileName += getName();
+
+    return (scenePath / fileName).string();
+}
+
 const std::string CartesianMap::className = "envire::CartesianMap";
 
 CartesianMap::CartesianMap() 
 {
 }
 
-CartesianMap::CartesianMap(std::string const& name) :
-    Layer(name)
+CartesianMap::CartesianMap(Serialization& so) :
+    Layer(so)
 {
 }
 
@@ -109,3 +136,4 @@ const FrameNode* CartesianMap::getFrameNode() const
 {
     return env->getFrameNode(const_cast<CartesianMap*>(this));
 }
+
