@@ -171,6 +171,8 @@ BOOST_AUTO_TEST_CASE( functional )
 
     Serialization so;
     so.serialize(env, "build/test");
+
+    delete env;
 }
 
 // EOF
