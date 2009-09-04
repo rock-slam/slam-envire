@@ -65,6 +65,10 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
     return scan;
 }
 
+const std::string LaserScan::getMapFileName(const std::string& path) const
+{
+    return Layer::getMapFileName(path) + ".scan";
+}
 
 bool LaserScan::parseScan( const std::string& file, FrameNode::TransformType& transform ) {
     std::ifstream data(file.c_str());

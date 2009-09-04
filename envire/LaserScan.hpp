@@ -49,6 +49,8 @@ namespace envire {
 	    bool readScan( const std::string& file );
 	    bool writeScan( const std::string& file ); 
 
+	    const std::string getMapFileName(const std::string& path) const;
+
             LaserScan* clone();
 
 	    static LaserScan* importScanFile( const std::string& file, FrameNode* frame );
