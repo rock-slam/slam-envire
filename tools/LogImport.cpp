@@ -27,9 +27,21 @@ int main(int argc, char* argv[])
     ifstream imu_log( argv[2] );
     ifstream scan_log( argv[3] );
 
-    string lineStr;
+    OGRSpatialReference oSourceSRS;
+    oSourceSRS.SetWellKnownGeogCS( "WGS84" );
+
+    OGRSpatialReference oTargetSRS;
+    oTargetSRS.SetWellKnownGeogCS( "WGS84" );
+    oTargetSRS.SetUTM( UTM_ZONE, UTM_NORTH );
+
+    OGRCoordinateTransformation *poCT;
+    poCT = OGRCreateCoordinateTransformation( &oSourceSRS,
+	    &oTargetSRS );
+
 
     bool first = true;
+    string lineStr;
+
     while(getline(gps_log, lineStr)) {
 	stringstream line( lineStr );
 	long ts;
@@ -40,17 +52,6 @@ int main(int argc, char* argv[])
 	line >> point[0];
 	line >> point[1];
 	line >> point[2];
-
-	OGRSpatialReference oSourceSRS;
-	oSourceSRS.SetWellKnownGeogCS( "WGS84" );
-
-	OGRSpatialReference oTargetSRS;
-	oTargetSRS.SetWellKnownGeogCS( "WGS84" );
-	oTargetSRS.SetUTM( UTM_ZONE, UTM_NORTH );
-
-	OGRCoordinateTransformation *poCT;
-	poCT = OGRCreateCoordinateTransformation( &oSourceSRS,
-		&oTargetSRS );
 
 	poCT->Transform(1, point, point+1, point+2);
 
@@ -67,4 +68,5 @@ int main(int argc, char* argv[])
 	cout << point[0] << " " << point[1] << " " << point[2] << endl;
     }
 
+    OCTDestroyCoordinateTransformation( poCT );
 }
