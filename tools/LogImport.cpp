@@ -12,8 +12,36 @@ using namespace std;
  * them into an environemnt, which is then saved (to be viewed with enview).
  */
 
-#define UTM_ZONE 32
-#define UTM_NORTH TRUE
+class GPSCoordinateTransform
+{
+    const static int UTM_ZONE = 32;
+    const static bool UTM_NORTH = true;
+
+    OGRSpatialReference oSourceSRS, oTargetSRS;
+    OGRCoordinateTransformation *poCT;
+
+public:
+    GPSCoordinateTransform()
+    {
+	oSourceSRS.SetWellKnownGeogCS( "WGS84" );
+	oTargetSRS.SetWellKnownGeogCS( "WGS84" );
+	oTargetSRS.SetUTM( UTM_ZONE, UTM_NORTH );
+
+	poCT = OGRCreateCoordinateTransformation( &oSourceSRS,
+		&oTargetSRS );
+    };
+
+    ~GPSCoordinateTransform()
+    {
+	if( poCT )
+	    OCTDestroyCoordinateTransformation( poCT );
+    };
+
+    void WGS84toUTM( double *p )
+    {
+	poCT->Transform(1, p+0, p+1, p+2);
+    };
+};
 
 int main(int argc, char* argv[])
 {
@@ -27,18 +55,7 @@ int main(int argc, char* argv[])
     ifstream imu_log( argv[2] );
     ifstream scan_log( argv[3] );
 
-    OGRSpatialReference oSourceSRS;
-    oSourceSRS.SetWellKnownGeogCS( "WGS84" );
-
-    OGRSpatialReference oTargetSRS;
-    oTargetSRS.SetWellKnownGeogCS( "WGS84" );
-    oTargetSRS.SetUTM( UTM_ZONE, UTM_NORTH );
-
-    OGRCoordinateTransformation *poCT;
-    poCT = OGRCreateCoordinateTransformation( &oSourceSRS,
-	    &oTargetSRS );
-
-
+    GPSCoordinateTransform gpsTrans;
     bool first = true;
     string lineStr;
 
@@ -53,7 +70,7 @@ int main(int argc, char* argv[])
 	line >> point[1];
 	line >> point[2];
 
-	poCT->Transform(1, point, point+1, point+2);
+	gpsTrans.WGS84toUTM(point);
 
 	// base origin on first point in gps
 	if( first ) {
@@ -68,5 +85,4 @@ int main(int argc, char* argv[])
 	cout << point[0] << " " << point[1] << " " << point[2] << endl;
     }
 
-    OCTDestroyCoordinateTransformation( poCT );
 }
