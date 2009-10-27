@@ -39,7 +39,7 @@ add_library(envire SHARED ${ENVMAP_SRCS})
 install(TARGETS envire
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
-install(FILES ${ENVMAP_HDRS} DESTINATION include)
+install(FILES ${ENVMAP_HDRS} DESTINATION include/envire)
 target_link_libraries(envire ${Boost_FILESYSTEM_LIBRARY})
 target_link_libraries(envire ${LIBYAML_LIBRARIES})
 
