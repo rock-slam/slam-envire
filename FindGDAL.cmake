@@ -34,6 +34,7 @@ else (GDAL_LIBRARIES AND GDAL_INCLUDE_DIRS)
     NAMES
       gdal
       gdal1.5.0
+      gdal1.6.0
     PATHS
       /usr/lib
       /usr/local/lib

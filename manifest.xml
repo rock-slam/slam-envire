@@ -1,0 +1,12 @@
+<package>
+    <description brief="To do">
+	write me
+    </description>
+    <author>Jakob Schwendner</author>
+    <copyright>
+        DFKI/robotik@dfki.de
+    </copyright>
+
+    <rosdep name="yaml" />
+    <rosdep name="gdal" />
+</package>
