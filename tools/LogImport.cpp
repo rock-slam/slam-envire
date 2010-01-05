@@ -55,20 +55,28 @@ int main(int argc, char* argv[])
     ifstream imu_log( argv[2] );
     ifstream scan_log( argv[3] );
 
+    string gps_lineStr, imu_lineStr, scan_lineStr;
+
     GPSCoordinateTransform gpsTrans;
     bool first = true;
-    string lineStr;
+    double origin[3];
 
-    while(getline(gps_log, lineStr)) {
-	stringstream line( lineStr );
-	long ts;
+    while(getline(gps_log, gps_lineStr)) {
+	stringstream gps_line( gps_lineStr );
+	long gps_ts=0, imu_ts=0, scan_ts=0;
 	double point[3];
-	double origin[3];
+	Eigen::Vector3d pos(point);
 
-	line >> ts;
-	line >> point[0];
-	line >> point[1];
-	line >> point[2];
+	string str_ts;
+	//gps_line >> gps_ts;
+	gps_line >> str_ts;
+	gps_line >> point[0];
+	gps_line >> point[1];
+	gps_line >> point[2];
+	gps_ts += 60*60*2+1; // empirical value for one particular dataset
+
+	cout << str_ts << endl;
+//	parseTS(str_ts);
 
 	gpsTrans.WGS84toUTM(point);
 
@@ -82,7 +90,26 @@ int main(int argc, char* argv[])
 	for(int i=0;i<2;i++)
 	    point[i] -= origin[i];
 
-	cout << point[0] << " " << point[1] << " " << point[2] << endl;
+	// find corresponding records in other logs
+	// corresponding meaning having a similar timestamp (next to second is ok)
+	Eigen::Quaterniond orientation;	
+	int skip = 0;
+	while(getline(imu_log, imu_lineStr) && (gps_ts > imu_ts)) 
+	{
+	    stringstream imu_line( imu_lineStr );
+	    imu_line >> imu_ts;
+	    imu_line >> orientation.x();
+	    imu_line >> orientation.y();
+	    imu_line >> orientation.z();
+	    imu_line >> orientation.w();
+
+	    cout << "gps: " << gps_ts << " imu: " << imu_ts << endl;
+	    skip++;
+	}
+	cout << "skipping " << skip << endl;
+
+	cout << pos << endl;
+	cout << orientation.x() << endl;
     }
 
 }
