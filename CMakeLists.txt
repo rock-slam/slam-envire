@@ -32,6 +32,7 @@ set(ENVMAP_SRCS
     envire/ScanMeshing.cpp
     envire/TriMesh.cpp
     envire/LaserScan.cpp
+    envire/EventListener.cpp
     )
 
 add_library(envire SHARED ${ENVMAP_SRCS})

@@ -10,6 +10,7 @@
 #include <Eigen/SVD>
 
 #include <boost/lexical_cast.hpp>
+#include <vector>
 
 namespace envire
 {
@@ -320,6 +321,21 @@ namespace envire
         virtual void removeOutput(Layer* layer);
     };
 
+    class EventListener 
+    {
+	public:
+	    virtual void itemAttached(EnvironmentItem *item);
+	    virtual void itemDetached(EnvironmentItem *item);
+	    virtual void childAdded(FrameNode* parent, FrameNode* child);
+	    virtual void childAdded(Layer* parent, Layer* child);
+	    virtual void frameNodeSet(CartesianMap* map, FrameNode* node);
+	
+	    virtual void childRemoved(FrameNode* parent, FrameNode* child);
+	    virtual void childRemoved(Layer* parent, Layer* child);
+
+	    virtual void itemModified(EnvironmentItem *item);
+    };
+    
     /** The environment class manages EnvironmentItem objects and has ownership
      * of these.  all dependencies between the objects are handled in the
      * environment class, and convenience methods of the individual objects are
@@ -342,14 +358,17 @@ namespace envire
 	typedef std::map<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
 	typedef std::map<CartesianMap*, FrameNode*> cartesianMapGraphType;
-
+	typedef std::vector<EventListener *> eventListenerType;
+	
+	
 	itemListType items;
 	frameNodeTreeType frameNodeTree;
 	layerTreeType layerTree;
 	operatorGraphType operatorGraphInput;
 	operatorGraphType operatorGraphOutput;
 	cartesianMapGraphType cartesianMapGraph;
-
+	eventListenerType eventListeners;
+	
 	FrameNode* rootNode;
 
     public:
@@ -398,6 +417,18 @@ namespace envire
 
 	Operator* getGenerator(Layer* output);
 
+	/**
+	 * Adds an eventListener that gets called whenever there
+	 * are modifications to the evironment.
+	 * Note, the listener gets called from the evire thread context.
+	 */
+	void addEventListener(EventListener *evl);
+	
+	/**
+	 * Remove the given eventListener fromt the environment
+	 */
+	void removeEventListener(EventListener *evl);
+	
         /** Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
          * transformation, as the frames are sorted in a tree

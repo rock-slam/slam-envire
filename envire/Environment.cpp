@@ -70,6 +70,19 @@ Environment::~Environment()
     }
 }
 
+void Environment::addEventListener(EventListener *evl) 
+{
+    eventListeners.push_back(evl);
+}
+
+void Environment::removeEventListener(EventListener *evl) 
+{
+    eventListenerType::iterator it = std::find(eventListeners.begin(), eventListeners.end(), evl);
+    if(it != eventListeners.end()) {
+	eventListeners.erase(it);
+    }
+}
+
 void Environment::attachItem(EnvironmentItem* item)
 {
     if( item->getUniqueId() == ITEM_NOT_ATTACHED )
@@ -84,10 +97,20 @@ void Environment::attachItem(EnvironmentItem* item)
 
     // set a pointer to environment object
     item->env = this;
+    
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->itemAttached(item);
+    }
 } 
 
 void Environment::detachItem(EnvironmentItem* item)
 {
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->itemDetached(item);
+    }
+    
     items.erase( item->getUniqueId() );
     item->unique_id = ITEM_NOT_ATTACHED;
 }
@@ -98,6 +121,11 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 	attachItem( child );
 
     frameNodeTree.insert(make_pair(child, parent));
+    
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->childAdded(parent, child);
+    }
 }
 
 void Environment::addChild(Layer* parent, Layer* child)
@@ -106,15 +134,30 @@ void Environment::addChild(Layer* parent, Layer* child)
 	attachItem( child );
 
     layerTree.insert(make_pair(child, parent));
+
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->childAdded(parent, child);
+    }
 }
 
 void Environment::removeChild(FrameNode* parent, FrameNode* child)
 {
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->childRemoved(parent, child);
+    }
+
     frameNodeTree.erase( frameNodeTree.find( child ) );
 }
 
 void Environment::removeChild(Layer* parent, Layer* child) 
 {
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->childRemoved(parent, child);
+    }
+
     layerTree.erase( layerTree.find( child ) );
 }
 
@@ -169,6 +212,11 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 {
     if( !node->isAttached() )
 	attachItem( node );
+
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->frameNodeSet(map, node);
+    }
 
     cartesianMapGraph.insert( make_pair( map, node ) );
 }
