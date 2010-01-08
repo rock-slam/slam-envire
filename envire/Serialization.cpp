@@ -12,6 +12,7 @@ extern "C" {
 #include <yaml.h>
 }
 
+
 using namespace std;
 using namespace envire;
 using namespace boost::assign;
@@ -93,9 +94,14 @@ template<class T> EnvironmentItem* create(Serialization &so)
     return o;
 }
 
+//
+// Map of all classes, that the serialization class knows about
+// all classes that can be instantiated need to be added here.
+// 
 map<std::string, Serialization::Factory> Serialization::classMap 
-    = map_list_of("envire::FrameNode", &create<FrameNode> );
-
+    = map_list_of
+	("envire::FrameNode", &create<FrameNode> )
+	("envire::LaserScan", &create<LaserScan> );
 
 Serialization::Serialization()
 {
@@ -397,7 +403,8 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			else 
 			{
 			    std::cerr << "could not find class of type " << className << std::endl;
-			    throw std::runtime_error("could not find class");
+			    std::cerr << "has the class been added to the Serialization.cpp classMap?" << std::endl;
+			    throw std::runtime_error("could not find class of type " + className );
 			}
 		    }
 		    else if( key == "links" )
