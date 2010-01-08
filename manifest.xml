@@ -1,8 +1,9 @@
 <package>
-    <description brief="To do">
-	write me
+    <description brief="Environment Representation Library">
+	This library can be used to create a data representation of an environment.
+	It works on Cartesian Spaces mostly, but could be extended to topological maps.
     </description>
-    <author>Jakob Schwendner</author>
+    <author>Jakob Schwendner/jakob.schwendner@dfki.de</author>
     <copyright>
         DFKI/robotik@dfki.de
     </copyright>
