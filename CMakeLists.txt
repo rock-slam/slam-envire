@@ -6,6 +6,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
 
+find_package(KDTree REQUIRED)
+include_directories(${KDTREE_INCLUDE_DIRS})
+
 find_package(Eigen2 REQUIRED)
 include_directories(${EIGEN2_INCLUDE_DIR})
 
