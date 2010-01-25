@@ -370,6 +370,7 @@ namespace envire
 	eventListenerType eventListeners;
 	
 	FrameNode* rootNode;
+	void publishChilds(EventListener *evl, FrameNode *parent);
 
     public:
         Environment();

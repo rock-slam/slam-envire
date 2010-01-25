@@ -70,8 +70,29 @@ Environment::~Environment()
     }
 }
 
+void Environment::publishChilds(EventListener *evl, FrameNode *parent)
+{
+  
+    std::list<FrameNode*> childs = getChildren(parent);
+    for(std::list<FrameNode*>::iterator it = childs.begin(); it != childs.end(); it++)
+    {
+	evl->childAdded(parent, *it);
+	publishChilds(evl, *it);
+    }
+}
+
 void Environment::addEventListener(EventListener *evl) 
 {
+    //new listener was added, iterate over all items and 
+    //attach them at the listener
+    for(itemListType::iterator it = items.begin(); it != items.end(); it++) 
+    {
+	evl->itemAttached((*it).second );
+    }
+    
+    //iterate over frame tree
+    publishChilds(evl, getRootNode());    
+    
     eventListeners.push_back(evl);
 }
 
