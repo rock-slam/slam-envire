@@ -399,6 +399,11 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			    // create item and attach to environment
 			    EnvironmentItem* envItem = (*f)(so);
 			    env->attachItem( envItem );
+			    //hack to preserve root node
+			    if(envItem->getUniqueId() == 0) {
+			      env->rootNode = dynamic_cast<FrameNode *>(envItem);
+			      assert(env->rootNode);
+			    }
 			}	    
 			else 
 			{
