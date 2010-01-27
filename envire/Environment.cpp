@@ -116,9 +116,10 @@ void Environment::attachItem(EnvironmentItem* item)
 	item->unique_id = last_id++;
 
     // make sure item not already present
-    if( items[item->getUniqueId()] )
+    if( items.count(item->getUniqueId()) ) {
+	std::cout << "Duplicated id:" << item->getUniqueId() <<std::endl;
 	throw runtime_error("unique_id of item already in environment");
-
+    }
     // add item to internal list
     items[item->getUniqueId()] = item;
 
