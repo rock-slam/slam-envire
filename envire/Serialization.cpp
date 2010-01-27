@@ -337,6 +337,8 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
     serialize = false;
 
     Environment* env;
+    
+    int64_t lastID = 0;
 
     FILE *input = fopen(path.c_str(), "rb");
     yaml_parser_initialize(&parser);
@@ -404,6 +406,9 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			      env->rootNode = dynamic_cast<FrameNode *>(envItem);
 			      assert(env->rootNode);
 			    }
+			    
+			    if(envItem->getUniqueId() > lastID)
+				lastID = envItem->getUniqueId();
 			}	    
 			else 
 			{
@@ -460,6 +465,9 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
     {
 	throw std::runtime_error("empty document.");
     }
+
+    lastID++;
+    env->last_id = lastID;
 
     // clean up
     yaml_document_delete(&document);
