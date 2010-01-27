@@ -92,6 +92,12 @@ void Environment::addEventListener(EventListener *evl)
     
     //iterate over frame tree
     publishChilds(evl, getRootNode());    
+
+    //publish connections between maps and Framenodes
+    for(cartesianMapGraphType::iterator it = cartesianMapGraph.begin(); it != cartesianMapGraph.end(); it++) 
+    {
+	evl->frameNodeSet(it->first, it->second);
+    }
     
     eventListeners.push_back(evl);
 }
