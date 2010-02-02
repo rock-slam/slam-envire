@@ -12,7 +12,7 @@ using namespace envire;
 const std::string FrameNode::className = "envire::FrameNode";
 
 FrameNode::FrameNode()
-    : frame( Eigen::Matrix4f::Identity() )
+    : frame( Eigen::Matrix4d::Identity() )
 {
 }
 

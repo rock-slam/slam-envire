@@ -99,7 +99,7 @@ namespace envire
     class FrameNode : public EnvironmentItem
     {
     public:
-	typedef Eigen::Transform<float,3> TransformType;
+	typedef Eigen::Transform<double,3> TransformType;
 
     protected:
         /** The 3D transformation that leads from the parent frame to this one

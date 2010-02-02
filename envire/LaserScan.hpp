@@ -13,7 +13,7 @@ namespace envire {
             /** scanline typedef, first in tuple specifies the delta_phi. This is
              * the step size in rads perpendicular to the scan direction of the
              * laser scanner (normally axis of the pan unit */
-            typedef std::pair< float, std::vector<int> > scanline_t;
+            typedef std::pair< float, std::vector<unsigned int> > scanline_t;
 
             /** angular stepsize in rad between scan points in scan direction of
              * the laser scan */

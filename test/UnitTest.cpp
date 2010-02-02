@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE( environment )
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
-    fn1->getTransform().translation() += Eigen::Vector3f( 0.0, 0.0, 0.5 );
+    fn1->getTransform().translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
     fn2 = new FrameNode();
-    fn2->getTransform().rotate(Eigen::Quaternionf( 0.0, 1.0, 0.0, 0.0 ));
+    fn2->getTransform().rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
     fn3 = new FrameNode();
 
     // attach explicitely
@@ -122,9 +122,9 @@ BOOST_AUTO_TEST_CASE( serialization )
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
-    fn1->getTransform().translation() += Eigen::Vector3f( 0.0, 0.0, 0.5 );
+    fn1->getTransform().translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
     fn2 = new FrameNode();
-    fn2->getTransform().rotate(Eigen::Quaternionf( 0.0, 1.0, 0.0, 0.0 ));
+    fn2->getTransform().rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
     fn3 = new FrameNode();
     
     // attach explicitely

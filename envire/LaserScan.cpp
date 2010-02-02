@@ -37,7 +37,7 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
     Environment* env = node->getEnvironment();
     LaserScan* scan = new LaserScan();
 
-    FrameNode::TransformType transform( Eigen::Matrix4f::Identity() );
+    FrameNode::TransformType transform( Eigen::Matrix4d::Identity() );
 
     try {
 	scan->parseScan( file, transform );
@@ -50,7 +50,7 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
 
     env->attachItem( scan );
 
-    if( transform.matrix() != Eigen::Matrix4f::Identity() )
+    if( transform.matrix() != Eigen::Matrix4d::Identity() )
     {
 	FrameNode* fm = new FrameNode();
 	fm->setTransform( transform );
@@ -88,13 +88,13 @@ bool LaserScan::parseScan( const std::string& file, FrameNode::TransformType& tr
         if( key == "orientation" ) {
             float x, u, v, w;
             iline >> x >> u >> v >> w;
-            transform.rotate( Eigen::Quaternionf(x, u, v, w) );
+            transform.rotate( Eigen::Quaterniond(x, u, v, w) );
         }
 
         if( key == "origin" ) {
             float x,y,z;
             iline >> x >> y >> z;
-            transform.pretranslate( Eigen::Vector3f(x,y,z) );
+            transform.pretranslate( Eigen::Vector3d(x,y,z) );
         }
 
         if( key == "delta_psi" ) {
@@ -160,7 +160,7 @@ bool LaserScan::writeScan( const std::string& file )
     for( vector<scanline_t>::iterator it=lines.begin();it!=lines.end();it++)
     {
 	data << "line " << (*it).first;
-	for( vector<int>::iterator pi=(*it).second.begin();pi!=(*it).second.end();pi++)
+	for( vector<unsigned int>::iterator pi=(*it).second.begin();pi!=(*it).second.end();pi++)
 	{
 	    data << " " << (*pi);
 	}
