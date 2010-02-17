@@ -103,7 +103,7 @@ bool ScanMeshing::updateAll()
                 idx_line[point_num] = -1;
             }
            
-            if( line_num > 0 ) {
+            if( line_num > 0 && point_num > 0) {
                 // prev_line is valid now, we can start looking for polygons
                 int poly[4] = { prev_idx_line[point_num-1], 
                     prev_idx_line[point_num],
