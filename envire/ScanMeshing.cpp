@@ -7,6 +7,7 @@ using namespace std;
 const std::string ScanMeshing::className = "ScanMeshing";
 
 ScanMeshing::ScanMeshing()
+    : maxEdgeLength(0.5), remissionScaleFactor(10000)
 {
 }
 
@@ -15,6 +16,7 @@ ScanMeshing::ScanMeshing(Serialization& so)
 {
     so.setClassName(className);
     so.read("maxEdgeLength", maxEdgeLength ); 
+    so.read("remissionScaleFactor", maxEdgeLength ); 
 }
 
 void ScanMeshing::serialize(Serialization& so)
@@ -22,6 +24,7 @@ void ScanMeshing::serialize(Serialization& so)
     Operator::serialize(so);
     so.setClassName(className);
     so.write("maxEdgeLength", maxEdgeLength ); 
+    so.write("remissionScaleFactor", maxEdgeLength ); 
 }
 
 
@@ -53,11 +56,10 @@ bool ScanMeshing::updateAll()
     TriMesh* meshPtr = static_cast<envire::TriMesh*>(*env->getOutputs(this).begin());
     LaserScan* scanPtr = static_cast<envire::LaserScan*>(*env->getInputs(this).begin());
 
-    const double PI = 3.141592;
-
     std::vector<Eigen::Vector3f>& points(meshPtr->points);
+    std::vector<Eigen::Vector3f>& colors(meshPtr->colors);
     typedef TriMesh::triangle_t triangle_t;
-    std::vector< triangle_t > faces(meshPtr->faces);
+    std::vector< triangle_t >& faces(meshPtr->faces);
 
     envire::LaserScan& scan(*scanPtr);
 
@@ -67,19 +69,19 @@ bool ScanMeshing::updateAll()
     for(int line_num=0;line_num<scan.lines.size();line_num++) {
         const LaserScan::scanline_t& line(scan.lines[line_num]);
 
-        float phi = scan.origin_phi + line.first;
+        float phi = scan.origin_phi + line.delta_phi;
         float psi = scan.origin_psi;
 
-        for(int point_num=0;point_num<line.second.size();point_num++) {
+	bool has_rem = (line.ranges.size() == line.remissions.size());
+
+        for(int point_num=0;point_num<line.ranges.size();point_num++) {
             // TODO check what actually is a valid range
-            if( line.second[point_num] > 100 ) {
-                float range = line.second[point_num] / 1000.0;
+            if( line.ranges[point_num] > 100 ) {
+                float range = line.ranges[point_num] / 1000.0;
                 float xx = std::cos( psi ) * range;
 
-                // TODO needed to mirror the image... don't know why 
-                // could be located in scan file generation
                 Eigen::Vector3f point( 
-                    -std::sin( psi ) * range,
+                    std::sin( psi ) * range,
                     std::cos( phi ) * xx,
                     std::sin( phi ) * xx );
 
@@ -87,6 +89,15 @@ bool ScanMeshing::updateAll()
                 Eigen::Vector3f offset = Eigen::AngleAxisf(phi, Eigen::Vector3f::UnitX()) * scan.center_offset;
 
                 points.push_back( point - offset ); 
+		if( has_rem )
+		{
+		    // convert the remission value into a color value
+		    // for now we do that with a simple linear conversion and a cutoff
+		    float cval = std::min( 1.0, std::max( 0.0, line.remissions[point_num] / (double)remissionScaleFactor ) );
+
+		    colors.push_back( Eigen::Vector3f::Ones() * cval );
+		}
+
                 idx_line[point_num] = points.size() - 1;
             } else {
                 idx_line[point_num] = -1;
@@ -121,7 +132,7 @@ bool ScanMeshing::updateAll()
 
                             // observe the triangle order for faces on the
                             // other half of the sphere
-                            if( fabs(psi) > (PI/2) ) {
+                            if( fabs(psi) > (M_PI/2) ) {
                                 triangle_t tri( poly[idx[0]], poly[idx[2]], poly[idx[1]] );
                                 faces.push_back( tri );
                             } else {

@@ -10,10 +10,15 @@ namespace envire {
     class LaserScan : public CartesianMap
     {
         public:
-            /** scanline typedef, first in tuple specifies the delta_phi. This is
-             * the step size in rads perpendicular to the scan direction of the
-             * laser scanner (normally axis of the pan unit */
-            typedef std::pair< float, std::vector<unsigned int> > scanline_t;
+	    /** delta_phi is the step size in rads perpendicular to the scan
+	     * direction of the laser scanner (normally axis of the pan unit)
+	     * */
+	    struct scanline_t
+	    {
+		float delta_phi;
+		std::vector<unsigned int> ranges;
+		std::vector<unsigned int> remissions;
+	    };
 
             /** angular stepsize in rad between scan points in scan direction of
              * the laser scan */

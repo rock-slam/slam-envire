@@ -115,17 +115,43 @@ bool LaserScan::parseScan( const std::string& file, FrameNode::TransformType& tr
 
         if( key == "line" ) {
             scanline_t scanline;
-            iline >> scanline.first;
+            iline >> scanline.delta_phi;
 
             while( !iline.eof() ) {
                 int dist;
                 iline >> dist;
-                scanline.second.push_back( dist );
+                scanline.ranges.push_back( dist );
             }
 
-            points_per_line = scanline.second.size();
+            points_per_line = scanline.ranges.size();
 
             lines.push_back( scanline );
+        }
+
+        if( key == "remission" ) {
+	    if( lines.size() == 0 )
+	    {
+		std::cerr << "remission line without prior line statement." << std::endl;
+		return false;
+	    }
+
+            scanline_t& scanline(lines.back());
+	    float dphi;
+            iline >> dphi;
+
+	    if( dphi != scanline.delta_phi )
+	    {
+		std::cerr << "remission line does not have the same delta_phi value as prior line statement." << std::endl;
+		return false;
+	    }
+
+            while( !iline.eof() ) {
+                float rem;
+                iline >> rem;
+                scanline.remissions.push_back( rem );
+            }
+
+            points_per_line = scanline.remissions.size();
         }
     }
 
@@ -159,8 +185,8 @@ bool LaserScan::writeScan( const std::string& file )
 
     for( vector<scanline_t>::iterator it=lines.begin();it!=lines.end();it++)
     {
-	data << "line " << (*it).first;
-	for( vector<unsigned int>::iterator pi=(*it).second.begin();pi!=(*it).second.end();pi++)
+	data << "line " << (*it).delta_phi;
+	for( vector<unsigned int>::iterator pi=(*it).ranges.begin();pi!=(*it).ranges.end();pi++)
 	{
 	    data << " " << (*pi);
 	}

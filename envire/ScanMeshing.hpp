@@ -11,6 +11,7 @@ namespace envire {
 	static const std::string className;
 
 	float maxEdgeLength;
+	float remissionScaleFactor;
 
     public:
 	ScanMeshing();

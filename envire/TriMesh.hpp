@@ -15,7 +15,23 @@ namespace envire {
     public:
 	typedef boost::tuple<int, int, int> triangle_t;
 
+	/** per point colors. Size and order needs to match the points array
+	 */
+	std::vector<Eigen::Vector3f> colors;
+	
+	/** per point normals. Size and order of this vector needs to match the
+	 * points array or can be empty
+	 */
+	std::vector<Eigen::Vector3f> normals;
+	
+	/** definition of 3d points of the trimesh
+	 */
 	std::vector<Eigen::Vector3f> points;
+
+	/** vector of triangle_t, which are indeces into the points vector the
+	 * number of trimeshes is independent of the number of points in the
+	 * map
+	 */
 	std::vector<triangle_t> faces;
 
 	static const std::string className;
