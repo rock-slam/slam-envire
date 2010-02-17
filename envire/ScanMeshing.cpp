@@ -81,14 +81,14 @@ bool ScanMeshing::updateAll()
                 float xx = std::cos( psi ) * range;
 
                 Eigen::Vector3f point( 
-                    std::sin( psi ) * range,
+                    -std::sin( psi ) * range,
                     std::cos( phi ) * xx,
                     std::sin( phi ) * xx );
 
                 // perform center offset compensation
                 Eigen::Vector3f offset = Eigen::AngleAxisf(phi, Eigen::Vector3f::UnitX()) * scan.center_offset;
 
-                points.push_back( point - offset ); 
+                points.push_back( point + offset ); 
 		if( has_rem )
 		{
 		    // convert the remission value into a color value
@@ -144,7 +144,7 @@ bool ScanMeshing::updateAll()
                 }
             }
                 
-            psi -= scan.delta_psi;
+            psi += scan.delta_psi;
         }
 
         // swap line and previous line
