@@ -100,6 +100,15 @@ bool ScanMeshing::updateAll()
 		    colors.push_back( Eigen::Vector3f::Ones() * cval );
 		}
 
+		// see if the the scanpoint is actually on the edge of the scan
+		bool edge = 
+		    point_num == 0 
+		    || point_num == (line.ranges.size()-1) 
+		    || line_num == 0
+		    || line_num == (scan.lines.size()-1);
+
+		point_attrs.push_back( edge ? TriMesh::SCAN_EDGE : 0 );
+
                 idx_line[point_num] = points.size() - 1;
             } else {
                 idx_line[point_num] = -1;
