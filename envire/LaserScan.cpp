@@ -191,6 +191,16 @@ bool LaserScan::writeScan( const std::string& file )
 	    data << " " << (*pi);
 	}
 	data << endl;
+
+	if( (*it).ranges.size() == (*it).remissions.size() )
+	{
+	    data << "remission " << (*it).delta_phi;
+	    for( vector<unsigned int>::iterator pi=(*it).remissions.begin();pi!=(*it).remissions.end();pi++)
+	    {
+		data << " " << (*pi);
+	    }
+	    data << endl;
+	}
     }	
 
     data.close();
