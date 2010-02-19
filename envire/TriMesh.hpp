@@ -7,26 +7,68 @@
 #include <Eigen/Geometry>
 
 #include <vector>
+#include <stdexcept>
+
+class VectorHolder;
 
 namespace envire {
+
+    class VectorHolder
+    {
+	public:
+	    virtual void* getData() = 0;
+	    template <typename T> std::vector<T>& get()
+	    {
+		return *static_cast<std::vector<T>*>( getData() );
+	    }
+    };
+
+    template <typename T>
+    class VectorH : public VectorHolder 
+    {
+	std::vector<T>* ptr;
+
+	public:
+	VectorH()
+	{
+	    ptr = new std::vector<T>();
+	};
+
+	~VectorH()
+	{
+	    delete ptr;
+	};
+
+	void* getData() 
+	{
+	    return ptr;
+	}
+    };
 
     class TriMesh : public CartesianMap 
     {
     public:
 	typedef boost::tuple<int, int, int> triangle_t;
+	typedef int vertex_attr;
 
-	/** per point colors. Size and order needs to match the points array
-	 */
-	std::vector<Eigen::Vector3f> colors;
-	
-	/** per point normals. Size and order of this vector needs to match the
-	 * points array or can be empty
-	 */
-	std::vector<Eigen::Vector3f> normals;
-	
+	enum data_type
+	{
+	    VERTEX,
+	    VERTEX_COLOR,
+	    VERTEX_NORMAL,
+	    VERTEX_ATTRIBUTES,
+	    FACE
+	};
+
+	enum attr_flag
+	{
+	    SCAN_EDGE = 0x01 // vertex point is at the edge of a laserscan
+	};
+
+    public:
 	/** definition of 3d points of the trimesh
 	 */
-	std::vector<Eigen::Vector3f> points;
+	std::vector<Eigen::Vector3f> vertices;
 
 	/** vector of triangle_t, which are indeces into the points vector the
 	 * number of trimeshes is independent of the number of points in the
@@ -35,8 +77,31 @@ namespace envire {
 	std::vector<triangle_t> faces;
 
 	static const std::string className;
+
     public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+	template <typename T>
+	std::vector<T>& getData(data_type type)
+	{
+	    if( !hasData( type ) )
+		data_map[type] = new VectorH<T>;
+
+	    if( typeid(*data_map[type]) != typeid(VectorH<T>) )
+	    {
+		std::cerr 
+		    << "type mismatch. type should be " 
+		    << typeid(data_map[type]).name() 
+		    << " but is " 
+		    << typeid(VectorH<T>).name()
+		    << std::endl;
+		throw std::runtime_error("data type mismatch.");
+	    }
+
+	    return data_map[type]->get<T>();
+	};
+
+	bool hasData(data_type type);
 	
 	TriMesh();
 
@@ -49,6 +114,9 @@ namespace envire {
 	const std::string& getClassName() const {return className;};
 
 	TriMesh* clone();
+
+    private:
+	std::map<data_type, VectorHolder*> data_map;
     };
 }
 

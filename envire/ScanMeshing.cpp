@@ -56,8 +56,10 @@ bool ScanMeshing::updateAll()
     TriMesh* meshPtr = static_cast<envire::TriMesh*>(*env->getOutputs(this).begin());
     LaserScan* scanPtr = static_cast<envire::LaserScan*>(*env->getInputs(this).begin());
 
-    std::vector<Eigen::Vector3f>& points(meshPtr->points);
-    std::vector<Eigen::Vector3f>& colors(meshPtr->colors);
+    std::vector<Eigen::Vector3f>& points(meshPtr->vertices);
+    std::vector<Eigen::Vector3f>& colors(meshPtr->getData<Eigen::Vector3f>(TriMesh::VERTEX_COLOR));
+    std::vector<TriMesh::vertex_attr>& point_attrs(meshPtr->getData<TriMesh::vertex_attr>(TriMesh::VERTEX_ATTRIBUTES));
+
     typedef TriMesh::triangle_t triangle_t;
     std::vector< triangle_t >& faces(meshPtr->faces);
 

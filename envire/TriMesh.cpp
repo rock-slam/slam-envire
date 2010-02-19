@@ -39,3 +39,9 @@ void TriMesh::readMap(const std::string& path)
     // TODO read from ply file
     throw std::runtime_error("not yet implemented");
 }
+
+bool TriMesh::hasData(data_type type)
+{
+    return data_map.count(type);
+}
+
