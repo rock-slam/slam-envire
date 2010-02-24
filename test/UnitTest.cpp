@@ -35,6 +35,51 @@ public:
     void serialize(Serialization &) {};
 };
 
+BOOST_AUTO_TEST_CASE( TreeTest )
+{
+    // set up an environment
+    Environment* env = new Environment();
+
+    //check if three nodes are the childs of root
+    // create some child framenodes
+    FrameNode *fn1, *fn2, *fn3;
+    fn1 = new FrameNode();
+    FrameNode::TransformType t = fn1->getTransform();
+    t.translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
+    fn1->setTransform(t);
+    fn2 = new FrameNode();
+    t = fn2->getTransform();
+    t.rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
+    fn2->setTransform(t);
+    fn3 = new FrameNode();
+
+    //attach 3 node to root
+    env->addChild(env->getRootNode(), fn1);
+    env->addChild(env->getRootNode(), fn2);
+    env->addChild(env->getRootNode(), fn3);
+    
+    std::list<FrameNode *> childs = env->getChildren(env->getRootNode());
+    
+    BOOST_CHECK( contains(env->getChildren(env->getRootNode()),fn1) );
+    BOOST_CHECK( contains(env->getChildren(env->getRootNode()),fn2) );
+    BOOST_CHECK( contains(env->getChildren(env->getRootNode()),fn3) );
+    
+    //attach fn2 to fn3
+    env->addChild(fn2, fn3);
+    
+    BOOST_CHECK( contains(env->getChildren(fn3) ,fn2) );
+    
+    //remove fn2 from rootNode
+    env->removeChild(env->getRootNode(), fn2);
+    BOOST_CHECK( contains(env->getChildren(fn3) ,fn2) );
+    BOOST_CHECK(!contains(env->getChildren(env->getRootNode()) ,fn2) );
+
+    //See what happesn if we try to remove nonexistent childs
+    env->removeChild(env->getRootNode(), fn2);
+
+    
+    std::cout<< "Tree test Sucessfull" <<std::endl;
+}
 
 BOOST_AUTO_TEST_CASE( environment )
 {
@@ -46,12 +91,15 @@ BOOST_AUTO_TEST_CASE( environment )
 
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
-    fn1 = new FrameNode();
-    fn1->getTransform().translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
+    FrameNode::TransformType t = fn1->getTransform();
+    t.translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
+    fn1->setTransform(t);
     fn2 = new FrameNode();
-    fn2->getTransform().rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
+    t = fn2->getTransform();
+    t.rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
+    fn2->setTransform(t);
     fn3 = new FrameNode();
-
+    
     // attach explicitely
     env->attachItem( fn1 );
     BOOST_CHECK( fn1->isAttached() );
@@ -65,8 +113,8 @@ BOOST_AUTO_TEST_CASE( environment )
     BOOST_CHECK( fn2->isAttached() );
     
     // setup the rest of the framenodes
-    env->addChild( env->getRootNode(), fn3 );
-
+    env->addChild( env->getRootNode(), fn3 );    
+    
     // now do the same for layers
     Layer *l1, *l2, *l3;
     l1 = new DummyLayer();
@@ -121,10 +169,13 @@ BOOST_AUTO_TEST_CASE( serialization )
 
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
-    fn1 = new FrameNode();
-    fn1->getTransform().translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
+    FrameNode::TransformType t = fn1->getTransform();
+    t.translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
+    fn1->setTransform(t);
     fn2 = new FrameNode();
-    fn2->getTransform().rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
+    t = fn2->getTransform();
+    t.rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
+    fn2->setTransform(t);
     fn3 = new FrameNode();
     
     // attach explicitely

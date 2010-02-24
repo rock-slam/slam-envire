@@ -137,11 +137,6 @@ namespace envire
          */
 	TransformType const& getTransform() const;
 
-        /** Returns the Transformation that leads from the parent frame to
-         * this one
-         */
-        TransformType& getTransform();
-
         /** Updates the transformation between that node and its parent.
          * Relevant operators will be notified of that change, and all data that
          * has been generated based on that information will be marked as dirty

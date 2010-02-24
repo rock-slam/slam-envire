@@ -48,11 +48,6 @@ FrameNode* FrameNode::getParent()
 
 FrameNode::TransformType const& FrameNode::getTransform() const 
 {
-    return const_cast<TransformType&>(static_cast<const FrameNode&>(*this).getTransform());
-}
-
-FrameNode::TransformType& FrameNode::getTransform()
-{
     return frame;
 }
 
