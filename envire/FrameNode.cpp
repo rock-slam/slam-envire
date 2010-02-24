@@ -54,5 +54,8 @@ FrameNode::TransformType const& FrameNode::getTransform() const
 void FrameNode::setTransform(TransformType const& transform)
 {
     frame = transform;
+    if(env) {
+	env->itemModified(this);
+    }
 }
 

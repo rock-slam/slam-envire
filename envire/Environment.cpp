@@ -143,6 +143,13 @@ void Environment::detachItem(EnvironmentItem* item)
     item->unique_id = ITEM_NOT_ATTACHED;
 }
 
+void Environment::itemModified(EnvironmentItem* item) {
+    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    {
+	(*it)->itemModified(item);
+    }    
+}
+
 void Environment::addChild(FrameNode* parent, FrameNode* child)
 {
     if( !child->isAttached() )

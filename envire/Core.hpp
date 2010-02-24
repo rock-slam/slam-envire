@@ -382,6 +382,14 @@ namespace envire
 	 */
 	void detachItem(EnvironmentItem* item);
 	
+	/**
+	* This method will be called by any EnvironmentItem, which was
+	* modified. Calling this method will invoke all listeners 
+	* attached to the environment and call their itemModified
+	* method.
+	**/
+	void itemModified(EnvironmentItem* item);
+	
 	template<class T> T getItem(int uniqueId) 
 	    { return reinterpret_cast<T>(items[uniqueId]); };
 
