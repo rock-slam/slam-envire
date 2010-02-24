@@ -2,30 +2,89 @@
 
 USING_PART_OF_NAMESPACE_EIGEN
 
-ICP::ICP( const std::vector<Eigen::Vector3f>& model, 
-        const std::vector<Eigen::Vector3f>& measurement, 
-        const Eigen::Transform3f alignment,
-        float threshold, int density ) : 
-    model(model), measurement(measurement), t(alignment), threshold(threshold), density(density)  {
-
-    // initialise seed
-    srand ( time(NULL) );
-
-    // insert the model into the tree
-    std::cout << "model size: " << model.size() << "     " << std::endl;
-    for(int i=0;i<model.size();i++) {
-        if( rand() % density == 0 ) {
-            kdtree.insert( model[i] );
-        }
-    }
-    //    std::cout << std::endl << "building tree done " << std::endl;
-    //    std::cout << "optimising tree" << std::endl;
-    //    std::vector<Vector3f> model_copy(model);
-    //    kdtree.efficient_replace_and_optimise( model_copy );
-    //    std::cout << "optimising tree done" << std::endl;
+ICP::ICP() :
+    rand_gen( 42u ),
+    rand( rand_gen, boost::uniform_real<>(0,1) )
+{
 }
 
-float ICP::iterate() {
+ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, float min_error)
+{
+    int n=0;
+    float avg_error;
+
+    // TODO come up with a real algorithm to estimate starting values
+    float density = 0.1, threshold = 1.0;
+
+    while(n<max_iter)
+    {
+	// update the model
+	for(int i=0;i<modelVec.size();i++)
+	{
+	    updateTree( modelVec[i], density );
+	}
+
+	avg_error = updateAlignment( measurement, threshold, density );
+	if( avg_error < min_error )
+	    break;
+
+	// TODO come up with a real algoritm for estimating
+	// density and threshold
+	density = 1.0-(1.0-density)*.7;
+	threshold = threshold*.7;
+	n++;
+    }
+
+    return ICP::Result( n, avg_error );
+}
+
+
+ICP::Result ICP::align( int max_iter, float min_error)
+{
+    throw std::runtime_error("not yet implemented");
+}
+
+void ICP::updateTree( envire::TriMesh* model, float density )
+{
+    // get the transformation between the local frame and the global
+    // frame of the environment 
+    envire::FrameNode::TransformType
+	C_l2g = model->getEnvironment()->relativeTransform(
+		model->getFrameNode(),
+		model->getEnvironment()->getRootNode() );
+
+    std::vector<Eigen::Vector3f>& points(model->vertices);
+    std::vector<unsigned int>& attrs(model->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
+
+    // insert the model into the tree
+    for(int i=0;i<points.size();i++) {
+        if( rand() <= density ) {
+            kdtree.insert( 
+		    TreeNode( 
+			C_l2g.cast<float>() * points[i], 
+			attrs[i] & envire::TriMesh::SCAN_EDGE
+			) );
+        }
+    }
+}
+
+void ICP::addToModel( envire::TriMesh* model )
+{
+    modelVec.push_back( model );
+}
+
+void ICP::clearModel()
+{
+    modelVec.clear();
+}
+
+void ICP::clearTree()
+{
+    kdtree.clear();
+}
+
+float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float density )
+{
     // for each point in the measurement, try to find a point in the model given
     // the current threshold and store the in the X and P
     //
@@ -33,25 +92,36 @@ float ICP::iterate() {
     // Besl P, McKay H. A method for registration of 3-D shapes. IEEE Transactions on pattern... 1992. 
     // Available at: http://doi.ieeecomputersociety.org/10.1109/34.121791.
   
-//    std::vector<Vector3f> x, p;
     x.clear();
     p.clear();
 
-    std::cout << t.matrix() << std::endl;
-    std::cout << "start find pairs " << measurement.size() << " threshold: " << threshold << std::endl;
-    for(int i=0;i<measurement.size();i+=1) {
-        if( rand() % density == 0 ) {
-            Vector3f point = t * measurement[i];
-            std::pair<tree_type::const_iterator,float> found = kdtree.find_nearest(point, threshold);
+    // get the transformation between the local frame and the global
+    // frame of the environment 
+    envire::FrameNode::TransformType
+	C_l2g = measurement->getEnvironment()->relativeTransform(
+		measurement->getFrameNode(),
+		measurement->getEnvironment()->getRootNode() );
 
-            if( found.first != kdtree.end() ) { 
-                x.push_back( *found.first );
-                p.push_back( point );
-            }
-        }
+    std::vector<Eigen::Vector3f>& points(measurement->vertices);
+    std::vector<unsigned int>& attrs(measurement->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
-        if( i%1000 == 0 ) {
-            std::cout << "\rfind pairs " << i << "     " << std::flush;
+    // find matching point pairs between measurement and model
+    for(int i=0;i<points.size();i++) {
+        if( rand() <= density ) {
+	    TreeNode tn( 
+		    C_l2g.cast<float>() * points[i], 
+		    attrs[i] & envire::TriMesh::SCAN_EDGE );
+
+            std::pair<tree_type::const_iterator,float> found = kdtree.find_nearest(tn, threshold);
+	    if( found.first != kdtree.end() )
+	    {
+		// really ignore anything to do with scan edges
+		if(!found.first->edge && !tn.edge)
+		{
+		    x.push_back( found.first->point );
+		    x.push_back( tn.point );
+		}
+	    }
         }
     }
 
@@ -94,9 +164,26 @@ float ICP::iterate() {
         }
     }
 
+    // resulting transformation in global frame
     Eigen::Vector3f q_T = mu_x - q_R * mu_p;
-
+    Eigen::Transform3f t;
     t = Eigen::Translation3f( q_T );
     t *= q_R;
+
+    // TODO: find the framenode that should be updated really as this might not
+    // be necessarily the framenode associated with the trimesh
+    envire::FrameNode* fm = measurement->getFrameNode();
+
+    // get the transformation to the root framenode
+    envire::FrameNode::TransformType
+	C_fm2g = measurement->getEnvironment()->relativeTransform(
+		fm,
+		measurement->getEnvironment()->getRootNode() );
+
+    // TODO check this
+    fm->setTransform( C_fm2g * fm->getTransform() );
+
+    // TODO return a real measurement of quality here
+    return 1.0;
 }
 

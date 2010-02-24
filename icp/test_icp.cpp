@@ -1,31 +1,51 @@
-#include "icp.hpp"
 #include <Eigen/Geometry>
+#include "icp.hpp"
 
-USING_PART_OF_NAMESPACE_EIGEN
+BOOST_AUTO_TEST_CASE( half_cube ) 
+{
+    Environment* env = new Environment(); 
 
-int main(int, char *[]) {
-    std::vector<Vector3f> model, measurement;
-   
-    // Perform an initial transform
-    Eigen::Transform3f t;
-    t = Eigen::Translation3f( 0,0,.2 );
+    TriMesh* mesh = new TriMesh();
+    env->attachItem( mesh );
+
+    TriMesh* mesh2 = new TriMesh();
+    env->attachItem( mesh2 );
+
+    // initialise a number of transforms
+    Eigen::Transform3f t1 = Eigen::Translation3f( 0,0,.2 );
     t *= Eigen::AngleAxisf(0.2, Vector3f::UnitX());
 
-    std::cout << t.matrix() << std::endl << std::endl;
+    std::vector<Eigen::Vector3f>& points2(mesh2->points);
+    std::vector<unsigned int>& attrs2(mesh2->getData(TriMesh::VERTEX_ATTRIBUTES));
 
-    // generate a cube of voxels
-    for(int i=0;i<8;i++) {
-        Vector3f a( (i&1?1:-1), (i&2?1:-1), (i&4?1:-1) );
-        model.push_back( a );
-        Vector3f b = t*a;
-        measurement.push_back( b );
+    // generate a pointcloud with vertices on 3 adjecent walls of a cube
+    // generate a pointcloud with vertices at all edges of a cube
+    for(int i=0;i<10;i++)
+    {
+	for(int j=0;j<10;j++)
+	{
+	    bool edge = (i == 10 || j == 10);
+
+	    points.push_back( Eigen::Vector3f( i, j, 0 ) );
+	    points.push_back( Eigen::Vector3f( 0, i, j ) );
+	    points.push_back( Eigen::Vector3f( i, 0, j ) );
+	    attr.push_back( edge << TriMesh::EDGE );
+	    attr.push_back( edge << TriMesh::EDGE );
+	    attr.push_back( edge << TriMesh::EDGE );
+
+	    points2.push_back( t*Eigen::Vector3f( i, j, 0 ) );
+	    points2.push_back( t*Eigen::Vector3f( 0, i, j ) );
+	    points2.push_back( t*Eigen::Vector3f( i, 0, j ) );
+	    attr2.push_back( edge << TriMesh::EDGE );
+	    attr2.push_back( edge << TriMesh::EDGE );
+	    attr2.push_back( edge << TriMesh::EDGE );
+	}
     }
 
-    Eigen::Transform3f alignment;
-    alignment.setIdentity();
-    ICP icp(model, measurement, alignment, 2, 1);
+    ICP icp;
+    icp.addToModel( mesh );
 
-    std::cout << icp.getTransform().matrix() << std::endl << std::endl;
-    icp.iterate();
-    std::cout << (icp.getTransform()*t).matrix() << std::endl << std::endl;
-}
+    icp.align( mesh2, 5, 1.0 );
+
+    delete env;
+} 

@@ -6,6 +6,10 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
 
+pkg_check_modules(ENVIRE REQUIRED "envire")
+include_directories(${ENVIRE_INCLUDE_DIRS})
+link_directories(${ENVIRE_LIBRARY_DIRS})
+
 find_package(KDTree REQUIRED)
 include_directories(${KDTREE_INCLUDE_DIRS})
 
