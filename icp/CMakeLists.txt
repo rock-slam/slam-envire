@@ -9,7 +9,7 @@ set(ICP_SRCS
 add_library(icp SHARED ${ICP_SRCS})
 
 add_executable(test_icp test_icp.cpp)
-target_link_libraries(test_icp icp)
+target_link_libraries(test_icp icp envire)
 
 install(TARGETS icp
     RUNTIME DESTINATION bin

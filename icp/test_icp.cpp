@@ -1,7 +1,12 @@
 #include <Eigen/Geometry>
 #include "icp.hpp"
 
-BOOST_AUTO_TEST_CASE( half_cube ) 
+#include "envire/Core.hpp"
+#include "envire/TriMesh.hpp"
+
+using namespace envire;
+
+int main( int argc, char* argv[] )
 {
     Environment* env = new Environment(); 
 
@@ -12,11 +17,14 @@ BOOST_AUTO_TEST_CASE( half_cube )
     env->attachItem( mesh2 );
 
     // initialise a number of transforms
-    Eigen::Transform3f t1 = Eigen::Translation3f( 0,0,.2 );
-    t *= Eigen::AngleAxisf(0.2, Vector3f::UnitX());
+    Eigen::Transform3f t1( Eigen::Translation3f( 0,0,.2 ) );
+    t1 *= Eigen::AngleAxisf(0.2, Eigen::Vector3f::UnitX());
 
-    std::vector<Eigen::Vector3f>& points2(mesh2->points);
-    std::vector<unsigned int>& attrs2(mesh2->getData(TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3f>& points(mesh->vertices);
+    std::vector<unsigned int>& attr(mesh->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
+
+    std::vector<Eigen::Vector3f>& points2(mesh2->vertices);
+    std::vector<unsigned int>& attr2(mesh2->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
     // generate a pointcloud with vertices on 3 adjecent walls of a cube
     // generate a pointcloud with vertices at all edges of a cube
@@ -29,16 +37,16 @@ BOOST_AUTO_TEST_CASE( half_cube )
 	    points.push_back( Eigen::Vector3f( i, j, 0 ) );
 	    points.push_back( Eigen::Vector3f( 0, i, j ) );
 	    points.push_back( Eigen::Vector3f( i, 0, j ) );
-	    attr.push_back( edge << TriMesh::EDGE );
-	    attr.push_back( edge << TriMesh::EDGE );
-	    attr.push_back( edge << TriMesh::EDGE );
+	    attr.push_back( edge << TriMesh::SCAN_EDGE );
+	    attr.push_back( edge << TriMesh::SCAN_EDGE );
+	    attr.push_back( edge << TriMesh::SCAN_EDGE );
 
-	    points2.push_back( t*Eigen::Vector3f( i, j, 0 ) );
-	    points2.push_back( t*Eigen::Vector3f( 0, i, j ) );
-	    points2.push_back( t*Eigen::Vector3f( i, 0, j ) );
-	    attr2.push_back( edge << TriMesh::EDGE );
-	    attr2.push_back( edge << TriMesh::EDGE );
-	    attr2.push_back( edge << TriMesh::EDGE );
+	    points2.push_back( t1*Eigen::Vector3f( i, j, 0 ) );
+	    points2.push_back( t1*Eigen::Vector3f( 0, i, j ) );
+	    points2.push_back( t1*Eigen::Vector3f( i, 0, j ) );
+	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
+	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
+	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
 	}
     }
 
