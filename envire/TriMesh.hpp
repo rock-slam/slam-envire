@@ -32,13 +32,11 @@ namespace envire {
 	public:
 	VectorH()
 	{
-	    std::cout << "call new " << std::endl;
 	    ptr = new std::vector<T>();
 	};
 
 	~VectorH()
 	{
-	    std::cout << "and delete " << std::endl;
 	    delete ptr;
 	};
 
