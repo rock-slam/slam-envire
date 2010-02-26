@@ -155,6 +155,13 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
     if( !child->isAttached() )
 	attachItem( child );
 
+    // FrameNodes can only have one parent
+    // remove from previous parent first
+    if( getParent(child) )
+    {
+	removeChild( getParent(child), child );
+    }
+
     frameNodeTree.insert(make_pair(child, parent));
     
     for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
@@ -178,12 +185,15 @@ void Environment::addChild(Layer* parent, Layer* child)
 
 void Environment::removeChild(FrameNode* parent, FrameNode* child)
 {
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+    if( getParent( child ) == parent )
     {
-	(*it)->childRemoved(parent, child);
-    }
+	for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+	{
+	    (*it)->childRemoved(parent, child);
+	}
 
-    frameNodeTree.erase( frameNodeTree.find( child ) );
+	frameNodeTree.erase( frameNodeTree.find( child ) );
+    }
 }
 
 void Environment::removeChild(Layer* parent, Layer* child) 

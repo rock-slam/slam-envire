@@ -63,7 +63,8 @@ BOOST_AUTO_TEST_CASE( TreeTest )
     BOOST_CHECK( contains(env->getChildren(env->getRootNode()),fn3) );
     
     //attach fn2 to fn3
-    env->addChild(fn2, fn3);
+    //this will of course detach fn2 from the rootnode and attach it to fn3
+    env->addChild(fn3, fn2);
     
     BOOST_CHECK( contains(env->getChildren(fn3) ,fn2) );
     
@@ -72,11 +73,6 @@ BOOST_AUTO_TEST_CASE( TreeTest )
     BOOST_CHECK( contains(env->getChildren(fn3) ,fn2) );
     BOOST_CHECK(!contains(env->getChildren(env->getRootNode()) ,fn2) );
 
-    //See what happesn if we try to remove nonexistent childs
-    env->removeChild(env->getRootNode(), fn2);
-
-    
-    std::cout<< "Tree test Sucessfull" <<std::endl;
 }
 
 BOOST_AUTO_TEST_CASE( environment )
