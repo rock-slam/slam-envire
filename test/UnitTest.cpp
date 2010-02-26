@@ -44,13 +44,11 @@ BOOST_AUTO_TEST_CASE( TreeTest )
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
-    FrameNode::TransformType t = fn1->getTransform();
-    t.translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
-    fn1->setTransform(t);
+    fn1->setTransform( 
+	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
     fn2 = new FrameNode();
-    t = fn2->getTransform();
-    t.rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
-    fn2->setTransform(t);
+    fn2->setTransform( 
+	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
 
     //attach 3 node to root
@@ -91,13 +89,12 @@ BOOST_AUTO_TEST_CASE( environment )
 
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
-    FrameNode::TransformType t = fn1->getTransform();
-    t.translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
-    fn1->setTransform(t);
+    fn1 = new FrameNode();
+    fn1->setTransform( 
+	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
     fn2 = new FrameNode();
-    t = fn2->getTransform();
-    t.rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
-    fn2->setTransform(t);
+    fn2->setTransform( 
+	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
     
     // attach explicitely
