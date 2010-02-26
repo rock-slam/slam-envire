@@ -5,6 +5,7 @@
 
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
+#include <boost/scoped_ptr.hpp>
    
 using namespace envire;
 using namespace std;
@@ -38,7 +39,7 @@ public:
 BOOST_AUTO_TEST_CASE( TreeTest )
 {
     // set up an environment
-    Environment* env = new Environment();
+    boost::scoped_ptr<Environment> env( new Environment() );
 
     //check if three nodes are the childs of root
     // create some child framenodes
@@ -72,13 +73,12 @@ BOOST_AUTO_TEST_CASE( TreeTest )
     env->removeChild(env->getRootNode(), fn2);
     BOOST_CHECK( contains(env->getChildren(fn3) ,fn2) );
     BOOST_CHECK(!contains(env->getChildren(env->getRootNode()) ,fn2) );
-
 }
 
 BOOST_AUTO_TEST_CASE( environment )
 {
     // set up an environment
-    Environment* env = new Environment();
+    boost::scoped_ptr<Environment> env( new Environment() );
 
     // an environment should always have a root node 
     BOOST_CHECK( env->getRootNode() );
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( environment )
     // attach explicitely
     env->attachItem( fn1 );
     BOOST_CHECK( fn1->isAttached() );
-    BOOST_CHECK_EQUAL( fn1->getEnvironment(), env );
+    BOOST_CHECK_EQUAL( fn1->getEnvironment(), env.get() );
     env->addChild( env->getRootNode(), fn1 );
     BOOST_CHECK_EQUAL( env->getRootNode(), env->getParent(fn1) );
     BOOST_CHECK( contains(env->getChildren(env->getRootNode()),fn1) );
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE( environment )
 
     env->attachItem( l1 );
     BOOST_CHECK( l1->isAttached() );
-    BOOST_CHECK_EQUAL( l1->getEnvironment(), env );
+    BOOST_CHECK_EQUAL( l1->getEnvironment(), env.get() );
 
     env->addChild( l1, l2 );
     BOOST_CHECK_EQUAL( l1, env->getParent(l2) );
@@ -150,25 +150,21 @@ BOOST_AUTO_TEST_CASE( environment )
 
     BOOST_CHECK( contains(env->getInputs(o1),l1) );
     BOOST_CHECK( contains(env->getOutputs(o1),l3) );
-
-    delete env;
 }
 
 BOOST_AUTO_TEST_CASE( serialization )
 {
     Serialization so;
-
-    Environment* env = new Environment();
+    boost::scoped_ptr<Environment> env( new Environment() );
 
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
-    FrameNode::TransformType t = fn1->getTransform();
-    t.translation() += Eigen::Vector3d( 0.0, 0.0, 0.5 );
-    fn1->setTransform(t);
+    fn1 = new FrameNode();
+    fn1->setTransform( 
+	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
     fn2 = new FrameNode();
-    t = fn2->getTransform();
-    t.rotate(Eigen::Quaterniond( 0.0, 1.0, 0.0, 0.0 ));
-    fn2->setTransform(t);
+    fn2->setTransform( 
+	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
     
     // attach explicitely
@@ -179,21 +175,17 @@ BOOST_AUTO_TEST_CASE( serialization )
 
     // TODO get cmake to somehow add an absolute path here
     std::string path("build/test");
-    so.serialize(env, path);
+    so.serialize(env.get(), path);
 
     // now try to parse the thing again
-    Environment* env2 = 
-	so.unserialize( "build/test" );
+    boost::scoped_ptr<Environment> env2(so.unserialize( "build/test" ));
 
     // TODO check that the structure is the same
-
-    delete env;
-    delete env2;
 }
 
 BOOST_AUTO_TEST_CASE( functional ) 
 {
-    Environment* env = new Environment(); 
+    boost::scoped_ptr<Environment> env( new Environment() );
 
     LaserScan* scan = LaserScan::importScanFile("test/test.scan", env->getRootNode() );
 
@@ -214,9 +206,7 @@ BOOST_AUTO_TEST_CASE( functional )
     mop->updateAll();
 
     Serialization so;
-    so.serialize(env, "build/test");
-
-    delete env;
+    so.serialize(env.get(), "build/test");
 }
 
 // EOF
