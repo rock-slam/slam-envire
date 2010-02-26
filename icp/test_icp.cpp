@@ -4,17 +4,27 @@
 #include "envire/Core.hpp"
 #include "envire/TriMesh.hpp"
 
+#include "boost/scoped_ptr.hpp"
+
 using namespace envire;
 
 int main( int argc, char* argv[] )
 {
-    Environment* env = new Environment(); 
+    boost::scoped_ptr<Environment> env(new Environment());
+
+    FrameNode *fm1 = new FrameNode();
+    FrameNode *fm2 = new FrameNode();
+    env->addChild( env->getRootNode(), fm1 );
+    env->addChild( env->getRootNode(), fm2 );
 
     TriMesh* mesh = new TriMesh();
     env->attachItem( mesh );
 
     TriMesh* mesh2 = new TriMesh();
     env->attachItem( mesh2 );
+
+    mesh->setFrameNode( fm1 );
+    mesh2->setFrameNode( fm2 );
 
     // initialise a number of transforms
     Eigen::Transform3f t1( Eigen::Translation3f( 0,0,.2 ) );
@@ -54,6 +64,4 @@ int main( int argc, char* argv[] )
     icp.addToModel( mesh );
 
     icp.align( mesh2, 5, 1.0 );
-
-    delete env;
 } 
