@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <utility>
 #include <stdexcept>
+#include <Eigen/LU>
 
 using namespace std;
 using namespace envire;
@@ -360,7 +361,35 @@ Operator* Environment::getGenerator(Layer* output)
 
 FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
 {
-    throw std::runtime_error("relativeTransform() Not implemented yet.");
+    // the simplest but not most efficient way is to go through the root node
+    // a better way would be to look for the closest common ancestor...
+
+    FrameNode::TransformType C_fg(Eigen::Matrix4d::Identity()), C_tg(Eigen::Matrix4d::Identity());
+    const FrameNode* t = from;
+    while(!t->isRoot())
+    {
+	C_fg = t->getTransform() * C_fg;
+	t = t->getParent();
+
+	if( !t )
+	{
+	    throw std::runtime_error("FrameNode is not in main FrameTree");
+	}
+    }
+
+    t = to;
+    while(!t->isRoot())
+    {
+	C_tg = t->getTransform() * C_tg;
+	t = t->getParent();
+
+	if( !t )
+	{
+	    throw std::runtime_error("FrameNode is not in main FrameTree");
+	}
+    }
+
+    return FrameNode::TransformType( C_tg.inverse() * C_fg );
 }
 
 bool Environment::loadSceneFile( const std::string& fileName )

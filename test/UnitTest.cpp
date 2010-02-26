@@ -92,6 +92,8 @@ BOOST_AUTO_TEST_CASE( environment )
     fn2->setTransform( 
 	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
+    fn3->setTransform( 
+	    Eigen::Transform3d(Eigen::Translation3d(0.0, 1.0, 0.0)));
     
     // attach explicitely
     env->attachItem( fn1 );
@@ -107,6 +109,15 @@ BOOST_AUTO_TEST_CASE( environment )
     
     // setup the rest of the framenodes
     env->addChild( env->getRootNode(), fn3 );    
+
+    // perform a relative transformation
+    FrameNode::TransformType rt1 = env->relativeTransform(fn2, fn1);
+    BOOST_CHECK( rt1.matrix().isApprox( fn2->getTransform().matrix(), 1e-10 ) );
+
+    FrameNode::TransformType rt2 = env->relativeTransform(fn2, fn3);
+    BOOST_CHECK( rt2.matrix().isApprox( 
+		fn3->getTransform().inverse() * fn1->getTransform() * fn2->getTransform(),
+		1e-10 ) );
     
     // now do the same for layers
     Layer *l1, *l2, *l3;

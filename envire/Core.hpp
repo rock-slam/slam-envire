@@ -93,8 +93,8 @@ namespace envire
      * represents the global frame. Each child defines a new frame of reference,
      * that is connected to its parent frame through the transformation object.
      *
-     * So for P being the parent Frame and F the frame associated with the
-     * FrameNode, and T the Transformation, we get F = T*P.
+     * The transformation C^P_C associated with this object will transform from 
+     * this FrameNodes Frame into the parent Frame.
      */
     class FrameNode : public EnvironmentItem
     {
@@ -435,7 +435,10 @@ namespace envire
 	
         /** Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
-         * transformation, as the frames are sorted in a tree
+         * transformation, as the frames are sorted in a tree.
+	 *
+	 * relativeTransform( child, child->getParent() ) is equivalent to
+	 * child->getTransform().
          */
 	FrameNode::TransformType relativeTransform(const FrameNode* from, const FrameNode* to);
 
