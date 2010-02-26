@@ -16,6 +16,7 @@ namespace envire {
     class VectorHolder
     {
 	public:
+	    virtual ~VectorHolder() {};
 	    virtual void* getData() = 0;
 	    template <typename T> std::vector<T>& get()
 	    {
@@ -31,11 +32,13 @@ namespace envire {
 	public:
 	VectorH()
 	{
+	    std::cout << "call new " << std::endl;
 	    ptr = new std::vector<T>();
 	};
 
 	~VectorH()
 	{
+	    std::cout << "and delete " << std::endl;
 	    delete ptr;
 	};
 
@@ -104,6 +107,7 @@ namespace envire {
 	bool hasData(data_type type);
 	
 	TriMesh();
+	~TriMesh();
 
 	TriMesh(Serialization& so);
 	void serialize(Serialization& so);

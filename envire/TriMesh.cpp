@@ -11,6 +11,11 @@ TriMesh::TriMesh()
 {
 }
 
+TriMesh::~TriMesh()
+{
+    for( std::map<data_type, VectorHolder*>::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
+}
+
 TriMesh::TriMesh(Serialization& so)
     : CartesianMap(so)
 {
