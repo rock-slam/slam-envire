@@ -270,7 +270,7 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 	(*it)->frameNodeSet(map, node);
     }
 
-    cartesianMapGraph.insert( make_pair( map, node ) );
+    cartesianMapGraph[map] = node;
 }
 
 FrameNode* Environment::getFrameNode(CartesianMap* map)
