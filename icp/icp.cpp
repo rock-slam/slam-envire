@@ -108,20 +108,20 @@ float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float
     // find matching point pairs between measurement and model
     for(int i=0;i<points.size();i++) {
         if( rand() <= density ) {
-	    TreeNode tn( 
-		    C_l2g.cast<float>() * points[i], 
-		    attrs[i] & envire::TriMesh::SCAN_EDGE );
+            TreeNode tn( 
+                    C_l2g.cast<float>() * points[i], 
+                    attrs[i] & envire::TriMesh::SCAN_EDGE );
 
             std::pair<tree_type::const_iterator,float> found = kdtree.find_nearest(tn, threshold);
-	    if( found.first != kdtree.end() )
-	    {
-		// really ignore anything to do with scan edges
-		if(!found.first->edge && !tn.edge)
-		{
-		    x.push_back( found.first->point );
-		    x.push_back( tn.point );
-		}
-	    }
+            if( found.first != kdtree.end() )
+            {
+                // really ignore anything to do with scan edges
+                if(!found.first->edge && !tn.edge)
+                {
+                    x.push_back( found.first->point );
+                    p.push_back( tn.point );
+                }
+            }
         }
     }
 
