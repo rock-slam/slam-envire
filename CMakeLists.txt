@@ -23,3 +23,6 @@ link_directories(${ICP_BINARY_DIR}/icp)
 configure_file(icp.pc.in icp.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/icp.pc DESTINATION lib/pkgconfig)
 
+add_executable(test_icp test_icp.cpp)
+target_link_libraries(test_icp icp envire)
+
