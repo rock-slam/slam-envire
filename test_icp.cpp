@@ -44,16 +44,19 @@ int main( int argc, char* argv[] )
 	{
 	    bool edge = (i == 10 || j == 10);
 
-	    points.push_back( Eigen::Vector3f( i, j, 0 ) );
-	    points.push_back( Eigen::Vector3f( 0, i, j ) );
-	    points.push_back( Eigen::Vector3f( i, 0, j ) );
+	    float x = i*.1;
+	    float y = j*.1;
+
+	    points.push_back( Eigen::Vector3f( x, y, 0 ) );
+	    points.push_back( Eigen::Vector3f( 0, x, y ) );
+	    points.push_back( Eigen::Vector3f( x, 0, y ) );
 	    attr.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr.push_back( edge << TriMesh::SCAN_EDGE );
 
-	    points2.push_back( t1*Eigen::Vector3f( i, j, 0 ) );
-	    points2.push_back( t1*Eigen::Vector3f( 0, i, j ) );
-	    points2.push_back( t1*Eigen::Vector3f( i, 0, j ) );
+	    points2.push_back( t1*Eigen::Vector3f( x, y, 0 ) );
+	    points2.push_back( t1*Eigen::Vector3f( 0, x, y ) );
+	    points2.push_back( t1*Eigen::Vector3f( x, 0, y ) );
 	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr2.push_back( edge << TriMesh::SCAN_EDGE );

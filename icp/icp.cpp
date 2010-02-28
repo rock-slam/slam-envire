@@ -24,6 +24,8 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, float min_er
 	    updateTree( modelVec[i], density );
 	}
 
+	std::cout << std::endl;
+	std::cout << "n:" << n << " dens:" << density << " thresh:" << threshold << std::endl;
 	avg_error = updateAlignment( measurement, threshold, density );
 	if( avg_error < min_error )
 	    break;
@@ -105,28 +107,34 @@ float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float
     std::vector<Eigen::Vector3f>& points(measurement->vertices);
     std::vector<unsigned int>& attrs(measurement->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
+    int stat_edges = 0;
+
     // find matching point pairs between measurement and model
     for(int i=0;i<points.size();i++) {
-        if( rand() <= density ) {
-            TreeNode tn( 
-                    C_l2g.cast<float>() * points[i], 
-                    attrs[i] & envire::TriMesh::SCAN_EDGE );
+	if( rand() <= density ) {
+	    TreeNode tn( 
+		    C_l2g.cast<float>() * points[i], 
+		    attrs[i] & envire::TriMesh::SCAN_EDGE );
 
-            std::pair<tree_type::const_iterator,float> found = kdtree.find_nearest(tn, threshold);
-            if( found.first != kdtree.end() )
-            {
-                // really ignore anything to do with scan edges
-                if(!found.first->edge && !tn.edge)
-                {
-                    x.push_back( found.first->point );
-                    p.push_back( tn.point );
-                }
-            }
-        }
+	    std::pair<tree_type::const_iterator,float> found = kdtree.find_nearest(tn, threshold);
+	    if( found.first != kdtree.end() )
+	    {
+		// really ignore anything to do with scan edges
+		if(!found.first->edge && !tn.edge)
+		{
+		    x.push_back( found.first->point );
+		    p.push_back( tn.point );
+		}
+		else
+		{
+		    stat_edges++;
+		}
+	    }
+	}
     }
 
     int n = x.size();
-    std::cout << std::endl << "found pairs " << n << std::endl;
+    std::cout << "found pairs:" << n << " discarded edges:" << stat_edges << std::endl;
 
     Vector3f mu_p(Vector3f::Zero()), mu_x(Vector3f::Zero());
     Matrix3f sigma_px(Matrix3f::Zero());
