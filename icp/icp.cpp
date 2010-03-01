@@ -32,8 +32,8 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, float min_er
 
 	// TODO come up with a real algoritm for estimating
 	// density and threshold
-	density = 1.0-(1.0-density)*.7;
-	threshold = threshold*.7;
+	//density = 1.0-(1.0-density)*.7;
+	//threshold = threshold*.7;
 	n++;
     }
 
@@ -64,7 +64,7 @@ void ICP::updateTree( envire::TriMesh* model, float density )
             kdtree.insert( 
 		    TreeNode( 
 			C_l2g.cast<float>() * points[i], 
-			attrs[i] & envire::TriMesh::SCAN_EDGE
+			attrs[i] & (1 << envire::TriMesh::SCAN_EDGE)
 			) );
         }
     }
@@ -114,7 +114,7 @@ float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float
 	if( rand() <= density ) {
 	    TreeNode tn( 
 		    C_l2g.cast<float>() * points[i], 
-		    attrs[i] & envire::TriMesh::SCAN_EDGE );
+		    attrs[i] & (1 << envire::TriMesh::SCAN_EDGE) );
 
 	    std::pair<tree_type::const_iterator,float> found = kdtree.find_nearest(tn, threshold);
 	    if( found.first != kdtree.end() )
@@ -136,11 +136,15 @@ float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float
     int n = x.size();
     std::cout << "found pairs:" << n << " discarded edges:" << stat_edges << std::endl;
 
-    Vector3f mu_p(Vector3f::Zero()), mu_x(Vector3f::Zero());
+    Vector3f mu_p(Vector3f::Zero()), 
+	     mu_x(Vector3f::Zero());
     Matrix3f sigma_px(Matrix3f::Zero());
+    float mu_d = 0;
 
     // calculate the mean and covariance values of x and p
     for(int i=0;i<n;i++) {
+	mu_d += (p[i] - x[i]).norm();
+
         mu_p += p[i];
         mu_x += x[i];
 
@@ -148,10 +152,12 @@ float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float
    }
     mu_p /= static_cast<float>(n);
     mu_x /= static_cast<float>(n);
+    mu_d /= static_cast<float>(n);
 
     sigma_px = sigma_px / static_cast<float>(n) - mu_p*mu_x.transpose();
 
-    std::cout << "mu_p: " << mu_p << "mu_x:  " << mu_x << std::endl << "sigma_px: " << sigma_px << std::endl;
+    std::cout << "mu_d: " << mu_d << std::endl;
+    //std::cout << "mu_p: " << mu_p << "mu_x:  " << mu_x << std::endl << "sigma_px: " << sigma_px << std::endl;
 
     // form the symmetric 4x4 matrix Q
     Matrix3f A = sigma_px-sigma_px.transpose();
@@ -192,6 +198,6 @@ float ICP::updateAlignment( envire::TriMesh* measurement, float threshold, float
     fm->setTransform( C_fm2g * fm->getTransform() );
 
     // TODO return a real measurement of quality here
-    return 1.0;
+    return mu_d;
 }
 
