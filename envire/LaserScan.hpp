@@ -31,7 +31,7 @@ namespace envire {
             float origin_phi;
 
             /** offset of the scanner from the rotational center */
-            Eigen::Vector3f center_offset;
+            Eigen::Vector3d center_offset;
 
             /** scan points per scan line */
             int points_per_line;

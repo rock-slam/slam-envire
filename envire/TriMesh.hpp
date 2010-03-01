@@ -69,7 +69,7 @@ namespace envire {
     public:
 	/** definition of 3d points of the trimesh
 	 */
-	std::vector<Eigen::Vector3f> vertices;
+	std::vector<Eigen::Vector3d> vertices;
 
 	/** vector of triangle_t, which are indeces into the points vector the
 	 * number of trimeshes is independent of the number of points in the

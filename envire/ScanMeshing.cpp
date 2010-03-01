@@ -56,8 +56,8 @@ bool ScanMeshing::updateAll()
     TriMesh* meshPtr = static_cast<envire::TriMesh*>(*env->getOutputs(this).begin());
     LaserScan* scanPtr = static_cast<envire::LaserScan*>(*env->getInputs(this).begin());
 
-    std::vector<Eigen::Vector3f>& points(meshPtr->vertices);
-    std::vector<Eigen::Vector3f>& colors(meshPtr->getData<Eigen::Vector3f>(TriMesh::VERTEX_COLOR));
+    std::vector<Eigen::Vector3d>& points(meshPtr->vertices);
+    std::vector<Eigen::Vector3d>& colors(meshPtr->getData<Eigen::Vector3d>(TriMesh::VERTEX_COLOR));
     std::vector<TriMesh::vertex_attr>& point_attrs(meshPtr->getData<TriMesh::vertex_attr>(TriMesh::VERTEX_ATTRIBUTES));
 
     typedef TriMesh::triangle_t triangle_t;
@@ -82,13 +82,13 @@ bool ScanMeshing::updateAll()
                 float range = line.ranges[point_num] / 1000.0;
                 float xx = std::cos( psi ) * range;
 
-                Eigen::Vector3f point( 
+                Eigen::Vector3d point( 
                     -std::sin( psi ) * range,
                     std::cos( phi ) * xx,
                     std::sin( phi ) * xx );
 
                 // perform center offset compensation
-                Eigen::Vector3f offset = Eigen::AngleAxisf(phi, Eigen::Vector3f::UnitX()) * scan.center_offset;
+                Eigen::Vector3d offset = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitX()) * scan.center_offset;
 
                 points.push_back( point + offset ); 
 		if( has_rem )
@@ -97,7 +97,7 @@ bool ScanMeshing::updateAll()
 		    // for now we do that with a simple linear conversion and a cutoff
 		    float cval = std::min( 1.0, std::max( 0.0, line.remissions[point_num] / (double)remissionScaleFactor ) );
 
-		    colors.push_back( Eigen::Vector3f::Ones() * cval );
+		    colors.push_back( Eigen::Vector3d::Ones() * cval );
 		}
 
 		// see if the the scanpoint is actually on the edge of the scan
