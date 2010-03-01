@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
     mesh2->setFrameNode( fm2 );
 
     // initialise a number of transforms
-    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,.2 ) );
+    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,-0.5 ) );
     t1 *= Eigen::AngleAxisd(0.2, Eigen::Vector3d::UnitX());
 
     std::vector<Eigen::Vector3d>& points(mesh->vertices);
@@ -68,7 +68,5 @@ int main( int argc, char* argv[] )
     icp.addToModel( mesh );
 
     icp.align( mesh2, 10, 0.01 );
-
-    cout << fm2->getTransform().matrix() << endl;
 
 } 

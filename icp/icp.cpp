@@ -1,4 +1,5 @@
 #include "icp.hpp"
+#include <Eigen/LU> 
 
 USING_PART_OF_NAMESPACE_EIGEN
 
@@ -32,8 +33,8 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
 
 	// TODO come up with a real algoritm for estimating
 	// density and threshold
-	//density = 1.0-(1.0-density)*.7;
-	//threshold = threshold*.7;
+	density = 1.0-(1.0-density)*.7;
+	threshold = threshold*.7;
 	n++;
     }
 
@@ -156,8 +157,9 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 
     sigma_px = sigma_px / static_cast<double>(n) - mu_p*mu_x.transpose();
 
-    std::cout << "mu_d: " << mu_d << std::endl;
-    //std::cout << "mu_p: " << mu_p << "mu_x:  " << mu_x << std::endl << "sigma_px: " << sigma_px << std::endl;
+    std::cout << "mu_d: " << mu_d 
+	<< " mu_p: " << mu_p.transpose() 
+	<< " mu_x:  " << mu_x.transpose() << std::endl;
 
     // form the symmetric 4x4 matrix Q
     Matrix3d A = sigma_px-sigma_px.transpose();
@@ -179,10 +181,12 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     }
 
     // resulting transformation in global frame
-    Eigen::Vector3d q_T = mu_x - q_R * mu_p;
+    //Eigen::Vector3d q_T = mu_x - q_R * mu_p;
+    Eigen::Vector3d q_T = mu_x - mu_p;
     Eigen::Transform3d t;
-    t = Eigen::Translation3d( q_T );
-    t *= q_R;
+    t = q_R;
+    t *= Eigen::Translation3d( q_T );
+    //t *= q_R;
 
     // TODO: find the framenode that should be updated really as this might not
     // be necessarily the framenode associated with the trimesh
@@ -195,9 +199,10 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 		measurement->getEnvironment()->getRootNode() );
 
     // TODO check this
-    fm->setTransform( C_fm2g * fm->getTransform() );
+    fm->setTransform( envire::FrameNode::TransformType( (C_fm2g.inverse() * t * C_fm2g ) * fm->getTransform()) );
 
-    // TODO return a real measurement of quality here
+    std::cout << fm->getTransform().matrix() << std::endl;
+
     return mu_d;
 }
 
