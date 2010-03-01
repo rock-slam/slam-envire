@@ -19,7 +19,7 @@ class ICP {
     struct TreeNode
     {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	typedef float value_type;
+	typedef double value_type;
 
 	TreeNode(const Eigen::Matrix<value_type,3,1>& point, bool edge)
 	    : point(point), edge(edge) {}
@@ -37,11 +37,11 @@ class ICP {
 
     struct Result
     {
-	Result( int iterations, float avg_error )
+	Result( int iterations, double avg_error )
 	    : iterations(iterations), avg_error(avg_error) {};
 
 	int iterations;
-	float avg_error;
+	double avg_error;
     };
     
     public:
@@ -56,14 +56,14 @@ class ICP {
 	 * @param max_iter - maximum number of iterations
 	 * @param min_error - minimum average square distance between points after which to stop
 	 */
-	Result align( envire::TriMesh* measurement, int max_iter, float min_error);
+	Result align( envire::TriMesh* measurement, int max_iter, double min_error);
 
 	/** performs a global alignment of all the meshes in measurements. 
 	 * This method does not require previous calls to updateModel.
 	 * The difference to the single align is that all models will be updated 
 	 * iteratively in a round robin fashion.
 	 */
-	Result align( int max_iter, float min_error);
+	Result align( int max_iter, double min_error);
 
 	/** adds the @param model trimesh to the ICP model
 	 * 
@@ -81,20 +81,20 @@ class ICP {
 	 * @param threshold - is the max distance to look for matching closest points
 	 * @param density - how many points of the mesh to take into account. 
 	 */ 
-        float updateAlignment( envire::TriMesh* measurement, float threshold, float density );
+        double updateAlignment( envire::TriMesh* measurement, double threshold, double density );
 
-        void updateTree( envire::TriMesh* model, float density );
+        void updateTree( envire::TriMesh* model, double density );
 	void clearTree();
 
-        std::vector<Eigen::Vector3f>& getX() { return x; };
-        std::vector<Eigen::Vector3f>& getP() { return p; };
+        std::vector<Eigen::Vector3d>& getX() { return x; };
+        std::vector<Eigen::Vector3d>& getP() { return p; };
         
     private:
 	/** store an internal vector of models */
 	std::vector<envire::TriMesh*> modelVec;
 
 	/** store x and p for debug */
-        std::vector<Eigen::Vector3f> x, p;
+        std::vector<Eigen::Vector3d> x, p;
 
 	/** internal instance of kdtree */
         tree_type kdtree;
