@@ -9,6 +9,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
+#include <boost/serialization/singleton.hpp>
 #include <boost/lexical_cast.hpp>
 #include <vector>
 
@@ -454,16 +455,6 @@ namespace envire
 	friend class SerializationImpl;
 	class SerializationImpl *impl;
 
-	/** Factory typedef, which needs to be implemented by all EnvironmentItems
-	 * that are serialized.
-	 */
-	typedef EnvironmentItem* (*Factory)(Serialization &);
-
-	/** Stores the mapping for all classes that can be serialized, and a function
-	 * pointer to the Factory method of that class.
-	 */
-	static std::map<std::string, Factory> classMap;
-
 	static const std::string STRUCTURE_FILE;
 
     public:
@@ -497,6 +488,24 @@ namespace envire
     {
 	write( key, boost::lexical_cast<std::string>(value) );
     }
+
+    class SerializationFactory : public boost::serialization::singleton<SerializationFactory>
+    {
+	/** Factory typedef, which needs to be implemented by all EnvironmentItems
+	 * that are serialized.
+	 */
+	typedef EnvironmentItem* (*Factory)(Serialization &);
+
+	/** Stores the mapping for all classes that can be serialized, and a function
+	 * pointer to the Factory method of that class.
+	 */
+	mutable std::map<std::string, Factory> classMap;
+
+    public:
+	EnvironmentItem* createObject( const std::string& className, Serialization& so );
+	void addClass( const std::string& className, Factory f );
+    };
+
 }
 
 

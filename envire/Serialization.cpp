@@ -375,28 +375,19 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			// store current state in class
 			current_node = *item;
 
-			Serialization::Factory f = 0;
-			f = Serialization::classMap[className];
-			if( f )
-			{
-			    // create item and attach to environment
-			    EnvironmentItem* envItem = (*f)(so);
-			    env->attachItem( envItem );
-			    //hack to preserve root node
-			    if(envItem->getUniqueId() == 0) {
-			      env->rootNode = dynamic_cast<FrameNode *>(envItem);
-			      assert(env->rootNode);
-			    }
-			    
-			    if(envItem->getUniqueId() > lastID)
-				lastID = envItem->getUniqueId();
-			}	    
-			else 
-			{
-			    std::cerr << "could not find class of type " << className << std::endl;
-			    std::cerr << "has the class been added to the envire/SerializationClassMap.cpp file?" << std::endl;
-			    throw std::runtime_error("could not find class of type " + className );
+			// create item and attach to environment
+			EnvironmentItem* envItem = 
+			    SerializationFactory::get_mutable_instance().createObject(className, so);
+
+			env->attachItem( envItem );
+			//hack to preserve root node
+			if(envItem->getUniqueId() == 0) {
+			    env->rootNode = dynamic_cast<FrameNode *>(envItem);
+			    assert(env->rootNode);
 			}
+
+			if(envItem->getUniqueId() > lastID)
+			    lastID = envItem->getUniqueId();
 		    }
 		    else if( key == "links" )
 		    {
