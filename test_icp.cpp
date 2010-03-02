@@ -32,10 +32,10 @@ int main( int argc, char* argv[] )
     t1 *= Eigen::AngleAxisd(0.2, Eigen::Vector3d::UnitX());
 
     std::vector<Eigen::Vector3d>& points(mesh->vertices);
-    std::vector<unsigned int>& attr(mesh->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
     std::vector<Eigen::Vector3d>& points2(mesh2->vertices);
-    std::vector<unsigned int>& attr2(mesh2->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<envire::TriMesh::vertex_attr>& attr2(mesh2->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
     // generate a pointcloud with vertices on 3 adjecent walls of a cube
     // generate a pointcloud with vertices at all edges of a cube
@@ -67,6 +67,6 @@ int main( int argc, char* argv[] )
     ICP icp;
     icp.addToModel( mesh );
 
-    icp.align( mesh2, 10, 0.01 );
+    icp.align( mesh2, 5, 0.01 );
 
 } 

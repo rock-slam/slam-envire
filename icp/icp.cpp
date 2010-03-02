@@ -19,6 +19,7 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
 
     while(n<max_iter)
     {
+	clearTree();
 	// update the model
 	for(int i=0;i<modelVec.size();i++)
 	{
@@ -44,7 +45,38 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
 
 ICP::Result ICP::align( int max_iter, double min_error)
 {
-    throw std::runtime_error("not yet implemented");
+    int n=0;
+    double avg_error;
+
+    // TODO come up with a real algorithm to estimate starting values
+    double density = 0.02, threshold = 1.0;
+
+    while(n<max_iter)
+    {
+	for(int j=0;j<modelVec.size();j++)
+	{
+	    clearTree();
+	    // update the model
+	    for(int i=0;i<modelVec.size();i++)
+	    {
+		if( j!=i)
+		    updateTree( modelVec[i], density );
+	    }
+
+	    std::cout << std::endl;
+	    std::cout << "n:" << n << " dens:" << density << " thresh:" << threshold << std::endl;
+	    avg_error = updateAlignment( modelVec[j], threshold, density );
+	    if( avg_error < min_error )
+		break;
+	}
+	// TODO come up with a real algoritm for estimating
+	// density and threshold
+	density = 1.0-(1.0-density)*.98;
+	threshold = threshold*.7;
+	n++;
+    }
+
+    return ICP::Result( n, avg_error );
 }
 
 void ICP::updateTree( envire::TriMesh* model, double density )
@@ -57,7 +89,7 @@ void ICP::updateTree( envire::TriMesh* model, double density )
 		model->getEnvironment()->getRootNode() );
 
     std::vector<Eigen::Vector3d>& points(model->vertices);
-    std::vector<unsigned int>& attrs(model->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<envire::TriMesh::vertex_attr>& attrs(model->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
     // insert the model into the tree
     for(int i=0;i<points.size();i++) {
@@ -106,7 +138,7 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 		measurement->getEnvironment()->getRootNode() );
 
     std::vector<Eigen::Vector3d>& points(measurement->vertices);
-    std::vector<unsigned int>& attrs(measurement->getData<unsigned int>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<envire::TriMesh::vertex_attr>& attrs(measurement->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
 
     int stat_edges = 0;
 

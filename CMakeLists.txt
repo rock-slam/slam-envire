@@ -26,3 +26,6 @@ install(FILES ${CMAKE_BINARY_DIR}/icp.pc DESTINATION lib/pkgconfig)
 add_executable(test_icp test_icp.cpp)
 target_link_libraries(test_icp icp envire)
 
+add_executable(env_icp env_icp.cpp)
+target_link_libraries(env_icp icp envire)
+
