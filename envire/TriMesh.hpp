@@ -77,9 +77,9 @@ namespace envire {
 	 */
 	std::vector<triangle_t> faces;
 
+    public:
 	static const std::string className;
 
-    public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	template <typename T>

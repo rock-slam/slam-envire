@@ -57,10 +57,9 @@ namespace envire
 	 */
 	Environment* env;
 
-    private:
-	static const std::string className;
-
     public:
+	static const std::string className;
+	
 	EnvironmentItem();	
 	explicit EnvironmentItem(Serialization &so);	
 
@@ -106,10 +105,9 @@ namespace envire
         */
 	TransformType frame;
 
-    private:
+    public:
 	static const std::string className;
 
-    public:
 	/** class needs to be 16byte aligned for Eigen vectorisation */
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -161,10 +159,9 @@ namespace envire
         /** @todo explain dirty for a layer */
         bool dirty; 
 
-    private:
+    public:
 	static const std::string className;
 
-    public:
 	Layer();
 	virtual ~Layer();
 
@@ -249,10 +246,9 @@ namespace envire
      */
     class CartesianMap : public Layer
     {
-    private:
+    public:
 	static const std::string className;
 
-    public:
 	CartesianMap();
         CartesianMap(Serialization& so);
 
@@ -283,9 +279,9 @@ namespace envire
      */
     class Operator : public EnvironmentItem
     {
-    private:
-	static const std::string className;
     public:
+	static const std::string className;
+
 	Operator();
 	Operator(Serialization& so);
 

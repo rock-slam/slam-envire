@@ -29,6 +29,7 @@ set(ENVMAP_SRCS
     envire/Layer.cpp
     envire/Operator.cpp
     envire/Serialization.cpp
+    envire/SerializationClassMap.cpp
     envire/ScanMeshing.cpp
     envire/TriMesh.cpp
     envire/LaserScan.cpp

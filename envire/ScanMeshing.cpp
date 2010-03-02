@@ -4,7 +4,7 @@
 using namespace envire;
 using namespace std;
 
-const std::string ScanMeshing::className = "ScanMeshing";
+const std::string ScanMeshing::className = "envire::ScanMeshing";
 
 ScanMeshing::ScanMeshing()
     : maxEdgeLength(0.5), remissionScaleFactor(10000)
@@ -107,7 +107,7 @@ bool ScanMeshing::updateAll()
 		    || line_num == 0
 		    || line_num == (scan.lines.size()-1);
 
-		point_attrs.push_back( edge ? TriMesh::SCAN_EDGE : 0 );
+		point_attrs.push_back( edge << TriMesh::SCAN_EDGE );
 
                 idx_line[point_num] = points.size() - 1;
             } else {

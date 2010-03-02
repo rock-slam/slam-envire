@@ -40,10 +40,11 @@ namespace envire {
             std::vector<scanline_t> lines;
 
 	private:
-	    static const std::string className;
 	    bool parseScan( const std::string& file, envire::FrameNode::TransformType& transform );
 
         public:
+	    static const std::string className;
+
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	    LaserScan();
             

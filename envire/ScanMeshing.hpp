@@ -8,12 +8,12 @@
 namespace envire {
     class ScanMeshing : public Operator
     {
-	static const std::string className;
-
 	float maxEdgeLength;
 	float remissionScaleFactor;
 
     public:
+	static const std::string className;
+
 	ScanMeshing();
 
 	ScanMeshing(Serialization& so);

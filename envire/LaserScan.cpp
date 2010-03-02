@@ -49,18 +49,12 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
     }
 
     env->attachItem( scan );
-
-    if( transform.matrix() != Eigen::Matrix4d::Identity() )
-    {
-	FrameNode* fm = new FrameNode();
-	fm->setTransform( transform );
-	env->addChild( node, fm );
-	scan->setFrameNode( fm );
-    }
-    else 
-    {
-	scan->setFrameNode( node );
-    }
+    
+    FrameNode* fm = new FrameNode();
+    env->addChild( node, fm );
+    scan->setFrameNode( fm );
+    
+    fm->setTransform( transform );
 
     return scan;
 }
