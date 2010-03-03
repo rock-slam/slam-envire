@@ -117,6 +117,8 @@ namespace envire {
 
 	TriMesh* clone();
 
+	void calcVertexNormals( void );
+
     private:
 	std::map<data_type, VectorHolder*> data_map;
     };

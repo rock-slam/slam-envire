@@ -143,7 +143,10 @@ bool ScanMeshing::updateAll()
 
                             // observe the triangle order for faces on the
                             // other half of the sphere
-                            if( fabs(psi) > (M_PI/2) ) {
+			    //
+			    // TODO, this is not the right check for a reverse
+			    // triangle, because of the offset
+			    if( fabs(psi) > (M_PI/2) ) {
                                 triangle_t tri( poly[idx[0]], poly[idx[2]], poly[idx[1]] );
                                 faces.push_back( tri );
                             } else {
@@ -163,4 +166,8 @@ bool ScanMeshing::updateAll()
         idx_line = prev_idx_line;
         prev_idx_line = tmp;
     }
+
+    // calculate vertex normals
+    meshPtr->calcVertexNormals();
 }
+
