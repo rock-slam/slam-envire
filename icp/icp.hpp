@@ -21,11 +21,12 @@ class ICP {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	typedef double value_type;
 
-	TreeNode(const Eigen::Matrix<value_type,3,1>& point, size_t vertex_index)
-	    : point(point), vertex_index(vertex_index) {}
+	TreeNode(const Eigen::Matrix<value_type,3,1>& point, const Eigen::Matrix<value_type,3,1>& normal, bool edge)
+	    : point(point), edge(edge), normal(normal) {}
 
 	Eigen::Matrix<value_type,3,1> point;
-	size_t vertex_index;
+	Eigen::Matrix<value_type,3,1> normal;
+	bool edge;
 
 	inline value_type operator[](size_t n) const
 	{

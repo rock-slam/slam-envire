@@ -96,13 +96,16 @@ void ICP::updateTree( envire::TriMesh* model, double density )
 
     std::vector<Eigen::Vector3d>& points(model->vertices);
     std::vector<envire::TriMesh::vertex_attr>& attrs(model->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3d>& normals(model->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
 
     // insert the model into the tree
     for(int i=0;i<points.size();i++) {
         if( rand() <= density ) {
             kdtree.insert( 
 		    TreeNode( 
-			C_l2g * points[i], i
+			C_l2g * points[i], 
+			C_l2g.rotation() * normals[i], 
+			attrs[i] & (1 << envire::TriMesh::SCAN_EDGE)
 			) );
         }
     }
@@ -153,20 +156,16 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     for(int i=0;i<points.size();i++) {
 	if( rand() <= density ) {
 	    TreeNode tn( 
-		    C_l2g * points[i], i ); 
+		    C_l2g * points[i], 
+		    C_l2g.rotation() * normals[i], 
+		    attrs[i] & (1 << envire::TriMesh::SCAN_EDGE)); 
 
 	    std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
 	    if( found.first != kdtree.end() )
 	    {
-		size_t idx1 = found.first->vertex_index;
-		size_t idx2 = tn.vertex_index;
-	    	
-		bool edge = 
-		    (attrs[idx1] & (1 << envire::TriMesh::SCAN_EDGE)) ||
-		    (attrs[idx2] & (1 << envire::TriMesh::SCAN_EDGE));
-
+		bool edge = (found.first->edge || tn.edge);
 		double normal_angle = 
-		    acos( normals[idx1].dot( normals[idx2] ) );
+		    acos( found.first->normal.dot( tn.normal ) );
 
 		// remove pairs on edges, or where the normals are deviating by
 		// more than 45deg
