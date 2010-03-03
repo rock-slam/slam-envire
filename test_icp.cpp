@@ -28,14 +28,16 @@ int main( int argc, char* argv[] )
     mesh2->setFrameNode( fm2 );
 
     // initialise a number of transforms
-    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,-0.5 ) );
-    t1 *= Eigen::AngleAxisd(0.2, Eigen::Vector3d::UnitX());
+    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,-0.3 ) );
+    t1 *= Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
 
     std::vector<Eigen::Vector3d>& points(mesh->vertices);
     std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3d>& normal(mesh->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
 
     std::vector<Eigen::Vector3d>& points2(mesh2->vertices);
     std::vector<envire::TriMesh::vertex_attr>& attr2(mesh2->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3d>& normal2(mesh2->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
 
     // generate a pointcloud with vertices on 3 adjecent walls of a cube
     // generate a pointcloud with vertices at all edges of a cube
@@ -54,6 +56,9 @@ int main( int argc, char* argv[] )
 	    attr.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr.push_back( edge << TriMesh::SCAN_EDGE );
+	    normal.push_back( Eigen::Vector3d( 0, 0, 1 ) );
+	    normal.push_back( Eigen::Vector3d( 1, 0, 0 ) );
+	    normal.push_back( Eigen::Vector3d( 0, 1, 0 ) );
 
 	    points2.push_back( t1*Eigen::Vector3d( x, y, 0 ) );
 	    points2.push_back( t1*Eigen::Vector3d( 0, x, y ) );
@@ -61,12 +66,15 @@ int main( int argc, char* argv[] )
 	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
 	    attr2.push_back( edge << TriMesh::SCAN_EDGE );
+	    normal2.push_back( Eigen::Vector3d( 0, 0, 1 ) );
+	    normal2.push_back( Eigen::Vector3d( 1, 0, 0 ) );
+	    normal2.push_back( Eigen::Vector3d( 0, 1, 0 ) );
 	}
     }
 
     ICP icp;
     icp.addToModel( mesh );
 
-    icp.align( mesh2, 5, 0.01 );
+    icp.align( mesh2, 8, 0.01 );
 
 } 

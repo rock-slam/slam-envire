@@ -1,5 +1,6 @@
 #include "icp.hpp"
 #include <Eigen/LU> 
+#include <math.h> 
 
 USING_PART_OF_NAMESPACE_EIGEN
 
@@ -15,7 +16,8 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
     double avg_error;
 
     // TODO come up with a real algorithm to estimate starting values
-    double density = 0.1, threshold = 1.0;
+    //double density = 0.1, threshold = 1.0;
+    double density = 1.0, threshold = 1.0;
 
     while(n<max_iter)
     {
@@ -55,19 +57,23 @@ ICP::Result ICP::align( int max_iter, double min_error)
     {
 	for(int j=0;j<modelVec.size();j++)
 	{
-	    clearTree();
 	    // update the model
 	    for(int i=0;i<modelVec.size();i++)
 	    {
-		if( j!=i)
+		clearTree();
+
+		if( j!=i )
+		{
 		    updateTree( modelVec[i], density );
+
+		    std::cout << std::endl;
+		    std::cout << "n:" << n << " j:" << j << " i:" << i << " dens:" << density << " thresh:" << threshold << std::endl;
+		    avg_error = updateAlignment( modelVec[j], threshold, density );
+		    if( avg_error < min_error )
+			break;
+		}
 	    }
 
-	    std::cout << std::endl;
-	    std::cout << "n:" << n << " dens:" << density << " thresh:" << threshold << std::endl;
-	    avg_error = updateAlignment( modelVec[j], threshold, density );
-	    if( avg_error < min_error )
-		break;
 	}
 	// TODO come up with a real algoritm for estimating
 	// density and threshold
@@ -96,8 +102,7 @@ void ICP::updateTree( envire::TriMesh* model, double density )
         if( rand() <= density ) {
             kdtree.insert( 
 		    TreeNode( 
-			C_l2g * points[i], 
-			attrs[i] & (1 << envire::TriMesh::SCAN_EDGE)
+			C_l2g * points[i], i
 			) );
         }
     }
@@ -139,35 +144,51 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 
     std::vector<Eigen::Vector3d>& points(measurement->vertices);
     std::vector<envire::TriMesh::vertex_attr>& attrs(measurement->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3d>& normals(measurement->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
 
     int stat_edges = 0;
+    int stat_normal = 0;
 
     // find matching point pairs between measurement and model
     for(int i=0;i<points.size();i++) {
 	if( rand() <= density ) {
 	    TreeNode tn( 
-		    C_l2g * points[i], 
-		    attrs[i] & (1 << envire::TriMesh::SCAN_EDGE) );
+		    C_l2g * points[i], i ); 
 
 	    std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
 	    if( found.first != kdtree.end() )
 	    {
-		// really ignore anything to do with scan edges
-		if(!found.first->edge && !tn.edge)
+		size_t idx1 = found.first->vertex_index;
+		size_t idx2 = tn.vertex_index;
+	    	
+		bool edge = 
+		    (attrs[idx1] & (1 << envire::TriMesh::SCAN_EDGE)) ||
+		    (attrs[idx2] & (1 << envire::TriMesh::SCAN_EDGE));
+
+		double normal_angle = 
+		    acos( normals[idx1].dot( normals[idx2] ) );
+
+		// remove pairs on edges, or where the normals are deviating by
+		// more than 45deg
+		if(edge)
 		{
-		    x.push_back( found.first->point );
-		    p.push_back( tn.point );
+		    stat_edges++;
+		}
+		else if( normal_angle > M_PI/8.0 )
+		{
+		    stat_normal++;
 		}
 		else
 		{
-		    stat_edges++;
+		    x.push_back( found.first->point );
+		    p.push_back( tn.point );
 		}
 	    }
 	}
     }
 
     int n = x.size();
-    std::cout << "found pairs:" << n << " discarded edges:" << stat_edges << std::endl;
+    std::cout << "found pairs:" << n << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
 
     Vector3d mu_p(Vector3d::Zero()), 
 	     mu_x(Vector3d::Zero());
@@ -219,6 +240,9 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     t = q_R;
     t *= Eigen::Translation3d( q_T );
     //t *= q_R;
+    
+    std::cout << "translate: " << q_T.transpose() << std::endl;
+    std::cout << "rotate: " << q_R.toRotationMatrix().eulerAngles(2,0,2).transpose() << std::endl;
 
     // TODO: find the framenode that should be updated really as this might not
     // be necessarily the framenode associated with the trimesh
@@ -233,7 +257,8 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     // TODO check this
     fm->setTransform( envire::FrameNode::TransformType( (C_fm2g.inverse() * t * C_fm2g ) * fm->getTransform()) );
 
-    std::cout << fm->getTransform().matrix() << std::endl;
+    std::cout << "translation: " << fm->getTransform().translation().transpose() << std::endl;
+    std::cout << "rotation: " << fm->getTransform().rotation().eulerAngles(2,0,2).transpose() << std::endl;
 
     return mu_d;
 }
