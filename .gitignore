@@ -2,4 +2,4 @@ build
 tags
 *.swp
 Doxyfile
-envire.pc
+*.pc

@@ -1,10 +1,14 @@
-project(ENVMAP)
+project(ENVIRE)
 set(PROJECT_VERSION 1.0)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
 
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
+
+
+find_package(KDTree REQUIRED)
+include_directories(${KDTREE_INCLUDE_DIRS})
 
 find_package(Eigen2 REQUIRED)
 include_directories(${EIGEN2_INCLUDE_DIR})
@@ -54,4 +58,16 @@ install(FILES ${CMAKE_BINARY_DIR}/envire.pc DESTINATION lib/pkgconfig)
 include_directories(${PROJECT_SOURCE_DIR})
 add_subdirectory(test)
 
+add_subdirectory(icp)
+include_directories(${PROJECT_SOURCE_DIR}/icp)
+link_directories(${PROJECT_BINARY_DIR}/icp)
+
+configure_file(icp.pc.in icp.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/icp.pc DESTINATION lib/pkgconfig)
+
+add_executable(test_icp test_icp.cpp)
+target_link_libraries(test_icp icp envire)
+
+add_executable(env_icp env_icp.cpp)
+target_link_libraries(env_icp icp envire)
 
