@@ -6,6 +6,6 @@ includedir=${prefix}/include
 Name: envire
 Description: Library for the Environment Representation
 Version: @PROJECT_VERSION@
-Libs: -L${libdir} -lenvire
+Libs: -L${libdir} -lenvire -licp
 Cflags: -I${includedir}
 
