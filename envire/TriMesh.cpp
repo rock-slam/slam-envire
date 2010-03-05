@@ -56,6 +56,7 @@ void TriMesh::calcVertexNormals()
     // calculate the Triangle normals first
     std::vector<Eigen::Vector3d>& point_normal(getData<Eigen::Vector3d>(TriMesh::VERTEX_NORMAL));
     point_normal.resize( vertices.size(), Eigen::Vector3d::Zero() );
+    std::fill( point_normal.begin(), point_normal.end(), Eigen::Vector3d::Zero() );
 
     // go through all the faces and compute the normals 
     for(size_t i=0;i<faces.size();i++)

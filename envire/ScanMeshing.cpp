@@ -62,6 +62,12 @@ bool ScanMeshing::updateAll()
 
     typedef TriMesh::triangle_t triangle_t;
     std::vector< triangle_t >& faces(meshPtr->faces);
+    
+    // our "update" strategy is to clear everything and redo
+    points.clear();
+    colors.clear();
+    point_attrs.clear();
+    faces.clear();
 
     envire::LaserScan& scan(*scanPtr);
 
