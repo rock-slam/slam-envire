@@ -1,3 +1,6 @@
+#include <Eigen/Core>
+#include <Eigen/LU>
+
 #include "envire/Core.hpp"
 #include "envire/LaserScan.hpp"
 #include "envire/TriMesh.hpp"
