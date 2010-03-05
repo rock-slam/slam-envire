@@ -134,6 +134,9 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     // ICP implementation based on the paper by Besl and McKay
     // Besl P, McKay H. A method for registration of 3-D shapes. IEEE Transactions on pattern... 1992. 
     // Available at: http://doi.ieeecomputersociety.org/10.1109/34.121791.
+    //
+    // added some extensions for ignoring scan edges and vertex normals that deviate more than 45deg
+    //
   
     x.clear();
     p.clear();
@@ -240,8 +243,8 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     t *= Eigen::Translation3d( q_T );
     //t *= q_R;
     
-    std::cout << "translate: " << q_T.transpose() << std::endl;
-    std::cout << "rotate: " << q_R.toRotationMatrix().eulerAngles(2,0,2).transpose() << std::endl;
+    //std::cout << "translate: " << q_T.transpose() << std::endl;
+    //std::cout << "rotate: " << q_R.toRotationMatrix().eulerAngles(0,1,2).transpose() << std::endl;
 
     // TODO: find the framenode that should be updated really as this might not
     // be necessarily the framenode associated with the trimesh
@@ -257,7 +260,7 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     fm->setTransform( envire::FrameNode::TransformType( (C_fm2g.inverse() * t * C_fm2g ) * fm->getTransform()) );
 
     std::cout << "translation: " << fm->getTransform().translation().transpose() << std::endl;
-    std::cout << "rotation: " << fm->getTransform().rotation().eulerAngles(2,0,2).transpose() << std::endl;
+    std::cout << "rotation: " << fm->getTransform().rotation().eulerAngles(0,1,2).transpose() << std::endl;
 
     return mu_d;
 }

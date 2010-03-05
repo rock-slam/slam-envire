@@ -90,10 +90,13 @@ int main( int argc, char* argv[] )
     mesh->setFrameNode( fm1 );
     mesh2->setFrameNode( fm2 );
 
-    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,-0.3 ) );
+    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,0.0 ) );
     t1 *= Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
-    
     fm1->setTransform( t1 );
+
+    Eigen::Transform3d t2( Eigen::Translation3d( 0,0,-0.4 ) );
+    t2 *= Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+    fm2->setTransform( t2 );
 
     ICP icp;
     icp.addToModel( mesh );
