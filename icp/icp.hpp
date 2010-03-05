@@ -22,7 +22,7 @@ class ICP {
 	typedef double value_type;
 
 	TreeNode(const Eigen::Matrix<value_type,3,1>& point, const Eigen::Matrix<value_type,3,1>& normal, bool edge)
-	    : point(point), edge(edge), normal(normal) {}
+	    : point(point), normal(normal), edge(edge) {}
 
 	Eigen::Matrix<value_type,3,1> point;
 	Eigen::Matrix<value_type,3,1> normal;
@@ -43,6 +43,15 @@ class ICP {
 
 	int iterations;
 	double avg_error;
+    };
+
+    struct Configuration
+    {
+	Configuration() :
+	    threshold(1.0), density(0.1) {};
+
+	double threshold;
+	double density;
     };
     
     public:
@@ -76,6 +85,8 @@ class ICP {
 	 */
 	void clearModel();
 
+	Configuration& getConfiguration();
+
 	/** update the alignment of the measurment with respect to the model
 	 *
 	 * @param measurement - measurement trimesh which is aligned to the model
@@ -91,6 +102,9 @@ class ICP {
         std::vector<Eigen::Vector3d>& getP() { return p; };
         
     private:
+	/** the configuration struct */
+	Configuration config;
+
 	/** store an internal vector of models */
 	std::vector<envire::TriMesh*> modelVec;
 

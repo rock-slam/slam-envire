@@ -16,8 +16,8 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
     double avg_error;
 
     // TODO come up with a real algorithm to estimate starting values
-    //double density = 0.1, threshold = 1.0;
-    double density = 1.0, threshold = 1.0;
+    double density = config.density, 
+	   threshold = config.threshold;
 
     while(n<max_iter)
     {
@@ -36,8 +36,8 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
 
 	// TODO come up with a real algoritm for estimating
 	// density and threshold
-	density = 1.0-(1.0-density)*.7;
-	threshold = threshold*.7;
+	//density = 1.0-(1.0-density)*.7;
+	//threshold = threshold*.7;
 	n++;
     }
 
@@ -262,3 +262,7 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     return mu_d;
 }
 
+ICP::Configuration& ICP::getConfiguration()
+{
+    return config;
+}
