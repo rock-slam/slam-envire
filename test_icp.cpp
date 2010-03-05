@@ -90,17 +90,33 @@ int main( int argc, char* argv[] )
     mesh->setFrameNode( fm1 );
     mesh2->setFrameNode( fm2 );
 
-    Eigen::Transform3d t1( Eigen::Translation3d( 0,0,0.0 ) );
-    t1 *= Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
-    fm1->setTransform( t1 );
+    std::cout << "------ origin at 0,0" << std::endl;
 
-    Eigen::Transform3d t2( Eigen::Translation3d( 0,0,-0.4 ) );
-    t2 *= Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
-    fm2->setTransform( t2 );
+    fm1->setTransform( 
+	    Eigen::Translation3d( 0,0,0 )
+	    * Eigen::AngleAxisd(.5, Eigen::Vector3d::UnitX()) );
+
+    fm2->setTransform( 
+	    Eigen::Translation3d( 0,0,0 )
+	    * Eigen::AngleAxisd(.3, Eigen::Vector3d::UnitX()) );
 
     ICP icp;
+    icp.getConfiguration().density = 1;
+    icp.getConfiguration().threshold = .5;
     icp.addToModel( mesh );
 
-    icp.align( mesh2, 8, 0.01 );
+    icp.align( mesh2, 2, 0.01 );
+    
+    std::cout << std::endl;
+    std::cout << "------- origin at 10,10" << std::endl;
 
+    fm1->setTransform( 
+	    Eigen::Translation3d( 10,10,0 )
+	    * Eigen::AngleAxisd(.5, Eigen::Vector3d::UnitX()) );
+
+    fm2->setTransform( 
+	    Eigen::Translation3d( 10,10,0 )
+	    * Eigen::AngleAxisd(.3, Eigen::Vector3d::UnitX()) );
+    
+    icp.align( mesh2, 2, 0.01 );
 } 

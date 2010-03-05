@@ -31,6 +31,7 @@ ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_e
 	std::cout << std::endl;
 	std::cout << "n:" << n << " dens:" << density << " thresh:" << threshold << std::endl;
 	avg_error = updateAlignment( measurement, threshold, density );
+	std::cout << "mse: " << avg_error << std::endl;
 	if( avg_error < min_error )
 	    break;
 
@@ -199,7 +200,8 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 
     // calculate the mean and covariance values of x and p
     for(int i=0;i<n;i++) {
-	mu_d += (p[i] - x[i]).norm();
+	double d = (p[i] - x[i]).norm();
+	mu_d += d*d;
 
         mu_p += p[i];
         mu_x += x[i];
@@ -212,9 +214,9 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 
     sigma_px = sigma_px / static_cast<double>(n) - mu_p*mu_x.transpose();
 
-    std::cout << "mu_d: " << mu_d 
-	<< " mu_p: " << mu_p.transpose() 
-	<< " mu_x:  " << mu_x.transpose() << std::endl;
+    //std::cout << "mu_d: " << mu_d 
+	//<< " mu_p: " << mu_p.transpose() 
+	//<< " mu_x:  " << mu_x.transpose() << std::endl;
 
     // form the symmetric 4x4 matrix Q
     Matrix3d A = sigma_px-sigma_px.transpose();
@@ -236,13 +238,10 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     }
 
     // resulting transformation in global frame
-    //Eigen::Vector3d q_T = mu_x - q_R * mu_p;
-    Eigen::Vector3d q_T = mu_x - mu_p;
-    Eigen::Transform3d t;
-    t = q_R;
-    t *= Eigen::Translation3d( q_T );
-    //t *= q_R;
+    Eigen::Vector3d q_T = mu_x - q_R * mu_p;
+    Eigen::Transform3d t( Eigen::Translation3d( q_T ) * q_R );
     
+    //std::cout << std::endl << t.matrix() << std::endl;
     //std::cout << "translate: " << q_T.transpose() << std::endl;
     //std::cout << "rotate: " << q_R.toRotationMatrix().eulerAngles(0,1,2).transpose() << std::endl;
 
@@ -256,11 +255,13 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 		fm,
 		measurement->getEnvironment()->getRootNode() );
 
-    // TODO check this
-    fm->setTransform( envire::FrameNode::TransformType( (C_fm2g.inverse() * t * C_fm2g ) * fm->getTransform()) );
+    //std::cout << std::endl << C_fm2g.matrix() << std::endl;
 
-    std::cout << "translation: " << fm->getTransform().translation().transpose() << std::endl;
-    std::cout << "rotation: " << fm->getTransform().rotation().eulerAngles(0,1,2).transpose() << std::endl;
+    // TODO check this children further down the tree
+    fm->setTransform( envire::FrameNode::TransformType( fm->getTransform()*(C_fm2g.inverse() * t * C_fm2g ) ) );
+
+    //std::cout << "translation: " << fm->getTransform().translation().transpose() << std::endl;
+    //std::cout << "rotation: " << fm->getTransform().rotation().eulerAngles(0,1,2).transpose() << std::endl;
 
     return mu_d;
 }
