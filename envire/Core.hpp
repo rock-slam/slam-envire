@@ -417,6 +417,7 @@ namespace envire
 	std::list<Layer*> getOutputs(Operator* op);
 
 	Operator* getGenerator(Layer* output);
+	std::list<Operator*> getOperators();
 
 	/**
 	 * Adds an eventListener that gets called whenever there
