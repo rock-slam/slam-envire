@@ -23,8 +23,10 @@ link_directories(${LibYAML_LIBRARY_DIR})
 
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
+    envire/Projection.hpp
     envire/LaserScan.hpp
     envire/TriMesh.hpp
+    envire/Grid.hpp
     envire/Core.hpp)
 
 set(ENVMAP_SRCS
@@ -35,9 +37,11 @@ set(ENVMAP_SRCS
     envire/Serialization.cpp
     envire/SerializationFactory.cpp
     envire/ScanMeshing.cpp
+    envire/Projection.cpp
     envire/TriMesh.cpp
     envire/LaserScan.cpp
     envire/EventListener.cpp
+    envire/Grid.cpp
     )
 
 add_library(envire SHARED ${ENVMAP_SRCS})
@@ -65,6 +69,8 @@ link_directories(${PROJECT_BINARY_DIR}/icp)
 add_executable(test_icp test_icp.cpp)
 target_link_libraries(test_icp icp envire)
 
-add_executable(env_icp env_icp.cpp)
+add_executable(env_icp tools/env_icp.cpp)
 target_link_libraries(env_icp icp envire)
 
+add_executable(env_dem tools/env_dem.cpp)
+target_link_libraries(env_dem icp envire)
