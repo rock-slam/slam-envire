@@ -27,14 +27,26 @@ int main( int argc, char* argv[] )
     std::list<envire::Operator*> ops = env->getOperators();
     for(std::list<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
     {
+	ScanMeshing *sm = dynamic_cast<ScanMeshing*>(*it);
+	if(sm)
+	{
+	    std::cout << "setMinRange" << std::endl;
+	    sm->setMinRange(0.25);
+	}
+
 	(*it)->updateAll();
 	std::cout << "update trimesh" << std::endl;
     }
 
     // create new grid
-    envire::Grid *grid = new envire::Grid(400, 2000, 0.05, 0.05);
+    envire::FrameNode *fm1 = new envire::FrameNode();
+    env->addChild(env->getRootNode(), fm1);
+    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(0,12,-3.0)*Eigen::AngleAxisd(.70*M_PI, Eigen::Vector3d::UnitZ())) );
+    
+    double res = 0.25;
+    envire::Grid *grid = new envire::Grid(20/res, 80/res, res, res);
     env->attachItem( grid );
-    grid->setFrameNode( env->getRootNode() );
+    grid->setFrameNode( fm1 );
 
     // and operator
     envire::Projection *proj = new envire::Projection();
