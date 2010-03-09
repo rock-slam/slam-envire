@@ -157,11 +157,7 @@ void Serialization::serialize(Environment *env, const std::string &path_str)
     fs::path path( path_str ); 
     fs::path scene( path / STRUCTURE_FILE );
 
-    if( !fs::is_directory( path ) )
-    {
-	std::cerr << "is not a directory " << path_str << std::endl;
-	throw std::runtime_error("Path is not a directory");
-    }
+    fs::create_directory( path );
 
     impl->sceneDir = path;
     impl->writeToFile( env, scene.string() );
