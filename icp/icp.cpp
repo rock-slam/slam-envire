@@ -193,6 +193,9 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
     int n = x.size();
     std::cout << "found pairs:" << n << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
 
+    if( n < config.minPairs )
+	return 0;
+
     Vector3d mu_p(Vector3d::Zero()), 
 	     mu_x(Vector3d::Zero());
     Matrix3d sigma_px(Matrix3d::Zero());

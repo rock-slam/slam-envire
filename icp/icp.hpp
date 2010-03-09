@@ -48,10 +48,11 @@ class ICP {
     struct Configuration
     {
 	Configuration() :
-	    threshold(1.0), density(0.1) {};
+	    threshold(1.0), density(0.1), minPairs(5) {};
 
 	double threshold;
 	double density;
+	size_t minPairs;
     };
     
     public:
