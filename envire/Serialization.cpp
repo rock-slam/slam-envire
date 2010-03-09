@@ -124,12 +124,21 @@ void Serialization::write(const std::string& key, const FrameNode::TransformType
     }
 }
 
-void Serialization::read(const std::string &key, std::string &value)
+bool Serialization::read(const std::string &key, std::string &value)
 {
-    value = impl->getScalar( impl->findNodeInMap( key ) );
+    try
+    {
+	value = impl->getScalar( impl->findNodeInMap( key ) );
+	return true;
+    }
+    catch(...)
+    {
+	std::cerr << "WARN: could not read scalar for " << key << std::endl;
+	return false;
+    }
 }
 
-void Serialization::read(const std::string& key, FrameNode::TransformType &value)
+bool Serialization::read(const std::string& key, FrameNode::TransformType &value)
 {
     int node_index = impl->findNodeInMap( key );
     yaml_node_t* node = impl->getNode( node_index );
@@ -150,6 +159,8 @@ void Serialization::read(const std::string& key, FrameNode::TransformType &value
    
     if( i != value.matrix().rows() * value.matrix().cols() )
        throw std::runtime_error("matrix dimension incompatible");	
+
+    return true;
 }
 
 void Serialization::serialize(Environment *env, const std::string &path_str) 
@@ -514,7 +525,6 @@ std::string SerializationImpl::getScalar( int node_index )
     {
 	return std::string( reinterpret_cast<const char*>(node->data.scalar.value) );
     }
-
     throw std::runtime_error("not a scalar node");
 }
 

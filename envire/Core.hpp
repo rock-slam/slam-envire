@@ -431,7 +431,8 @@ namespace envire
 	 */
 	void removeEventListener(EventListener *evl);
 	
-        /** Returns the transformation from the frame represented by @a from to
+        /** 
+	 * Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
          * transformation, as the frames are sorted in a tree.
 	 *
@@ -459,23 +460,23 @@ namespace envire
 
 	const std::string getMapPath() const;
 
-	template <class T> void write(const std::string &key, T value);
+	template <class T> void write(const std::string &key, const T& value);
 	void write(const std::string &key, const std::string &value);
 	void write(const std::string &key, const FrameNode::TransformType &value);
 
 	template <class T> void read(const std::string &key, T& value);
-	void read(const std::string &key, std::string &value);
-	void read(const std::string &key, FrameNode::TransformType &value);
+	bool read(const std::string &key, std::string &value);
+	bool read(const std::string &key, FrameNode::TransformType &value);
     };
 
     template <class T> void Serialization::read(const std::string &key, T& value)
     {
 	std::string tmp;
-	read( key, tmp );
-	value = boost::lexical_cast<T>(tmp);
+	if( read( key, tmp ) )
+	    value = boost::lexical_cast<T>(tmp);
     }
     
-    template <class T> void Serialization::write(const std::string &key, T value)
+    template <class T> void Serialization::write(const std::string &key, const T& value)
     {
 	write( key, boost::lexical_cast<std::string>(value) );
     }
