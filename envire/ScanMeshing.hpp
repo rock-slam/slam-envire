@@ -8,8 +8,9 @@
 namespace envire {
     class ScanMeshing : public Operator
     {
-	float maxEdgeLength;
-	float remissionScaleFactor;
+	double maxEdgeLength;
+	double remissionScaleFactor;
+	double minRange;
 
     public:
 	static const std::string className;
@@ -24,7 +25,9 @@ namespace envire {
 	void addInput( LaserScan* scan ); 
 	void addOutput( TriMesh* mesh ); 
 
-	void setMaxEdgeLength( float value );
+	void setMaxEdgeLength( double value );
+	void setRemissionScaleFactor( double value );
+	void setMinRange( double value );
 	bool updateAll();
     };
 }

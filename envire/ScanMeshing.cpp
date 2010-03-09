@@ -7,7 +7,7 @@ using namespace std;
 const std::string ScanMeshing::className = "envire::ScanMeshing";
 
 ScanMeshing::ScanMeshing()
-    : maxEdgeLength(0.5), remissionScaleFactor(10000)
+    : maxEdgeLength(0.5), remissionScaleFactor(10000), minRange(0.1)
 {
 }
 
@@ -17,6 +17,7 @@ ScanMeshing::ScanMeshing(Serialization& so)
     so.setClassName(className);
     so.read("maxEdgeLength", maxEdgeLength ); 
     so.read("remissionScaleFactor", maxEdgeLength ); 
+    so.read("minRange", minRange ); 
 }
 
 void ScanMeshing::serialize(Serialization& so)
@@ -25,6 +26,7 @@ void ScanMeshing::serialize(Serialization& so)
     so.setClassName(className);
     so.write("maxEdgeLength", maxEdgeLength ); 
     so.write("remissionScaleFactor", maxEdgeLength ); 
+    so.write("minRange", minRange ); 
 }
 
 
@@ -42,9 +44,19 @@ void ScanMeshing::addOutput( TriMesh* mesh )
     Operator::addOutput(mesh);
 }
 
-void ScanMeshing::setMaxEdgeLength( float value ) 
+void ScanMeshing::setMaxEdgeLength( double value ) 
 {
     maxEdgeLength = value;
+}
+
+void ScanMeshing::setMinRange( double value ) 
+{
+    minRange = value;
+}
+
+void ScanMeshing::setRemissionScaleFactor( double value ) 
+{
+    remissionScaleFactor = value;
 }
 
 bool ScanMeshing::updateAll() 
@@ -84,7 +96,7 @@ bool ScanMeshing::updateAll()
 
         for(int point_num=0;point_num<line.ranges.size();point_num++) {
             // TODO check what actually is a valid range
-            if( line.ranges[point_num] > 100 ) {
+            if( line.ranges[point_num] > (minRange*1000.0) ) {
                 float range = line.ranges[point_num] / 1000.0;
                 float xx = std::cos( psi ) * range;
 
