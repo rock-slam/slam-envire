@@ -439,16 +439,6 @@ namespace envire
 	 * child->getTransform().
          */
 	FrameNode::TransformType relativeTransform(const FrameNode* from, const FrameNode* to);
-
-        /** will import the scene file specified by @param file
-         * uses @param node as the parent FrameNode where the scene is
-         * attached.
-         */
-        bool loadSceneFile( const std::string& file );
-
-	/** will save the environment into a scene file.
-	 */
-	bool saveSceneFile( const std::string& file );
     };
 
     class Serialization
