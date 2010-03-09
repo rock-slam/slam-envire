@@ -55,7 +55,7 @@ bool Projection::updateAll()
 	
 	for(int i=0;i<points.size();i++)
 	{
-	    Eigen::Vector3d p = C_m2g * points[i];
+	    Eigen::Vector3d p = env->getRootNode()->getTransform() * C_m2g * points[i];
 
 
 	    size_t x, y;

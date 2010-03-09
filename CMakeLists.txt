@@ -6,7 +6,6 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
 
-
 find_package(KDTree REQUIRED)
 include_directories(${KDTREE_INCLUDE_DIRS})
 
@@ -20,6 +19,10 @@ link_directories(${Boost_LIBRARY_DIRS})
 find_package(LibYAML REQUIRED)
 include_directories(${LibYAML_INCLUDE_DIR})
 link_directories(${LibYAML_LIBRARY_DIR})
+
+find_package(GDAL REQUIRED)
+add_definitions(${GDAL_CFLAGS})
+include_directories(${GDAL_INCLUDE_DIRS})
 
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
@@ -50,8 +53,10 @@ install(TARGETS envire
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib)
 install(FILES ${ENVMAP_HDRS} DESTINATION include/envire)
-target_link_libraries(envire ${Boost_FILESYSTEM_LIBRARY})
-target_link_libraries(envire ${LIBYAML_LIBRARIES})
+target_link_libraries(envire 
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${LIBYAML_LIBRARIES}
+    ${GDAL_LIBRARIES} )
 
 configure_file(Doxyfile.in Doxyfile @ONLY)
 add_custom_target(doc doxygen Doxyfile)

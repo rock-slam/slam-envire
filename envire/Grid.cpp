@@ -4,6 +4,10 @@
 #include <iostream>
 #include <fstream>
 
+#include "cpl_string.h"
+#include "gdal_priv.h"
+#include "ogr_spatialref.h"
+
 using namespace envire;
 
 const std::string Grid::className = "envire::Grid";
@@ -33,7 +37,7 @@ void Grid::serialize(Serialization& so)
     CartesianMap::serialize(so);
     so.setClassName(className);
 
-    writeMap( so.getMapPath() ); 
+    writeMap( getMapFileName(so.getMapPath()) ); 
 }
 
 Grid* Grid::clone() 
@@ -43,23 +47,72 @@ Grid* Grid::clone()
 
 void Grid::writeMap(const std::string& path)
 {
-    std::string file = path + ".elev";
+    std::string file = path + ".tiff";
+    std::cout << "write file " << file << std::endl;
+    /*
     std::ofstream data(file.c_str());
     if( data.fail() )  
     {
         throw std::runtime_error("Could not open file '" + file + "' for writing.");
     }
+    */
 
     boost::multi_array<double,2> elevation = getData<double>( ELEVATION ); 
 
+    GByte abyRaster[width*height];
     for(int m=0;m<width;m++)
     {
 	for( int n=0;n<height;n++)
 	{
-	    data << m*scalex << " " << n*scaley << " " <<  elevation[m][n] << std::endl;
+	    abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][height-1-n]+2)*20,255.0));
+	    //data << m*scalex << " " << n*scaley << " " <<  elevation[m][n] << std::endl;
 	}
-	data << std::endl;
     }
+
+    GDALAllRegister();
+
+    const char *pszFormat = "GTiff";
+    GDALDriver *poDriver;
+    char **papszMetadata;
+
+    poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
+
+    if( poDriver == NULL )
+    {
+	std::cout << "driver not found." << std::endl;
+    }
+
+    papszMetadata = poDriver->GetMetadata();
+    if( CSLFetchBoolean( papszMetadata, GDAL_DCAP_CREATE, FALSE ) )
+	printf( "Driver %s supports Create() method.\n", pszFormat );
+    if( CSLFetchBoolean( papszMetadata, GDAL_DCAP_CREATECOPY, FALSE ) )
+	printf( "Driver %s supports CreateCopy() method.\n", pszFormat );
+
+    GDALDataset *poDstDS;       
+    char **papszOptions = NULL;
+
+    poDstDS = poDriver->Create( file.c_str(), width, height, 1, GDT_Byte, 
+	    papszOptions );
+
+    double adfGeoTransform[6] = { 444720, 30, 0, 3751320, 0, -30 };
+    OGRSpatialReference oSRS;
+    char *pszSRS_WKT = NULL;
+    GDALRasterBand *poBand;
+
+    poDstDS->SetGeoTransform( adfGeoTransform );
+
+    oSRS.SetUTM( 11, TRUE );
+    oSRS.SetWellKnownGeogCS( "NAD27" );
+    oSRS.exportToWkt( &pszSRS_WKT );
+    poDstDS->SetProjection( pszSRS_WKT );
+    CPLFree( pszSRS_WKT );
+
+    poBand = poDstDS->GetRasterBand(1);
+    poBand->RasterIO( GF_Write, 0, 0, width, height, 
+	    abyRaster, width, height, GDT_Byte, 0, 0 );    
+
+    /* Once we're done, close properly the dataset */
+    GDALClose( (GDALDatasetH) poDstDS );
 }
 
 void Grid::readMap(const std::string& path)
