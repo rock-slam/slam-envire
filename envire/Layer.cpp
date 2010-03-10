@@ -111,6 +111,12 @@ const std::string Layer::getMapFileName(const std::string& path) const
     return (scenePath / fileName).string();
 }
 
+bool Layer::hasData(const std::string& type)
+{
+    return data_map.count(type);
+}
+
+
 const std::string CartesianMap::className = "envire::CartesianMap";
 
 CartesianMap::CartesianMap() 

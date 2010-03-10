@@ -12,6 +12,7 @@
 #include <boost/serialization/singleton.hpp>
 #include <boost/lexical_cast.hpp>
 #include <vector>
+#include <stdexcept>
 
 namespace envire
 {
@@ -23,6 +24,46 @@ namespace envire
     class EnvironmentItem;
     class Serialization;
 
+    /** Baseclass for generically holding pointer to objects, while still
+     * ensuring, that the destructor of that object is called, when the holder
+     * object is destructed.
+     */
+    class HolderBase
+    {
+    public:
+	virtual ~HolderBase() {};
+	virtual void* getData() = 0;
+	template <typename T> T& get()
+	{
+	    return *static_cast<T*>( getData() );
+	}
+    };
+
+    /** Templated holder class, that will construct an object of type T,
+     * provide access to it, and also delete the object again when it is
+     * destroyed.
+     */
+    template <typename T>
+	class Holder : public HolderBase 
+    {
+	T* ptr;
+
+    public:
+	Holder()
+	{
+	    ptr = new T();
+	};
+
+	~Holder()
+	{
+	    delete ptr;
+	};
+
+	void* getData() 
+	{
+	    return ptr;
+	}
+    };
 
     /** Base class for alle items that are defined in the envire framework.
      * Mainly handles the unique_id feature and the pointer to the environment
@@ -160,6 +201,9 @@ namespace envire
         /** @todo explain dirty for a layer */
         bool dirty; 
 
+	/** associating key values with metadata stored in holder objects */ 
+	std::map<std::string, HolderBase*> data_map;
+
     public:
 	static const std::string className;
 
@@ -237,7 +281,40 @@ namespace envire
 	 */
         Layer* getParent();
 
+	/** @return for a given path, it will return a suggestion for a filename 
+	 * to use when making this layer persistant
+	 */
 	const std::string getMapFileName( const std::string& path ) const;
+
+	/** will return true if an entry for metadata for the given key exists
+	 */
+	bool hasData(const std::string& type);
+
+	/** For a given key, return the metadata associated with it. If the data
+	 * does not exist, it will be created.
+	 * Will throw a runtime error if the datatypes don't match.
+	 */
+	template <typename T>
+	    T& getData(const std::string& type)
+	{
+	    if( !hasData( type ) )
+	    {
+		data_map[type] = new Holder<T>;
+	    }
+
+	    if( typeid(*data_map[type]) != typeid(Holder<T>) )
+	    {
+		std::cerr 
+		    << "type mismatch. type should be " 
+		    << typeid(data_map[type]).name() 
+		    << " but is " 
+		    << typeid(Holder<T>).name()
+		    << std::endl;
+		throw std::runtime_error("data type mismatch.");
+	    }
+
+	    return data_map[type]->get<T>();
+	};
     };
 
     /** This is a special type of layer that describes a map in a cartesian

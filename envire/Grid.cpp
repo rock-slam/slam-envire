@@ -12,7 +12,8 @@ using namespace envire;
 
 const std::string Grid::className = "envire::Grid";
 
-const std::string Grid::ELEVATION = "elevation";
+const std::string Grid::ELEVATION_MIN = "elevation_min";
+const std::string Grid::ELEVATION_MAX = "elevation_max";
 const std::string Grid::CONFIDENCE = "confidence";
 const std::string Grid::TRAVERSABILITY = "traversability";
 
@@ -49,15 +50,8 @@ void Grid::writeMap(const std::string& path)
 {
     std::string file = path + ".tiff";
     std::cout << "write file " << file << std::endl;
-    /*
-    std::ofstream data(file.c_str());
-    if( data.fail() )  
-    {
-        throw std::runtime_error("Could not open file '" + file + "' for writing.");
-    }
-    */
 
-    boost::multi_array<double,2> elevation = getData<double>( ELEVATION ); 
+    boost::multi_array<double,2> elevation = getGridData<double>( ELEVATION_MAX ); 
 
     GByte abyRaster[width*height];
     for(int m=0;m<width;m++)
@@ -65,7 +59,6 @@ void Grid::writeMap(const std::string& path)
 	for( int n=0;n<height;n++)
 	{
 	    abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][height-1-n]+2)*20,255.0));
-	    //data << m*scalex << " " << n*scaley << " " <<  elevation[m][n] << std::endl;
 	}
     }
 
@@ -119,11 +112,6 @@ void Grid::readMap(const std::string& path)
 {
     // TODO read from ply file
     throw std::runtime_error("not yet implemented");
-}
-
-bool Grid::hasData(const std::string& type)
-{
-    return data_map.count(type);
 }
 
 bool Grid::toGrid( double x, double y, size_t& m, size_t& n )

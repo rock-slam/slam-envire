@@ -42,7 +42,8 @@ bool Projection::updateAll()
     // TODO add checking of connections
     Grid* grid = static_cast<envire::Grid*>(*env->getOutputs(this).begin());
 
-    boost::multi_array<double,2>& elevation(grid->getData<double>(Grid::ELEVATION));
+    boost::multi_array<double,2>& elv_min(grid->getGridData<double>(Grid::ELEVATION_MIN));
+    boost::multi_array<double,2>& elv_max(grid->getGridData<double>(Grid::ELEVATION_MAX));
 
     std::list<Layer*> inputs = env->getInputs(this);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
@@ -57,11 +58,11 @@ bool Projection::updateAll()
 	{
 	    Eigen::Vector3d p = env->getRootNode()->getTransform() * C_m2g * points[i];
 
-
 	    size_t x, y;
 	    if( grid->toGrid( p.x(), p.y(), x, y ) )
 	    {
-		elevation[x][y] = std::max( elevation[x][y], p.z() );
+		elv_max[x][y] = std::max( elv_max[x][y], p.z() );
+		elv_min[x][y] = std::min( elv_min[x][y], p.z() );
 	    }
 	}
     }
