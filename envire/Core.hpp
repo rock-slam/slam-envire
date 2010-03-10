@@ -445,7 +445,7 @@ namespace envire
 	
 	FrameNode* rootNode;
 	void publishChilds(EventListener *evl, FrameNode *parent);
-
+	void detachChilds(FrameNode *parent, EventListener *evl);
     public:
         Environment();
 	virtual ~Environment();

@@ -91,6 +91,9 @@ void Environment::addEventListener(EventListener *evl)
 	evl->itemAttached((*it).second );
     }
     
+    //set root node
+    evl->setRootNode(getRootNode());
+    
     //iterate over frame tree
     publishChilds(evl, getRootNode());    
 
@@ -103,8 +106,43 @@ void Environment::addEventListener(EventListener *evl)
     eventListeners.push_back(evl);
 }
 
+void Environment::detachChilds(FrameNode *parent, EventListener *evl) {
+    std::list<FrameNode *> childList = getChildren(parent);
+    
+    for(std::list<FrameNode *>::iterator it = childList.begin(); it != childList.end(); it++) {
+	std::list<FrameNode *> curChildList = getChildren(*it);
+
+	//not a leaf, detach all child recursive
+	if(curChildList.size() > 0) {
+	    detachChilds(*it, evl);   
+	}
+	
+	std::list<CartesianMap*> maplist = getMaps(*it);
+	
+	//now it is a leaf, detach all maps attached to framenode
+	for(std::list<CartesianMap*>::iterator mapit = maplist.begin(); mapit != maplist.end(); mapit++) {
+	    evl->frameNodeDetached(*mapit, *it);
+	}
+	
+	//and remove the leaf
+	evl->childRemoved(parent, *it);
+    }    
+};
+
 void Environment::removeEventListener(EventListener *evl) 
 {
+    //reverse iterate over the frame node tree and detach all children    
+    detachChilds(getRootNode(), evl);
+    
+    //remove root node
+    evl->removeRootNode(getRootNode());
+    
+    //detach all environmentItems
+    for(itemListType::iterator it = items.begin(); it != items.end(); it++) 
+    {
+	evl->itemDetached((*it).second );
+    }
+    
     eventListenerType::iterator it = std::find(eventListeners.begin(), eventListeners.end(), evl);
     if(it != eventListeners.end()) {
 	eventListeners.erase(it);
@@ -118,7 +156,7 @@ void Environment::attachItem(EnvironmentItem* item)
 
     // make sure item not already present
     if( items.count(item->getUniqueId()) ) {
-	std::cout << "Duplicated id:" << item->getUniqueId() <<std::endl;
+	std::cout << "Duplicated id:" << item->getUniqueId() << std::endl;
 	throw runtime_error("unique_id of item already in environment");
     }
     // add item to internal list
