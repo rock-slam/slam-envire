@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdint.h>
 
 #include "cpl_string.h"
 #include "gdal_priv.h"
@@ -52,13 +53,16 @@ void Grid::writeMap(const std::string& path)
     std::cout << "write file " << file << std::endl;
 
     boost::multi_array<double,2> elevation = getGridData<double>( ELEVATION_MAX ); 
+    boost::multi_array<uint8_t,2> traversability = getGridData<uint8_t>( TRAVERSABILITY ); 
+
 
     GByte abyRaster[width*height];
     for(int m=0;m<width;m++)
     {
 	for( int n=0;n<height;n++)
 	{
-	    abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][height-1-n]+2)*20,255.0));
+	    //abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][height-1-n]+2)*20,255.0));
+	    abyRaster[m+n*width] = traversability[m][height-1-n];
 	}
     }
 
@@ -87,15 +91,15 @@ void Grid::writeMap(const std::string& path)
     poDstDS = poDriver->Create( file.c_str(), width, height, 1, GDT_Byte, 
 	    papszOptions );
 
-    double adfGeoTransform[6] = { 444720, 30, 0, 3751320, 0, -30 };
+    double adfGeoTransform[6] = { /*top left x*/0, scalex, /*rotation*/0, /*top left y*/0, /*rotation*/0, scaley };
     OGRSpatialReference oSRS;
     char *pszSRS_WKT = NULL;
     GDALRasterBand *poBand;
 
     poDstDS->SetGeoTransform( adfGeoTransform );
 
-    oSRS.SetUTM( 11, TRUE );
-    oSRS.SetWellKnownGeogCS( "NAD27" );
+    oSRS.SetUTM( 33, TRUE );
+    oSRS.SetWellKnownGeogCS( "WGS84" );
     oSRS.exportToWkt( &pszSRS_WKT );
     poDstDS->SetProjection( pszSRS_WKT );
     CPLFree( pszSRS_WKT );

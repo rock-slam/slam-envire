@@ -47,6 +47,12 @@ namespace envire {
 
 	bool toGrid( double x, double y, size_t& m, size_t& n );
 
+	size_t getWidth() { return width; };
+	size_t getHeight() { return height; };
+
+	double getScaleX() { return scalex; };
+	double getScaleY() { return scaley; };
+
     private:
 	size_t width, height;
 	double scalex, scaley;

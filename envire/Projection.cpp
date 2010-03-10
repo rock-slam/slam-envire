@@ -1,5 +1,7 @@
 #include "Projection.hpp"
 #include <stdexcept>
+#include <stdint.h>
+#include <limits>
 #include "boost/multi_array.hpp"
 
 using namespace envire;
@@ -45,6 +47,10 @@ bool Projection::updateAll()
     boost::multi_array<double,2>& elv_min(grid->getGridData<double>(Grid::ELEVATION_MIN));
     boost::multi_array<double,2>& elv_max(grid->getGridData<double>(Grid::ELEVATION_MAX));
 
+    // fill the elevation map
+    std::fill(elv_min.data(), elv_min.data() + elv_min.num_elements(), std::numeric_limits<double>::infinity());
+    std::fill(elv_max.data(), elv_max.data() + elv_max.num_elements(), -std::numeric_limits<double>::infinity());
+
     std::list<Layer*> inputs = env->getInputs(this);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
@@ -64,6 +70,44 @@ bool Projection::updateAll()
 		elv_max[x][y] = std::max( elv_max[x][y], p.z() );
 		elv_min[x][y] = std::min( elv_min[x][y], p.z() );
 	    }
+	}
+    }
+
+    // compute the traversability map now...
+    // this should most probably be done somewhere else, but is here for convenience now.
+    boost::multi_array<uint8_t,2>& trav(grid->getGridData<uint8_t>(Grid::TRAVERSABILITY));
+    std::fill(trav.data(), trav.data() + trav.num_elements(), 255);
+
+    size_t width = elv_min.shape()[0]; 
+    size_t height = elv_min.shape()[1]; 
+
+    double scalex = grid->getScaleX();
+    double scaley = grid->getScaleY();
+    
+    for(int x=1;x<(width-1);x++)
+    {
+	for(int y=1;y<(height-1);y++)
+	{
+	    double max_grad = -std::numeric_limits<double>::infinity();
+
+	    for(int i=0;i<3;i++)
+	    {
+		// get the 4 neighbours
+		int m = (i<2)*(i*2-1);
+		int n = (i>=2)*((i-2)*2-1);
+		double scale = (i<2)?scalex:scaley;
+
+		double gradient =
+		   std::max( 
+			  std::abs(elv_min[x][y] - elv_max[x+m][y+n])/scale,
+			  std::abs(elv_max[x][y] - elv_min[x+m][y+n])/scale );
+
+		max_grad = std::max( max_grad, gradient );
+	    }
+
+	    double angle = atan( max_grad );
+
+	    trav[x][y] = ((uint8_t)(angle*3))*30;
 	}
     }
 }
