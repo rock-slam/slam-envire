@@ -494,7 +494,23 @@ namespace envire
 	std::list<Layer*> getOutputs(Operator* op);
 
 	Operator* getGenerator(Layer* output);
-	std::list<Operator*> getOperators();
+
+	/**
+	 * returns all items of a particular type
+	 */
+	template <class T>
+	    std::vector<T*> getItems()
+	{
+	    std::vector<T*> result;
+	    for(itemListType::iterator it=items.begin();it != items.end(); ++it )
+	    {
+		// TODO this is not very efficient...
+		T* item = dynamic_cast<T*>( it->second );
+		if( item )
+		    result.push_back( item );
+	    }
+	    return result;
+	}
 
 	/**
 	 * Adds an eventListener that gets called whenever there

@@ -24,8 +24,8 @@ int main( int argc, char* argv[] )
     Serialization so;
     boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
     
-    std::list<envire::Operator*> ops = env->getOperators();
-    for(std::list<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
+    std::vector<envire::Operator*> ops = env->getItems<envire::Operator>();
+    for(std::vector<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
     {
 	ScanMeshing *sm = dynamic_cast<ScanMeshing*>(*it);
 	if(sm)

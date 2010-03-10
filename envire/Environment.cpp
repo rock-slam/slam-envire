@@ -358,20 +358,6 @@ Operator* Environment::getGenerator(Layer* output)
     }
 }
 
-std::list<Operator*> Environment::getOperators()
-{
-    std::list<Operator*> operators;
-    for(itemListType::iterator it=items.begin();it != items.end(); ++it )
-    {
-	// TODO this is not very efficient...
-	Operator* op = dynamic_cast<Operator*>( it->second );
-	if( op )
-	    operators.push_back( op );
-    }
-
-    return operators;
-}
-
 FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
 {
     // the simplest but not most efficient way is to go through the root node
