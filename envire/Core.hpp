@@ -404,6 +404,9 @@ namespace envire
 	    virtual void childRemoved(FrameNode* parent, FrameNode* child);
 	    virtual void childRemoved(Layer* parent, Layer* child);
 
+	    virtual void setRootNode(FrameNode *root) = 0;
+	    virtual void removeRootNode(FrameNode *root) = 0;
+
 	    virtual void itemModified(EnvironmentItem *item);
     };
     
