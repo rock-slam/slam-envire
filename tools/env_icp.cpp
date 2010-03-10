@@ -25,7 +25,7 @@ int main( int argc, char* argv[] )
     
     std::vector<envire::TriMesh*> meshes = env->getItems<envire::TriMesh>();
 
-    Eigen::MatrixXi graph = Eigen::MatrixXi::Zero(meshes.size(), meshes.size());
+    Eigen::MatrixXi adjMat = Eigen::MatrixXi::Zero(meshes.size(), meshes.size());
 
     for(int i=0;i<meshes.size();i++)
     {
@@ -33,6 +33,8 @@ int main( int argc, char* argv[] )
 	meshes[i]->updateFromOperator();
     }
 
+    double density = 0.02;
+    double threshold = 0.2;
     for(int i=0;i<meshes.size();i++)
     {
 	for(int j=0;j<meshes.size();j++)
@@ -41,23 +43,28 @@ int main( int argc, char* argv[] )
 	    if( j>i )
 	    {
 		ICP icp;
-		icp.updateTree( meshes[i], 0.01 );
+		icp.updateTree( meshes[i], density );
 		envire::FrameNode::TransformType t = meshes[j]->getFrameNode()->getTransform();
-		icp.updateAlignment( meshes[j], 0.2, 0.01);
+		icp.updateAlignment( meshes[j], threshold, density);
 		meshes[j]->getFrameNode()->setTransform(t);
-		graph(i,j) = icp.getX().size();
+		adjMat(i,j) = icp.getX().size();
 	    }
 	}
     }
-    graph = graph + graph.transpose();
+    Eigen::MatrixXi t = adjMat + adjMat.transpose();
+    adjMat = t;
 
-    std::cout << graph << std::endl;
+    std::cout << adjMat << std::endl;
 
+    std::map<int,int> graph;
     std::vector<int> taken;
     // get mesh with highest total number of adjecencies
     // and make it the root of our tree
     int i, j;
-    graph.rowwise().sum().maxCoeff(&i, &j);
+    adjMat.rowwise().sum().maxCoeff(&i, &j);
+
+    std::cout << adjMat.rowwise().sum() << std::endl;
+    std::cout << i << " " << j << std::endl;
 
     envire::FrameNode* root = new envire::FrameNode();
     env->addChild(env->getRootNode(), root );
@@ -84,11 +91,11 @@ int main( int argc, char* argv[] )
 	{
 	    for(int j=0;j<meshes.size();j++)
 	    {
-		if( !std::count(taken.begin(),taken.end(),j) && graph(i,j) > h.adjecency ) 
+		if( !std::count(taken.begin(),taken.end(),j) && (adjMat(taken[i],j) > h.adjecency) ) 
 		{
 		    h.parent = taken[i];
 		    h.child = j;
-		    h.adjecency = graph(i,j);
+		    h.adjecency = adjMat(taken[i],j);
 		}
 	    }
 	}
@@ -101,13 +108,30 @@ int main( int argc, char* argv[] )
 	    env->addChild(meshes[h.parent]->getFrameNode(), meshes[h.child]->getFrameNode());
 	    meshes[h.child]->getFrameNode()->setTransform( t );
 
+	    graph[h.child] = h.parent;
 	    taken.push_back(h.child);
-	    std::cout << "added parent: " << h.parent << " child: " << h.child << std::endl;
+	    std::cout << "added parent: " << h.parent << " child: " << h.child << " pairs: " << h.adjecency << std::endl;
 	}
 	else 
 	{
 	    std::cout << "could not find any adjecent maps." << std::endl;
 	    exit(0);
+	}
+    }
+    
+    int iter = 3;
+    // perform the icp 
+    for(int i=0;i<iter;i++)
+    {
+	for(std::map<int,int>::iterator it=graph.begin();it!=graph.end();it++)
+	{
+	    std::cout << "i: " << i << " model: " << it->second << " meas: " << it->first << std::endl;
+	    ICP icp;
+	    icp.getConfiguration().density = 0.1;
+	    icp.getConfiguration().threshold = 0.1;
+	    icp.getConfiguration().minPairs = 50;
+	    icp.addToModel( meshes[ it->second ] );
+	    icp.align(meshes[it->first], 5, 0.0001);
 	}
     }
     /*
