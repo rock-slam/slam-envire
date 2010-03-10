@@ -397,8 +397,10 @@ namespace envire
 	    virtual void itemDetached(EnvironmentItem *item);
 	    virtual void childAdded(FrameNode* parent, FrameNode* child);
 	    virtual void childAdded(Layer* parent, Layer* child);
+
 	    virtual void frameNodeSet(CartesianMap* map, FrameNode* node);
-	
+	    virtual void frameNodeDetached(CartesianMap* map, FrameNode* node) = 0;
+
 	    virtual void childRemoved(FrameNode* parent, FrameNode* child);
 	    virtual void childRemoved(Layer* parent, Layer* child);
 
@@ -481,6 +483,8 @@ namespace envire
 	std::list<Layer*> getChildren(Layer* parent);
 
 	void setFrameNode(CartesianMap* map, FrameNode* node);
+	void detachFrameNode(CartesianMap* map, FrameNode* node);
+	
 	FrameNode* getFrameNode(CartesianMap* map);
 	std::list<CartesianMap*> getMaps(FrameNode* node);
 	
