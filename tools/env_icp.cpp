@@ -56,7 +56,7 @@ int main( int argc, char* argv[] )
 
     std::cout << adjMat << std::endl;
 
-    std::map<int,int> graph;
+    std::vector<std::pair<int,int> > graph;
     std::vector<int> taken;
     // get mesh with highest total number of adjecencies
     // and make it the root of our tree
@@ -108,7 +108,7 @@ int main( int argc, char* argv[] )
 	    env->addChild(meshes[h.parent]->getFrameNode(), meshes[h.child]->getFrameNode());
 	    meshes[h.child]->getFrameNode()->setTransform( t );
 
-	    graph[h.child] = h.parent;
+	    graph.push_back( make_pair(h.child, h.parent));
 	    taken.push_back(h.child);
 	    std::cout << "added parent: " << h.parent << " child: " << h.child << " pairs: " << h.adjecency << std::endl;
 	}
@@ -123,14 +123,15 @@ int main( int argc, char* argv[] )
     // perform the icp 
     for(int i=0;i<iter;i++)
     {
-	for(std::map<int,int>::iterator it=graph.begin();it!=graph.end();it++)
+	ICP icp;
+	icp.getConfiguration().density = 0.1;
+	icp.getConfiguration().threshold = 0.1;
+	icp.getConfiguration().minPairs = 50;
+
+	for(std::vector<std::pair<int,int> >::iterator it=graph.begin();it!=graph.end();it++)
 	{
-	    std::cout << "i: " << i << " model: " << it->second << " meas: " << it->first << std::endl;
-	    ICP icp;
-	    icp.getConfiguration().density = 0.1;
-	    icp.getConfiguration().threshold = 0.1;
-	    icp.getConfiguration().minPairs = 50;
 	    icp.addToModel( meshes[ it->second ] );
+	    std::cout << "i: " << i << " model: " << it->second << " meas: " << it->first << std::endl;
 	    icp.align(meshes[it->first], 5, 0.0001);
 	}
     }
