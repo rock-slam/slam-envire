@@ -119,13 +119,13 @@ int main( int argc, char* argv[] )
 	}
     }
     
-    int iter = 3;
+    int iter = 5;
     // perform the icp 
     for(int i=0;i<iter;i++)
     {
 	ICP icp;
-	icp.getConfiguration().density = 0.1;
-	icp.getConfiguration().threshold = 0.1;
+	icp.getConfiguration().density = 0.1+i/10.0;
+	icp.getConfiguration().threshold = (iter-i+1)/10.0;
 	icp.getConfiguration().minPairs = 50;
 
 	for(std::vector<std::pair<int,int> >::iterator it=graph.begin();it!=graph.end();it++)
