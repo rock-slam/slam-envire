@@ -7,13 +7,23 @@ using namespace std;
 const std::string ScanMeshing::className = "envire::ScanMeshing";
 
 ScanMeshing::ScanMeshing()
-    : maxEdgeLength(0.5), remissionScaleFactor(10000), minRange(0.1)
 {
+    setDefaultConfiguration();
+}
+
+void ScanMeshing::setDefaultConfiguration()
+{
+    maxEdgeLength = 0.5; 
+    remissionScaleFactor = 10000; 
+    remissionMarkerThreshold = 16000;
+    minRange = 0.1;
 }
 
 ScanMeshing::ScanMeshing(Serialization& so)
     : Operator(so)
 {
+    setDefaultConfiguration();
+
     so.setClassName(className);
     so.read("maxEdgeLength", maxEdgeLength ); 
     so.read("remissionScaleFactor", maxEdgeLength ); 
@@ -59,6 +69,37 @@ void ScanMeshing::setRemissionScaleFactor( double value )
     remissionScaleFactor = value;
 }
 
+void ScanMeshing::setRemissionMarkerThreshold( long value ) 
+{
+    remissionMarkerThreshold = value;
+}
+
+struct Marker
+{
+    Eigen::Vector3d center;
+    std::vector<Eigen::Vector3d> points;
+    void calcCenter()
+    {
+	center = Eigen::Vector3d::Zero();
+	for(int i=0;i<points.size();i++)
+	{
+	    center += points[i];
+	}
+	center /= points.size();
+    };
+
+    void addPoint(const Eigen::Vector3d &point)
+    {
+	points.push_back( point );
+	calcCenter();
+    }
+
+    double dist(const Eigen::Vector3d &point)
+    {
+	return (point - center).norm();
+    };
+};
+
 bool ScanMeshing::updateAll() 
 {
     // this implementation can handle only one input at the moment
@@ -75,6 +116,8 @@ bool ScanMeshing::updateAll()
     typedef TriMesh::triangle_t triangle_t;
     std::vector< triangle_t >& faces(meshPtr->faces);
     
+    std::vector<Marker> markers;
+
     // our "update" strategy is to clear everything and redo
     points.clear();
     colors.clear();
@@ -107,8 +150,9 @@ bool ScanMeshing::updateAll()
 
                 // perform center offset compensation
                 Eigen::Vector3d offset = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitX()) * scan.center_offset;
+                Eigen::Vector3d opoint = point + offset;
 
-                points.push_back( point + offset ); 
+                points.push_back(opoint); 
 		if( has_rem )
 		{
 		    // convert the remission value into a color value
@@ -116,6 +160,28 @@ bool ScanMeshing::updateAll()
 		    float cval = std::min( 1.0, std::max( 0.0, line.remissions[point_num] / (double)remissionScaleFactor ) );
 
 		    colors.push_back( Eigen::Vector3d::Ones() * cval );
+
+
+		    // see if remission value is above threshold for marker
+		    if( line.remissions[point_num] > remissionMarkerThreshold )
+		    {
+			bool newMarker = true;
+			for(int i=0;i<markers.size();i++)
+			{
+			    // TODO make max distance configurable
+			    if( markers[i].dist( opoint ) < 0.05 )
+			    {
+				newMarker = false;
+				markers[i].addPoint( opoint );
+			    }
+			}
+			if( newMarker )
+			{
+			    Marker m;
+			    m.addPoint( opoint );
+			    markers.push_back( m );
+			}
+		    }
 		}
 
 		// see if the the scanpoint is actually on the edge of the scan
@@ -183,6 +249,11 @@ bool ScanMeshing::updateAll()
         int *tmp = idx_line;
         idx_line = prev_idx_line;
         prev_idx_line = tmp;
+    }
+
+    for(int i=0;i<markers.size();i++)
+    {
+	std::cout << "marker " << i << " center: " << markers[i].center.transpose() << " pixel: " << markers[i].points.size() << std::endl;
     }
 
     // calculate vertex normals

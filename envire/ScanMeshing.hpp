@@ -10,6 +10,7 @@ namespace envire {
     {
 	double maxEdgeLength;
 	double remissionScaleFactor;
+	long remissionMarkerThreshold;
 	double minRange;
 
     public:
@@ -27,8 +28,11 @@ namespace envire {
 
 	void setMaxEdgeLength( double value );
 	void setRemissionScaleFactor( double value );
+	void setRemissionMarkerThreshold( long value );
 	void setMinRange( double value );
 	bool updateAll();
+
+	void setDefaultConfiguration();
     };
 }
 
