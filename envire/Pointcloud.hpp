@@ -15,6 +15,8 @@ namespace envire {
     public:
 	static const std::string className;
 
+	static Pointcloud* importCsv(const std::string& file, FrameNode* fn);
+
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	Pointcloud();
