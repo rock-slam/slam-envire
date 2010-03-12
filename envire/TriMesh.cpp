@@ -17,14 +17,14 @@ TriMesh::~TriMesh()
 }
 
 TriMesh::TriMesh(Serialization& so)
-    : CartesianMap(so)
+    : Pointcloud(so)
 {
     so.setClassName(className);
 }
 
 void TriMesh::serialize(Serialization& so)
 {
-    CartesianMap::serialize(so);
+    Pointcloud::serialize(so);
     so.setClassName(className);
 }
 

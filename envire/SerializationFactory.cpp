@@ -3,6 +3,8 @@
 #include "LaserScan.hpp"
 #include "TriMesh.hpp"
 #include "ScanMeshing.hpp"
+#include "Projection.hpp"
+#include "Pointcloud.hpp"
 
 using namespace envire;
 
@@ -18,9 +20,12 @@ EnvironmentItem* SerializationFactory::createObject(const std::string& className
     if( !initialized )
     {
 	addClass(FrameNode::className, &create<FrameNode> );
+	addClass(Pointcloud::className, &create<Pointcloud> );
 	addClass(LaserScan::className, &create<LaserScan> );
 	addClass(TriMesh::className, &create<TriMesh> );
+
 	addClass(ScanMeshing::className, &create<ScanMeshing> );
+	addClass(Projection::className, &create<Projection> );
 
 	initialized = true;
     }

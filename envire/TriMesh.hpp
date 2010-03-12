@@ -2,6 +2,7 @@
 #define __TRIMESH_HPP__
 
 #include "Core.hpp"
+#include "Pointcloud.hpp"
 #include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -46,7 +47,7 @@ namespace envire {
 	}
     };
 
-    class TriMesh : public CartesianMap 
+    class TriMesh : public Pointcloud 
     {
     public:
 	typedef boost::tuple<int, int, int> triangle_t;
@@ -67,10 +68,6 @@ namespace envire {
 	};
 
     public:
-	/** definition of 3d points of the trimesh
-	 */
-	std::vector<Eigen::Vector3d> vertices;
-
 	/** vector of triangle_t, which are indeces into the points vector the
 	 * number of trimeshes is independent of the number of points in the
 	 * map
