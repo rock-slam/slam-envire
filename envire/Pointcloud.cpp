@@ -20,7 +20,8 @@ Pointcloud::Pointcloud(Serialization& so)
 {
     so.setClassName(className);
 
-    readMap( so.getMapPath() + ".txt" );
+    if( getClassName() == Pointcloud::className )
+	readMap( getMapFileName(so.getMapPath()) + ".txt" );
 }
 
 void Pointcloud::serialize(Serialization& so)
@@ -28,7 +29,8 @@ void Pointcloud::serialize(Serialization& so)
     CartesianMap::serialize(so);
     so.setClassName(className);
 
-    writeMap( so.getMapPath() + ".txt" );
+    if( getClassName() == Pointcloud::className )
+	writeMap( getMapFileName(so.getMapPath()) + ".txt" );
 }
 
 Pointcloud* Pointcloud::clone() 
