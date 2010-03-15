@@ -91,7 +91,11 @@ void Grid::writeMap(const std::string& path)
     poDstDS = poDriver->Create( file.c_str(), width, height, 1, GDT_Byte, 
 	    papszOptions );
 
-    double adfGeoTransform[6] = { /*top left x*/0, scalex, /*rotation*/0, /*top left y*/0, /*rotation*/0, scaley };
+    Eigen::Matrix4d m = getFrameNode()->getTransform().matrix();
+
+    //double adfGeoTransform[6] = { /*top left x*/0, scalex, /*rotation*/0, /*top left y*/0, /*rotation*/0, scaley };
+    double adfGeoTransform[6] = { m(0,1), m(0,0), m(0,1), m(0,2), m(1,0), m(1,1) };
+
     OGRSpatialReference oSRS;
     char *pszSRS_WKT = NULL;
     GDALRasterBand *poBand;
