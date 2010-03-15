@@ -43,6 +43,7 @@ namespace envire {
 	~Pointcloud();
 
 	Pointcloud(Serialization& so, bool handleMap = true);
+	void serialize(Serialization& so);
 	void serialize(Serialization& so, bool handleMap = true);
 
 	void writeMap(const std::string& path);

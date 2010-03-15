@@ -28,6 +28,11 @@ Pointcloud::Pointcloud(Serialization& so, bool handleMap)
 	readMap( getMapFileName(so.getMapPath()) + ".txt" );
 }
 
+void Pointcloud::serialize(Serialization& so)
+{
+    serialize(so, true);
+}
+
 void Pointcloud::serialize(Serialization& so, bool handleMap)
 {
     CartesianMap::serialize(so);
