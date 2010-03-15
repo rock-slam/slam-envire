@@ -98,7 +98,7 @@ void Grid::writeMap(const std::string& path)
 
     poDstDS->SetGeoTransform( adfGeoTransform );
 
-    oSRS.SetUTM( 33, TRUE );
+    oSRS.SetUTM( 32, TRUE );
     oSRS.SetWellKnownGeogCS( "WGS84" );
     oSRS.exportToWkt( &pszSRS_WKT );
     poDstDS->SetProjection( pszSRS_WKT );

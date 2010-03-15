@@ -41,7 +41,7 @@ int main( int argc, char* argv[] )
     // create new grid
     envire::FrameNode *fm1 = new envire::FrameNode();
     env->addChild(env->getRootNode(), fm1);
-    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(0,12,-3.0)*Eigen::AngleAxisd(.70*M_PI, Eigen::Vector3d::UnitZ())) );
+    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,-3.0)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
     
     double res = 0.25;
     envire::Grid *grid = new envire::Grid(20/res, 80/res, res, res);
@@ -53,19 +53,11 @@ int main( int argc, char* argv[] )
     env->attachItem( proj );
     proj->addOutput( grid );
 
-    std::list<FrameNode*> fm( env->getChildren( env->getRootNode() ) );
-    for(std::list<FrameNode*>::iterator it=fm.begin();it!=fm.end();it++)
+    std::vector<envire::TriMesh*> meshes = env->getItems<envire::TriMesh>();
+    for(std::vector<envire::TriMesh*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
-	std::list<CartesianMap*> maps( env->getMaps( *it ) );
-
-	for(std::list<CartesianMap*>::iterator mi=maps.begin();mi!=maps.end();mi++)
-	{
-	    if((*mi)->getClassName() == "envire::TriMesh")
-	    {
-		std::cout << "adding trimesh to projection" << std::endl;
-		proj->addInput( dynamic_cast<TriMesh*>(*mi) );
-	    }
-	}
+	std::cout << "adding trimesh to projection" << std::endl;
+	proj->addInput( *it );
     }
 
     proj->updateAll();
