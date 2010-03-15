@@ -13,7 +13,6 @@ TriMesh::TriMesh()
 
 TriMesh::~TriMesh()
 {
-    for( std::map<data_type, VectorHolder*>::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
 }
 
 TriMesh::TriMesh(Serialization& so)
@@ -45,16 +44,10 @@ void TriMesh::readMap(const std::string& path)
     throw std::runtime_error("not yet implemented");
 }
 
-bool TriMesh::hasData(data_type type)
-{
-    return data_map.count(type);
-}
-
-
 void TriMesh::calcVertexNormals()
 {
     // calculate the Triangle normals first
-    std::vector<Eigen::Vector3d>& point_normal(getData<Eigen::Vector3d>(TriMesh::VERTEX_NORMAL));
+    std::vector<Eigen::Vector3d>& point_normal(getVertexData<Eigen::Vector3d>(TriMesh::VERTEX_NORMAL));
     point_normal.resize( vertices.size(), Eigen::Vector3d::Zero() );
     std::fill( point_normal.begin(), point_normal.end(), Eigen::Vector3d::Zero() );
 
@@ -86,5 +79,4 @@ void TriMesh::calcVertexNormals()
 	}
     }
 }
-
 

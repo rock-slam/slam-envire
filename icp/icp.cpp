@@ -10,7 +10,7 @@ ICP::ICP() :
 {
 }
 
-ICP::Result ICP::align( envire::TriMesh* measurement, int max_iter, double min_error)
+ICP::Result ICP::align( envire::Pointcloud* measurement, int max_iter, double min_error)
 {
     int n=0;
     double avg_error;
@@ -86,7 +86,7 @@ ICP::Result ICP::align( int max_iter, double min_error)
     return ICP::Result( n, avg_error );
 }
 
-void ICP::updateTree( envire::TriMesh* model, double density )
+void ICP::updateTree( envire::Pointcloud* model, double density )
 {
     // get the transformation between the local frame and the global
     // frame of the environment 
@@ -95,24 +95,44 @@ void ICP::updateTree( envire::TriMesh* model, double density )
 		model->getFrameNode(),
 		model->getEnvironment()->getRootNode() );
 
-    std::vector<Eigen::Vector3d>& points(model->vertices);
-    std::vector<envire::TriMesh::vertex_attr>& attrs(model->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<Eigen::Vector3d>& normals(model->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
+    bool hasNormals = model->hasData( envire::Pointcloud::VERTEX_ATTRIBUTES );
+    bool hasEdge = model->hasData( envire::Pointcloud::VERTEX_NORMAL );
 
-    // insert the model into the tree
-    for(int i=0;i<points.size();i++) {
-        if( rand() <= density ) {
-            kdtree.insert( 
-		    TreeNode( 
-			C_l2g * points[i], 
-			C_l2g.rotation() * normals[i], 
-			attrs[i] & (1 << envire::TriMesh::SCAN_EDGE)
-			) );
-        }
+    std::vector<Eigen::Vector3d>& points(model->vertices);
+    if( hasNormals && hasEdge )
+    {
+	std::vector<envire::Pointcloud::vertex_attr>& attrs(model->getVertexData<envire::Pointcloud::vertex_attr>(envire::Pointcloud::VERTEX_ATTRIBUTES));
+	std::vector<Eigen::Vector3d>& normals(model->getVertexData<Eigen::Vector3d>(envire::Pointcloud::VERTEX_NORMAL));
+
+	// insert the model into the tree using normal and edge data
+	for(int i=0;i<points.size();i++) {
+	    if( rand() <= density ) {
+		kdtree.insert( 
+			TreeNode( 
+			    C_l2g * points[i], 
+			    C_l2g.rotation() * normals[i], 
+			    attrs[i] & (1 << envire::Pointcloud::SCAN_EDGE)
+			    ) );
+	    }
+	}
+    }
+    else 
+    {
+	// insert the model into the tree
+	for(int i=0;i<points.size();i++) {
+	    if( rand() <= density ) {
+		kdtree.insert( 
+			TreeNode( 
+			    C_l2g * points[i], 
+			    Eigen::Vector3d::Zero(), 
+			    false
+			    ) );
+	    }
+	}
     }
 }
 
-void ICP::addToModel( envire::TriMesh* model )
+void ICP::addToModel( envire::Pointcloud* model )
 {
     modelVec.push_back( model );
 }
@@ -127,7 +147,7 @@ void ICP::clearTree()
     kdtree.clear();
 }
 
-double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, double density )
+double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, double density )
 {
     // for each point in the measurement, try to find a point in the model given
     // the current threshold and store the in the X and P
@@ -149,50 +169,75 @@ double ICP::updateAlignment( envire::TriMesh* measurement, double threshold, dou
 		measurement->getFrameNode(),
 		measurement->getEnvironment()->getRootNode() );
 
+    bool hasNormals = measurement->hasData( envire::Pointcloud::VERTEX_ATTRIBUTES );
+    bool hasEdge = measurement->hasData( envire::Pointcloud::VERTEX_NORMAL );
+
     std::vector<Eigen::Vector3d>& points(measurement->vertices);
-    std::vector<envire::TriMesh::vertex_attr>& attrs(measurement->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<Eigen::Vector3d>& normals(measurement->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
+    if( hasNormals && hasEdge )
+    {
+	std::vector<envire::Pointcloud::vertex_attr>& attrs(measurement->getVertexData<envire::Pointcloud::vertex_attr>(envire::Pointcloud::VERTEX_ATTRIBUTES));
+	std::vector<Eigen::Vector3d>& normals(measurement->getVertexData<Eigen::Vector3d>(envire::Pointcloud::VERTEX_NORMAL));
 
-    int stat_edges = 0;
-    int stat_normal = 0;
+	int stat_edges = 0;
+	int stat_normal = 0;
 
-    // find matching point pairs between measurement and model
-    for(int i=0;i<points.size();i++) {
-	if( rand() <= density ) {
-	    TreeNode tn( 
-		    C_l2g * points[i], 
-		    C_l2g.rotation() * normals[i], 
-		    attrs[i] & (1 << envire::TriMesh::SCAN_EDGE)); 
+	// find matching point pairs between measurement and model and take edge and normal information into account
+	for(int i=0;i<points.size();i++) {
+	    if( rand() <= density ) {
+		TreeNode tn( 
+			C_l2g * points[i], 
+			C_l2g.rotation() * normals[i], 
+			attrs[i] & (1 << envire::Pointcloud::SCAN_EDGE)); 
 
-	    std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
-	    if( found.first != kdtree.end() )
-	    {
-		bool edge = (found.first->edge || tn.edge);
-		double normal_angle = 
-		    acos( found.first->normal.dot( tn.normal ) );
-
-		// remove pairs on edges, or where the normals are deviating by
-		// more than 45deg
-		if(edge)
+		std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
+		if( found.first != kdtree.end() )
 		{
-		    stat_edges++;
+		    bool edge = (found.first->edge || tn.edge);
+		    double normal_angle = 
+			acos( found.first->normal.dot( tn.normal ) );
+
+		    // remove pairs on edges, or where the normals are deviating by
+		    // more than 45deg
+		    if(edge)
+		    {
+			stat_edges++;
+		    }
+		    else if( normal_angle > M_PI/8.0 )
+		    {
+			stat_normal++;
+		    }
+		    else
+		    {
+			x.push_back( found.first->point );
+			p.push_back( tn.point );
+		    }
 		}
-		else if( normal_angle > M_PI/8.0 )
-		{
-		    stat_normal++;
-		}
-		else
+	    }
+	}
+
+	std::cout << "found pairs:" << x.size() << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
+    }
+    else {
+	// find matching point pairs between measurement and model
+	for(int i=0;i<points.size();i++) {
+	    if( rand() <= density ) {
+		TreeNode tn( 
+			C_l2g * points[i], 
+			Eigen::Vector3d::Zero(), 
+			false); 
+
+		std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
+		if( found.first != kdtree.end() )
 		{
 		    x.push_back( found.first->point );
 		    p.push_back( tn.point );
 		}
 	    }
 	}
+	std::cout << "found pairs:" << x.size() << std::endl; 
     }
 
     int n = x.size();
-    std::cout << "found pairs:" << n << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
-
     if( n < config.minPairs )
 	return 0;
 

@@ -12,8 +12,8 @@ using namespace std;
 void setHalfCube(envire::TriMesh *mesh)
 {
     std::vector<Eigen::Vector3d>& points(mesh->vertices);
-    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<Eigen::Vector3d>& normal(mesh->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
+    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getVertexData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3d>& normal(mesh->getVertexData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
 
     // generate a pointcloud with vertices on 3 adjecent walls of a cube
     for(int i=0;i<=10;i++)
@@ -41,8 +41,8 @@ void setHalfCube(envire::TriMesh *mesh)
 void setSineWave(envire::TriMesh *mesh)
 {
     std::vector<Eigen::Vector3d>& points(mesh->vertices);
-    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<Eigen::Vector3d>& normal(mesh->getData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
+    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getVertexData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<Eigen::Vector3d>& normal(mesh->getVertexData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
 
     // generate a pointcloud with vertices on 3 adjecent walls of a cube
     for(int i=-10;i<=10;i++)

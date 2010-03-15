@@ -9,7 +9,7 @@
 #include<kdtree++/kdtree.hpp>
 
 #include<envire/Core.hpp>
-#include<envire/TriMesh.hpp>
+#include<envire/Pointcloud.hpp>
 
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_real.hpp>
@@ -67,7 +67,7 @@ class ICP {
 	 * @param max_iter - maximum number of iterations
 	 * @param min_error - minimum average square distance between points after which to stop
 	 */
-	Result align( envire::TriMesh* measurement, int max_iter, double min_error);
+	Result align( envire::Pointcloud* measurement, int max_iter, double min_error);
 
 	/** performs a global alignment of all the meshes in measurements. 
 	 * This method does not require previous calls to updateModel.
@@ -80,7 +80,7 @@ class ICP {
 	 * 
 	 * @param model - model to be added
 	 */
-	void addToModel( envire::TriMesh* model );
+	void addToModel( envire::Pointcloud* model );
 	
 	/** resets the model and clears the kdtree 
 	 */
@@ -94,9 +94,9 @@ class ICP {
 	 * @param threshold - is the max distance to look for matching closest points
 	 * @param density - how many points of the mesh to take into account. 
 	 */ 
-        double updateAlignment( envire::TriMesh* measurement, double threshold, double density );
+        double updateAlignment( envire::Pointcloud* measurement, double threshold, double density );
 
-        void updateTree( envire::TriMesh* model, double density );
+        void updateTree( envire::Pointcloud* model, double density );
 	void clearTree();
 
         std::vector<Eigen::Vector3d>& getX() { return x; };
@@ -107,7 +107,7 @@ class ICP {
 	Configuration config;
 
 	/** store an internal vector of models */
-	std::vector<envire::TriMesh*> modelVec;
+	std::vector<envire::Pointcloud*> modelVec;
 
 	/** store x and p for debug */
         std::vector<Eigen::Vector3d> x, p;
