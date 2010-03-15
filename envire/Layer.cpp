@@ -36,6 +36,7 @@ void Layer::serialize(Serialization& so)
 
 Layer::~Layer()
 {
+    for( std::map<std::string, HolderBase*>::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
 }
 
 void Layer::addChild( Layer* child ) 
