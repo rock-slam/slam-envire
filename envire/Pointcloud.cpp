@@ -57,7 +57,7 @@ void Pointcloud::writeMap(const std::string& path)
 
     for(int i=0;i<vertices.size();i++)
     {
-	data << vertices[i].x() << " " << vertices[i].y() << " " << vertices[i].y() << std::endl;
+	data << vertices[i].x() << " " << vertices[i].y() << " " << vertices[i].z() << std::endl;
     }
 }
 
