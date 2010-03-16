@@ -44,7 +44,7 @@ int main( int argc, char* argv[] )
     fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,-3.0)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
     
     double res = 0.25;
-    envire::Grid *grid = new envire::Grid(20/res, 80/res, res, res);
+    envire::Grid *grid = new envire::Grid(20/res, 85/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
 

@@ -107,7 +107,7 @@ bool Projection::updateAll()
 
 	    double angle = atan( max_grad );
 
-	    trav[x][y] = ((uint8_t)(angle*3))*30;
+	    trav[x][y] = ((uint8_t)(angle/(M_PI/2.0)*6.0));
 	}
     }
 }

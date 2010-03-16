@@ -62,7 +62,8 @@ void Grid::writeMap(const std::string& path)
 	for( int n=0;n<height;n++)
 	{
 	    //abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][height-1-n]+2)*20,255.0));
-	    abyRaster[m+n*width] = traversability[m][height-1-n];
+	    //abyRaster[m+n*width] = traversability[m][height-1-n];
+	    abyRaster[m+n*width] = traversability[m][n];
 	}
     }
 
@@ -91,10 +92,14 @@ void Grid::writeMap(const std::string& path)
     poDstDS = poDriver->Create( file.c_str(), width, height, 1, GDT_Byte, 
 	    papszOptions );
 
-    Eigen::Matrix4d m = getFrameNode()->getTransform().matrix();
+    envire::FrameNode::TransformType t = getEnvironment()->relativeTransform(
+	    getFrameNode(),
+	    getEnvironment()->getRootNode() );
+
+    Eigen::Matrix4d m = (t * Eigen::Scaling3d(scalex, scaley,0)).matrix();
 
     //double adfGeoTransform[6] = { /*top left x*/0, scalex, /*rotation*/0, /*top left y*/0, /*rotation*/0, scaley };
-    double adfGeoTransform[6] = { m(0,1), m(0,0), m(0,1), m(0,2), m(1,0), m(1,1) };
+    double adfGeoTransform[6] = { m(0,3), m(0,0), m(0,1), m(1,3), m(1,0), m(1,1) };
 
     OGRSpatialReference oSRS;
     char *pszSRS_WKT = NULL;
@@ -108,7 +113,14 @@ void Grid::writeMap(const std::string& path)
     poDstDS->SetProjection( pszSRS_WKT );
     CPLFree( pszSRS_WKT );
 
+    GDALColorEntry c1 = {30,30,30,255};
+    GDALColorEntry c2 = {250,60,60,255};
+
+    GDALColorTable colorTable;
+    colorTable.CreateColorRamp( 0, &c1, 5, &c2 );
+
     poBand = poDstDS->GetRasterBand(1);
+    poBand->SetColorTable( &colorTable );
     poBand->RasterIO( GF_Write, 0, 0, width, height, 
 	    abyRaster, width, height, GDT_Byte, 0, 0 );    
 
