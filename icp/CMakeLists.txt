@@ -7,6 +7,7 @@ set(ICP_SRCS
     )
 
 add_library(icp SHARED ${ICP_SRCS})
+target_link_libraries(icp envire)
 
 install(TARGETS icp
     RUNTIME DESTINATION bin
