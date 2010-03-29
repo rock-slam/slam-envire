@@ -25,6 +25,9 @@ namespace envire {
 	void addOutput( Grid* grid ); 
 
 	bool updateAll();
+
+	bool updateTraversibilityMap();
+	bool updateElevationMap();
     };
 }
 

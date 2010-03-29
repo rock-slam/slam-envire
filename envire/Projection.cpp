@@ -41,6 +41,12 @@ void Projection::addOutput( Grid* grid )
 
 bool Projection::updateAll() 
 {
+    updateElevationMap();
+    updateTraversibilityMap();
+}
+
+bool Projection::updateElevationMap()
+{
     // TODO add checking of connections
     Grid* grid = static_cast<envire::Grid*>(*env->getOutputs(this).begin());
 
@@ -72,6 +78,23 @@ bool Projection::updateAll()
 	    }
 	}
     }
+
+    return true;
+}
+
+bool Projection::updateTraversibilityMap()
+{
+    // TODO add checking of connections
+    Grid* grid = static_cast<envire::Grid*>(*env->getOutputs(this).begin());
+
+    if( !grid->hasData(Grid::ELEVATION_MIN) || !grid->hasData(Grid::ELEVATION_MAX) )
+    {
+	std::cout << "needs DEM map to calculate traversibility map." << std::endl;
+	return false;
+    }
+
+    boost::multi_array<double,2>& elv_min(grid->getGridData<double>(Grid::ELEVATION_MIN));
+    boost::multi_array<double,2>& elv_max(grid->getGridData<double>(Grid::ELEVATION_MAX));
 
     // compute the traversability map now...
     // this should most probably be done somewhere else, but is here for convenience now.
@@ -110,5 +133,7 @@ bool Projection::updateAll()
 	    trav[x][y] = ((uint8_t)(angle/(M_PI/2.0)*6.0));
 	}
     }
+
+    return true;
 }
 
