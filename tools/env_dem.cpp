@@ -41,10 +41,10 @@ int main( int argc, char* argv[] )
     // create new grid
     envire::FrameNode *fm1 = new envire::FrameNode();
     env->addChild(env->getRootNode(), fm1);
-    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,-3.0)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
+    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,0)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
     
-    double res = 0.25;
-    envire::Grid *grid = new envire::Grid(20/res, 85/res, res, res);
+    double res = 0.05;
+    envire::Grid *grid = new envire::Grid(12/res, 85/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
 
