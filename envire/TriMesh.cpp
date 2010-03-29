@@ -23,7 +23,7 @@ TriMesh::TriMesh(Serialization& so)
 
 void TriMesh::serialize(Serialization& so)
 {
-    Pointcloud::serialize(so, false);
+    Pointcloud::serialize(so, true);
     so.setClassName(className);
 }
 
