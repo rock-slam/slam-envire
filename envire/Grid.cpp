@@ -49,23 +49,46 @@ Grid* Grid::clone()
 
 void Grid::writeMap(const std::string& path)
 {
-    std::string file = path + ".tiff";
-    std::cout << "write file " << file << std::endl;
+    if( hasData( ELEVATION_MAX ) )
+	writeMap(path, ELEVATION_MAX );
 
-    boost::multi_array<double,2> elevation = getGridData<double>( ELEVATION_MAX ); 
-    boost::multi_array<uint8_t,2> traversability = getGridData<uint8_t>( TRAVERSABILITY ); 
+    if( hasData( TRAVERSABILITY ) )
+	writeMap(path, TRAVERSABILITY );
+}
 
-
+void Grid::writeMap(const std::string& path, const std::string& type )
+{
     GByte abyRaster[width*height];
-    for(int m=0;m<width;m++)
+
+    if( type == ELEVATION_MAX )
     {
-	for( int n=0;n<height;n++)
+	boost::multi_array<double,2> elevation = getGridData<double>( ELEVATION_MAX ); 
+	for(int m=0;m<width;m++)
 	{
-	    //abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][height-1-n]+2)*20,255.0));
-	    //abyRaster[m+n*width] = traversability[m][height-1-n];
-	    abyRaster[m+n*width] = traversability[m][n];
+	    for( int n=0;n<height;n++)
+	    {
+		abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][n])*51,255.0));
+	    }
 	}
     }
+    else if( type == TRAVERSABILITY )
+    {
+	boost::multi_array<uint8_t,2> traversability = getGridData<uint8_t>( TRAVERSABILITY ); 
+	for(int m=0;m<width;m++)
+	{
+	    for( int n=0;n<height;n++)
+	    {
+		abyRaster[m+n*width] = traversability[m][n];
+	    }
+	}
+    }
+    else 
+    {
+	std::cout << "Type " + type + " not supported." << std::endl;
+    }
+
+    std::string file = path + "_" + type + ".tiff";
+    std::cout << "write file " << file << std::endl;
 
     GDALAllRegister();
 
@@ -98,7 +121,6 @@ void Grid::writeMap(const std::string& path)
 
     Eigen::Matrix4d m = (t * Eigen::Scaling3d(scalex, scaley,0)).matrix();
 
-    //double adfGeoTransform[6] = { /*top left x*/0, scalex, /*rotation*/0, /*top left y*/0, /*rotation*/0, scaley };
     double adfGeoTransform[6] = { m(0,3), m(0,0), m(0,1), m(1,3), m(1,0), m(1,1) };
 
     OGRSpatialReference oSRS;
@@ -113,18 +135,20 @@ void Grid::writeMap(const std::string& path)
     poDstDS->SetProjection( pszSRS_WKT );
     CPLFree( pszSRS_WKT );
 
-    GDALColorEntry c1 = {30,30,30,255};
-    GDALColorEntry c2 = {250,60,60,255};
-
-    GDALColorTable colorTable;
-    colorTable.CreateColorRamp( 0, &c1, 5, &c2 );
-
     poBand = poDstDS->GetRasterBand(1);
-    poBand->SetColorTable( &colorTable );
+    if( type == TRAVERSABILITY )
+    {
+	GDALColorEntry c1 = {30,30,30,255};
+	GDALColorEntry c2 = {250,60,60,255};
+
+	GDALColorTable colorTable;
+	colorTable.CreateColorRamp( 0, &c1, 5, &c2 );
+
+	poBand->SetColorTable( &colorTable );
+    }
     poBand->RasterIO( GF_Write, 0, 0, width, height, 
 	    abyRaster, width, height, GDT_Byte, 0, 0 );    
 
-    /* Once we're done, close properly the dataset */
     GDALClose( (GDALDatasetH) poDstDS );
 }
 

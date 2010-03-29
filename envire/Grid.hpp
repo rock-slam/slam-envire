@@ -30,6 +30,7 @@ namespace envire {
 	void serialize(Serialization& so);
 
 	void writeMap(const std::string& path);
+	void writeMap(const std::string& path, const std::string& type);
 	void readMap(const std::string& path);
 
 	template <class T>
