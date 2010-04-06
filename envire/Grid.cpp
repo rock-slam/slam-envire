@@ -58,7 +58,7 @@ void Grid::writeMap(const std::string& path)
 
 void Grid::writeMap(const std::string& path, const std::string& type )
 {
-    GByte abyRaster[width*height];
+    GUInt16 abyRaster[width*height];
 
     if( type == ELEVATION_MAX )
     {
@@ -67,7 +67,7 @@ void Grid::writeMap(const std::string& path, const std::string& type )
 	{
 	    for( int n=0;n<height;n++)
 	    {
-		abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][n])*51,255.0));
+		abyRaster[m+n*width] = std::max(0.0,std::min((elevation[m][n])*((1<<16)/10.0),(1<<16)-1.0));
 	    }
 	}
     }
@@ -112,7 +112,7 @@ void Grid::writeMap(const std::string& path, const std::string& type )
     GDALDataset *poDstDS;       
     char **papszOptions = NULL;
 
-    poDstDS = poDriver->Create( file.c_str(), width, height, 1, GDT_Byte, 
+    poDstDS = poDriver->Create( file.c_str(), width, height, 1, GDT_UInt16, 
 	    papszOptions );
 
     envire::FrameNode::TransformType t = getEnvironment()->relativeTransform(
@@ -147,7 +147,7 @@ void Grid::writeMap(const std::string& path, const std::string& type )
 	poBand->SetColorTable( &colorTable );
     }
     poBand->RasterIO( GF_Write, 0, 0, width, height, 
-	    abyRaster, width, height, GDT_Byte, 0, 0 );    
+	    abyRaster, width, height, GDT_UInt16, 0, 0 );    
 
     GDALClose( (GDALDatasetH) poDstDS );
 }
