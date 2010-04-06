@@ -4,6 +4,12 @@
 #include <limits>
 #include "boost/multi_array.hpp"
 
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Triangulation_euclidean_traits_xy_3.h>
+#include <CGAL/Delaunay_triangulation_2.h>
+
+#include <Eigen/LU>
+
 using namespace envire;
 using namespace std;
 
@@ -43,6 +49,7 @@ bool Projection::updateAll()
 {
     updateElevationMap();
     updateTraversibilityMap();
+    interpolateMap(Grid::ELEVATION_MAX);
 }
 
 bool Projection::updateElevationMap()
@@ -75,6 +82,69 @@ bool Projection::updateElevationMap()
 	    {
 		elv_max[x][y] = std::max( elv_max[x][y], p.z() );
 		elv_min[x][y] = std::min( elv_min[x][y], p.z() );
+	    }
+	}
+    }
+
+    return true;
+}
+
+bool Projection::interpolateMap(const std::string& type)
+{
+    // TODO add checking of connections
+    Grid* grid = static_cast<envire::Grid*>(*env->getOutputs(this).begin());
+
+    if( !grid->hasData( type ) )
+	return false;
+
+    boost::multi_array<double,2>& data(grid->getGridData<double>(type));
+
+    typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+    typedef CGAL::Triangulation_euclidean_traits_xy_3<K>  Gt;
+    typedef CGAL::Delaunay_triangulation_2<Gt> Delaunay;
+
+    typedef K::Point_3 Point;
+
+    Delaunay dt;
+
+    size_t width = data.shape()[0]; 
+    size_t height = data.shape()[1]; 
+    
+    for(int x=0;x<width;x++)
+    {
+	for(int y=0;y<height;y++)
+	{
+	    if( fabs( data[x][y] ) != std::numeric_limits<double>::infinity() )
+	    {
+		Point p(x,y,data[x][y] );
+		dt.insert( p );
+	    }
+	}
+    }
+
+    for(int x=0;x<width;x++)
+    {
+	for(int y=0;y<height;y++)
+	{
+	    if( fabs( data[x][y] ) == std::numeric_limits<double>::infinity() )
+	    {
+		// no data point in grid, so value needs to be interpolated
+
+		// Solve linear equation system to find plane that is spanned by
+		// the three points
+		Eigen::Matrix3d A;
+		Eigen::Vector3d b;
+		
+		Delaunay::Face_handle face = dt.locate( Point(x,y,0) );
+		for(int i=0;i<3;i++)
+		{
+		    Point &p(face->vertex(i)->point());
+		    A.block<1,3>(i,0) = Eigen::Vector3d(p.x(), p.y(), 1);
+		    b(i) = p.z();
+		}
+
+		// evaluate the point at x, y
+		data[x][y] = Eigen::Vector3d(x,y,1).dot( A.inverse() * b );
 	    }
 	}
     }

@@ -28,6 +28,7 @@ namespace envire {
 
 	bool updateTraversibilityMap();
 	bool updateElevationMap();
+	bool interpolateMap(const std::string& type);
     };
 }
 

@@ -24,6 +24,10 @@ find_package(GDAL REQUIRED)
 add_definitions(${GDAL_CFLAGS})
 include_directories(${GDAL_INCLUDE_DIRS})
 
+find_package(CGAL REQUIRED)
+add_definitions(${CGAL_DEFINITIONS})
+link_directories(${CGAL_LIBRARIES})
+
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
@@ -58,6 +62,7 @@ install(FILES ${ENVMAP_HDRS} DESTINATION include/envire)
 target_link_libraries(envire 
     ${Boost_FILESYSTEM_LIBRARY}
     ${LIBYAML_LIBRARIES}
+    ${CGAL_LIBRARIES}
     ${GDAL_LIBRARIES} )
 
 configure_file(Doxyfile.in Doxyfile @ONLY)
