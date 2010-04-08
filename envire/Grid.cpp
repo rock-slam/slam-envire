@@ -25,7 +25,6 @@ Grid::Grid(size_t width, size_t height, double scalex, double scaley) :
 
 Grid::~Grid()
 {
-    for( std::map<std::string, HolderBase*>::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
 }
 
 Grid::Grid(Serialization& so)
