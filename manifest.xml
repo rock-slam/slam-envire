@@ -10,4 +10,5 @@
 
     <rosdep name="yaml" />
     <rosdep name="gdal" />
+    <rosdep name="cgal" />
 </package>
