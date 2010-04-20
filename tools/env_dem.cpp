@@ -11,8 +11,7 @@
 
 using namespace envire;
 using namespace std;
-
-
+     
 int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
@@ -44,12 +43,12 @@ int main( int argc, char* argv[] )
     fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,-3.0)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
     
     double res = 0.25;
-    envire::Grid *grid = new envire::Grid(20/res, 85/res, res, res);
+    envire::Grid<double> *grid = new envire::Grid<double> (20/res, 85/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
 
     // and operator
-    envire::Projection *proj = new envire::Projection();
+    envire::Projection<double>  *proj = new envire::Projection<double>();
     env->attachItem( proj );
     proj->addOutput( grid );
 

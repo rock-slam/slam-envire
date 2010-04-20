@@ -24,6 +24,10 @@ find_package(GDAL REQUIRED)
 add_definitions(${GDAL_CFLAGS})
 include_directories(${GDAL_INCLUDE_DIRS})
 
+find_package(CGAL REQUIRED)
+add_definitions(${CGAL_DEFINITIONS})
+link_directories(${CGAL_LIBRARIES})
+
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
@@ -31,7 +35,9 @@ set(ENVMAP_HDRS
     envire/TriMesh.hpp
     envire/Pointcloud.hpp
     envire/Grid.hpp
-    envire/Core.hpp)
+    envire/Grids.hpp
+    envire/Core.hpp
+    envire/Image.hpp)
 
 set(ENVMAP_SRCS
     envire/Environment.cpp
@@ -41,12 +47,13 @@ set(ENVMAP_SRCS
     envire/Serialization.cpp
     envire/SerializationFactory.cpp
     envire/ScanMeshing.cpp
-    envire/Projection.cpp
     envire/TriMesh.cpp
+     envire/Grid.cpp
     envire/Pointcloud.cpp
     envire/LaserScan.cpp
     envire/EventListener.cpp
-    envire/Grid.cpp
+    envire/Image.cpp
+    envire/Grids.cpp
     )
 
 add_library(envire SHARED ${ENVMAP_SRCS})
@@ -58,6 +65,7 @@ install(FILES ${ENVMAP_HDRS} DESTINATION include/envire)
 target_link_libraries(envire 
     ${Boost_FILESYSTEM_LIBRARY}
     ${LIBYAML_LIBRARIES}
+    ${CGAL_LIBRARIES}
     ${GDAL_LIBRARIES} )
 
 configure_file(Doxyfile.in Doxyfile @ONLY)
