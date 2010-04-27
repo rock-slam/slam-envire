@@ -5,6 +5,7 @@
 #include "ScanMeshing.hpp"
 #include "Projection.hpp"
 #include "Pointcloud.hpp"
+#include "Grids.hpp"
 
 using namespace envire;
 
@@ -23,7 +24,21 @@ EnvironmentItem* SerializationFactory::createObject(const std::string& className
 	addClass(Pointcloud::className, &create<Pointcloud> );
 	addClass(LaserScan::className, &create<LaserScan> );
 	addClass(TriMesh::className, &create<TriMesh> );
-
+	
+	//addClass(Grid<unsigned char>::className, &create<Grid<unsigned char> >);
+	//addClass(Grid<uint16_t>::className, &create<Grid<uint16_t> >);
+	//addClass(Grid<int16_t>::className, &create<Grid<int16_t> >);
+	//addClass(Grid<uint32_t>::className, &create<Grid<uint32_t> >);
+	//addClass(Grid<int32_t>::className, &create<Grid<int32_t> >);
+	//addClass(Grid<float>::className, &create<Grid<float> >);
+	//addClass(Grid<double>::className, &create<Grid<double> >);
+	
+	addClass(ConfidenceGrid::className, &create<ConfidenceGrid>);
+	addClass(TraversabilityGrid::className, &create<TraversabilityGrid>);
+	addClass(ElevationGrid::className, &create<ElevationGrid>);
+	addClass(OccupancyGrid::className, &create<OccupancyGrid>);
+	addClass(ImageRGB24::className, &create<ImageRGB24>);
+	
 	addClass(ScanMeshing::className, &create<ScanMeshing> );
 	addClass(Projection::className, &create<Projection> );
 

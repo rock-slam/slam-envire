@@ -161,10 +161,12 @@ void Environment::attachItem(EnvironmentItem* item)
     }
     // add item to internal list
     items[item->getUniqueId()] = item;
-
+   
     // set a pointer to environment object
     item->env = this;
     
+    return;
+     
     for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
     {
 	(*it)->itemAttached(item);

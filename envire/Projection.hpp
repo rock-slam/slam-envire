@@ -3,7 +3,7 @@
 
 #include "Core.hpp" 
 #include "TriMesh.hpp" 
-#include "Grid.hpp" 
+#include "Grids.hpp" 
 
 #include <Eigen/Core>
 
@@ -22,7 +22,7 @@ namespace envire {
 	const std::string& getClassName() const {return className;};
 
 	void addInput( TriMesh* mesh ); 
-	void addOutput( Grid* grid ); 
+	void addOutput( ElevationGrid* grid ); 
 
 	bool updateAll();
 
@@ -31,5 +31,4 @@ namespace envire {
 	bool interpolateMap(const std::string& type);
     };
 }
-
 #endif

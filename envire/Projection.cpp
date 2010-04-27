@@ -37,7 +37,7 @@ void Projection::addInput( TriMesh* mesh )
     Operator::addInput(mesh);
 }
 
-void Projection::addOutput( Grid* grid )
+void Projection::addOutput( ElevationGrid* grid )
 {
     if( env->getOutputs(this).size() > 0 )
         throw std::runtime_error("Projection can only have one output.");
@@ -48,17 +48,17 @@ void Projection::addOutput( Grid* grid )
 bool Projection::updateAll() 
 {
     updateElevationMap();
-    updateTraversibilityMap();
-    interpolateMap(Grid::ELEVATION_MAX);
+    interpolateMap(ElevationGrid::ELEVATION_MAX);
+    //updateTraversibilityMap();
 }
 
 bool Projection::updateElevationMap()
 {
     // TODO add checking of connections
-    Grid* grid = static_cast<envire::Grid*>(*env->getOutputs(this).begin());
+    ElevationGrid* grid = static_cast<envire::ElevationGrid*>(*env->getOutputs(this).begin());
 
-    boost::multi_array<double,2>& elv_min(grid->getGridData<double>(Grid::ELEVATION_MIN));
-    boost::multi_array<double,2>& elv_max(grid->getGridData<double>(Grid::ELEVATION_MAX));
+    ElevationGrid::ArrayType& elv_min(grid->getGridData(ElevationGrid::ELEVATION_MIN));
+    ElevationGrid::ArrayType& elv_max(grid->getGridData(ElevationGrid::ELEVATION_MAX));
 
     // fill the elevation map
     std::fill(elv_min.data(), elv_min.data() + elv_min.num_elements(), std::numeric_limits<double>::infinity());
@@ -92,12 +92,12 @@ bool Projection::updateElevationMap()
 bool Projection::interpolateMap(const std::string& type)
 {
     // TODO add checking of connections
-    Grid* grid = static_cast<envire::Grid*>(*env->getOutputs(this).begin());
+    ElevationGrid* grid = static_cast<envire::ElevationGrid*>(*env->getOutputs(this).begin());
 
     if( !grid->hasData( type ) )
 	return false;
 
-    boost::multi_array<double,2>& data(grid->getGridData<double>(type));
+    ElevationGrid::ArrayType& data(grid->getGridData(type));
 
     typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
     typedef CGAL::Triangulation_euclidean_traits_xy_3<K>  Gt;
@@ -152,6 +152,8 @@ bool Projection::interpolateMap(const std::string& type)
     return true;
 }
 
+// TODO add this to a new operator
+/*
 bool Projection::updateTraversibilityMap()
 {
     // TODO add checking of connections
@@ -206,4 +208,5 @@ bool Projection::updateTraversibilityMap()
 
     return true;
 }
+*/
 

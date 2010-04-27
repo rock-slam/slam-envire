@@ -131,6 +131,8 @@ CartesianMap::CartesianMap(Serialization& so) :
 
 void CartesianMap::setFrameNode(FrameNode* node)
 {
+    if(!env)
+      throw std::runtime_error("Before setting the frame node add the object to the environment.");
     env->setFrameNode(this, node);
 }
 

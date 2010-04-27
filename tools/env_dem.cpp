@@ -4,15 +4,14 @@
 #include "envire/Core.hpp"
 #include "envire/TriMesh.hpp"
 #include "envire/ScanMeshing.hpp"
-#include "envire/Grid.hpp"
+#include "envire/Grids.hpp"
 #include "envire/Projection.hpp"
 
 #include "boost/scoped_ptr.hpp"
 
 using namespace envire;
 using namespace std;
-
-
+     
 int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
@@ -44,7 +43,7 @@ int main( int argc, char* argv[] )
     fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,-2)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
     
     double res = 0.10;
-    envire::Grid *grid = new envire::Grid(12/res, 85/res, res, res);
+    envire::ElevationGrid *grid = new envire::ElevationGrid(12/res, 85/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
 

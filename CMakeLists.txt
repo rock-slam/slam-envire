@@ -35,7 +35,9 @@ set(ENVMAP_HDRS
     envire/TriMesh.hpp
     envire/Pointcloud.hpp
     envire/Grid.hpp
-    envire/Core.hpp)
+    envire/Grids.hpp
+    envire/Core.hpp
+    )
 
 set(ENVMAP_SRCS
     envire/Environment.cpp
@@ -45,12 +47,13 @@ set(ENVMAP_SRCS
     envire/Serialization.cpp
     envire/SerializationFactory.cpp
     envire/ScanMeshing.cpp
-    envire/Projection.cpp
     envire/TriMesh.cpp
+    envire/Grid.cpp
+    envire/Projection.cpp
     envire/Pointcloud.cpp
     envire/LaserScan.cpp
     envire/EventListener.cpp
-    envire/Grid.cpp
+    envire/Grids.cpp
     )
 
 add_library(envire SHARED ${ENVMAP_SRCS})
