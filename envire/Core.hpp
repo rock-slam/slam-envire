@@ -143,8 +143,6 @@ namespace envire
 	typedef Eigen::Transform<double,3> TransformType;
 
     protected:
-        /** The 3D transformation that leads from the parent frame to this one
-        */
 	TransformType frame;
 
     public:
@@ -172,8 +170,7 @@ namespace envire
          */
         FrameNode* getParent();
 
-        /** Returns the Transformation that leads from the parent frame to
-         * this one
+        /** Returns the transformation from this FrameNode to the parent framenode
          */
 	TransformType const& getTransform() const;
 
