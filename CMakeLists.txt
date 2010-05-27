@@ -35,6 +35,7 @@ set(ENVMAP_HDRS
     envire/TriMesh.hpp
     envire/Pointcloud.hpp
     envire/Grid.hpp
+    envire/GridAccess.hpp
     envire/Grids.hpp
     envire/Core.hpp
     )
@@ -49,6 +50,7 @@ set(ENVMAP_SRCS
     envire/ScanMeshing.cpp
     envire/TriMesh.cpp
     envire/Grid.cpp
+    envire/GridAccess.cpp
     envire/Projection.cpp
     envire/Pointcloud.cpp
     envire/LaserScan.cpp
