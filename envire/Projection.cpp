@@ -80,8 +80,8 @@ bool Projection::updateElevationMap()
 	    size_t x, y;
 	    if( grid->toGrid( p.x(), p.y(), x, y ) )
 	    {
-		elv_max[x][y] = std::max( elv_max[x][y], p.z() );
-		elv_min[x][y] = std::min( elv_min[x][y], p.z() );
+		elv_max[y][x] = std::max( elv_max[y][x], p.z() );
+		elv_min[y][x] = std::min( elv_min[y][x], p.z() );
 	    }
 	}
     }
