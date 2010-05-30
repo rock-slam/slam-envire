@@ -27,6 +27,7 @@ include_directories(${GDAL_INCLUDE_DIRS})
 find_package(CGAL REQUIRED)
 add_definitions(${CGAL_DEFINITIONS})
 link_directories(${CGAL_LIBRARIES})
+add_definitions(-DCGAL_DISABLE_ROUNDING_MATH_CHECK)
 
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
