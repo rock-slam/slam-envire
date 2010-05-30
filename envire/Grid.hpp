@@ -306,8 +306,8 @@ namespace envire
     //returns the gird indices if the coordinates are on the grid
     template<class T>bool Grid<T>::toGrid( double x, double y, size_t& m, size_t& n )
     {
-	int am = x/scalex+0.5;
-	int an = y/scaley+0.5;
+	int am = floor(x/scalex);
+	int an = floor(y/scaley);
 	if( 0 <= am && am < width && 0 <= an && an < height )
 	{
 	    m = am;
