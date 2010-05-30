@@ -21,6 +21,10 @@ struct GridAccessImpl
 	if( grid->toGrid(local.x(), local.y(), x, y) )
 	{
 	    position.z() = (*gridData)[y][x];
+	    if( std::isinf( position.z() ) )
+	    {
+		std::cout << "x,y: " << x << "," << y << "," << position.transpose() << std::endl;
+	    }
 	    return true;
 	}
 	return false;
@@ -44,9 +48,8 @@ bool GridAccess::getElevation(Eigen::Vector3d& position)
     // and see try that one first on the next call
     if( impl->grid )
     {
-	return impl->evalGridPoint( position );
-//	if( impl->evalGridPoint( impl->grid, impl->t, position ) )
-//	    return true;
+	if( impl->evalGridPoint( position ) )
+	    return true;
     }
     std::cout << "non cached!" << std::endl;
 
