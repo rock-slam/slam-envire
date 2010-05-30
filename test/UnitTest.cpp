@@ -9,6 +9,9 @@
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
+
+#include "envire/GridAccess.hpp"
+#include "envire/Grids.hpp"
    
 using namespace envire;
 using namespace std;
@@ -221,6 +224,51 @@ BOOST_AUTO_TEST_CASE( functional )
 
     Serialization so;
     so.serialize(env.get(), "build/test");
+}
+
+BOOST_AUTO_TEST_CASE( grid_access ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    ElevationGrid *m1 = new ElevationGrid( 2, 2, 1, 1 );
+    ElevationGrid *m2 = new ElevationGrid( 2, 2, 1, 1 );
+
+    env->attachItem( m1 );
+    env->attachItem( m2 );
+
+    FrameNode *fn1 = new FrameNode();
+    fn1->setTransform( 
+	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.0 )) );
+    FrameNode *fn2 = new FrameNode();
+    fn2->setTransform( 
+	    Eigen::Transform3d(Eigen::Translation3d( 5.0, 0.0, 0.0 )) );
+
+    env->addChild( env->getRootNode(), fn1 );
+    env->addChild( env->getRootNode(), fn2 );
+
+    m1->setFrameNode( fn1 );
+    m2->setFrameNode( fn2 );
+
+    for(int i=0;i<2;i++)
+    {
+	for(int j=0;j<2;j++)
+	{
+	    m1->getGridData()[i][j] = i*2 + j;
+	    m2->getGridData()[i][j] = i*2 + j;
+	}
+    }
+
+    Eigen::Vector3d p1(0.5,0.5,0);
+    Eigen::Vector3d p2(4.5,0.5,0);
+    Eigen::Vector3d p3(6.5,0.5,0);
+
+    GridAccess ga( env.get() );
+    bool r1 = ga.getElevation( p1 );
+    bool r2 = ga.getElevation( p2 );
+    bool r3 = ga.getElevation( p3 );
+
+    cout << r1 << ":" << p1.transpose() << endl;
+    cout << r2 << ":" << p2.transpose() << endl;
+    cout << r3 << ":" << p3.transpose() << endl;
 }
 
 // EOF
