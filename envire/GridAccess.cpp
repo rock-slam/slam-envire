@@ -65,7 +65,7 @@ bool GridAccess::getElevation(Eigen::Vector3d& position)
 		    grid->getFrameNode() );
 
 	impl->grid = grid;
-	impl->gridData = &grid->getGridData();
+	impl->gridData = &grid->getGridData(ElevationGrid::ELEVATION);
 	impl->t = t;
 
 	if( impl->evalGridPoint( position ) )
