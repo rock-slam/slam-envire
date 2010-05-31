@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE( functional )
 BOOST_AUTO_TEST_CASE( grid_access ) 
 {
     boost::scoped_ptr<Environment> env( new Environment() );
-    ElevationGrid *m1 = new ElevationGrid( 2, 2, 1, 1 );
-    ElevationGrid *m2 = new ElevationGrid( 2, 2, 1, 1 );
+    ElevationGrid *m1 = new ElevationGrid( 2, 4, 1, 1 );
+    ElevationGrid *m2 = new ElevationGrid( 4, 2, 1, 1 );
 
     env->attachItem( m1 );
     env->attachItem( m2 );
@@ -250,25 +250,28 @@ BOOST_AUTO_TEST_CASE( grid_access )
 
     for(int i=0;i<2;i++)
     {
-	for(int j=0;j<2;j++)
+	for(int j=0;j<4;j++)
 	{
-	    m1->getGridData()[i][j] = i*2 + j;
-	    m2->getGridData()[i][j] = i*2 + j;
+	    m1->getGridData()[j][i] = i*4 + j;
+	    m2->getGridData()[i][j] = i*4 + j;
 	}
     }
 
-    Eigen::Vector3d p1(0.5,0.5,0);
-    Eigen::Vector3d p2(4.5,0.5,0);
-    Eigen::Vector3d p3(6.5,0.5,0);
+    std::vector<Eigen::Vector3d> probes;
+    probes.push_back( Eigen::Vector3d(0.5,0.5,0) );
+    probes.push_back( Eigen::Vector3d(1.5,3.5,0) );
+    probes.push_back( Eigen::Vector3d(4.5,0.5,0) );
+    probes.push_back( Eigen::Vector3d(6.5,0.5,0) );
+    probes.push_back( Eigen::Vector3d(7.5,1.5,0) );
 
     GridAccess ga( env.get() );
-    bool r1 = ga.getElevation( p1 );
-    bool r2 = ga.getElevation( p2 );
-    bool r3 = ga.getElevation( p3 );
 
-    cout << r1 << ":" << p1.transpose() << endl;
-    cout << r2 << ":" << p2.transpose() << endl;
-    cout << r3 << ":" << p3.transpose() << endl;
+    for(int i=0;i<probes.size();i++)
+    {
+	bool r = ga.getElevation( probes[i] );
+	cout << r << ":" << probes[i].transpose() << endl;
+
+    }
 }
 
 // EOF
