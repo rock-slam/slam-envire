@@ -1,6 +1,7 @@
 #include "GridAccess.hpp"
 
 #include "Grids.hpp"
+#include <Eigen/LU>
 
 using namespace envire;
 
@@ -13,6 +14,7 @@ struct GridAccessImpl
     ElevationGrid* grid;
     ElevationGrid::ArrayType* gridData;
     FrameNode::TransformType t;
+    double z_offset;
 
     bool evalGridPoint(Eigen::Vector3d& position)
     {
@@ -20,11 +22,7 @@ struct GridAccessImpl
 	size_t x, y;
 	if( grid->toGrid(local.x(), local.y(), x, y) )
 	{
-	    position.z() = (*gridData)[y][x];
-	    if( std::isinf( position.z() ) )
-	    {
-		std::cout << "x,y: " << x << "," << y << "," << position.transpose() << std::endl;
-	    }
+	    position.z() = (*gridData)[y][x] + z_offset;
 	    return true;
 	}
 	return false;
@@ -50,8 +48,9 @@ bool GridAccess::getElevation(Eigen::Vector3d& position)
     {
 	if( impl->evalGridPoint( position ) )
 	    return true;
+
+	return false;
     }
-    std::cout << "non cached!" << std::endl;
 
     if( impl->grids.size() == 0 )
 	impl->grids = env->getItems<ElevationGrid>();
@@ -67,6 +66,7 @@ bool GridAccess::getElevation(Eigen::Vector3d& position)
 	impl->grid = grid;
 	impl->gridData = &grid->getGridData(ElevationGrid::ELEVATION);
 	impl->t = t;
+	impl->z_offset = t.inverse()(2,3);
 
 	if( impl->evalGridPoint( position ) )
 	    return true;
