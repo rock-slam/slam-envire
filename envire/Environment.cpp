@@ -398,6 +398,23 @@ Operator* Environment::getGenerator(Layer* output)
     }
 }
 
+void Environment::updateOperators(){
+	std::vector<envire::Operator*> ops = getItems<envire::Operator>();
+
+    for(std::vector<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
+    {
+	(*it)->updateAll();
+	for(std::vector<EventListener *>::iterator eit = eventListeners.begin(); eit != eventListeners.end(); eit++)
+	{
+		//get outputs
+		std::list<Layer*> outs = getOutputs(*it);
+		for (std::list<Layer*>::iterator out = outs.begin();out != outs.end();out++){
+			(*eit)->itemModified(*out);
+		}
+	}
+    }
+}
+
 FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
 {
     // the simplest but not most efficient way is to go through the root node

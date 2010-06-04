@@ -365,7 +365,7 @@ namespace envire
 
         /** Update the output layer(s) according to the defined operation.
          */
-        virtual bool updateAll() = 0;
+        virtual bool updateAll(){return false;};
 
         /** Adds a new input to this operator. The operator may not support
          * this, in which case it will return false
@@ -499,6 +499,9 @@ namespace envire
 	std::list<Layer*> getOutputs(Operator* op);
 
 	Operator* getGenerator(Layer* output);
+
+	void updateOperators();
+
 
 	/**
 	 * returns all items of a particular type
