@@ -16,6 +16,11 @@ FrameNode::FrameNode()
 {
 }
 
+FrameNode::FrameNode(const TransformType& t)
+    : frame( t )
+{
+}
+
 FrameNode::FrameNode(Serialization &so)
     : EnvironmentItem( so )
 {

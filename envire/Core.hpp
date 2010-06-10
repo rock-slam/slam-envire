@@ -153,6 +153,7 @@ namespace envire
 
         /** default constructor */
         FrameNode();
+        FrameNode(const TransformType &t);
         FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
