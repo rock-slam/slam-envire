@@ -3,3 +3,9 @@ tags
 *.swp
 Doxyfile
 *.pc
+*.orig
+core
+CMakeFiles
+CMakeCache.txt
+*.kdev4
+patches-*-stamp
