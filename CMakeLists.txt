@@ -32,6 +32,7 @@ add_definitions(-DCGAL_DISABLE_ROUNDING_MATH_CHECK)
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
+    envire/MergePointcloud.hpp
     envire/LaserScan.hpp
     envire/TriMesh.hpp
     envire/Pointcloud.hpp
@@ -53,6 +54,7 @@ set(ENVMAP_SRCS
     envire/Grid.cpp
     envire/GridAccess.cpp
     envire/Projection.cpp
+    envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
     envire/LaserScan.cpp
     envire/EventListener.cpp
