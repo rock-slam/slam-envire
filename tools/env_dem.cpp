@@ -23,19 +23,7 @@ int main( int argc, char* argv[] )
     Serialization so;
     boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
     
-    std::vector<envire::Operator*> ops = env->getItems<envire::Operator>();
-    for(std::vector<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
-    {
-	ScanMeshing *sm = dynamic_cast<ScanMeshing*>(*it);
-	if(sm)
-	{
-	    std::cout << "setMinRange" << std::endl;
-	    sm->setMinRange(0.25);
-	}
-
-	(*it)->updateAll();
-	std::cout << "update trimesh" << std::endl;
-    }
+    env->updateOperators();
 
     // create new grid
     envire::FrameNode *fm1 = new envire::FrameNode();
