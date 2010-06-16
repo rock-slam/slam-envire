@@ -43,29 +43,19 @@ void MergePointcloud::addOutput(Pointcloud* globalpc){
 }
 
 bool MergePointcloud::updateAll(){
-    Pointcloud* targetcloud = static_cast<envire::Pointcloud*>(*env->getOutputs(this).begin());
-    std::list<Layer*> inputs = env->getInputs(this);
-
+    Pointcloud* targetcloud = dynamic_cast<envire::Pointcloud*>(*env->getOutputs(this).begin());
+    assert( targetcloud );
     targetcloud->vertices.clear();
+
+    std::list<Layer*> inputs = env->getInputs(this);
 
     //for every cloud
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ ){
 	Pointcloud* cloud = dynamic_cast<envire::Pointcloud*>(*it);
 
-	FrameNode::TransformType trans;
-	trans.setIdentity();
-	FrameNode* curr = env->getFrameNode(cloud);
-	while (!curr->isRoot()){
-	    trans = trans * curr->getTransform();
-	    curr = curr->getParent();
-	}
+	FrameNode::TransformType trans = 
+	    env->relativeTransform( cloud->getFrameNode(), targetcloud->getFrameNode() );
 
-
-
-	//add all points
-
-
-	//targetcloud->vertices.insert(targetcloud->vertices.end(),cloud->vertices.begin(),cloud->vertices.end());
 	for (std::vector<Eigen::Vector3d>::iterator p = cloud->vertices.begin();p<cloud->vertices.end();p++){
 	    targetcloud->vertices.push_back(trans * *p);
 	}
