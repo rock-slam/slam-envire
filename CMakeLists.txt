@@ -6,6 +6,7 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
 
+
 find_package(KDTree REQUIRED)
 include_directories(${KDTREE_INCLUDE_DIRS})
 
@@ -24,14 +25,31 @@ find_package(GDAL REQUIRED)
 add_definitions(${GDAL_CFLAGS})
 include_directories(${GDAL_INCLUDE_DIRS})
 
+find_package(BLAS)
+add_definitions( ${BLAS_DEFINITIONS} )
+link_directories( ${BLAS_LIBRARIES_DIR} )
+link_libraries( ${BLAS_LIBRARIES} )
+
+find_package(LAPACK)
+add_definitions( ${LAPACK_DEFINITIONS} )
+link_directories( ${LAPACK_LIBRARIES_DIR} )
+link_libraries( ${LAPACK_LIBRARIES} )
+
 find_package(CGAL REQUIRED)
 add_definitions(${CGAL_DEFINITIONS})
 link_directories(${CGAL_LIBRARIES})
 add_definitions(-DCGAL_DISABLE_ROUNDING_MATH_CHECK)
+if ( "${BLAS_DEFINITIONS}" MATCHES ".*BLAS_USE_F2C.*" )
+    add_definitions( "-DCGAL_USE_F2C" )
+endif()
+if ( "${LAPACK_DEFINITIONS}" MATCHES ".*LAPACK_USE_F2C.*" )
+    add_definitions( "-DCGAL_USE_F2C" )
+endif()
 
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
+    envire/SimplifyPointcloud.hpp
     envire/MergePointcloud.hpp
     envire/LaserScan.hpp
     envire/TriMesh.hpp
@@ -54,6 +72,7 @@ set(ENVMAP_SRCS
     envire/Grid.cpp
     envire/GridAccess.cpp
     envire/Projection.cpp
+    envire/SimplifyPointcloud.cpp
     envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
     envire/LaserScan.cpp
@@ -94,3 +113,6 @@ target_link_libraries(env_icp icp envire)
 
 add_executable(env_dem tools/env_dem.cpp)
 target_link_libraries(env_dem icp envire)
+
+add_executable(dem_helper tools/dem_helper.cpp)
+target_link_libraries(dem_helper icp envire)
