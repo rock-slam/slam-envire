@@ -46,8 +46,11 @@ namespace envire {
 	void serialize(Serialization& so);
 	void serialize(Serialization& so, bool handleMap = true);
 
-	void writeMap(const std::string& path);
-	void readMap(const std::string& path);
+	bool writeText(const std::string& path);
+	bool readText(const std::string& path);
+
+	bool writePly(const std::string& path);
+	bool readPly(const std::string& path);
 
 	const std::string& getClassName() const {return className;};
 

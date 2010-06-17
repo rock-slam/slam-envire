@@ -1,5 +1,6 @@
 #include "Core.hpp"
 #include "Pointcloud.hpp"
+#include "PlyFile.hpp"
 
 #include <fstream>
 
@@ -25,7 +26,10 @@ Pointcloud::Pointcloud(Serialization& so, bool handleMap)
     so.setClassName(className);
 
     if(handleMap)
-	readMap( getMapFileName(so.getMapPath()) + ".txt" );
+    {
+	if( !readPly( getMapFileName(so.getMapPath()) + ".ply" ) )
+	    readText( getMapFileName(so.getMapPath()) + ".txt" );
+    }
 }
 
 void Pointcloud::serialize(Serialization& so)
@@ -39,7 +43,7 @@ void Pointcloud::serialize(Serialization& so, bool handleMap)
     so.setClassName(className);
 
     if(handleMap)
-	writeMap( getMapFileName(so.getMapPath()) + ".txt" );
+	writePly( getMapFileName(so.getMapPath()) + ".ply" );
 }
 
 Pointcloud* Pointcloud::clone() 
@@ -47,26 +51,42 @@ Pointcloud* Pointcloud::clone()
     return new Pointcloud(*this);
 }
 
-void Pointcloud::writeMap(const std::string& path)
+bool Pointcloud::writePly(const std::string& path)
+{
+    PlyFile ply(path);
+    return ply.serialize( this );
+}
+
+bool Pointcloud::readPly(const std::string& path)
+{
+    PlyFile ply(path);
+    return ply.unserialize( this );
+}
+
+bool Pointcloud::writeText(const std::string& path)
 {
     std::ofstream data(path.c_str());
     if( data.fail() )  
     {
-        throw std::runtime_error("Could not open file '" + path + "' for writing.");
+	std::cerr << "Could not open file '" + path + "' for writing." << std::endl;
+	return false;
     }
 
     for(int i=0;i<vertices.size();i++)
     {
 	data << vertices[i].x() << " " << vertices[i].y() << " " << vertices[i].z() << std::endl;
     }
+    
+    return true;
 }
 
-void Pointcloud::readMap(const std::string& path)
+bool Pointcloud::readText(const std::string& path)
 {
     std::ifstream data(path.c_str());
     if( data.fail() )  
     {
-        throw std::runtime_error("Could not open file '" + path + "'.");
+	std::cerr << "Could not open file '" + path + "'." << std::endl;
+	return false;
     }
 
     while( !data.eof() )
@@ -75,12 +95,14 @@ void Pointcloud::readMap(const std::string& path)
 	data >> x >> y >> z;
 	vertices.push_back( Eigen::Vector3d( x,y,z ) );
     }
+
+    return true;
 }
 
 Pointcloud* Pointcloud::importCsv(const std::string& path, FrameNode* fm)
 {
     Pointcloud* pc = new Pointcloud();
-    pc->readMap( path );
+    pc->readText( path );
 
     Environment* env = fm->getEnvironment();
     env->attachItem(pc);

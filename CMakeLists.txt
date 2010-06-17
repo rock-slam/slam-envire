@@ -46,6 +46,10 @@ if ( "${LAPACK_DEFINITIONS}" MATCHES ".*LAPACK_USE_F2C.*" )
     add_definitions( "-DCGAL_USE_F2C" )
 endif()
 
+pkg_check_modules(PLY_TYPES REQUIRED "ply")
+include_directories(${PLY_TYPES_INCLUDE_DIRS})
+link_directories(${PLY_TYPES_LIBRARY_DIRS})
+
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
@@ -75,6 +79,7 @@ set(ENVMAP_SRCS
     envire/SimplifyPointcloud.cpp
     envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
+    envire/PlyFile.cpp
     envire/LaserScan.cpp
     envire/EventListener.cpp
     envire/Grids.cpp
@@ -90,6 +95,7 @@ target_link_libraries(envire
     ${Boost_FILESYSTEM_LIBRARY}
     ${LIBYAML_LIBRARIES}
     ${CGAL_LIBRARIES}
+    ${PLY_TYPES_LIBRARIES}
     ${GDAL_LIBRARIES} )
 
 configure_file(Doxyfile.in Doxyfile @ONLY)
