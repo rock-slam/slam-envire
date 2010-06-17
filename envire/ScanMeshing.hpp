@@ -13,6 +13,8 @@ namespace envire {
 	long remissionMarkerThreshold;
 	double minRange;
 
+	bool extractMarkers;
+
     public:
 	static const std::string className;
 
@@ -30,6 +32,7 @@ namespace envire {
 	void setRemissionScaleFactor( double value );
 	void setRemissionMarkerThreshold( long value );
 	void setMinRange( double value );
+	void setExtractMarkers( bool value );
 	bool updateAll();
 
 	void setDefaultConfiguration();

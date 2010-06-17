@@ -17,6 +17,7 @@ void ScanMeshing::setDefaultConfiguration()
     remissionScaleFactor = 10000; 
     remissionMarkerThreshold = 16000;
     minRange = 0.1;
+    extractMarkers = false;
 }
 
 ScanMeshing::ScanMeshing(Serialization& so)
@@ -162,24 +163,28 @@ bool ScanMeshing::updateAll()
 		    colors.push_back( Eigen::Vector3d::Ones() * cval );
 
 
-		    // see if remission value is above threshold for marker
-		    if( line.remissions[point_num] > remissionMarkerThreshold )
+		    if( extractMarkers )
 		    {
-			bool newMarker = true;
-			for(int i=0;i<markers.size();i++)
+			// TODO maybe move into separate function
+			// see if remission value is above threshold for marker
+			if( line.remissions[point_num] > remissionMarkerThreshold )
 			{
-			    // TODO make max distance configurable
-			    if( markers[i].dist( opoint ) < 0.05 )
+			    bool newMarker = true;
+			    for(int i=0;i<markers.size();i++)
 			    {
-				newMarker = false;
-				markers[i].addPoint( opoint );
+				// TODO make max distance configurable
+				if( markers[i].dist( opoint ) < 0.05 )
+				{
+				    newMarker = false;
+				    markers[i].addPoint( opoint );
+				}
 			    }
-			}
-			if( newMarker )
-			{
-			    Marker m;
-			    m.addPoint( opoint );
-			    markers.push_back( m );
+			    if( newMarker )
+			    {
+				Marker m;
+				m.addPoint( opoint );
+				markers.push_back( m );
+			    }
 			}
 		    }
 		}
