@@ -165,8 +165,6 @@ void Environment::attachItem(EnvironmentItem* item)
     // set a pointer to environment object
     item->env = this;
     
-    return;
-     
     for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
     {
 	(*it)->itemAttached(item);
