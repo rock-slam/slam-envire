@@ -198,15 +198,19 @@ bool SurfaceReconstruction::updateAll()
 
 	Halfedge_facet_circulator j = it->facet_begin();
         // Facets in polyhedral surfaces are at least triangles.
-	if( CGAL::circulator_size(j) > 3 )
+	if( CGAL::circulator_size(j) != 3 )
 	    std::cout << CGAL::circulator_size(j) << ' ';
 
 	int n = 0;
         do {
+	    int vidx = j->vertex()->index; 
+	    if( vidx >= mesh_out->vertices.size() )
+		std::cout << "index " << vidx << " out of range!";
+
 	    switch(n) {
-		case(0): face.get<0>() = j->vertex()->index; break;
-		case(1): face.get<1>() = j->vertex()->index; break;
-		case(2): face.get<2>() = j->vertex()->index; break;
+		case(0): face.get<0>() = vidx; break;
+		case(1): face.get<1>() = vidx; break;
+		case(2): face.get<2>() = vidx; break;
 		default: break;
 	    }
 	    n++;
@@ -214,6 +218,8 @@ bool SurfaceReconstruction::updateAll()
 
 	mesh_out->faces.push_back( face );
     }
+
+    mesh_out->calcVertexNormals();
 
     std::cout << "copied faces " << mesh_out->faces.size() << std::endl;
 
