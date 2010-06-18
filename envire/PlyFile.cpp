@@ -72,7 +72,7 @@ template <typename SizeType, typename ScalarType>
 void PlyFile::list_property_begin_callback(SizeType size)
 {
     if( size != 3 )
-	std::cerr << "no support for faces with edgecount different to 3 (is " << size << ")." << std::endl;
+	std::cerr << "no support for faces with edgecount different to 3 (is " << (int)size << ")." << std::endl;
 
     triangle_idx__ = 0;
 }
@@ -80,6 +80,9 @@ void PlyFile::list_property_begin_callback(SizeType size)
 template <typename SizeType, typename ScalarType>
 void PlyFile::list_property_element_callback(ScalarType scalar)
 {
+    if( scalar >= pco_->vertices.size() )
+	std::cerr << "vertex_index " << scalar << " is out of range!" << std::endl;
+
     switch( triangle_idx__ )
     {
 	case(0): triangle__.get<0>() = scalar; break;
@@ -105,7 +108,7 @@ void PlyFile::list_property_dummy_callback(DummyType dummy)
 template <typename SizeType, typename ScalarType>
 std::tr1::tuple<std::tr1::function<void (SizeType)>, std::tr1::function<void (ScalarType)>, std::tr1::function<void ()> > PlyFile::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
 {
-    if( element_name == "faces" && property_name == "vertex_index" && tmo_ )
+    if( element_name == "face" && property_name == "vertex_index" && tmo_ )
     {
 	return std::tr1::tuple<std::tr1::function<void (SizeType)>, std::tr1::function<void (ScalarType)>, std::tr1::function<void ()> >(
 		std::tr1::bind(&PlyFile::list_property_begin_callback<SizeType, ScalarType>, this, _1),
@@ -261,13 +264,13 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
 	{
 	    unsigned char trinum = 3;
 	    TriMesh::triangle_t &tri( trimesh->faces[i] );
-	    uint32_t e1 = tri.get<0>();
-	    uint32_t e2 = tri.get<1>();
-	    uint32_t e3 = tri.get<2>();
+	    int32_t e1 = tri.get<0>();
+	    int32_t e2 = tri.get<1>();
+	    int32_t e3 = tri.get<2>();
 	    data.write( reinterpret_cast<char*>(&trinum), sizeof(unsigned char) );
-	    data.write( reinterpret_cast<char*>(&e1), sizeof( uint32_t ) );
-	    data.write( reinterpret_cast<char*>(&e2), sizeof( uint32_t ) );
-	    data.write( reinterpret_cast<char*>(&e3), sizeof( uint32_t ) );
+	    data.write( reinterpret_cast<char*>(&e1), sizeof( int32_t ) );
+	    data.write( reinterpret_cast<char*>(&e2), sizeof( int32_t ) );
+	    data.write( reinterpret_cast<char*>(&e3), sizeof( int32_t ) );
 	}
     }
 
