@@ -64,6 +64,7 @@ bool SimplifyPointcloud::updateAll()
 
     typedef boost::tuple<int, Point, Vector> IndexedPoint;
     std::vector<IndexedPoint> points;
+    points.reserve( pc_in->vertices.size() );
 
     // copy to CGAL structure
     if( pc_in->hasData( Pointcloud::VERTEX_NORMAL ) )
@@ -85,18 +86,24 @@ bool SimplifyPointcloud::updateAll()
 	}
     }
 
+    std::cout << "copied to cgal struct" << std::endl;
+ 
+    // simplification of point set
+    double cell_size = 0.05;
+    points.erase(CGAL::grid_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), cell_size), points.end() );
+    //double percentage = 90.0;
+    //points.erase(CGAL::random_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), percentage), points.end() );
+
+    std::cout << "simplified to " << points.size() << std::endl;
+
     // compute average spacing
     const unsigned int as_neighbors = 6; // 1 ring
     FT average_spacing = CGAL::compute_average_spacing(
 	    points.begin(), points.end(),
 	    CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
 	    as_neighbors);
- 
-    // simplification of point set
-    //double cell_size = 0.001;
-    //points.erase(CGAL::grid_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), cell_size), points.end() );
-    double percentage = 0.5;
-    points.erase(CGAL::random_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), percentage), points.end() );
+
+    std::cout << "computed spacing " << average_spacing << std::endl;
 
     // Removes outliers using erase-remove idiom.
     // The Dereference_property_map property map can be omitted here as it is the default value.
@@ -107,11 +114,26 @@ bool SimplifyPointcloud::updateAll()
 		or_neighbors, removed_percentage), 
 	    points.end());
 
+    std::cout << "removed outliers. total points " << points.size() << std::endl;
 
     const int sm_neighbors = 24; // considers 24 nearest neighbor points
     CGAL::jet_smooth_point_set(points.begin(), points.end(), 
 	    CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
 	    sm_neighbors);
+
+    std::cout << "smoothed points " << std::endl;
+
+    // copy back into pointcloud structure
+    std::vector<Eigen::Vector3d> &normals( pc_out->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
+    for( int i=0;i<points.size();i++ )
+    {
+	Point &vertex( points[i].get<1>() );
+	Vector &normal( points[i].get<2>() );
+
+	pc_out->vertices.push_back( Eigen::Vector3d( vertex.x(), vertex.y(), vertex.z() ) );
+	normals.push_back( Eigen::Vector3d( normal.x(), normal.y(), normal.z() ) );
+    }
+    std::cout << "copied points " << std::endl;
 
 }
 
