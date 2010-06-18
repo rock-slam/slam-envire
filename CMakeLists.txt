@@ -120,5 +120,11 @@ target_link_libraries(env_icp icp envire)
 add_executable(env_dem tools/env_dem.cpp)
 target_link_libraries(env_dem icp envire)
 
+add_executable(env_simplify tools/env_simplify.cpp)
+target_link_libraries(env_simplify icp envire)
+
 add_executable(dem_helper tools/dem_helper.cpp)
 target_link_libraries(dem_helper icp envire)
+
+add_executable(env_info tools/env_info.cpp)
+target_link_libraries(env_info icp envire)
