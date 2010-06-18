@@ -19,29 +19,20 @@ TriMesh::TriMesh(Serialization& so)
     : Pointcloud(so, false)
 {
     so.setClassName(className);
+    readPly( getMapFileName(so.getMapPath()) + ".ply" );
 }
 
 void TriMesh::serialize(Serialization& so)
 {
-    Pointcloud::serialize(so, true);
+    Pointcloud::serialize(so, false);
     so.setClassName(className);
+
+    writePly( getMapFileName(so.getMapPath()) + ".ply" );
 }
 
 TriMesh* TriMesh::clone() 
 {
     return new TriMesh(*this);
-}
-
-void TriMesh::writeMap(const std::string& path)
-{
-    // TODO write to ply file
-    throw std::runtime_error("not yet implemented");
-}
-
-void TriMesh::readMap(const std::string& path)
-{
-    // TODO read from ply file
-    throw std::runtime_error("not yet implemented");
 }
 
 void TriMesh::calcVertexNormals()

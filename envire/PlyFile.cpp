@@ -65,29 +65,64 @@ std::tr1::function<void (ScalarType)> PlyFile::scalar_property_definition_callba
     return std::tr1::bind(&PlyFile::scalar_property_callback<ScalarType>, this, _1);
 }
 
+int triangle_idx__;
+TriMesh::triangle_t triangle__;
+
 template <typename SizeType, typename ScalarType>
 void PlyFile::list_property_begin_callback(SizeType size)
 {
+    if( size != 3 )
+	std::cerr << "no support for faces with edgecount different to 3 (is " << size << ")." << std::endl;
+
+    triangle_idx__ = 0;
 }
 
 template <typename SizeType, typename ScalarType>
 void PlyFile::list_property_element_callback(ScalarType scalar)
 {
+    switch( triangle_idx__ )
+    {
+	case(0): triangle__.get<0>() = scalar; break;
+	case(1): triangle__.get<1>() = scalar; break;
+	case(2): triangle__.get<2>() = scalar; break;
+	default: break;
+    }
+
+    triangle_idx__++;
 }
 
 template <typename SizeType, typename ScalarType>
 void PlyFile::list_property_end_callback()
+{
+    tmo_->faces.push_back( triangle__ );
+}
+
+template <typename DummyType>
+void PlyFile::list_property_dummy_callback(DummyType dummy)
 {
 }
 
 template <typename SizeType, typename ScalarType>
 std::tr1::tuple<std::tr1::function<void (SizeType)>, std::tr1::function<void (ScalarType)>, std::tr1::function<void ()> > PlyFile::list_property_definition_callback(const std::string& element_name, const std::string& property_name)
 {
-    return std::tr1::tuple<std::tr1::function<void (SizeType)>, std::tr1::function<void (ScalarType)>, std::tr1::function<void ()> >(
-	    std::tr1::bind(&PlyFile::list_property_begin_callback<SizeType, ScalarType>, this, _1),
-	    std::tr1::bind(&PlyFile::list_property_element_callback<SizeType, ScalarType>, this, _1),
-	    std::tr1::bind(&PlyFile::list_property_end_callback<SizeType, ScalarType>, this)
-	    );
+    if( element_name == "faces" && property_name == "vertex_index" && tmo_ )
+    {
+	return std::tr1::tuple<std::tr1::function<void (SizeType)>, std::tr1::function<void (ScalarType)>, std::tr1::function<void ()> >(
+		std::tr1::bind(&PlyFile::list_property_begin_callback<SizeType, ScalarType>, this, _1),
+		std::tr1::bind(&PlyFile::list_property_element_callback<SizeType, ScalarType>, this, _1),
+		std::tr1::bind(&PlyFile::list_property_end_callback<SizeType, ScalarType>, this)
+		);
+    }
+    else
+    {
+	return std::tr1::tuple<std::tr1::function<void (SizeType)>, std::tr1::function<void (ScalarType)>, std::tr1::function<void ()> >(
+		std::tr1::bind(&PlyFile::list_property_dummy_callback<SizeType>, this, _1),
+		std::tr1::bind(&PlyFile::list_property_dummy_callback<ScalarType>, this, _1),
+		std::tr1::bind(&PlyFile::list_property_dummy_callback<ScalarType>, this, 0)
+		);
+
+	std::cerr << "no support for " << element_name << " " << property_name << std::endl;
+    }
 }
 
 void PlyFile::info_callback(const std::string& filename, std::size_t line_number, const std::string& message)
@@ -174,6 +209,14 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
 	data << "property uchar green\n";
 	data << "property uchar blue\n";
     }
+
+    // see if we can upcast to a trimesh
+    TriMesh* trimesh = dynamic_cast<TriMesh*>(pointcloud);
+    if( trimesh )
+    {
+	data << "element face " << trimesh->faces.size() << "\n";
+	data << "property list uchar int vertex_index\n";
+    }
     
     data << "end_header\n";
 
@@ -209,6 +252,22 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
 	    data.write( reinterpret_cast<char*>(&r), sizeof(unsigned char) );
 	    data.write( reinterpret_cast<char*>(&g), sizeof(unsigned char) );
 	    data.write( reinterpret_cast<char*>(&b), sizeof(unsigned char) );
+	}
+    }
+
+    if( trimesh )
+    {
+	for(size_t i=0;i<trimesh->faces.size();i++)
+	{
+	    unsigned char trinum = 3;
+	    TriMesh::triangle_t &tri( trimesh->faces[i] );
+	    uint32_t e1 = tri.get<0>();
+	    uint32_t e2 = tri.get<1>();
+	    uint32_t e3 = tri.get<2>();
+	    data.write( reinterpret_cast<char*>(&trinum), sizeof(unsigned char) );
+	    data.write( reinterpret_cast<char*>(&e1), sizeof( uint32_t ) );
+	    data.write( reinterpret_cast<char*>(&e2), sizeof( uint32_t ) );
+	    data.write( reinterpret_cast<char*>(&e3), sizeof( uint32_t ) );
 	}
     }
 

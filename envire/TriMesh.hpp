@@ -35,9 +35,6 @@ namespace envire {
 	TriMesh(Serialization& so);
 	void serialize(Serialization& so);
 
-	void writeMap(const std::string& path);
-	void readMap(const std::string& path);
-
 	const std::string& getClassName() const {return className;};
 
 	TriMesh* clone();
