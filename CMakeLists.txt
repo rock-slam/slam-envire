@@ -35,6 +35,11 @@ add_definitions( ${LAPACK_DEFINITIONS} )
 link_directories( ${LAPACK_LIBRARIES_DIR} )
 link_libraries( ${LAPACK_LIBRARIES} )
 
+find_package(TAUCS)
+add_definitions( ${TAUCS_DEFINITIONS} )
+link_directories( ${TAUCS_LIBRARIES_DIR} )
+link_libraries( ${TAUCS_LIBRARIES} )
+
 find_package(CGAL REQUIRED)
 add_definitions(${CGAL_DEFINITIONS})
 link_directories(${CGAL_LIBRARIES})
@@ -54,6 +59,7 @@ set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
     envire/SimplifyPointcloud.hpp
+    envire/SurfaceReconstruction.hpp
     envire/MergePointcloud.hpp
     envire/LaserScan.hpp
     envire/TriMesh.hpp
@@ -77,6 +83,7 @@ set(ENVMAP_SRCS
     envire/GridAccess.cpp
     envire/Projection.cpp
     envire/SimplifyPointcloud.cpp
+    envire/SurfaceReconstruction.cpp
     envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
     envire/PlyFile.cpp
@@ -122,6 +129,9 @@ target_link_libraries(env_dem icp envire)
 
 add_executable(env_simplify tools/env_simplify.cpp)
 target_link_libraries(env_simplify icp envire)
+
+add_executable(env_surface tools/env_surface.cpp)
+target_link_libraries(env_surface icp envire)
 
 add_executable(dem_helper tools/dem_helper.cpp)
 target_link_libraries(dem_helper icp envire)

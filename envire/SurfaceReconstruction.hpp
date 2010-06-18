@@ -1,24 +1,25 @@
-#ifndef __ENVIRE_SIMPLIFYPOINTCLOUD_HPP__
-#define __ENVIRE_SIMPLIFYPOINTCLOUD_HPP__
+#ifndef __ENVIRE_SURFACERECONSTRUCTION_HPP__
+#define __ENVIRE_SURFACERECONSTRUCTION_HPP__
 
 #include "Core.hpp" 
 #include "Pointcloud.hpp" 
+#include "TriMesh.hpp" 
 
 namespace envire {
-    class SimplifyPointcloud : public Operator
+    class SurfaceReconstruction : public Operator
     {
     public:
 	static const std::string className;
 
-	SimplifyPointcloud();
+	SurfaceReconstruction();
 
-	SimplifyPointcloud(Serialization& so);
+	SurfaceReconstruction(Serialization& so);
 	void serialize(Serialization& so);
 
 	const std::string& getClassName() const {return className;};
 
 	void addInput( Pointcloud* input ); 
-	void addOutput( Pointcloud* output ); 
+	void addOutput( TriMesh* output ); 
 
 	bool updateAll();
     };
