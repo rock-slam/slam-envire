@@ -82,8 +82,6 @@ set(ENVMAP_SRCS
     envire/Grid.cpp
     envire/GridAccess.cpp
     envire/Projection.cpp
-    envire/SimplifyPointcloud.cpp
-    envire/SurfaceReconstruction.cpp
     envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
     envire/PlyFile.cpp
@@ -91,6 +89,13 @@ set(ENVMAP_SRCS
     envire/EventListener.cpp
     envire/Grids.cpp
     )
+
+if( TAUCS_FOUND )
+    set(ENVMAP_SRCS ${ENVMAP_SRCS}
+    envire/SimplifyPointcloud.cpp
+    envire/SurfaceReconstruction.cpp
+    )
+endif( TAUCS_FOUND )
 
 add_library(envire SHARED ${ENVMAP_SRCS})
 
@@ -127,11 +132,13 @@ target_link_libraries(env_icp icp envire)
 add_executable(env_dem tools/env_dem.cpp)
 target_link_libraries(env_dem icp envire)
 
+if( TAUCS_FOUND )
 add_executable(env_simplify tools/env_simplify.cpp)
 target_link_libraries(env_simplify icp envire)
 
 add_executable(env_surface tools/env_surface.cpp)
 target_link_libraries(env_surface icp envire)
+endif( TAUCS_FOUND )
 
 add_executable(dem_helper tools/dem_helper.cpp)
 target_link_libraries(dem_helper icp envire)

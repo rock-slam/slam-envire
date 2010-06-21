@@ -8,6 +8,7 @@
         DFKI/robotik@dfki.de
     </copyright>
 
+    <depend package="external/libply" />
     <rosdep name="libkdtree"
     <rosdep name="yaml" />
     <rosdep name="gdal" />

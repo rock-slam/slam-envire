@@ -1,8 +1,10 @@
 #include "envire/Core.hpp"
+#include "envire/TriMesh.hpp"
 #include "boost/scoped_ptr.hpp"
 
 using namespace envire;
 using namespace std;
+
      
 int main( int argc, char* argv[] )
 {
@@ -14,6 +16,6 @@ int main( int argc, char* argv[] )
 
     Serialization so;
     boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
-    
+
 } 
 
