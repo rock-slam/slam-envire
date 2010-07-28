@@ -101,7 +101,7 @@ class ICP {
 
         std::vector<Eigen::Vector3d>& getX() { return x; };
         std::vector<Eigen::Vector3d>& getP() { return p; };
-        
+
     private:
 	/** the configuration struct */
 	Configuration config;

@@ -215,7 +215,7 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, 
 	    }
 	}
 
-	std::cout << "found pairs:" << x.size() << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
+	//std::cout << "found pairs:" << x.size() << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
     }
     else {
 	// find matching point pairs between measurement and model
@@ -234,7 +234,7 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, 
 		}
 	    }
 	}
-	std::cout << "found pairs:" << x.size() << std::endl; 
+	//std::cout << "found pairs:" << x.size() << std::endl; 
     }
 
     int n = x.size();
