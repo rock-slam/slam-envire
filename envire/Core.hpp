@@ -300,6 +300,7 @@ namespace envire
 		data_map[type] = new Holder<T>;
 	    }
 
+	    /*
 	    if( typeid(*data_map[type]) != typeid(Holder<T>) )
 	    {
 		std::cerr 
@@ -310,6 +311,7 @@ namespace envire
 		    << std::endl;
 		throw std::runtime_error("data type mismatch.");
 	    }
+	    */
 
 	    return data_map[type]->get<T>();
 	};
