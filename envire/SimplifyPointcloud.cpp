@@ -13,13 +13,23 @@ using namespace std;
 
 const std::string SimplifyPointcloud::className = "envire::SimplifyPointcloud";
 
+void SimplifyPointcloud::initDefaults()
+{
+    computeSpacing = false;
+    simplifyCellSize = 0.05;
+    outlierPercentage = 5.0;
+    smoothNeighbours = 24;
+}
+
 SimplifyPointcloud::SimplifyPointcloud()
 {
+    initDefaults();
 }
 
 SimplifyPointcloud::SimplifyPointcloud(Serialization& so)
     : Operator(so)
 {
+    initDefaults();
     so.setClassName(className);
 }
 
@@ -88,40 +98,52 @@ bool SimplifyPointcloud::updateAll()
 
     std::cout << "copied to cgal struct" << std::endl;
  
-    // simplification of point set
-    double cell_size = 0.05;
-    points.erase(CGAL::grid_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), cell_size), points.end() );
-    //double percentage = 90.0;
-    //points.erase(CGAL::random_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), percentage), points.end() );
+    if( simplifyCellSize > 0 )
+    {
+	// simplification of point set
+	const double cell_size = simplifyCellSize;
+	points.erase(CGAL::grid_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), cell_size), points.end() );
+	//double percentage = 90.0;
+	//points.erase(CGAL::random_simplify_point_set(points.begin(), points.end(), CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(), percentage), points.end() );
 
-    std::cout << "simplified to " << points.size() << std::endl;
+	std::cout << "simplified to " << points.size() << std::endl;
+    }
 
-    // compute average spacing
-    const unsigned int as_neighbors = 6; // 1 ring
-    FT average_spacing = CGAL::compute_average_spacing(
-	    points.begin(), points.end(),
-	    CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
-	    as_neighbors);
-
-    std::cout << "computed spacing " << average_spacing << std::endl;
-
-    // Removes outliers using erase-remove idiom.
-    // The Dereference_property_map property map can be omitted here as it is the default value.
-    const double removed_percentage = 5.0; // percentage of points to remove
-    const int or_neighbors = 24; // considers 24 nearest neighbor points
-    points.erase(CGAL::remove_outliers(points.begin(), points.end(),
+    if( computeSpacing )
+    {
+	// compute average spacing
+	const unsigned int as_neighbors = 6; // 1 ring
+	FT average_spacing = CGAL::compute_average_spacing(
+		points.begin(), points.end(),
 		CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
-		or_neighbors, removed_percentage), 
-	    points.end());
+		as_neighbors);
 
-    std::cout << "removed outliers. total points " << points.size() << std::endl;
+	std::cout << "computed spacing " << average_spacing << std::endl;
+    }
 
-    const int sm_neighbors = 24; // considers 24 nearest neighbor points
-    CGAL::jet_smooth_point_set(points.begin(), points.end(), 
-	    CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
-	    sm_neighbors);
+    if( outlierPercentage > 0 )
+    {
+	// Removes outliers using erase-remove idiom.
+	// The Dereference_property_map property map can be omitted here as it is the default value.
+	const double removed_percentage = outlierPercentage; // percentage of points to remove
+	const int or_neighbors = 24; // considers 24 nearest neighbor points
+	points.erase(CGAL::remove_outliers(points.begin(), points.end(),
+		    CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
+		    or_neighbors, removed_percentage), 
+		points.end());
 
-    std::cout << "smoothed points " << std::endl;
+	std::cout << "removed outliers. total points " << points.size() << std::endl;
+    }
+
+    if( smoothNeighbours > 0 )
+    {
+	const int sm_neighbors = 24; // considers 24 nearest neighbor points
+	CGAL::jet_smooth_point_set(points.begin(), points.end(), 
+		CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
+		sm_neighbors);
+
+	std::cout << "smoothed points " << std::endl;
+    }
 
     // copy back into pointcloud structure
     std::vector<Eigen::Vector3d> &normals( pc_out->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
