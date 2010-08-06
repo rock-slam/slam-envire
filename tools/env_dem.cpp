@@ -40,10 +40,10 @@ int main( int argc, char* argv[] )
     env->attachItem( proj );
     proj->addOutput( grid );
 
-    std::vector<envire::TriMesh*> meshes = env->getItems<envire::TriMesh>();
-    for(std::vector<envire::TriMesh*>::iterator it=meshes.begin();it!=meshes.end();it++)
+    std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
+    for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
-	std::cout << "adding trimesh to projection" << std::endl;
+	std::cout << "adding pointcloud to projection" << std::endl;
 	proj->addInput( *it );
     }
 

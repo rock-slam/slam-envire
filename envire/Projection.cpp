@@ -32,7 +32,7 @@ void Projection::serialize(Serialization& so)
 }
 
 
-void Projection::addInput( TriMesh* mesh ) 
+void Projection::addInput( Pointcloud* mesh ) 
 {
     Operator::addInput(mesh);
 }
@@ -67,7 +67,7 @@ bool Projection::updateElevationMap()
     std::list<Layer*> inputs = env->getInputs(this);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
-	TriMesh* mesh = dynamic_cast<envire::TriMesh*>(*it);
+	Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(*it);
 
 	FrameNode::TransformType C_m2g = env->relativeTransform( mesh->getFrameNode(), grid->getFrameNode() );
 
@@ -136,6 +136,9 @@ bool Projection::interpolateMap(const std::string& type)
 		Eigen::Vector3d b;
 		
 		Delaunay::Face_handle face = dt.locate( Point(x,y,0) );
+		if( face == NULL )
+		    continue;
+
 		for(int i=0;i<3;i++)
 		{
 		    Point &p(face->vertex(i)->point());

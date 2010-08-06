@@ -21,7 +21,7 @@ namespace envire {
 
 	const std::string& getClassName() const {return className;};
 
-	void addInput( TriMesh* mesh ); 
+	void addInput( Pointcloud* mesh ); 
 	void addOutput( ElevationGrid* grid ); 
 
 	bool updateAll();
