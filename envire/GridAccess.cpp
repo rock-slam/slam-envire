@@ -1,13 +1,18 @@
 #include "GridAccess.hpp"
 
 #include "Grids.hpp"
+#include "Pointcloud.hpp"
 #include <Eigen/LU>
+
+#include<kdtree++/kdtree.hpp>
 
 using namespace envire;
 
-struct GridAccessImpl
+struct GridAccess::GridAccessImpl
 {
-    GridAccessImpl() : grid(NULL) {};
+    Environment* env;
+
+    GridAccessImpl(Environment* env) : env(env), grid(NULL) {};
 
     std::vector<ElevationGrid*> grids;
 
@@ -27,50 +32,133 @@ struct GridAccessImpl
 	}
 	return false;
     }
-};
 
-
-GridAccess::GridAccess(Environment* env)
-    : env(env), impl( new GridAccessImpl )
-{
-}
-
-GridAccess::~GridAccess()
-{
-    delete impl;
-}
-
-bool GridAccess::getElevation(Eigen::Vector3d& position)
-{
-    // to make this fast, we store the last grid and transform
-    // and see try that one first on the next call
-    if( impl->grid )
+    bool getElevation(Eigen::Vector3d& position)
     {
-	if( impl->evalGridPoint( position ) )
-	    return true;
+	// to make this fast, we store the last grid and transform
+	// and see try that one first on the next call
+	if( grid )
+	{
+	    if( evalGridPoint( position ) )
+		return true;
+
+	    // this is a shortcut, which will only allow one
+	    // grid to ever be evaluated. 
+	    // TODO: remove this 
+	    return false;
+	}
+
+	if( grids.size() == 0 )
+	    grids = env->getItems<ElevationGrid>();
+
+	for(std::vector<ElevationGrid*>::iterator it = grids.begin();it != grids.end();it++)
+	{
+	    ElevationGrid* lgrid = *it;
+	    FrameNode::TransformType lt =
+		env->relativeTransform( 
+			env->getRootNode(),
+			lgrid->getFrameNode() );
+
+	    grid = lgrid;
+	    gridData = &grid->getGridData(ElevationGrid::ELEVATION);
+	    t = lt;
+	    z_offset = t.inverse()(2,3);
+
+	    if( evalGridPoint( position ) )
+		return true;
+	}
 
 	return false;
     }
 
-    if( impl->grids.size() == 0 )
-	impl->grids = env->getItems<ElevationGrid>();
+};
 
-    for(std::vector<ElevationGrid*>::iterator it = impl->grids.begin();it != impl->grids.end();it++)
+GridAccess::GridAccess(Environment* env)
+    : impl( boost::shared_ptr<GridAccessImpl>(new GridAccessImpl(env)) )
+{
+}
+
+bool GridAccess::getElevation(Eigen::Vector3d& position)
+{
+    return impl->getElevation( position );
+}
+
+
+
+struct PointcloudAccess::PointcloudAccessImpl
+{
+    Environment* env;
+
+    struct TreeNode
     {
-	ElevationGrid* grid = *it;
-	FrameNode::TransformType t =
-	    env->relativeTransform( 
-		    env->getRootNode(),
-		    grid->getFrameNode() );
+	typedef double value_type;
 
-	impl->grid = grid;
-	impl->gridData = &grid->getGridData(ElevationGrid::ELEVATION);
-	impl->t = t;
-	impl->z_offset = t.inverse()(2,3);
+	TreeNode(const Eigen::Vector3d& point) : point(point) {};
+	Eigen::Vector3d point;
 
-	if( impl->evalGridPoint( position ) )
-	    return true;
+	inline value_type operator[](size_t n) const
+	{
+	    return point[n];
+	}
+    };
+
+    typedef KDTree::KDTree<2, TreeNode> tree_type;
+
+    tree_type kdtree;
+
+    PointcloudAccessImpl(Environment* env) : env(env) 
+    {
+	fillTree(env);
+	std::cout << "kdtree inserted points: " << kdtree.size() << std::endl;
+    };
+
+    void fillTree(Environment* env)
+    {
+	std::vector<Pointcloud*> pcs = env->getItems<Pointcloud>();
+	for(std::vector<Pointcloud*>::iterator it=pcs.begin();it!=pcs.end();it++)
+	{
+	    fillTree( *it );
+	}
     }
 
-    return false;
+    void fillTree(Pointcloud* pc)
+    {
+	FrameNode::TransformType t =
+	    env->relativeTransform( 
+		    pc->getFrameNode(),
+		    env->getRootNode() );
+
+	for(std::vector<Eigen::Vector3d>::iterator it=pc->vertices.begin();it!=pc->vertices.end();it++)
+	{
+	    kdtree.insert( TreeNode(t * (*it)) );
+	}
+    }
+
+    bool getElevation(Eigen::Vector3d& position, double threshold = 0.10)
+    {
+	std::pair<tree_type::const_iterator,double> found 
+	    = kdtree.find_nearest( TreeNode( position ), threshold );
+
+	if( found.first != kdtree.end() )
+	{
+	    position.z() = (found.first)->point.z();
+	    return true;
+	}
+	else 
+	{
+	    return false;
+	}
+    }
+};
+
+PointcloudAccess::PointcloudAccess(Environment* env)
+    : impl( boost::shared_ptr<PointcloudAccessImpl>(new PointcloudAccessImpl(env)) )
+{
 }
+
+bool PointcloudAccess::getElevation(Eigen::Vector3d& position)
+{
+    return impl->getElevation( position );
+}
+
+

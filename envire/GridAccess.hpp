@@ -2,8 +2,8 @@
 #define __ENVIRE_GRIDACCESS__
 
 #include "Core.hpp"
+#include <boost/shared_ptr.hpp>
 
-class GridAccessImpl;
 
 namespace envire
 {
@@ -11,7 +11,6 @@ namespace envire
     {
     public:
 	GridAccess(Environment* env);
-	~GridAccess();
 
 	/** augment the position vector with the elevation part of an elevation
 	 * map found at the relevant coordinates.  This method does some
@@ -21,8 +20,20 @@ namespace envire
 	bool getElevation(Eigen::Vector3d& position);
 
     private:
-	Environment *env;
-	GridAccessImpl* impl;
+	struct GridAccessImpl;
+	boost::shared_ptr<GridAccessImpl> impl;
+    };
+
+    class PointcloudAccess
+    {
+    public:
+	PointcloudAccess(Environment* env);
+
+	bool getElevation(Eigen::Vector3d& position);
+
+    private:
+	struct PointcloudAccessImpl;
+	boost::shared_ptr<PointcloudAccessImpl> impl;
     };
 }
 
