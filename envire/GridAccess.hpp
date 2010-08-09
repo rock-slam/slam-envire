@@ -29,7 +29,7 @@ namespace envire
     public:
 	PointcloudAccess(Environment* env);
 
-	bool getElevation(Eigen::Vector3d& position);
+	bool getElevation(Eigen::Vector3d& position, double threshold = 0.05);
 
     private:
 	struct PointcloudAccessImpl;

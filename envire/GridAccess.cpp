@@ -119,6 +119,7 @@ struct PointcloudAccess::PointcloudAccessImpl
 	{
 	    fillTree( *it );
 	}
+	kdtree.optimize();
     }
 
     void fillTree(Pointcloud* pc)
@@ -134,7 +135,7 @@ struct PointcloudAccess::PointcloudAccessImpl
 	}
     }
 
-    bool getElevation(Eigen::Vector3d& position, double threshold = 0.10)
+    bool getElevation(Eigen::Vector3d& position, double threshold )
     {
 	std::pair<tree_type::const_iterator,double> found 
 	    = kdtree.find_nearest( TreeNode( position ), threshold );
@@ -156,9 +157,9 @@ PointcloudAccess::PointcloudAccess(Environment* env)
 {
 }
 
-bool PointcloudAccess::getElevation(Eigen::Vector3d& position)
+bool PointcloudAccess::getElevation(Eigen::Vector3d& position, double threshold)
 {
-    return impl->getElevation( position );
+    return impl->getElevation( position, threshold );
 }
 
 
