@@ -12,6 +12,8 @@
 
 #include "envire/GridAccess.hpp"
 #include "envire/Grids.hpp"
+
+#include "base/timemark.h"
    
 using namespace envire;
 using namespace std;
@@ -24,7 +26,7 @@ template<class T> bool contains(const std::list<T>& list, const T& element)
 class DummyOperator : public Operator 
 {
 public:
-    bool updateAll() {};
+    bool updateAll() { return true; };
     void serialize(Serialization &) {};
 };
 
@@ -266,13 +268,49 @@ BOOST_AUTO_TEST_CASE( grid_access )
 
     GridAccess ga( env.get() );
 
-    for(int i=0;i<probes.size();i++)
+    for(size_t i=0;i<probes.size();i++)
     {
 	bool r = ga.getElevation( probes[i] );
-	cout << r << ":" << probes[i].transpose() << endl;
-
+	// TODO: actually check the values here
     }
 }
 
+BOOST_AUTO_TEST_CASE( pointcloud_access ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    Pointcloud *pc = new Pointcloud();
+
+    for(int i=0;i<500;i++)
+    {
+	pc->vertices.push_back( Eigen::Vector3d::Random() );
+    }
+    env->attachItem( pc );
+    env->setFrameNode( pc, env->getRootNode() );
+
+    PointcloudAccess pa( env.get() );
+
+    bool success;
+    Eigen::Vector3d v;
+
+    base::TimeMark a("dist");
+    for(int i=0;i<10000;i++)
+    {
+	v = Eigen::Vector3d::Random();
+	success = pa.getElevation( v, 0.1 );
+    }
+    cout << a << endl;;
+
+    base::TimeMark b("block");
+    for(int i=0;i<10000;i++)
+    {
+	v = Eigen::Vector3d::Random();
+	success = pa.getElevation( v, 0.1, 0, 0.2 );
+    }
+    cout << b << endl;
+
+
+
+
+}
 // EOF
 //

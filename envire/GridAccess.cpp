@@ -106,7 +106,8 @@ struct PointcloudAccess::PointcloudAccessImpl
 
     tree_type kdtree;
 
-    PointcloudAccessImpl(Environment* env) : env(env) 
+    PointcloudAccessImpl(Environment* env) 
+	: env(env)
     {
 	fillTree(env);
 	std::cout << "kdtree inserted points: " << kdtree.size() << std::endl;
@@ -135,6 +136,26 @@ struct PointcloudAccess::PointcloudAccessImpl
 	}
     }
 
+    bool getElevation(Eigen::Vector3d& position, double xythresh, double zpos, double zthresh  )
+    {
+	std::vector<TreeNode> nodes;
+
+	kdtree.find_within_range( TreeNode( position ), xythresh, std::back_insert_iterator<std::vector<TreeNode> >(nodes) );
+	for(std::vector<TreeNode>::iterator it=nodes.begin();it!=nodes.end();it++)
+	{
+	    TreeNode &node(*it);
+	    if( abs(node.point.z() - zpos) < zthresh )
+	    {
+		// for now return the first node found in range
+		position = node.point;
+
+		return true;
+	    }
+	}
+
+	return false;
+    }
+
     bool getElevation(Eigen::Vector3d& position, double threshold )
     {
 	std::pair<tree_type::const_iterator,double> found 
@@ -160,6 +181,11 @@ PointcloudAccess::PointcloudAccess(Environment* env)
 bool PointcloudAccess::getElevation(Eigen::Vector3d& position, double threshold)
 {
     return impl->getElevation( position, threshold );
+}
+
+bool PointcloudAccess::getElevation(Eigen::Vector3d& position, double xythresh, double zpos, double zthresh  )
+{
+    return impl->getElevation( position, xythresh, zpos, zthresh );
 }
 
 
