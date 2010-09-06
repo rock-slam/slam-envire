@@ -65,6 +65,7 @@ link_directories(${PLY_TYPES_LIBRARY_DIRS})
 set(ENVMAP_HDRS
     envire/ScanMeshing.hpp
     envire/Projection.hpp
+    envire/MLSProjection.hpp
     envire/SimplifyPointcloud.hpp
     envire/SurfaceReconstruction.hpp
     envire/MergePointcloud.hpp
@@ -91,6 +92,7 @@ set(ENVMAP_SRCS
     envire/GridAccess.cpp
     envire/MultiLevelSurfaceGrid.cpp
     envire/Projection.cpp
+    envire/MLSProjection.cpp
     envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
     envire/PlyFile.cpp
