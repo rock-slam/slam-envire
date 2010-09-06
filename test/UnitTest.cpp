@@ -13,6 +13,8 @@
 #include "envire/GridAccess.hpp"
 #include "envire/Grids.hpp"
 
+#include "envire/MultiLevelSurfaceGrid.hpp"
+
 #include "base/timemark.h"
    
 using namespace envire;
@@ -307,10 +309,42 @@ BOOST_AUTO_TEST_CASE( pointcloud_access )
 	success = pa.getElevation( v, 0.1, 0, 0.2 );
     }
     cout << b << endl;
+}
 
+BOOST_AUTO_TEST_CASE( multilevelsurfacegrid ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
+    env->attachItem( mls );
 
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
 
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
 
+    MultiLevelSurfaceGrid::iterator it = mls->beginCell(0,0);
+    BOOST_CHECK_EQUAL( it->mean, 2.0 );
+    it++;
+    BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
+    ++it;
+    BOOST_CHECK_EQUAL( it, mls->endCell(0,0) );
+
+    MultiLevelSurfaceGrid::iterator it2 = mls->beginCell(2,1);
+    BOOST_CHECK_EQUAL( it2->mean, 3.0 );
+    it2++;
+
+    Serialization so;
+    so.serialize(env.get(), "build/test");
+
+    boost::scoped_ptr<Environment> env2(so.unserialize( "build/test" ));
+    MultiLevelSurfaceGrid *mls2 = env2->getItems<MultiLevelSurfaceGrid>().front();
+
+    MultiLevelSurfaceGrid::iterator it3 = mls2->beginCell(0,0);
+    BOOST_CHECK_EQUAL( it3->mean, 2.0 );
+    it3++;
+    BOOST_CHECK_EQUAL( (*it3).mean, 1.0 );
+    ++it3;
+    BOOST_CHECK_EQUAL( it3, mls->endCell(0,0) );
 }
 // EOF
 //

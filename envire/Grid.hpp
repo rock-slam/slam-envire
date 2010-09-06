@@ -21,16 +21,38 @@
 
 namespace envire 
 {
+    class GridBase : public CartesianMap
+    {
+    public:
+	static const std::string className;
+
+    protected:
+	size_t width, height;
+	double scalex, scaley;	
+
+    public:
+	GridBase(size_t width, size_t height, double scalex, double scaley);
+	~GridBase();
+	GridBase(Serialization& so);
+	void serialize(Serialization& so);
+	void unserialize(Serialization& so);
+
+	bool toGrid( double x, double y, size_t& m, size_t& n );
+
+	size_t getWidth() { return width; };
+	size_t getHeight() { return height; };
+
+	double getScaleX() { return scalex; };
+	double getScaleY() { return scaley; };
+    };
+
     template <typename T>
-    class Grid : public CartesianMap
+    class Grid : public GridBase
     {
     public:
 	typedef boost::multi_array<T,2> ArrayType; 
 	static const std::string className;
 	static const std::string GRID_DATA;
-    protected:
-	size_t width, height;
-	double scalex, scaley;	
     private:
 	const static std::vector<std::string> &bands;
     private:
@@ -64,13 +86,6 @@ namespace envire
 	virtual const std::vector<std::string>& getBands() const {return bands;};
 	
 	Grid* clone();
-	bool toGrid( double x, double y, size_t& m, size_t& n );
-
-	size_t getWidth() { return width; };
-	size_t getHeight() { return height; };
-
-	double getScaleX() { return scalex; };
-	double getScaleY() { return scaley; };
 	
 	unsigned int getGridDepth(){return sizeof(T);};	//returns the depth per grid element
       protected:
@@ -115,7 +130,7 @@ namespace envire
  
     
     template<class T>Grid<T>::Grid(size_t width, size_t height, double scalex, double scaley) :
-	width(width), height(height), scalex(scalex), scaley(scaley)
+	GridBase( width, height, scalex, scaley )
     {
       static bool initialized = false;
       if(!initialized)
@@ -133,11 +148,11 @@ namespace envire
     
     //this is for initializing CartesianMap from a child class without loading GridData
     template<class T>Grid<T>::Grid(Serialization& so,const std::string &class_name)
-      : CartesianMap(so)
+      : GridBase(so)
     {
     }
     template<class T>Grid<T>::Grid(Serialization& so)
-      : CartesianMap(so)
+      : GridBase(so)
     {
 	unserialize(so);
     }
@@ -303,22 +318,6 @@ namespace envire
 	readGridData(string_vector,path);
     }
 
-    //returns the gird indices if the coordinates are on the grid
-    template<class T>bool Grid<T>::toGrid( double x, double y, size_t& m, size_t& n )
-    {
-	int am = floor(x/scalex);
-	int an = floor(y/scaley);
-	if( 0 <= am && am < width && 0 <= an && an < height )
-	{
-	    m = am;
-	    n = an;
-	    return true;
-	}
-	else {
-	    return false;
-	}
-    }
-        
     template<class T> GDALDataType Grid<T>::getGDALDataTypeOfArray()
     {
       if(typeid(T) == typeid(unsigned char))

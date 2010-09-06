@@ -6,6 +6,7 @@
 #include "Projection.hpp"
 #include "Pointcloud.hpp"
 #include "Grids.hpp"
+#include "MultiLevelSurfaceGrid.hpp"
 
 using namespace envire;
 
@@ -36,6 +37,7 @@ EnvironmentItem* SerializationFactory::createObject(const std::string& className
 	addClass(ConfidenceGrid::className, &create<ConfidenceGrid>);
 	addClass(TraversabilityGrid::className, &create<TraversabilityGrid>);
 	addClass(ElevationGrid::className, &create<ElevationGrid>);
+	addClass(MultiLevelSurfaceGrid::className, &create<MultiLevelSurfaceGrid>);
 	addClass(OccupancyGrid::className, &create<OccupancyGrid>);
 	addClass(ImageRGB24::className, &create<ImageRGB24>);
 	

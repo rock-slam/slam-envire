@@ -72,6 +72,7 @@ set(ENVMAP_HDRS
     envire/TriMesh.hpp
     envire/Pointcloud.hpp
     envire/Grid.hpp
+    envire/MultiLevelSurfaceGrid.hpp
     envire/GridAccess.hpp
     envire/Grids.hpp
     envire/Core.hpp
@@ -88,6 +89,7 @@ set(ENVMAP_SRCS
     envire/TriMesh.cpp
     envire/Grid.cpp
     envire/GridAccess.cpp
+    envire/MultiLevelSurfaceGrid.cpp
     envire/Projection.cpp
     envire/MergePointcloud.cpp
     envire/Pointcloud.cpp
