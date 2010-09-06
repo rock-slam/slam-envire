@@ -141,7 +141,10 @@ add_executable(env_icp tools/env_icp.cpp)
 target_link_libraries(env_icp icp envire)
 
 add_executable(env_dem tools/env_dem.cpp)
-target_link_libraries(env_dem icp envire)
+target_link_libraries(env_dem envire)
+
+add_executable(env_mls tools/env_mls.cpp)
+target_link_libraries(env_mls envire)
 
 if( TAUCS_FOUND )
 add_executable(env_simplify tools/env_simplify.cpp)
