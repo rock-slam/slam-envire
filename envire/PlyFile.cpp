@@ -161,10 +161,11 @@ void PlyFile::obj_info_callback(const std::string& obj_info)
 
 bool PlyFile::end_header_callback()
 {
+    return true;
 }
 
 PlyFile::PlyFile( const std::string& filename )
-    : filename_( filename )
+    : filename_( filename ), pco_(NULL), tmo_(NULL)
 {
 }
 
@@ -224,7 +225,7 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
     data << "end_header\n";
 
     // write the binary raw data now
-    for(int i=0;i<pointcloud->vertices.size();i++)
+    for(size_t i=0;i<pointcloud->vertices.size();i++)
     {
 	Eigen::Vector3d &vertex( pointcloud->vertices[i] );
 	data.write( reinterpret_cast<char*>(&vertex.x()), sizeof(double) );
@@ -235,7 +236,7 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
     if( pointcloud->hasData( Pointcloud::VERTEX_NORMAL ) )
     {
 	std::vector<Eigen::Vector3d> &normals( pointcloud->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
-	for(int i=0;i<normals.size();i++)
+	for(size_t i=0;i<normals.size();i++)
 	{
 	    Eigen::Vector3d &normal( normals[i] );
 	    data.write( reinterpret_cast<char*>(&normal.x()), sizeof(double) );
@@ -247,7 +248,7 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
     if( pointcloud->hasData( Pointcloud::VERTEX_COLOR ) )
     {
 	std::vector<Eigen::Vector3d> &colors( pointcloud->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_COLOR ) );
-	for(int i=0;i<colors.size();i++)
+	for(size_t i=0;i<colors.size();i++)
 	{
 	    unsigned char r = colors[i].x()*255; 
 	    unsigned char g = colors[i].y()*255; 
@@ -287,6 +288,7 @@ bool PlyFile::unserialize( Pointcloud *pointcloud )
     }
 
     pco_ = pointcloud;
+    tmo_ = dynamic_cast<TriMesh*>(pointcloud);
     
     ply::ply_parser::flags_type ply_parser_flags = 0;
     ply::ply_parser ply_parser(ply_parser_flags);
