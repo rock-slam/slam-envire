@@ -47,9 +47,11 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
 		    ((p.mean - p.height - thickness ) < mean && 
 		     (p.mean + thickness) > mean ) )
 	    {
-		double gain = p.stdev / (p.stdev + stdev);
+		double pvar = p.stdev * p.stdev;
+		double var = stdev * stdev;
+		double gain = pvar / (pvar + var);
 		p.mean = p.mean + gain * (mean - p.mean);
-		p.stdev = (1.0-gain)*p.stdev;
+		p.stdev = sqrt((1.0-gain)*pvar);
 	    }
 	    else
 	    {
