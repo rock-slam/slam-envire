@@ -4,6 +4,7 @@
 #include "TriMesh.hpp"
 #include "ScanMeshing.hpp"
 #include "Projection.hpp"
+#include "MLSProjection.hpp"
 #include "Pointcloud.hpp"
 #include "Grids.hpp"
 #include "MultiLevelSurfaceGrid.hpp"
@@ -43,6 +44,7 @@ EnvironmentItem* SerializationFactory::createObject(const std::string& className
 	
 	addClass(ScanMeshing::className, &create<ScanMeshing> );
 	addClass(Projection::className, &create<Projection> );
+	addClass(MLSProjection::className, &create<MLSProjection> );
 
 	initialized = true;
     }
