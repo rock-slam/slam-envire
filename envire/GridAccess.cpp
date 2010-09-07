@@ -2,6 +2,7 @@
 
 #include "Grids.hpp"
 #include "Pointcloud.hpp"
+#include "MultiLevelSurfaceGrid.hpp"
 #include <Eigen/LU>
 
 #include<kdtree++/kdtree.hpp>
@@ -188,4 +189,88 @@ bool PointcloudAccess::getElevation(Eigen::Vector3d& position, double xythresh, 
     return impl->getElevation( position, xythresh, zpos, zthresh );
 }
 
+
+
+struct MLSAccess::MLSAccessImpl
+{
+    Environment* env;
+
+    MLSAccessImpl(Environment* env) : env(env), grid(NULL) {};
+
+    std::vector<MultiLevelSurfaceGrid*> grids;
+    MultiLevelSurfaceGrid* grid;
+
+    FrameNode::TransformType t;
+
+    bool evalGridPoint(Eigen::Vector3d position, double& zpos, double& zstdev)
+    {
+	Eigen::Vector3d local( t * position );
+	size_t x, y;
+	if( grid->toGrid(local.x(), local.y(), x, y) )
+	{
+	    MultiLevelSurfaceGrid::iterator it = grid->beginCell(x,y);
+	    while( it.isValid() )
+	    {
+		MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+		const double interval = (zstdev + p.stdev)*3.0;
+		if( position.z() - interval < p.mean && 
+			position.z() + interval > p.mean )
+		{
+		    zpos = p.mean;
+		    zstdev = p.stdev;
+		    return true;
+		}
+		it++;
+	    }
+	}
+	return false;
+    }
+
+    bool getElevation(Eigen::Vector3d position, double& zpos, double& zstdev  )
+    {
+	// to make this fast, we store the last grid and transform
+	// and see try that one first on the next call
+	if( grid )
+	{
+	    if( evalGridPoint( position, zpos, zstdev ) )
+		return true;
+
+	    // this is a shortcut, which will only allow one
+	    // grid to ever be evaluated. 
+	    // TODO: remove this 
+	    return false;
+	}
+
+	if( grids.size() == 0 )
+	    grids = env->getItems<MultiLevelSurfaceGrid>();
+
+	for(std::vector<MultiLevelSurfaceGrid*>::iterator it = grids.begin();it != grids.end();it++)
+	{
+	    MultiLevelSurfaceGrid* lgrid = *it;
+	    FrameNode::TransformType lt =
+		env->relativeTransform( 
+			env->getRootNode(),
+			lgrid->getFrameNode() );
+
+	    grid = lgrid;
+	    t = lt;
+
+	    if( evalGridPoint( position, zpos, zstdev ) )
+		return true;
+	}
+
+	return false;
+    }
+
+};
+
+MLSAccess::MLSAccess(Environment* env)
+    : impl( boost::shared_ptr<MLSAccessImpl>(new MLSAccessImpl(env)) )
+{
+}
+
+bool MLSAccess::getElevation(Eigen::Vector3d position, double& zpos, double& zstdev  )
+{
+    return impl->getElevation( position, zpos, zstdev );
+}
 

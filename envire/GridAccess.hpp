@@ -36,6 +36,18 @@ namespace envire
 	struct PointcloudAccessImpl;
 	boost::shared_ptr<PointcloudAccessImpl> impl;
     };
+
+    class MLSAccess
+    {
+    public:
+	MLSAccess(Environment* env);
+
+	bool getElevation(Eigen::Vector3d position, double& zpos, double& zstdev  );
+
+    private:
+	struct MLSAccessImpl;
+	boost::shared_ptr<MLSAccessImpl> impl;
+    };
 }
 
 #endif
