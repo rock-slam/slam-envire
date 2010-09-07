@@ -5,7 +5,7 @@ using namespace envire;
 const std::string MLSProjection::className = "envire::MLSProjection";
 
 MLSProjection::MLSProjection()
-    : gapSize( 1.0 ), thickness( 0.1 )
+    : gapSize( 1.0 ), thickness( 0.10 )
 {
 }
 
@@ -41,11 +41,12 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
     while( it.isValid() )
     {
 	MultiLevelSurfaceGrid::SurfacePatch &p( *it );
-	if( (p.mean - p.height - gapSize) < mean && (p.mean + gapSize) > mean )
+	if( (p.mean - p.height - gapSize - p.stdev - stdev) < mean 
+		&& (p.mean + gapSize + p.stdev + stdev) > mean )
 	{
 	    if( p.horizontal && 
-		    ((p.mean - p.height - thickness ) < mean && 
-		     (p.mean + thickness) > mean ) )
+		    ((p.mean - p.height - thickness - p.stdev - stdev) < mean && 
+		     (p.mean + thickness + p.stdev + stdev) > mean ) )
 	    {
 		double pvar = p.stdev * p.stdev;
 		double var = stdev * stdev;
@@ -98,6 +99,8 @@ bool MLSProjection::updateAll()
 	FrameNode::TransformType C_m2g = env->relativeTransform( mesh->getFrameNode(), grid->getFrameNode() );
 
 	std::vector<Eigen::Vector3d>& points(mesh->vertices);
+	std::vector<double>& uncertainty(mesh->getVertexData<double>(Pointcloud::VERTEX_UNCERTAINTY));
+	assert(points.size() == uncertainty.size());
 	
 	for(size_t i=0;i<points.size();i++)
 	{
@@ -106,7 +109,7 @@ bool MLSProjection::updateAll()
 	    size_t x, y;
 	    if( grid->toGrid( p.x(), p.y(), x, y ) )
 	    {
-		const double stdev = 0.02;
+		const double stdev = uncertainty[i];
 		updateCell(grid, x, y, p.z(), stdev);
 	    }
 	}

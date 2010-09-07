@@ -43,11 +43,23 @@ int main( int argc, char* argv[] )
     for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
 	std::cout << "adding pointcloud to projection" << std::endl;
-	proj->addInput( *it );
+	if( (*it)->hasData( Pointcloud::VERTEX_UNCERTAINTY ) )
+	    proj->addInput( *it );
     }
 
     proj->updateAll();
 
+    // detach the resulting pointcloud from the existing environment, and place
+    // into a newly created one.
+    boost::scoped_ptr<Environment> env2( new Environment() );
+    env->detachItem( grid );
+    env->detachItem( fm1 );
+
+    env2->attachItem( fm1 );
+    env2->addChild( env2->getRootNode(), fm1 );
+    env2->attachItem( grid );
+    env2->setFrameNode( grid, fm1 );
+
     std::string path(argv[2]);
-    so.serialize(env.get(), path);
+    so.serialize(env2.get(), path);
 } 

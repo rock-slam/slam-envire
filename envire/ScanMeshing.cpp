@@ -82,7 +82,7 @@ struct Marker
     void calcCenter()
     {
 	center = Eigen::Vector3d::Zero();
-	for(int i=0;i<points.size();i++)
+	for(size_t i=0;i<points.size();i++)
 	{
 	    center += points[i];
 	}
@@ -113,6 +113,7 @@ bool ScanMeshing::updateAll()
     std::vector<Eigen::Vector3d>& points(meshPtr->vertices);
     std::vector<Eigen::Vector3d>& colors(meshPtr->getVertexData<Eigen::Vector3d>(TriMesh::VERTEX_COLOR));
     std::vector<TriMesh::vertex_attr>& point_attrs(meshPtr->getVertexData<TriMesh::vertex_attr>(TriMesh::VERTEX_ATTRIBUTES));
+    std::vector<double>& uncertainty(meshPtr->getVertexData<double>(Pointcloud::VERTEX_UNCERTAINTY));
 
     typedef TriMesh::triangle_t triangle_t;
     std::vector< triangle_t >& faces(meshPtr->faces);
@@ -124,13 +125,14 @@ bool ScanMeshing::updateAll()
     colors.clear();
     point_attrs.clear();
     faces.clear();
+    uncertainty.clear();
 
     envire::LaserScan& scan(*scanPtr);
 
     int line1[scan.points_per_line], line2[scan.points_per_line];
     int *idx_line=line1, *prev_idx_line=line2;
 
-    for(int line_num=0;line_num<scan.lines.size();line_num++) {
+    for(size_t line_num=0;line_num<scan.lines.size();line_num++) {
         const LaserScan::scanline_t& line(scan.lines[line_num]);
 
         float phi = scan.origin_phi + line.delta_phi;
@@ -138,7 +140,7 @@ bool ScanMeshing::updateAll()
 
 	bool has_rem = (line.ranges.size() == line.remissions.size());
 
-        for(int point_num=0;point_num<line.ranges.size();point_num++) {
+        for(size_t point_num=0;point_num<line.ranges.size();point_num++) {
             // TODO check what actually is a valid range
             if( line.ranges[point_num] > (minRange*1000.0) ) {
                 float range = line.ranges[point_num] / 1000.0;
@@ -154,14 +156,21 @@ bool ScanMeshing::updateAll()
                 Eigen::Vector3d opoint = point + offset;
 
                 points.push_back(opoint); 
+
+		// calculate uncertainty of the point
+		// TODO remove numbers and put into parameters
+		double sigma = std::min(0.01 * range, 0.02);
+		uncertainty.push_back( sigma );
+
 		if( has_rem )
 		{
 		    // convert the remission value into a color value
 		    // for now we do that with a simple linear conversion and a cutoff
+		    // TODO really we should store the reflectivity and not convert into a color
+		    // this is up to the visualisation
 		    float cval = std::min( 1.0, std::max( 0.0, line.remissions[point_num] / (double)remissionScaleFactor ) );
 
 		    colors.push_back( Eigen::Vector3d::Ones() * cval );
-
 
 		    if( extractMarkers )
 		    {
@@ -170,7 +179,7 @@ bool ScanMeshing::updateAll()
 			if( line.remissions[point_num] > remissionMarkerThreshold )
 			{
 			    bool newMarker = true;
-			    for(int i=0;i<markers.size();i++)
+			    for(size_t i=0;i<markers.size();i++)
 			    {
 				// TODO make max distance configurable
 				if( markers[i].dist( opoint ) < 0.05 )
@@ -263,5 +272,7 @@ bool ScanMeshing::updateAll()
 
     // calculate vertex normals
     meshPtr->calcVertexNormals();
+
+    return true;
 }
 
