@@ -41,10 +41,10 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
     while( it.isValid() )
     {
 	MultiLevelSurfaceGrid::SurfacePatch &p( *it );
-	if( (p.mean - p.height - gapSize) < mean || (p.mean + gapSize) > mean )
+	if( (p.mean - p.height - gapSize) < mean && (p.mean + gapSize) > mean )
 	{
 	    if( p.horizontal && 
-		    ((p.mean - p.height - thickness ) < mean || 
+		    ((p.mean - p.height - thickness ) < mean && 
 		     (p.mean + thickness) > mean ) )
 	    {
 		double gain = p.stdev / (p.stdev + stdev);
@@ -68,8 +68,8 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
 		{
 		    p.height = std::max( p.height, p.mean - mean );
 		}
-		return;
 	    }
+	    return;
 	}
 	it++;
     }
