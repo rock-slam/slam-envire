@@ -212,7 +212,7 @@ struct MLSAccess::MLSAccessImpl
 	    while( it.isValid() )
 	    {
 		MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-		const double interval = (zstdev + p.stdev)*3.0;
+		const double interval = (zstdev + p.stdev)*3.0 + 0.5;
 		if( position.z() - interval < p.mean && 
 			position.z() + interval > p.mean )
 		{
