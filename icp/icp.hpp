@@ -38,19 +38,17 @@ class ICP {
 
     struct Result
     {
-	Result( int iterations, double avg_error )
-	    : iterations(iterations), avg_error(avg_error) {};
-
 	int iterations;
-	double avg_error;
+	double mse;
+	double mse_delta;
+	double overlap;
     };
 
     struct Configuration
     {
 	Configuration() :
-	    threshold(1.0), density(0.1), minPairs(5) {};
+	    density(0.1), minPairs(5) {};
 
-	double threshold;
 	double density;
 	size_t minPairs;
     };
@@ -94,7 +92,7 @@ class ICP {
 	 * @param threshold - is the max distance to look for matching closest points
 	 * @param density - how many points of the mesh to take into account. 
 	 */ 
-        double updateAlignment( envire::Pointcloud* measurement, double threshold, double density );
+        double updateAlignment( envire::Pointcloud* measurement, double d_box, double density, double overlap );
 
         void updateTree( envire::Pointcloud* model, double density );
 	void clearTree();
@@ -112,8 +110,22 @@ class ICP {
 	/** store x and p for debug */
         std::vector<Eigen::Vector3d> x, p;
 
+	struct pair
+	{
+	    size_t index;
+	    double dist;
+
+	    bool operator < ( const pair other ) const
+	    {
+		return dist < other.dist;
+	    }
+	};
+	std::vector<pair> pairs;
+
 	/** internal instance of kdtree */
         tree_type kdtree;
+
+	double d_max;
 
 	/** support stuff for random number generation */
 	boost::minstd_rand rand_gen;

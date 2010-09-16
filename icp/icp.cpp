@@ -12,6 +12,7 @@ ICP::ICP() :
 
 ICP::Result ICP::align( envire::Pointcloud* measurement, int max_iter, double min_error)
 {
+    /*
     int n=0;
     double avg_error;
 
@@ -43,11 +44,18 @@ ICP::Result ICP::align( envire::Pointcloud* measurement, int max_iter, double mi
     }
 
     return ICP::Result( n, avg_error );
+    */
+    Result res;
+    return res;
 }
 
 
 ICP::Result ICP::align( int max_iter, double min_error)
 {
+    // code here is not tested at all and shouldn't be used
+    throw std::runtime_error("this method is not fully implemented yet");
+    
+    /*
     int n=0;
     double avg_error;
 
@@ -56,10 +64,10 @@ ICP::Result ICP::align( int max_iter, double min_error)
 
     while(n<max_iter)
     {
-	for(int j=0;j<modelVec.size();j++)
+	for(size_t j=0;j<modelVec.size();j++)
 	{
 	    // update the model
-	    for(int i=0;i<modelVec.size();i++)
+	    for(size_t i=0;i<modelVec.size();i++)
 	    {
 		clearTree();
 
@@ -84,6 +92,7 @@ ICP::Result ICP::align( int max_iter, double min_error)
     }
 
     return ICP::Result( n, avg_error );
+    */
 }
 
 void ICP::updateTree( envire::Pointcloud* model, double density )
@@ -98,6 +107,8 @@ void ICP::updateTree( envire::Pointcloud* model, double density )
     bool hasNormals = model->hasData( envire::Pointcloud::VERTEX_ATTRIBUTES );
     bool hasEdge = model->hasData( envire::Pointcloud::VERTEX_NORMAL );
 
+    // TODO do some templating to differentiate between enriched pointclouds
+    // (scan edge and normals) and a normal one
     std::vector<Eigen::Vector3d>& points(model->vertices);
     if( hasNormals && hasEdge )
     {
@@ -105,7 +116,7 @@ void ICP::updateTree( envire::Pointcloud* model, double density )
 	std::vector<Eigen::Vector3d>& normals(model->getVertexData<Eigen::Vector3d>(envire::Pointcloud::VERTEX_NORMAL));
 
 	// insert the model into the tree using normal and edge data
-	for(int i=0;i<points.size();i++) {
+	for(size_t i=0;i<points.size();i++) {
 	    if( rand() <= density ) {
 		kdtree.insert( 
 			TreeNode( 
@@ -119,7 +130,7 @@ void ICP::updateTree( envire::Pointcloud* model, double density )
     else 
     {
 	// insert the model into the tree
-	for(int i=0;i<points.size();i++) {
+	for(size_t i=0;i<points.size();i++) {
 	    if( rand() <= density ) {
 		kdtree.insert( 
 			TreeNode( 
@@ -147,20 +158,11 @@ void ICP::clearTree()
     kdtree.clear();
 }
 
-double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, double density )
+void ICP::findPairs( envire::Pointcloud* measurement, double d_box, double density )
 {
-    // for each point in the measurement, try to find a point in the model given
-    // the current threshold and store the in the X and P
-    //
-    // ICP implementation based on the paper by Besl and McKay
-    // Besl P, McKay H. A method for registration of 3-D shapes. IEEE Transactions on pattern... 1992. 
-    // Available at: http://doi.ieeecomputersociety.org/10.1109/34.121791.
-    //
-    // added some extensions for ignoring scan edges and vertex normals that deviate more than 45deg
-    //
-  
     x.clear();
     p.clear();
+    pairs.clear;
 
     // get the transformation between the local frame and the global
     // frame of the environment 
@@ -208,6 +210,7 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, 
 		    }
 		    else
 		    {
+			pairs.push_back( p.size(), found.second );
 			x.push_back( found.first->point );
 			p.push_back( tn.point );
 		    }
@@ -229,6 +232,7 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, 
 		std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
 		if( found.first != kdtree.end() )
 		{
+		    pairs.push_back( p.size(), found.second );
 		    x.push_back( found.first->point );
 		    p.push_back( tn.point );
 		}
@@ -236,31 +240,59 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double threshold, 
 	}
 	//std::cout << "found pairs:" << x.size() << std::endl; 
     }
+}
 
-    int n = x.size();
+double ICP::updateAlignment( envire::Pointcloud* measurement, double d_box, double density, double overlap )
+{
+    // for each point in the measurement, try to find a point in the model given
+    // the current threshold and store the in the X and P
+    //
+    // ICP implementation based on the paper by Besl and McKay
+    // Besl P, McKay H. A method for registration of 3-D shapes. IEEE Transactions on pattern... 1992. 
+    // Available at: http://doi.ieeecomputersociety.org/10.1109/34.121791.
+    //
+    // added some extensions for ignoring scan edges and vertex normals that deviate more than 45deg
+    //
+
+    findPairs( measurement, d_box, density );
+
+    size_t n = pairs.size();
     if( n < config.minPairs )
 	return 0;
 
+    // this is the overlap we should see
+    size_t n_po = std::min( n, measurement.vertices.size() * density * overlap );
+
+    // sort the pairs by distance
+    std::sort( pairs.begin(), pairs.end() );
+
+    // and set the maximum distance as the next d_box value
+    d_max = pairs[n_po-1].dist;
+
+    // calculate the mean and covariance values of x and p
     Vector3d mu_p(Vector3d::Zero()), 
 	     mu_x(Vector3d::Zero());
     Matrix3d sigma_px(Matrix3d::Zero());
     double mu_d = 0;
 
-    // calculate the mean and covariance values of x and p
-    for(int i=0;i<n;i++) {
-	double d = (p[i] - x[i]).norm();
+    for(int i=0;i<n_po;i++) {
+	const size_t idx = pairs[i].idx;
+	Eigen::Vector3d &pv( p[idx] );
+	Eigen::Vector3d &xv( p[idx] );
+
+	const double d = pairs[i].dist;
 	mu_d += d*d;
 
-        mu_p += p[i];
-        mu_x += x[i];
+        mu_p += pv;
+        mu_x += xv;
 
-        sigma_px += p[i] * x[i].transpose();
+        sigma_px += pv * xv.transpose();
    }
-    mu_p /= static_cast<double>(n);
-    mu_x /= static_cast<double>(n);
-    mu_d /= static_cast<double>(n);
+    mu_p /= static_cast<double>(n_po);
+    mu_x /= static_cast<double>(n_po);
+    mu_d /= static_cast<double>(n_po);
 
-    sigma_px = sigma_px / static_cast<double>(n) - mu_p*mu_x.transpose();
+    sigma_px = sigma_px / static_cast<double>(n_po) - mu_p*mu_x.transpose();
 
     //std::cout << "mu_d: " << mu_d 
 	//<< " mu_p: " << mu_p.transpose() 
