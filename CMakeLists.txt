@@ -127,35 +127,10 @@ add_custom_target(doc doxygen Doxyfile)
 configure_file(envire.pc.in envire.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/envire.pc DESTINATION lib/pkgconfig)
 
-include_directories(BEFORE ${PROJECT_SOURCE_DIR})
-add_subdirectory(test)
-
 add_subdirectory(icp)
 include_directories(${PROJECT_SOURCE_DIR}/icp)
 link_directories(${PROJECT_BINARY_DIR}/icp)
 
-add_executable(test_icp test_icp.cpp)
-target_link_libraries(test_icp icp envire)
-
-add_executable(env_icp tools/env_icp.cpp)
-target_link_libraries(env_icp icp envire)
-
-add_executable(env_dem tools/env_dem.cpp)
-target_link_libraries(env_dem envire)
-
-add_executable(env_mls tools/env_mls.cpp)
-target_link_libraries(env_mls envire)
-
-if( TAUCS_FOUND )
-add_executable(env_simplify tools/env_simplify.cpp)
-target_link_libraries(env_simplify icp envire)
-
-add_executable(env_surface tools/env_surface.cpp)
-target_link_libraries(env_surface icp envire)
-endif( TAUCS_FOUND )
-
-add_executable(dem_helper tools/dem_helper.cpp)
-target_link_libraries(dem_helper icp envire)
-
-add_executable(env_info tools/env_info.cpp)
-target_link_libraries(env_info icp envire)
+include_directories(BEFORE ${PROJECT_SOURCE_DIR})
+add_subdirectory(test)
+add_subdirectory(tools)
