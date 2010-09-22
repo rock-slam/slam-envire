@@ -4,270 +4,43 @@
 
 USING_PART_OF_NAMESPACE_EIGEN
 
-ICP::ICP() :
-    rand_gen( 42u ),
-    rand( rand_gen, boost::uniform_real<>(0,1) )
+using namespace envire::icp;
+
+void Pairs::add( const Eigen::Vector3d& a, const Eigen::Vector3d& b, double dist )
 {
+    pair pair;
+    pair.index = pairs.size();
+    pair.distance = dist;
+
+    x.push_back( a );
+    p.push_back( b );
+    pairs.push_back( pair );
 }
 
-ICP::Result ICP::align( envire::Pointcloud* measurement, int max_iter, double min_error)
+double Pairs::trim( size_t n_po )
 {
-    /*
-    int n=0;
-    double avg_error;
-
-    // TODO come up with a real algorithm to estimate starting values
-    double density = config.density, 
-	   threshold = config.threshold;
-
-    while(n<max_iter)
+    if( n_po < pairs.size() )
     {
-	clearTree();
-	// update the model
-	for(int i=0;i<modelVec.size();i++)
-	{
-	    updateTree( modelVec[i], density );
-	}
+	// sort the pairs by distance
+	std::sort( pairs.begin(), pairs.end() );
 
-	std::cout << std::endl;
-	std::cout << "n:" << n << " dens:" << density << " thresh:" << threshold << std::endl;
-	avg_error = updateAlignment( measurement, threshold, density );
-	std::cout << "mse: " << avg_error << std::endl;
-	if( avg_error < min_error )
-	    break;
-
-	// TODO come up with a real algoritm for estimating
-	// density and threshold
-	//density = 1.0-(1.0-density)*.7;
-	//threshold = threshold*.7;
-	n++;
+	pairs.resize( n_po );
     }
 
-    return ICP::Result( n, avg_error );
-    */
-    Result res;
-    return res;
-}
-
-
-ICP::Result ICP::align( int max_iter, double min_error)
-{
-    // code here is not tested at all and shouldn't be used
-    throw std::runtime_error("this method is not fully implemented yet");
-    
-    /*
-    int n=0;
-    double avg_error;
-
-    // TODO come up with a real algorithm to estimate starting values
-    double density = 0.02, threshold = 1.0;
-
-    while(n<max_iter)
+    if( pairs.size() > 0 )
     {
-	for(size_t j=0;j<modelVec.size();j++)
-	{
-	    // update the model
-	    for(size_t i=0;i<modelVec.size();i++)
-	    {
-		clearTree();
-
-		if( j!=i )
-		{
-		    updateTree( modelVec[i], density );
-
-		    std::cout << std::endl;
-		    std::cout << "n:" << n << " j:" << j << " i:" << i << " dens:" << density << " thresh:" << threshold << std::endl;
-		    avg_error = updateAlignment( modelVec[j], threshold, density );
-		    if( avg_error < min_error )
-			break;
-		}
-	    }
-
-	}
-	// TODO come up with a real algoritm for estimating
-	// density and threshold
-	density = 1.0-(1.0-density)*.98;
-	threshold = threshold*.7;
-	n++;
-    }
-
-    return ICP::Result( n, avg_error );
-    */
-}
-
-void ICP::updateTree( envire::Pointcloud* model, double density )
-{
-    // get the transformation between the local frame and the global
-    // frame of the environment 
-    envire::FrameNode::TransformType
-	C_l2g = model->getEnvironment()->relativeTransform(
-		model->getFrameNode(),
-		model->getEnvironment()->getRootNode() );
-
-    bool hasNormals = model->hasData( envire::Pointcloud::VERTEX_ATTRIBUTES );
-    bool hasEdge = model->hasData( envire::Pointcloud::VERTEX_NORMAL );
-
-    // TODO do some templating to differentiate between enriched pointclouds
-    // (scan edge and normals) and a normal one
-    std::vector<Eigen::Vector3d>& points(model->vertices);
-    if( hasNormals && hasEdge )
-    {
-	std::vector<envire::Pointcloud::vertex_attr>& attrs(model->getVertexData<envire::Pointcloud::vertex_attr>(envire::Pointcloud::VERTEX_ATTRIBUTES));
-	std::vector<Eigen::Vector3d>& normals(model->getVertexData<Eigen::Vector3d>(envire::Pointcloud::VERTEX_NORMAL));
-
-	// insert the model into the tree using normal and edge data
-	for(size_t i=0;i<points.size();i++) {
-	    if( rand() <= density ) {
-		kdtree.insert( 
-			TreeNode( 
-			    C_l2g * points[i], 
-			    C_l2g.rotation() * normals[i], 
-			    attrs[i] & (1 << envire::Pointcloud::SCAN_EDGE)
-			    ) );
-	    }
-	}
-    }
-    else 
-    {
-	// insert the model into the tree
-	for(size_t i=0;i<points.size();i++) {
-	    if( rand() <= density ) {
-		kdtree.insert( 
-			TreeNode( 
-			    C_l2g * points[i], 
-			    Eigen::Vector3d::Zero(), 
-			    false
-			    ) );
-	    }
-	}
-    }
-}
-
-void ICP::addToModel( envire::Pointcloud* model )
-{
-    modelVec.push_back( model );
-}
-
-void ICP::clearModel()
-{
-    modelVec.clear();
-}
-
-void ICP::clearTree()
-{
-    kdtree.clear();
-}
-
-void ICP::findPairs( envire::Pointcloud* measurement, double d_box, double density )
-{
-    x.clear();
-    p.clear();
-    pairs.clear;
-
-    // get the transformation between the local frame and the global
-    // frame of the environment 
-    envire::FrameNode::TransformType
-	C_l2g = measurement->getEnvironment()->relativeTransform(
-		measurement->getFrameNode(),
-		measurement->getEnvironment()->getRootNode() );
-
-    bool hasNormals = measurement->hasData( envire::Pointcloud::VERTEX_ATTRIBUTES );
-    bool hasEdge = measurement->hasData( envire::Pointcloud::VERTEX_NORMAL );
-
-    std::vector<Eigen::Vector3d>& points(measurement->vertices);
-    if( hasNormals && hasEdge )
-    {
-	std::vector<envire::Pointcloud::vertex_attr>& attrs(measurement->getVertexData<envire::Pointcloud::vertex_attr>(envire::Pointcloud::VERTEX_ATTRIBUTES));
-	std::vector<Eigen::Vector3d>& normals(measurement->getVertexData<Eigen::Vector3d>(envire::Pointcloud::VERTEX_NORMAL));
-
-	int stat_edges = 0;
-	int stat_normal = 0;
-
-	// find matching point pairs between measurement and model and take edge and normal information into account
-	for(int i=0;i<points.size();i++) {
-	    if( rand() <= density ) {
-		TreeNode tn( 
-			C_l2g * points[i], 
-			C_l2g.rotation() * normals[i], 
-			attrs[i] & (1 << envire::Pointcloud::SCAN_EDGE)); 
-
-		std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
-		if( found.first != kdtree.end() )
-		{
-		    bool edge = (found.first->edge || tn.edge);
-		    double normal_angle = 
-			acos( found.first->normal.dot( tn.normal ) );
-
-		    // remove pairs on edges, or where the normals are deviating by
-		    // more than 45deg
-		    if(edge)
-		    {
-			stat_edges++;
-		    }
-		    else if( normal_angle > M_PI/8.0 )
-		    {
-			stat_normal++;
-		    }
-		    else
-		    {
-			pairs.push_back( p.size(), found.second );
-			x.push_back( found.first->point );
-			p.push_back( tn.point );
-		    }
-		}
-	    }
-	}
-
-	//std::cout << "found pairs:" << x.size() << " discarded edges:" << stat_edges << " discarded normals:" << stat_normal << std::endl;
+	// and set the maximum distance as the next d_box value
+	return pairs.back().distance;
     }
     else {
-	// find matching point pairs between measurement and model
-	for(int i=0;i<points.size();i++) {
-	    if( rand() <= density ) {
-		TreeNode tn( 
-			C_l2g * points[i], 
-			Eigen::Vector3d::Zero(), 
-			false); 
-
-		std::pair<tree_type::const_iterator,double> found = kdtree.find_nearest(tn, threshold);
-		if( found.first != kdtree.end() )
-		{
-		    pairs.push_back( p.size(), found.second );
-		    x.push_back( found.first->point );
-		    p.push_back( tn.point );
-		}
-	    }
-	}
-	//std::cout << "found pairs:" << x.size() << std::endl; 
+	return std::numeric_limits<double>::quiet_NaN();
     }
 }
 
-double ICP::updateAlignment( envire::Pointcloud* measurement, double d_box, double density, double overlap )
+Eigen::Transform3d Pairs::getTransform()
 {
-    // for each point in the measurement, try to find a point in the model given
-    // the current threshold and store the in the X and P
-    //
-    // ICP implementation based on the paper by Besl and McKay
-    // Besl P, McKay H. A method for registration of 3-D shapes. IEEE Transactions on pattern... 1992. 
-    // Available at: http://doi.ieeecomputersociety.org/10.1109/34.121791.
-    //
-    // added some extensions for ignoring scan edges and vertex normals that deviate more than 45deg
-    //
-
-    findPairs( measurement, d_box, density );
-
-    size_t n = pairs.size();
-    if( n < config.minPairs )
-	return 0;
-
-    // this is the overlap we should see
-    size_t n_po = std::min( n, measurement.vertices.size() * density * overlap );
-
-    // sort the pairs by distance
-    std::sort( pairs.begin(), pairs.end() );
-
-    // and set the maximum distance as the next d_box value
-    d_max = pairs[n_po-1].dist;
+    if( size() < MIN_PAIRS )
+	throw std::runtime_error("not enough pairs to get transform");
 
     // calculate the mean and covariance values of x and p
     Vector3d mu_p(Vector3d::Zero()), 
@@ -275,28 +48,25 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double d_box, doub
     Matrix3d sigma_px(Matrix3d::Zero());
     double mu_d = 0;
 
-    for(int i=0;i<n_po;i++) {
-	const size_t idx = pairs[i].idx;
+    for(size_t i=0;i<pairs.size();i++) {
+	const size_t idx = pairs[i].index;
 	Eigen::Vector3d &pv( p[idx] );
-	Eigen::Vector3d &xv( p[idx] );
+	Eigen::Vector3d &xv( x[idx] );
 
-	const double d = pairs[i].dist;
+	const double d = pairs[i].distance;
 	mu_d += d*d;
 
-        mu_p += pv;
-        mu_x += xv;
+	mu_p += pv;
+	mu_x += xv;
 
-        sigma_px += pv * xv.transpose();
-   }
-    mu_p /= static_cast<double>(n_po);
-    mu_x /= static_cast<double>(n_po);
-    mu_d /= static_cast<double>(n_po);
+	sigma_px += pv * xv.transpose();
+    }
+    const double n_inv = 1.0/pairs.size();
+    mu_p *= n_inv;
+    mu_x *= n_inv;
+    mu_d *= n_inv;
 
-    sigma_px = sigma_px / static_cast<double>(n_po) - mu_p*mu_x.transpose();
-
-    //std::cout << "mu_d: " << mu_d 
-	//<< " mu_p: " << mu_p.transpose() 
-	//<< " mu_x:  " << mu_x.transpose() << std::endl;
+    sigma_px = sigma_px * n_inv - mu_p*mu_x.transpose();
 
     // form the symmetric 4x4 matrix Q
     Matrix3d A = sigma_px-sigma_px.transpose();
@@ -304,49 +74,40 @@ double ICP::updateAlignment( envire::Pointcloud* measurement, double d_box, doub
 
     Matrix4d q_px;
     q_px << sigma_px.trace(), delta.transpose(), 
-         delta, A - Matrix3d::Identity() * sigma_px.trace();
+	 delta, A - Matrix3d::Identity() * sigma_px.trace();
 
     // do an eigenvalue decomposition of Q
     Eigen::Quaterniond q_R;
     Eigen::EigenSolver<Matrix4d> eigenSolver(q_px);
     double max_eig = eigenSolver.eigenvalues().real().maxCoeff();
     for(int i=0;i<eigenSolver.eigenvalues().rows();i++) {
-        if(eigenSolver.eigenvalues()(i) == max_eig) {
-            Vector4d max_eigv = eigenSolver.eigenvectors().col(i).real();
-            q_R = Eigen::Quaterniond( max_eigv(0), max_eigv(1), max_eigv(2), max_eigv(3) );
-        }
+	if(eigenSolver.eigenvalues()(i) == max_eig) {
+	    Vector4d max_eigv = eigenSolver.eigenvectors().col(i).real();
+	    q_R = Eigen::Quaterniond( max_eigv(0), max_eigv(1), max_eigv(2), max_eigv(3) );
+	    break;
+	}
     }
 
     // resulting transformation in global frame
     Eigen::Vector3d q_T = mu_x - q_R * mu_p;
     Eigen::Transform3d t( Eigen::Translation3d( q_T ) * q_R );
-    
-    //std::cout << std::endl << t.matrix() << std::endl;
-    //std::cout << "translate: " << q_T.transpose() << std::endl;
-    //std::cout << "rotate: " << q_R.toRotationMatrix().eulerAngles(0,1,2).transpose() << std::endl;
 
-    // TODO: find the framenode that should be updated really as this might not
-    // be necessarily the framenode associated with the trimesh
-    envire::FrameNode* fm = measurement->getFrameNode();
-
-    // get the transformation to the root framenode
-    envire::FrameNode::TransformType
-	C_fm2g = measurement->getEnvironment()->relativeTransform(
-		fm,
-		measurement->getEnvironment()->getRootNode() );
-
-    //std::cout << std::endl << C_fm2g.matrix() << std::endl;
-
-    // TODO check this children further down the tree
-    fm->setTransform( envire::FrameNode::TransformType( fm->getTransform()*(C_fm2g.inverse() * t * C_fm2g ) ) );
-
-    //std::cout << "translation: " << fm->getTransform().translation().transpose() << std::endl;
-    //std::cout << "rotation: " << fm->getTransform().rotation().eulerAngles(0,1,2).transpose() << std::endl;
-
-    return mu_d;
+    mse = mu_d;
+    return t;
 }
 
-ICP::Configuration& ICP::getConfiguration()
+size_t Pairs::size() const 
 {
-    return config;
+    return pairs.size();
 }
+
+double Pairs::getMeanSquareError() const
+{
+    return mse;
+}
+
+void Pairs::clear()
+{
+    pairs.clear();
+}
+

@@ -27,27 +27,29 @@ int main( int argc, char* argv[] )
 
     Eigen::MatrixXi adjMat = Eigen::MatrixXi::Zero(meshes.size(), meshes.size());
 
-    for(int i=0;i<meshes.size();i++)
+    for(size_t i=0;i<meshes.size();i++)
     {
 	meshes[i]->setDirty();
 	meshes[i]->updateFromOperator();
     }
 
-    double density = 0.02;
-    double threshold = 0.2;
-    for(int i=0;i<meshes.size();i++)
+    //double density = 0.02;
+    //double threshold = 0.2;
+    for(size_t i=0;i<meshes.size();i++)
     {
-	for(int j=0;j<meshes.size();j++)
+	for(size_t j=0;j<meshes.size();j++)
 	{
 	    // condition for strictly upper triangular
 	    if( j>i )
 	    {
+		/*
 		ICP icp;
 		icp.updateTree( meshes[i], density );
 		envire::FrameNode::TransformType t = meshes[j]->getFrameNode()->getTransform();
 		icp.updateAlignment( meshes[j], threshold, density);
 		meshes[j]->getFrameNode()->setTransform(t);
 		adjMat(i,j) = icp.getX().size();
+		*/
 	    }
 	}
     }
@@ -87,9 +89,9 @@ int main( int argc, char* argv[] )
     while( taken.size() < meshes.size() ) 
     {
 	highest h;
-	for(int i=0;i<taken.size();i++)
+	for(size_t i=0;i<taken.size();i++)
 	{
-	    for(int j=0;j<meshes.size();j++)
+	    for(size_t j=0;j<meshes.size();j++)
 	    {
 		if( !std::count(taken.begin(),taken.end(),j) && (adjMat(taken[i],j) > h.adjecency) ) 
 		{
@@ -123,9 +125,9 @@ int main( int argc, char* argv[] )
     // perform the icp 
     for(int i=0;i<iter;i++)
     {
+	/*
 	ICP icp;
 	icp.getConfiguration().density = 0.1+i/10.0;
-	icp.getConfiguration().threshold = (iter-i+1)/10.0;
 	icp.getConfiguration().minPairs = 50;
 
 	for(std::vector<std::pair<int,int> >::iterator it=graph.begin();it!=graph.end();it++)
@@ -134,6 +136,7 @@ int main( int argc, char* argv[] )
 	    std::cout << "i: " << i << " model: " << it->second << " meas: " << it->first << std::endl;
 	    icp.align(meshes[it->first], 5, 0.0001);
 	}
+	*/
     }
     /*
     ICP icp;

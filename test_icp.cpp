@@ -100,12 +100,9 @@ int main( int argc, char* argv[] )
 	    Eigen::Translation3d( 0,0,0 )
 	    * Eigen::AngleAxisd(.3, Eigen::Vector3d::UnitX()) );
 
-    ICP icp;
-    icp.getConfiguration().density = 1;
-    icp.getConfiguration().threshold = .5;
-    icp.addToModel( mesh );
-
-    icp.align( mesh2, 2, 0.01 );
+    envire::icp::TrimmedKDEAN icp;
+    icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( mesh, 1.0 ) );
+    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( mesh2, 1.0 ), 10, 0.1, 0.01 );
     
     std::cout << std::endl;
     std::cout << "------- origin at 10,10" << std::endl;
@@ -118,5 +115,5 @@ int main( int argc, char* argv[] )
 	    Eigen::Translation3d( 10,10,0 )
 	    * Eigen::AngleAxisd(.3, Eigen::Vector3d::UnitX()) );
     
-    icp.align( mesh2, 2, 0.01 );
+    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( mesh2, 1.0 ), 10, 0.1, 0.01 );
 } 
