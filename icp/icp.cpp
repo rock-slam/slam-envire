@@ -109,5 +109,7 @@ double Pairs::getMeanSquareError() const
 void Pairs::clear()
 {
     pairs.clear();
+    x.clear();
+    p.clear();
 }
 

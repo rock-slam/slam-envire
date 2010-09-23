@@ -112,9 +112,9 @@ public:
 	C_local2globalnew = C_local2global;
     }
 
-    void setOffsetTransform( const Eigen::Transform3d& C_globalnew2global )
+    void setOffsetTransform( const Eigen::Transform3d& C_global2globalnew )
     {
-	C_local2globalnew = C_globalnew2global.inverse() * C_local2global;
+	C_local2globalnew = C_global2globalnew * C_local2global;
     }
 
     VertexNode next()
@@ -217,7 +217,7 @@ public:
 	    _TreeNode node = model.next();
 	    std::pair<typename tree_type::const_iterator,double> found = kdtree.find_nearest(node, d_box);
 	    if( found.first != kdtree.end() && filter(node, *(found.first)) )
-		pairs.add(node.point, (found.first)->point, found.second);
+		pairs.add((found.first)->point, node.point, found.second);
 	}
     }
 
@@ -250,7 +250,7 @@ public:
     void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff )
     {
 	Pairs pairs;
-	Eigen::Transform3d C_globalc2global( Eigen::Transform3d::Identity() );
+	Eigen::Transform3d C_global2globalnew( Eigen::Transform3d::Identity() );
 
 	iter = 0;
 	double d_box = std::numeric_limits<double>::infinity();
@@ -263,10 +263,10 @@ public:
 	    pairs.clear();
 	    findPairs.findPairs( measurement, pairs, d_box );
 	    // d_box = pairs.trim( sum );
-	    Eigen::Transform3d C_globalc2globalp = pairs.getTransform();
 
-	    C_globalc2global = C_globalc2global * C_globalc2globalp;
-	    measurement.setOffsetTransform( C_globalc2global );
+	    Eigen::Transform3d C_globalprev2globalnew = pairs.getTransform();
+	    C_global2globalnew = C_globalprev2globalnew * C_global2globalnew;
+	    measurement.setOffsetTransform( C_global2globalnew );
 
 	    mse = pairs.getMeanSquareError();
 	    mse_diff = old_mse - mse;
