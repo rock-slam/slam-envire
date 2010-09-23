@@ -6,114 +6,153 @@
 
 #include "boost/scoped_ptr.hpp"
 
+#define BOOST_TEST_MODULE ICPTest 
+#include <boost/test/included/unit_test.hpp>
+
 using namespace envire;
 using namespace std;
 
-void setHalfCube(envire::TriMesh *mesh)
+struct ICPTest
 {
-    std::vector<Eigen::Vector3d>& points(mesh->vertices);
-    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getVertexData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<Eigen::Vector3d>& normal(mesh->getVertexData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
-
-    // generate a pointcloud with vertices on 3 adjecent walls of a cube
-    for(int i=0;i<=10;i++)
+    ICPTest()
+	: env( new Environment() )
     {
-	for(int j=0;j<=10;j++)
+    }
+
+    void setHalfCube(envire::Pointcloud *mesh)
+    {
+	std::vector<Eigen::Vector3d>& points(mesh->vertices);
+	std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getVertexData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+	std::vector<Eigen::Vector3d>& normal(mesh->getVertexData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
+
+	// generate a pointcloud with vertices on 3 adjecent walls of a cube
+	for(int i=0;i<=10;i++)
 	{
-	    bool edge = (i == 10 || j == 10);
+	    for(int j=0;j<=10;j++)
+	    {
+		bool edge = (i == 10 || j == 10);
 
-	    double x = i*.1;
-	    double y = j*.1;
+		double x = i*.1;
+		double y = j*.1;
 
-	    points.push_back( Eigen::Vector3d( x, y, 0 ) );
-	    points.push_back( Eigen::Vector3d( 0, x, y ) );
-	    points.push_back( Eigen::Vector3d( x, 0, y ) );
-	    attr.push_back( edge << TriMesh::SCAN_EDGE );
-	    attr.push_back( edge << TriMesh::SCAN_EDGE );
-	    attr.push_back( edge << TriMesh::SCAN_EDGE );
-	    normal.push_back( Eigen::Vector3d( 0, 0, 1 ) );
-	    normal.push_back( Eigen::Vector3d( 1, 0, 0 ) );
-	    normal.push_back( Eigen::Vector3d( 0, 1, 0 ) );
+		points.push_back( Eigen::Vector3d( x, y, 0 ) );
+		points.push_back( Eigen::Vector3d( 0, x, y ) );
+		points.push_back( Eigen::Vector3d( x, 0, y ) );
+		attr.push_back( edge << TriMesh::SCAN_EDGE );
+		attr.push_back( edge << TriMesh::SCAN_EDGE );
+		attr.push_back( edge << TriMesh::SCAN_EDGE );
+		normal.push_back( Eigen::Vector3d( 0, 0, 1 ) );
+		normal.push_back( Eigen::Vector3d( 1, 0, 0 ) );
+		normal.push_back( Eigen::Vector3d( 0, 1, 0 ) );
+	    }
 	}
     }
-}
 
-void setSineWave(envire::TriMesh *mesh)
-{
-    std::vector<Eigen::Vector3d>& points(mesh->vertices);
-    std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getVertexData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<Eigen::Vector3d>& normal(mesh->getVertexData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
-
-    // generate a pointcloud with vertices on 3 adjecent walls of a cube
-    for(int i=-10;i<=10;i++)
+    void setSineWave(envire::Pointcloud *mesh)
     {
-	for(int j=-10;j<=10;j++)
+	std::vector<Eigen::Vector3d>& points(mesh->vertices);
+	std::vector<envire::TriMesh::vertex_attr>& attr(mesh->getVertexData<envire::TriMesh::vertex_attr>(envire::TriMesh::VERTEX_ATTRIBUTES));
+	std::vector<Eigen::Vector3d>& normal(mesh->getVertexData<Eigen::Vector3d>(envire::TriMesh::VERTEX_NORMAL));
+
+	const int xmin = -10, xmax = 10;
+	const int ymin = -10, ymax = 10;
+	double zscale = .2;
+	double yscale = 10.0;
+
+	for(int i=xmin;i<=xmax;i++)
 	{
-	    bool edge = (i == 10 || j == 10 || i == 0 || j == 0 );
+	    for(int j=ymin;j<=ymax;j++)
+	    {
+		bool edge = (i == xmin || j == ymin || i == xmax || j == ymax );
 
-	    double x = i*.1;
-	    double y = j*.1;
-	    double d = sqrt( (x*10)*(x*10) + (y*10)*(y*10) ); 
-	    double z = cos( d );
+		double x = i*.1;
+		double y = j*.1;
+		double d = sqrt( x*x + y*y ); 
+		double z = zscale*cos( yscale * d );
 
-	    Eigen::Vector3d norm( 
-		    -cos( atan( -sin(d) ) ),
-		    0,
-		    sin( atan( -sin(d) ) ) );
+		double zd = -zscale*yscale*sin( yscale * d );
+		double nx = sqrt(1.0/(1.0+zd*zd));
+		double ny = zd * nx;
 
-	    norm = Eigen::AngleAxisd(atan2(y, x), Eigen::Vector3d::UnitZ()) * norm;
+    
+		Eigen::Vector3d norm( 
+			-ny,
+			0,
+			nx );
 
-	    points.push_back( Eigen::Vector3d( x, y, z ) );
-	    attr.push_back( edge << TriMesh::SCAN_EDGE );
-	    normal.push_back(norm);
+		norm = Eigen::AngleAxisd(atan2(y, x), Eigen::Vector3d::UnitZ()) * norm;
+
+		points.push_back( Eigen::Vector3d( x, y, z ) );
+		attr.push_back( edge << TriMesh::SCAN_EDGE );
+		normal.push_back(norm);
+	    }
 	}
     }
-}
 
-int main( int argc, char* argv[] )
+    enum test_case
+    {
+	sine, 
+	box
+    };
+
+    void setTestEnvironment( test_case tc, const Eigen::Transform3d& a_trans, const Eigen::Transform3d& b_trans )
+    {
+	FrameNode *fm1 = new FrameNode();
+	FrameNode *fm2 = new FrameNode();
+	env->addChild( env->getRootNode(), fm1 );
+	env->addChild( env->getRootNode(), fm2 );
+
+	mesh = new Pointcloud();
+	env->attachItem( mesh );
+
+	mesh2 = new Pointcloud();
+	env->attachItem( mesh2 );
+
+	switch( tc )
+	{
+	    case sine:
+		setSineWave( mesh ); setSineWave( mesh2 ); break;
+	    case box:
+		setHalfCube( mesh ); setHalfCube( mesh2 ); break;
+	}
+
+	mesh->setFrameNode( fm1 );
+	mesh2->setFrameNode( fm2 );
+
+	fm1->setTransform( a_trans );
+	fm2->setTransform( b_trans );
+
+	Serialization so;
+	so.serialize( env.get(), "/tmp/test" );
+    }
+
+    boost::scoped_ptr<Environment> env;
+    Pointcloud *mesh, *mesh2;
+};
+
+
+BOOST_AUTO_TEST_CASE( icp_test1 )
 {
-    boost::scoped_ptr<Environment> env(new Environment());
-
-    FrameNode *fm1 = new FrameNode();
-    FrameNode *fm2 = new FrameNode();
-    env->addChild( env->getRootNode(), fm1 );
-    env->addChild( env->getRootNode(), fm2 );
-
-    TriMesh* mesh = new TriMesh();
-    env->attachItem( mesh );
-    setSineWave( mesh );
-
-    TriMesh* mesh2 = new TriMesh();
-    env->attachItem( mesh2 );
-    setSineWave( mesh2 );
-
-    mesh->setFrameNode( fm1 );
-    mesh2->setFrameNode( fm2 );
-
-    std::cout << "------ origin at 0,0" << std::endl;
-
-    fm1->setTransform( 
-	    Eigen::Translation3d( 0,0,0 )
-	    * Eigen::AngleAxisd(.5, Eigen::Vector3d::UnitX()) );
-
-    fm2->setTransform( 
-	    Eigen::Translation3d( 0,0,0 )
-	    * Eigen::AngleAxisd(.3, Eigen::Vector3d::UnitX()) );
+    ICPTest test;
+    test.setTestEnvironment( ICPTest::sine, 
+	    Eigen::Transform3d( Eigen::Transform3d::Identity() ),
+	    Eigen::Translation3d( 0.0,0,0 )
+	    * Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitX()) );
 
     envire::icp::TrimmedKDEAN icp;
-    icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( mesh, 1.0 ) );
-    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( mesh2, 1.0 ), 10, 0.1, 0.01 );
-    
-    std::cout << std::endl;
-    std::cout << "------- origin at 10,10" << std::endl;
+    icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh, 1.0 ) );
+    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5 );
+} 
 
-    fm1->setTransform( 
-	    Eigen::Translation3d( 10,10,0 )
-	    * Eigen::AngleAxisd(.5, Eigen::Vector3d::UnitX()) );
+BOOST_AUTO_TEST_CASE( icp_test2 )
+{
+    ICPTest test;
+    test.setTestEnvironment( ICPTest::sine, 
+	    Eigen::Transform3d( Eigen::Transform3d::Identity() ),
+	    Eigen::Translation3d( 0.04,0,0 )
+	    * Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitX()) );
 
-    fm2->setTransform( 
-	    Eigen::Translation3d( 10,10,0 )
-	    * Eigen::AngleAxisd(.3, Eigen::Vector3d::UnitX()) );
-    
-    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( mesh2, 1.0 ), 10, 0.1, 0.01 );
+    envire::icp::TrimmedKD icp;
+    icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh, 1.0 ) );
+    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5 );
 } 

@@ -1,6 +1,8 @@
 #ifndef __ICP_H__
 #define __ICP_H__
 
+#define EIGEN_USE_NEW_STDVECTOR
+
 #include<Eigen/Core>
 #include<Eigen/Geometry>
 #include<Eigen/StdVector>
@@ -106,13 +108,20 @@ public:
 	C_local2global = env->relativeTransform(
 		fm,
 		env->getRootNode() );
+
+	C_local2globalnew = C_local2global;
+    }
+
+    void setOffsetTransform( const Eigen::Transform3d& C_globalnew2global )
+    {
+	C_local2globalnew = C_globalnew2global.inverse() * C_local2global;
     }
 
     VertexNode next()
     {
 	VertexNode n;
 	const size_t idx = index;
-	n.point = C_local2global * (*vertices)[idx];
+	n.point = C_local2globalnew * (*vertices)[idx];
 	index += 1.0/density;
 	return n;
     }
@@ -120,6 +129,10 @@ public:
     {
 	const size_t idx = index;
 	return idx < vertices->size();
+    }
+    void reset() 
+    {
+	index = 0.0;
     }
 
     void applyTransform(const Eigen::Transform3d& t)
@@ -130,7 +143,7 @@ public:
 
 protected:
     envire::Pointcloud* model;
-    Eigen::Transform3d C_local2global;
+    Eigen::Transform3d C_local2global, C_local2globalnew;
 
     double index;
     const std::vector<Eigen::Vector3d> *vertices;
@@ -152,9 +165,9 @@ public:
     {
 	VertexEdgeAndNormalNode n;
 	const size_t idx = index;
-	n.point = (*vertices)[idx];
+	n.point = C_local2globalnew * (*vertices)[idx];
 	n.edge = (*attrs)[idx] & (1 << envire::Pointcloud::SCAN_EDGE);
-	n.normal = C_local2global.rotation() * (*normals)[idx];
+	n.normal = C_local2globalnew.rotation() * (*normals)[idx];
 	index += 1.0/density;
 	return n;
     }
@@ -177,7 +190,7 @@ struct EdgeAndNormalPairFilter
     {
 	const bool edge = (a.edge || b.edge);
 	const double normal_angle = 
-	    acos( a.normal.dot( b.normal ) );
+	    acos( std::min( 1.0, a.normal.dot( b.normal )) );
 
 	return !edge && (normal_angle < MAX_NORMAL_DEV );
     }
@@ -191,12 +204,14 @@ public:
 
     void addModel( _Adapter& model )
     {
+	model.reset();
 	while( model.hasNext() )
 	    kdtree.insert( model.next() );
     }
     
     void findPairs( _Adapter& model, Pairs& pairs, double d_box )
     {
+	model.reset();
 	while( model.hasNext() )
 	{
 	    _TreeNode node = model.next();
@@ -235,7 +250,7 @@ public:
     void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff )
     {
 	Pairs pairs;
-	Eigen::Transform3d trans( Eigen::Transform3d::Identity() );
+	Eigen::Transform3d C_globalc2global( Eigen::Transform3d::Identity() );
 
 	iter = 0;
 	double d_box = std::numeric_limits<double>::infinity();
@@ -247,14 +262,23 @@ public:
 
 	    pairs.clear();
 	    findPairs.findPairs( measurement, pairs, d_box );
-	    //pairs.trim( sum );
-	    Eigen::Transform3d delta = pairs.getTransform();
-	    mse = pairs.getMeanSquareError();
-	    trans = trans * delta;
+	    // d_box = pairs.trim( sum );
+	    Eigen::Transform3d C_globalc2globalp = pairs.getTransform();
 
+	    C_globalc2global = C_globalc2global * C_globalc2globalp;
+	    measurement.setOffsetTransform( C_globalc2global );
+
+	    mse = pairs.getMeanSquareError();
 	    mse_diff = old_mse - mse;
 
 	    iter++;
+
+	    std::cout << "iter: " << iter
+		    << "\tpairs: " << pairs.size()
+		    << "\tmse: " << mse
+		    << "\tmse_diff: " << mse_diff
+		    << "\td_box: " << d_box
+		    << std::endl;
 	}
     }
 
@@ -294,6 +318,7 @@ typedef FindPairsKDTree< VertexNode,
 	FindPairsKD;
 
 typedef Trimmed< PointcloudEdgeAndNormalAdapter, FindPairsKDEAN > TrimmedKDEAN;
+typedef Trimmed< PointcloudAdapter, FindPairsKD > TrimmedKD;
 
 }
 }
