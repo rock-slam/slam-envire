@@ -18,6 +18,10 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
+#include <boost/random/variate_generator.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+
 #include <utility>
 
 namespace envire {
@@ -134,6 +138,10 @@ public:
     {
 	index = 0.0;
     }
+    size_t size() const
+    {
+	return vertices->size() * density;
+    }
 
     void applyTransform(const Eigen::Transform3d& t)
     {
@@ -233,11 +241,114 @@ private:
     tree_type kdtree;
 };
 
+template <class T>
+struct GoldenBracket
+{
+    template <class B>
+    static inline void SHIFT2( B& a, B& b, B c )
+    {
+	a = b;
+	b = c;
+    }
+
+    template <class B>
+    static inline void SHIFT3( B& a, B& b, B& c, B d )
+    {
+	a = b;
+	b = c;
+	c = d;
+    }
+
+    static T findMin( boost::function<T (double)> f, double ax, double bx, double cx, double eps )
+    {
+	// implementation from numerical recipies
+	const double R = 0.6180339;
+	const double C = (1.0-R);
+	T f1,f2;
+	double x0,x1,x2,x3;
+
+	x0 = ax;
+	x3 = cx;
+	if( fabs(cx-bx) > fabs(bx-ax) )
+	{
+	    x1 = bx;
+	    x2 = bx + C*(cx-bx);
+	}
+	else
+	{
+	    x2 = bx;
+	    x1 = bx - C*(bx-ax);
+	}
+	f1 = f(x1);
+	f2 = f(x2);
+	while (fabs(x3-x0) > eps*(fabs(x1)+fabs(x2))) 
+	{
+	    if (f2 < f1) {
+		SHIFT3(x0,x1,x2,R*x1+C*x3);
+		SHIFT2(f1,f2,f(x2));
+	    } 
+	    else 
+	    {
+		SHIFT3(x3,x2,x1,R*x2+C*x0);
+		SHIFT2(f2,f1,f(x1));
+	    }
+	}
+	if (f1 < f2) 
+	{
+	    return f1;
+	} 
+	else 
+	{
+	    return f2;
+	}
+    }
+};
 
 template <class _Adapter, class _FindPairs>
 class Trimmed {
+    struct Result
+    {
+	const static double gamma = 2.0;
+
+	size_t iter;
+	double mse;
+	double mse_diff;
+	double d_box;
+	double overlap;
+	Eigen::Transform3d C_global2globalnew;
+
+	double optFunc() const { return mse/pow(overlap, 1.0+gamma); }
+	bool operator< (const Result& other) const { return optFunc() < other.optFunc(); }
+	double operator+ (const Result& other) const { return optFunc() + other.optFunc(); }
+    };
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff )
+    {
+	const double alpha = 0.4, beta = 1.0, eps = 0.01;
+
+	typedef Trimmed<_Adapter, _FindPairs> t;
+
+	boost::function<Result (double)> evalfunc =
+		boost::bind( &t::_align, this, measurement, max_iter, min_mse, min_mse_diff, _1 );
+
+	minResult = GoldenBracket<Result>::findMin( 
+		evalfunc,
+		alpha,
+		(alpha + beta)/2.0,
+		beta,
+		eps);
+
+	measurement.applyTransform( minResult.C_global2globalnew );
+    }
+
+    void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double overlap )
+    {
+	minResult = _align( measurement, max_iter, min_mse, min_mse_diff, overlap );
+	measurement.applyTransform( minResult.C_global2globalnew );
+    }
 
     /** performs a single alignment of the measurement to the model.
      * The model needs to be added using addToModel before this call.
@@ -247,39 +358,47 @@ public:
      * @param min_mse - minimum average square distance between points after which to stop
      * @param min_mse_diff - minimum difference in average square distance between points after which to stop
      */
-    void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff )
+    Result _align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double overlap )
     {
+	Result result;
 	Pairs pairs;
-	Eigen::Transform3d C_global2globalnew( Eigen::Transform3d::Identity() );
+	result.C_global2globalnew = Eigen::Transform3d::Identity();
 
-	iter = 0;
-	double d_box = std::numeric_limits<double>::infinity();
-	mse_diff = mse = std::numeric_limits<double>::infinity();
-	double old_mse = mse;
-	while( iter < max_iter && mse > min_mse && mse_diff > min_mse_diff )
+	result.iter = 0;
+	result.overlap = overlap;
+	result.d_box = std::numeric_limits<double>::infinity();
+	result.mse_diff = result.mse = std::numeric_limits<double>::infinity();
+	double old_mse = result.mse;
+	while( result.iter < max_iter && result.mse > min_mse && result.mse_diff > min_mse_diff )
 	{
-	    old_mse = mse;
+	    old_mse = result.mse;
 
 	    pairs.clear();
-	    findPairs.findPairs( measurement, pairs, d_box );
-	    // d_box = pairs.trim( sum );
+	    findPairs.findPairs( measurement, pairs, result.d_box );
+	    const size_t n_po = measurement.size() * result.overlap;
+	    result.d_box = pairs.trim( n_po );
 
 	    Eigen::Transform3d C_globalprev2globalnew = pairs.getTransform();
-	    C_global2globalnew = C_globalprev2globalnew * C_global2globalnew;
-	    measurement.setOffsetTransform( C_global2globalnew );
+	    result.C_global2globalnew = C_globalprev2globalnew * result.C_global2globalnew;
+	    measurement.setOffsetTransform( result.C_global2globalnew );
 
-	    mse = pairs.getMeanSquareError();
-	    mse_diff = old_mse - mse;
+	    result.mse = pairs.getMeanSquareError();
+	    result.mse_diff = old_mse - result.mse;
 
-	    iter++;
-
-	    std::cout << "iter: " << iter
-		    << "\tpairs: " << pairs.size()
-		    << "\tmse: " << mse
-		    << "\tmse_diff: " << mse_diff
-		    << "\td_box: " << d_box
-		    << std::endl;
+	    result.iter++;
 	}
+
+	/*
+	std::cout << "iter: " << result.iter
+	    << "\tpairs: " << pairs.size()
+	    << "\tmse: " << result.mse
+	    << "\tmse_diff: " << result.mse_diff
+	    << "\td_box: " << result.d_box
+	    << "\toverlap: " << result.overlap
+	    << std::endl;
+	    */
+
+	return result;
     }
 
     /** adds the @param model trimesh to the ICP model
@@ -295,18 +414,14 @@ public:
      */
     void clearModel() { findPairs.clear(); }
 
-    size_t getNumIterations() { return iter; }
-    double getMeanSquareError() { return mse; }
-    double getMeanSquareErrorDiff() { return mse_diff; }
-    double getOverlap() { return overlap; }
+    size_t getNumIterations() { return minResult.iter; }
+    double getMeanSquareError() { return minResult.mse; }
+    double getMeanSquareErrorDiff() { return minResult.mse_diff; }
+    double getOverlap() { return minResult.overlap; }
 
 private:
-    size_t iter;
-    double mse;
-    double mse_diff;
-    double overlap;
-
     _FindPairs findPairs;
+    Result minResult;
 };
 
 typedef FindPairsKDTree< VertexEdgeAndNormalNode,

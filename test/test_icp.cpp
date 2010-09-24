@@ -122,15 +122,13 @@ struct ICPTest
 	fm1->setTransform( a_trans );
 	fm2->setTransform( b_trans );
 
-	Serialization so;
-	so.serialize( env.get(), "/tmp/test" );
     }
 
     boost::scoped_ptr<Environment> env;
     Pointcloud *mesh, *mesh2;
 };
 
-
+/*
 BOOST_AUTO_TEST_CASE( icp_test1 )
 {
     ICPTest test;
@@ -143,16 +141,20 @@ BOOST_AUTO_TEST_CASE( icp_test1 )
     icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh, 1.0 ) );
     icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5 );
 } 
+*/
 
 BOOST_AUTO_TEST_CASE( icp_test2 )
 {
     ICPTest test;
     test.setTestEnvironment( ICPTest::sine, 
 	    Eigen::Transform3d( Eigen::Transform3d::Identity() ),
-	    Eigen::Translation3d( 0.04,0,0 )
-	    * Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitX()) );
+	    Eigen::Translation3d( 0,0,5.0 )
+	    * Eigen::AngleAxisd( 0.1, Eigen::Vector3d::UnitX()) );
 
     envire::icp::TrimmedKD icp;
     icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh, 1.0 ) );
     icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5 );
+
+    Serialization so;
+    so.serialize( test.env.get(), "/tmp/test" );
 } 
