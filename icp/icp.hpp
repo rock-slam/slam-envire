@@ -311,6 +311,7 @@ class Trimmed {
 	const static double gamma = 2.0;
 
 	size_t iter;
+	size_t pairs;
 	double mse;
 	double mse_diff;
 	double d_box;
@@ -325,10 +326,22 @@ class Trimmed {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff )
+    /** performs an iterative alignment of the measurement to the model.
+     * The model needs to be added using addToModel before this call.
+     * This method performs a golden section search for the optimal overlap
+     * parameters based. The implementation is based on the TrimmedICP
+     * publication by Chetverikov.
+     * 
+     * @param measurement - the pointcloud that needs to be matched
+     * @param max_iter - maximum number of iterations
+     * @param min_mse - minimum average square distance between points after which to stop
+     * @param min_mse_diff - minimum difference in average square distance between points after which to stop
+     * @param alpha - start of interval to search for overlap
+     * @param beta - end of interval to search for overlap
+     * @param eps - accuracy for for searching for the overlap parameters
+     */
+    void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double alpha, double beta, double eps )
     {
-	const double alpha = 0.4, beta = 1.0, eps = 0.01;
-
 	typedef Trimmed<_Adapter, _FindPairs> t;
 
 	boost::function<Result (double)> evalfunc =
@@ -344,12 +357,42 @@ public:
 	measurement.applyTransform( minResult.C_global2globalnew );
     }
 
+    /** performs an iterative alignment of the measurement to the model.
+     * The model needs to be added using addToModel before this call.
+     * 
+     * @param measurement - the pointcloud that needs to be matched
+     * @param max_iter - maximum number of iterations
+     * @param min_mse - minimum average square distance between points after which to stop
+     * @param min_mse_diff - minimum difference in average square distance between points after which to stop
+     * @param overlap - percentage of overlap, range between [0..1]. A value of
+     *                  0.95 will discard 5% of the pairs with the worst matches
+     */
     void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double overlap )
     {
 	minResult = _align( measurement, max_iter, min_mse, min_mse_diff, overlap );
 	measurement.applyTransform( minResult.C_global2globalnew );
     }
 
+    /** adds the @param model pointcloud to the ICP model
+     * 
+     * @param model - model to be added
+     */
+    void addToModel( _Adapter model )
+    {
+	findPairs.addModel( model );
+    }
+    
+    /** resets the model 
+     */
+    void clearModel() { findPairs.clear(); }
+
+    size_t getNumIterations() { return minResult.iter; }
+    double getMeanSquareError() { return minResult.mse; }
+    double getMeanSquareErrorDiff() { return minResult.mse_diff; }
+    double getOverlap() { return minResult.overlap; }
+    size_t getPairs() { return minResult.pairs; }
+
+private:
     /** performs a single alignment of the measurement to the model.
      * The model needs to be added using addToModel before this call.
      * 
@@ -357,6 +400,8 @@ public:
      * @param max_iter - maximum number of iterations
      * @param min_mse - minimum average square distance between points after which to stop
      * @param min_mse_diff - minimum difference in average square distance between points after which to stop
+     * @param overlap - percentage of overlap, range between [0..1]. A value of
+     *                  0.95 will discard 5% of the pairs with the worst matches
      */
     Result _align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double overlap )
     {
@@ -376,7 +421,10 @@ public:
 	    pairs.clear();
 	    findPairs.findPairs( measurement, pairs, result.d_box );
 	    const size_t n_po = measurement.size() * result.overlap;
-	    result.d_box = pairs.trim( n_po );
+	    result.d_box = pairs.trim( n_po ) * 2.0;
+	    result.pairs = pairs.size();
+	    if( result.pairs < Pairs::MIN_PAIRS )
+		return result;
 
 	    Eigen::Transform3d C_globalprev2globalnew = pairs.getTransform();
 	    result.C_global2globalnew = C_globalprev2globalnew * result.C_global2globalnew;
@@ -386,10 +434,11 @@ public:
 	    result.mse_diff = old_mse - result.mse;
 
 	    result.iter++;
-	}
 
-	/*
-	std::cout << "iter: " << result.iter
+	    /*
+	std::cout
+	    << "points: " << measurement.size()
+	    << "\titer: " << result.iter
 	    << "\tpairs: " << pairs.size()
 	    << "\tmse: " << result.mse
 	    << "\tmse_diff: " << result.mse_diff
@@ -397,29 +446,16 @@ public:
 	    << "\toverlap: " << result.overlap
 	    << std::endl;
 	    */
+	}
+	/*
+	std::cout
+	    << std::endl;
+	    */
+
 
 	return result;
     }
 
-    /** adds the @param model trimesh to the ICP model
-     * 
-     * @param model - model to be added
-     */
-    void addToModel( _Adapter model )
-    {
-	findPairs.addModel( model );
-    }
-    
-    /** resets the model 
-     */
-    void clearModel() { findPairs.clear(); }
-
-    size_t getNumIterations() { return minResult.iter; }
-    double getMeanSquareError() { return minResult.mse; }
-    double getMeanSquareErrorDiff() { return minResult.mse_diff; }
-    double getOverlap() { return minResult.overlap; }
-
-private:
     _FindPairs findPairs;
     Result minResult;
 };

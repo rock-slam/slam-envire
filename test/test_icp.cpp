@@ -153,7 +153,9 @@ BOOST_AUTO_TEST_CASE( icp_test2 )
 
     envire::icp::TrimmedKD icp;
     icp.addToModel( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh, 1.0 ) );
-    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5 );
+
+    double alpha = 0.4, beta = 1.0, eps = 0.05;
+    icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5, alpha, beta, eps );
 
     Serialization so;
     so.serialize( test.env.get(), "/tmp/test" );
