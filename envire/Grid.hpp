@@ -11,8 +11,8 @@
 #include <stdint.h>
 
 //#include "cpl_string.h"
-#include "gdal_priv.h"
-#include "ogr_spatialref.h"
+#include <gdal/gdal_priv.h>
+#include <gdal/ogr_spatialref.h>
 
 #include "boost/multi_array.hpp"
 
