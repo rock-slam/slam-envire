@@ -75,6 +75,7 @@ namespace envire
 	//data[height][width]
 	//the intern memory layout is p = (data.data())[width*row + col]
 	ArrayType& getGridData(){return getGridData(getBands().front());};
+	const ArrayType& getGridData() const {return getGridData(getBands().front());};
 	ArrayType& getGridData( const std::string& key )
 	{
 	    ArrayType& data( getData<ArrayType>(key) );
@@ -82,11 +83,29 @@ namespace envire
 	    return data;
 	};
 
+	const ArrayType& getGridData( const std::string& key ) const
+	{
+	    return getData<ArrayType>(key);
+	};
+	
 	virtual const std::string& getClassName() const {return className;};
 	virtual const std::vector<std::string>& getBands() const {return bands;};
 	
 	Grid* clone();
+
+	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
+
+	bool inGrid( double x, double y) const
+	{
+	    return (x >= 0) && (x < width) && (y >= 0) && (y < height); 
+	};
 	
+	size_t getWidth() const { return width; };
+	size_t getHeight() const { return height; };
+
+	double getScaleX() const { return scalex; };
+	double getScaleY() const { return scaley; };
+
 	unsigned int getGridDepth(){return sizeof(T);};	//returns the depth per grid element
       protected:
 	//saves the GridData with a specific key to a GTiff 
@@ -318,6 +337,22 @@ namespace envire
 	readGridData(string_vector,path);
     }
 
+    //returns the gird indices if the coordinates are on the grid
+    template<class T>bool Grid<T>::toGrid( double x, double y, size_t& m, size_t& n ) const
+    {
+	int am = floor(x/scalex);
+	int an = floor(y/scaley);
+	if( 0 <= am && am < width && 0 <= an && an < height )
+	{
+	    m = am;
+	    n = an;
+	    return true;
+	}
+	else {
+	    return false;
+	}
+    }
+        
     template<class T> GDALDataType Grid<T>::getGDALDataTypeOfArray()
     {
       if(typeid(T) == typeid(unsigned char))
