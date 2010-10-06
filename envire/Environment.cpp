@@ -302,6 +302,9 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 {
     if( !node->isAttached() )
 	attachItem( node );
+    
+    if( !map->isAttached() )
+	attachItem(map);
 
     for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
     {
