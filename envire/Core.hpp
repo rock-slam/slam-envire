@@ -32,10 +32,16 @@ namespace envire
     {
     public:
 	virtual ~HolderBase() {};
-	virtual void* getData() = 0;
+	virtual void* getData() const = 0;
 	template <typename T> T& get()
 	{
 	    return *static_cast<T*>( getData() );
+	}
+
+    	template <typename T> 
+    	const T& get() const
+	{
+	    return *static_cast<const T*>( getData() );
 	}
     };
 
@@ -59,7 +65,7 @@ namespace envire
 	    delete ptr;
 	};
 
-	void* getData() 
+	void* getData() const
 	{
 	    return ptr;
 	}
@@ -315,7 +321,31 @@ namespace envire
 
 	    return data_map[type]->get<T>();
 	};
+	
+	/** 
+	* For a given key, return the metadata associated with it. 
+	* If the data does not exist, a std::out_of_range is thrown.
+	*/
+	template <typename T>
+	const T& getData(const std::string& type) const
+	{
+	    return data_map.at(type)->get<T>();
+	    /*
+	    if( typeid(*data_map[type]) != typeid(Holder<T>) )
+	    {
+		std::cerr 
+		    << "type mismatch. type should be " 
+		    << typeid(data_map[type]).name() 
+		    << " but is " 
+		    << typeid(Holder<T>).name()
+		    << std::endl;
+		throw std::runtime_error("data type mismatch.");
+	    }
+	    */
+	};
+
     };
+
 
     /** This is a special type of layer that describes a map in a cartesian
      * space. These maps have the special feature that they are managed in a
