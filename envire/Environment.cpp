@@ -336,6 +336,8 @@ bool Environment::addInput(Operator* op, Layer* input)
 	attachItem( input );
     
     operatorGraphInput.insert( make_pair(op, input) );
+    
+    return true;
 }
 
 bool Environment::addOutput(Operator* op, Layer* output)
@@ -344,6 +346,8 @@ bool Environment::addOutput(Operator* op, Layer* output)
 	attachItem( output );
 
     operatorGraphOutput.insert( make_pair(op, output) );
+
+    return true;
 }
 
 bool Environment::removeInput(Operator* op, Layer* input)
@@ -355,6 +359,8 @@ bool Environment::removeInput(Operator* op, Layer* input)
 	else
 	    ++it;
     }
+    
+    return true;
 }
 
 bool Environment::removeOutput(Operator* op, Layer* output)
@@ -366,6 +372,8 @@ bool Environment::removeOutput(Operator* op, Layer* output)
 	else
 	    ++it;
     }
+    
+    return true;
 }
 
 std::list<Layer*> Environment::getInputs(Operator* op)
@@ -397,6 +405,8 @@ Operator* Environment::getGenerator(Layer* output)
 	if( it->second == output )
 	    return it->first;
     }
+    
+    return NULL;
 }
 
 void Environment::updateOperators(){
