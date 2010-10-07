@@ -11,8 +11,8 @@
 
 #include<kdtree++/kdtree.hpp>
 
-#include<envire/Core.hpp>
-#include<envire/Pointcloud.hpp>
+#include "../envire/Core.hpp"
+#include "../envire/Pointcloud.hpp"
 
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_real.hpp>
