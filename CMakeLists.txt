@@ -2,11 +2,16 @@ project(ENVIRE)
 set(PROJECT_VERSION 1.0)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-add_definitions("-Wall")
 
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
 
+# Enable -Wall for compilers that know it
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-Wall" CXX_SUPPORTS_WALL)
+if (CXX_SUPPORTS_WALL)
+    add_definitions (-Wall)
+endif (CXX_SUPPORTS_WALL)
 
 find_package(KDTree REQUIRED)
 include_directories(${KDTREE_INCLUDE_DIRS})
