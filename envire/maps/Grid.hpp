@@ -342,7 +342,7 @@ namespace envire
     {
 	int am = floor(x/scalex);
 	int an = floor(y/scaley);
-	if( 0 <= am && am < width && 0 <= an && an < height )
+	if( 0 <= am && am < static_cast<int>(width) && 0 <= an && an < static_cast<int>(height) )
 	{
 	    m = am;
 	    n = an;
