@@ -104,6 +104,8 @@ bool MergePointcloud::updateAll(){
 	    }
 	}
     }
+
+    return true;
 }
 
 }//namespace

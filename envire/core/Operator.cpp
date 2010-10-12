@@ -16,11 +16,13 @@ Operator::Operator(Serialization& so)
 bool Operator::addInput( Layer* layer ) 
 {
     env->addInput( this, layer );
+    return true;
 }
 
 bool Operator::addOutput( Layer* layer ) 
 {
     env->addOutput( this, layer );
+    return true;
 }
 
 void Operator::removeInput( Layer* layer )

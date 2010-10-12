@@ -11,7 +11,7 @@ using namespace envire;
 const std::string EnvironmentItem::className = "envire::EnvironmentItem";
 
 EnvironmentItem::EnvironmentItem()
-    : env(NULL), unique_id( Environment::ITEM_NOT_ATTACHED )
+    : unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
 {
 }
 
@@ -336,7 +336,7 @@ bool Environment::addInput(Operator* op, Layer* input)
 	attachItem( input );
     
     operatorGraphInput.insert( make_pair(op, input) );
-    
+
     return true;
 }
 
@@ -359,7 +359,7 @@ bool Environment::removeInput(Operator* op, Layer* input)
 	else
 	    ++it;
     }
-    
+
     return true;
 }
 
@@ -372,7 +372,7 @@ bool Environment::removeOutput(Operator* op, Layer* output)
 	else
 	    ++it;
     }
-    
+
     return true;
 }
 
@@ -405,7 +405,7 @@ Operator* Environment::getGenerator(Layer* output)
 	if( it->second == output )
 	    return it->first;
     }
-    
+
     return NULL;
 }
 

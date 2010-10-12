@@ -272,7 +272,8 @@ BOOST_AUTO_TEST_CASE( grid_access )
 
     for(size_t i=0;i<probes.size();i++)
     {
-	bool r = ga.getElevation( probes[i] );
+	bool r;
+        r = ga.getElevation( probes[i] );
 	// TODO: actually check the values here
     }
 }

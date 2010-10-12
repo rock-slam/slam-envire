@@ -265,7 +265,7 @@ bool ScanMeshing::updateAll()
         prev_idx_line = tmp;
     }
 
-    for(int i=0;i<markers.size();i++)
+    for(size_t i=0;i<markers.size();i++)
     {
 	std::cout << "marker " << i << " center: " << markers[i].center.transpose() << " pixel: " << markers[i].points.size() << std::endl;
     }

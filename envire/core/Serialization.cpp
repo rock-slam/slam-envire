@@ -459,12 +459,16 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 bool SerializationImpl::addNodeToMap( const std::string &key, int value_index )
 {
     addNodeToMap( current_node, key, value_index );
+
+    return true;
 }
 
 bool SerializationImpl::addNodeToMap( int map_index, const std::string &key, int value_index )
 {
     int key_index = addScalar( key, YAML_PLAIN_SCALAR_STYLE );
     yaml_document_append_mapping_pair(&document, map_index, key_index, value_index);
+
+    return true;
 }
 
 int SerializationImpl::addSequenceNode(yaml_sequence_style_t style)
@@ -479,7 +483,7 @@ int SerializationImpl::addMapNode(yaml_mapping_style_t style)
 
 int SerializationImpl::addToSequence(int seq_id, int node_id)
 {
-    yaml_document_append_sequence_item( &document, seq_id, node_id );
+    return yaml_document_append_sequence_item( &document, seq_id, node_id );
 }
 
 int SerializationImpl::findNodeInMap( const std::string &key )

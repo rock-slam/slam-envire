@@ -50,6 +50,8 @@ bool Projection::updateAll()
     updateElevationMap();
     interpolateMap(ElevationGrid::ELEVATION_MAX);
     //updateTraversibilityMap();
+
+    return true;
 }
 
 bool Projection::updateElevationMap()
@@ -73,7 +75,7 @@ bool Projection::updateElevationMap()
 
 	std::vector<Eigen::Vector3d>& points(mesh->vertices);
 	
-	for(int i=0;i<points.size();i++)
+	for(size_t i=0;i<points.size();i++)
 	{
 	    Eigen::Vector3d p = env->getRootNode()->getTransform() * C_m2g * points[i];
 
@@ -110,9 +112,9 @@ bool Projection::interpolateMap(const std::string& type)
     size_t width = data.shape()[0]; 
     size_t height = data.shape()[1]; 
     
-    for(int x=0;x<width;x++)
+    for(size_t x=0;x<width;x++)
     {
-	for(int y=0;y<height;y++)
+	for(size_t y=0;y<height;y++)
 	{
 	    if( fabs( data[x][y] ) != std::numeric_limits<double>::infinity() )
 	    {
@@ -122,9 +124,9 @@ bool Projection::interpolateMap(const std::string& type)
 	}
     }
 
-    for(int x=0;x<width;x++)
+    for(size_t x=0;x<width;x++)
     {
-	for(int y=0;y<height;y++)
+	for(size_t y=0;y<height;y++)
 	{
 	    if( fabs( data[x][y] ) == std::numeric_limits<double>::infinity() )
 	    {

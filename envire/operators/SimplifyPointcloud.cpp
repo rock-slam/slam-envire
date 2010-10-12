@@ -80,7 +80,7 @@ bool SimplifyPointcloud::updateAll()
     if( pc_in->hasData( Pointcloud::VERTEX_NORMAL ) )
     {
 	std::vector<Eigen::Vector3d> &normals( pc_in->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
-	for( int i=0;i<pc_in->vertices.size();i++ )
+	for( size_t i=0;i<pc_in->vertices.size();i++ )
 	{
 	    Eigen::Vector3d &vertex(pc_in->vertices[i]);
 	    Eigen::Vector3d &normal(normals[i]);
@@ -89,7 +89,7 @@ bool SimplifyPointcloud::updateAll()
     }
     else
     {
-	for( int i=0;i<pc_in->vertices.size();i++ )
+	for( size_t i=0;i<pc_in->vertices.size();i++ )
 	{
 	    Eigen::Vector3d &vertex(pc_in->vertices[i]);
 	    points.push_back( boost::make_tuple( i, Point(vertex.x(), vertex.y(), vertex.z()), Vector() ) );
@@ -147,7 +147,7 @@ bool SimplifyPointcloud::updateAll()
 
     // copy back into pointcloud structure
     std::vector<Eigen::Vector3d> &normals( pc_out->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
-    for( int i=0;i<points.size();i++ )
+    for( size_t i=0;i<points.size();i++ )
     {
 	Point &vertex( points[i].get<1>() );
 	Vector &normal( points[i].get<2>() );
@@ -157,6 +157,7 @@ bool SimplifyPointcloud::updateAll()
     }
     std::cout << "copied points " << std::endl;
 
+    return true;
 }
 
 

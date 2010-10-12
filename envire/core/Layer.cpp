@@ -83,6 +83,8 @@ bool Layer::detachFromOperator()
 {
     if( isGenerated() ) 
 	return env->removeInput( getGenerator(), this );
+
+    return true;
 }
 
 bool Layer::isGenerated() const 

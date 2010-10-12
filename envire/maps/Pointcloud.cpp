@@ -73,7 +73,7 @@ bool Pointcloud::writeText(const std::string& path)
 	return false;
     }
 
-    for(int i=0;i<vertices.size();i++)
+    for(size_t i=0;i<vertices.size();i++)
     {
 	data << vertices[i].x() << " " << vertices[i].y() << " " << vertices[i].z() << std::endl;
     }

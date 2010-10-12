@@ -80,7 +80,7 @@ void PlyFile::list_property_begin_callback(SizeType size)
 template <typename SizeType, typename ScalarType>
 void PlyFile::list_property_element_callback(ScalarType scalar)
 {
-    if( scalar >= pco_->vertices.size() )
+    if( static_cast<size_t>(scalar) >= pco_->vertices.size() )
 	std::cerr << "vertex_index " << scalar << " is out of range!" << std::endl;
 
     switch( triangle_idx__ )
