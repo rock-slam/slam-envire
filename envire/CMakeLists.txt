@@ -20,15 +20,10 @@ set(ENVMAP_SRCS
     tools/GridAccess.cpp
     )
 
-if( CGAL_FOUND )
-    set(ENVMAP_SRCS ${ENVMAP_SRCS}
-    operators/SimplifyPointcloud.cpp
-    )
-endif( CGAL_FOUND )
-
 if( TAUCS_FOUND )
     set(ENVMAP_SRCS ${ENVMAP_SRCS}
     operators/SurfaceReconstruction.cpp
+    operators/SimplifyPointcloud.cpp
     )
 endif( TAUCS_FOUND )
 
