@@ -2,9 +2,9 @@
 #include "icp.hpp"
 
 #include "envire/Core.hpp"
-#include "envire/TriMesh.hpp"
-#include "envire/MultiLevelSurfaceGrid.hpp"
-#include "envire/MLSProjection.hpp"
+#include "envire/maps/TriMesh.hpp"
+#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/operators/MLSProjection.hpp"
 
 #include "boost/scoped_ptr.hpp"
 

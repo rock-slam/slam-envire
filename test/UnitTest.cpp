@@ -2,18 +2,18 @@
 #include <Eigen/LU>
 
 #include "envire/Core.hpp"
-#include "envire/LaserScan.hpp"
-#include "envire/TriMesh.hpp"
-#include "envire/ScanMeshing.hpp"
+#include "envire/maps/LaserScan.hpp"
+#include "envire/maps/TriMesh.hpp"
+#include "envire/operators/ScanMeshing.hpp"
 
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include "envire/GridAccess.hpp"
-#include "envire/Grids.hpp"
+#include "envire/tools/GridAccess.hpp"
+#include "envire/maps/Grids.hpp"
 
-#include "envire/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MultiLevelSurfaceGrid.hpp"
 
 #include "base/timemark.h"
    

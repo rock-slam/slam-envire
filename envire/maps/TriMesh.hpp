@@ -1,8 +1,9 @@
 #ifndef __TRIMESH_HPP__
 #define __TRIMESH_HPP__
 
-#include "Core.hpp"
-#include "Pointcloud.hpp"
+#include <envire/Core.hpp>
+#include <envire/maps/Pointcloud.hpp>
+
 #include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>

@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_GRIDACCESS__
 #define __ENVIRE_GRIDACCESS__
 
-#include "Core.hpp"
+#include <envire/Core.hpp>
 #include <boost/shared_ptr.hpp>
 
 

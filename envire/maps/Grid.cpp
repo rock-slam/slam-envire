@@ -40,9 +40,6 @@ void GridBase::unserialize(Serialization& so)
 
 }
 
-/** @return true if the given coordinates x and y are on the grid
- * array indices are returned in @param m and @param n
- */
 bool GridBase::toGrid( double x, double y, size_t& m, size_t& n )
 {
     size_t am = floor(x/scalex);

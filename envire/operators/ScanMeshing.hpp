@@ -1,9 +1,9 @@
 #ifndef __SCANMESHING_HPP__
 #define __SCANMESHING_HPP__
 
-#include "Core.hpp" 
-#include "LaserScan.hpp" 
-#include "TriMesh.hpp" 
+#include <envire/Core.hpp>
+#include <envire/maps/LaserScan.hpp>
+#include <envire/maps/TriMesh.hpp>
 
 namespace envire {
     class ScanMeshing : public Operator

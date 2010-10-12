@@ -1,13 +1,13 @@
 #include "Core.hpp"
 
-#include "LaserScan.hpp"
-#include "TriMesh.hpp"
-#include "ScanMeshing.hpp"
-#include "Projection.hpp"
-#include "MLSProjection.hpp"
-#include "Pointcloud.hpp"
-#include "Grids.hpp"
-#include "MultiLevelSurfaceGrid.hpp"
+#include "maps/LaserScan.hpp"
+#include "maps/TriMesh.hpp"
+#include "maps/Pointcloud.hpp"
+#include "maps/Grids.hpp"
+#include "maps/MultiLevelSurfaceGrid.hpp"
+#include "operators/ScanMeshing.hpp"
+#include "operators/Projection.hpp"
+#include "operators/MLSProjection.hpp"
 
 using namespace envire;
 

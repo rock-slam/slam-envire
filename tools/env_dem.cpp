@@ -1,11 +1,11 @@
 #include <Eigen/Geometry>
-#include "icp.hpp"
+#include "icp/icp.hpp"
 
 #include "envire/Core.hpp"
-#include "envire/TriMesh.hpp"
-#include "envire/ScanMeshing.hpp"
-#include "envire/Grids.hpp"
-#include "envire/Projection.hpp"
+#include "envire/maps/TriMesh.hpp"
+#include "envire/operators/ScanMeshing.hpp"
+#include "envire/maps/Grids.hpp"
+#include "envire/operators/Projection.hpp"
 
 #include "boost/scoped_ptr.hpp"
 

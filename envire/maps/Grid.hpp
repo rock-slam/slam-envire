@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_GRID_HPP__
 #define __ENVIRE_GRID_HPP__
 
-#include "Core.hpp"
+#include <envire/Core.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>

@@ -1,5 +1,5 @@
 #include "envire/Core.hpp"
-#include "envire/TriMesh.hpp"
+#include "envire/maps/TriMesh.hpp"
 #include "boost/scoped_ptr.hpp"
 
 using namespace envire;

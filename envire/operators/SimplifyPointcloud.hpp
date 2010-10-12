@@ -1,8 +1,8 @@
 #ifndef __ENVIRE_SIMPLIFYPOINTCLOUD_HPP__
 #define __ENVIRE_SIMPLIFYPOINTCLOUD_HPP__
 
-#include "Core.hpp" 
-#include "Pointcloud.hpp" 
+#include <envire/Core.hpp>
+#include <envire/maps/Pointcloud.hpp>
 
 namespace envire {
     class SimplifyPointcloud : public Operator

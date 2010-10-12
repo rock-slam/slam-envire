@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_POINTCLOUD_HPP__
 #define __ENVIRE_POINTCLOUD_HPP__
 
-#include "Core.hpp"
+#include <envire/Core.hpp>
 #include <Eigen/Core>
 
 namespace envire {

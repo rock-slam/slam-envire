@@ -1,7 +1,7 @@
 #ifndef __MULTILEVELSURFACEGRID_HPP__
 #define __MULTILEVELSURFACEGRID_HPP__
 
-#include "Grid.hpp"
+#include <envire/maps/Grid.hpp>
 
 namespace envire
 {  

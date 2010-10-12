@@ -1,9 +1,9 @@
 #ifndef __ENVIRE_PROJECTION_HPP__
 #define __ENVIRE_PROJECTION_HPP__
 
-#include "Core.hpp" 
-#include "TriMesh.hpp" 
-#include "Grids.hpp" 
+#include <envire/Core.hpp>
+#include <envire/maps/TriMesh.hpp>
+#include <envire/maps/Grids.hpp>
 
 #include <Eigen/Core>
 

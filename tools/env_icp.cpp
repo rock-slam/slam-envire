@@ -2,8 +2,8 @@
 #include "icp.hpp"
 
 #include "envire/Core.hpp"
-#include "envire/TriMesh.hpp"
-#include "envire/ScanMeshing.hpp"
+#include "envire/maps/TriMesh.hpp"
+#include "envire/operators/ScanMeshing.hpp"
 
 #include "boost/scoped_ptr.hpp"
 

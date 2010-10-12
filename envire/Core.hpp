@@ -382,8 +382,8 @@ namespace envire
      * The links between operators and layers form a graph, which can represent
      * convenient operation chains. 
      *
-     * E.g. <raw_data> -> [convert to map] -> <map> -> [merge into global map]
-     * with <map> and [operator]
+     * E.g. raw_data -> [convert to map] -> map -> [merge into global map]
+     * with map and [operator]
      */
     class Operator : public EnvironmentItem
     {

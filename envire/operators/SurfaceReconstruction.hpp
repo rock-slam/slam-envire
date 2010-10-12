@@ -1,9 +1,9 @@
 #ifndef __ENVIRE_SURFACERECONSTRUCTION_HPP__
 #define __ENVIRE_SURFACERECONSTRUCTION_HPP__
 
-#include "Core.hpp" 
-#include "Pointcloud.hpp" 
-#include "TriMesh.hpp" 
+#include <envire/Core.hpp>
+#include <envire/maps/Pointcloud.hpp>
+#include <envire/maps/TriMesh.hpp>
 
 namespace envire {
     class SurfaceReconstruction : public Operator

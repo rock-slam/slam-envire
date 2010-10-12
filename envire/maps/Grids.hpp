@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_GRIDS_HPP__
 #define __ENVIRE_GRIDS_HPP__
 
-#include "Grid.hpp"
+#include <envire/maps/Grid.hpp>
 
 namespace envire
 {  

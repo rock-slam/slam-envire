@@ -1,6 +1,6 @@
-#include "icp/icp.hpp"
-#include "envire/Core.hpp"
-#include "envire/TriMesh.hpp"
+#include <icp/icp.hpp>
+#include <envire/Core.hpp>
+#include <envire/maps/TriMesh.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

@@ -1,9 +1,9 @@
 #ifndef __ENVIRE_MLSPROJECTION_HPP__
 #define __ENVIRE_MLSPROJECTION_HPP__
 
-#include "Core.hpp" 
-#include "TriMesh.hpp" 
-#include "MultiLevelSurfaceGrid.hpp" 
+#include <envire/Core.hpp>
+#include <envire/maps/TriMesh.hpp>
+#include <envire/maps/MultiLevelSurfaceGrid.hpp>
 
 #include <Eigen/Core>
 

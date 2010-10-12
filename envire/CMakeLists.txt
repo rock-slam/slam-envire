@@ -1,0 +1,48 @@
+set(ENVMAP_SRCS
+    core/Environment.cpp
+    core/FrameNode.cpp
+    core/Layer.cpp
+    core/Operator.cpp
+    core/Serialization.cpp
+    core/SerializationFactory.cpp
+    core/EventListener.cpp
+    maps/TriMesh.cpp
+    maps/Grid.cpp
+    maps/Grids.cpp
+    maps/Pointcloud.cpp
+    maps/LaserScan.cpp
+    maps/MultiLevelSurfaceGrid.cpp
+    operators/Projection.cpp
+    operators/MLSProjection.cpp
+    operators/MergePointcloud.cpp
+    operators/ScanMeshing.cpp
+    tools/PlyFile.cpp
+    tools/GridAccess.cpp
+    )
+
+if( CGAL_FOUND )
+    set(ENVMAP_SRCS ${ENVMAP_SRCS}
+    operators/SimplifyPointcloud.cpp
+    )
+endif( CGAL_FOUND )
+
+if( TAUCS_FOUND )
+    set(ENVMAP_SRCS ${ENVMAP_SRCS}
+    operators/SurfaceReconstruction.cpp
+    )
+endif( TAUCS_FOUND )
+
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/envire)
+
+add_library(envire SHARED ${ENVMAP_SRCS})
+target_link_libraries(envire 
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${LIBYAML_LIBRARIES}
+    ${CGAL_LIBRARIES}
+    ${PLY_TYPES_LIBRARIES}
+    ${GDAL_LIBRARIES} )
+
+install(TARGETS envire
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)
+install(DIRECTORY . DESTINATION include/envire FILES_MATCHING PATTERN "*.hpp")

@@ -1,6 +1,6 @@
 #include "Core.hpp"
-#include "Pointcloud.hpp"
-#include "PlyFile.hpp"
+#include "maps/Pointcloud.hpp"
+#include "tools/PlyFile.hpp"
 
 #include <fstream>
 

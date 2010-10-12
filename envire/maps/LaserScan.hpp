@@ -2,7 +2,7 @@
 #define __LASERSCAN_HPP__
 
 #include <Eigen/Core>
-#include "Core.hpp"
+#include <envire/Core.hpp>
 #include <vector>
 
 namespace envire {

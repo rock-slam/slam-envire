@@ -1,8 +1,8 @@
-#include "GridAccess.hpp"
+#include "tools/GridAccess.hpp"
 
-#include "Grids.hpp"
-#include "Pointcloud.hpp"
-#include "MultiLevelSurfaceGrid.hpp"
+#include "maps/Grids.hpp"
+#include "maps/Pointcloud.hpp"
+#include "maps/MultiLevelSurfaceGrid.hpp"
 #include <Eigen/LU>
 
 #include<kdtree++/kdtree.hpp>

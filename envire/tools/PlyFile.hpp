@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_PLYFILE_HPP__
 #define __ENVIRE_PLYFILE_HPP__
 
-#include "TriMesh.hpp"
+#include <envire/maps/TriMesh.hpp>
 #include <tr1/functional>
 
 #include <ply.hpp>
