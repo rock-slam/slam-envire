@@ -82,8 +82,10 @@ void Environment::publishChilds(EventListener *evl, FrameNode *parent)
     }
 }
 
-void Environment::addEventListener(EventListener *evl) 
+void Environment::addEventListener(EventListener *listener) 
 {
+    EventListener* evl = listener->getHandler();
+
     //new listener was added, iterate over all items and 
     //attach them at the listener
     for(itemListType::iterator it = items.begin(); it != items.end(); it++) 

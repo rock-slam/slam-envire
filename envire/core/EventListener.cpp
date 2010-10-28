@@ -1,6 +1,11 @@
 #include "Core.hpp"
 
 namespace envire {
+
+EventListener* EventListener::getHandler()
+{
+    return this;
+}
   
 void EventListener::childAdded ( FrameNode* parent, FrameNode* child )
 {

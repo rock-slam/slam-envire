@@ -4,7 +4,6 @@ tags
 Doxyfile
 *.pc
 *.orig
-core
 CMakeFiles
 CMakeCache.txt
 *.kdev4

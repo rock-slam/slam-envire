@@ -423,6 +423,9 @@ namespace envire
     class EventListener 
     {
 	public:
+	    virtual EventListener* getHandler();
+
+	public:
 	    virtual void itemAttached(EnvironmentItem *item);
 	    virtual void itemDetached(EnvironmentItem *item);
 	    virtual void childAdded(FrameNode* parent, FrameNode* child);
