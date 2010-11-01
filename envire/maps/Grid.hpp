@@ -95,6 +95,19 @@ namespace envire
 
 	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
 
+        T getFromRaster(std::string const& band, size_t x, size_t y) const
+        {
+            return getGridData(band)[y][x];
+        } 
+
+        T get(std::string const& band, double x, double y) const
+        {
+            size_t raster_x, raster_y;
+            if (!toGrid(x, y, raster_x, raster_y))
+                throw std::runtime_error("provided coordinates are out of the grid");
+            return getFromRaster(band, raster_x, raster_y);
+        } 
+
 	bool inGrid( double x, double y) const
 	{
 	    return (x >= 0) && (x < width) && (y >= 0) && (y < height); 

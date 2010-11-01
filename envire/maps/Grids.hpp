@@ -50,6 +50,9 @@ namespace envire
       ~ElevationGrid(){};
       virtual const std::string& getClassName() const {return className;};
       virtual const std::vector<std::string>& getBands() const {return bands;};
+
+      double get(double x, double y) const
+      { return Grid<double>::get(ELEVATION, x, y); }
       
       //read all bands from one file
     /*  virtual void readMap(const std::string& path)
