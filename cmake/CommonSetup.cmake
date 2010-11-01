@@ -80,8 +80,3 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 # Install the scripts
 #install(DIRECTORY ${PROJECT_SOURCE_DIR}/scripts/ DESTINATION scripts)
 
-# Generate and install the pkg-config file
-configure_file(${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}.pc.in
-		${PROJECT_BINARY_DIR}/configuration/${PROJECT_NAME}.pc @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/configuration/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
-
