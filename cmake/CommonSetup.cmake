@@ -41,9 +41,6 @@ if(DOXYGEN_EXECUTABLE)
     CONFIGURE_FILE(${PROJECT_SOURCE_DIR}/doc/Doxyfile.in ${PROJECT_SOURCE_DIR}/doc/Doxyfile @ONLY)
     # documentation can be generated with 'make doc'
     ADD_CUSTOM_TARGET(doc ${DOXYGEN_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
-    # generates documentation with cmake
-    # QUIET mode is enabled in the configuration file (QUIET = YES)
-    EXECUTE_PROCESS(COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/Doxyfile )
 endif(DOXYGEN_EXECUTABLE)
 ##### End doxygen support ###################################################
 
