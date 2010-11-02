@@ -5,7 +5,7 @@ using namespace envire;
 const std::string MLSProjection::className = "envire::MLSProjection";
 
 MLSProjection::MLSProjection()
-    : gapSize( 1.0 ), thickness( 0.10 )
+    : gapSize( 1.0 ), thickness( 0.05 )
 {
 }
 
@@ -40,32 +40,45 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
     MultiLevelSurfaceGrid::iterator it = grid->beginCell( m, n );
     while( it.isValid() )
     {
+	// check for all surface patches in the cell, if the new point can be
+	// part of that cell or if it needs to create a new cell
 	MultiLevelSurfaceGrid::SurfacePatch &p( *it );
-	if( (p.mean - p.height - gapSize - p.stdev - stdev) < mean 
-		&& (p.mean + gapSize + p.stdev + stdev) > mean )
+	const double delta_dev = sqrt( p.stdev * p.stdev + stdev * stdev );
+
+	if( (p.mean - p.height - gapSize - delta_dev) < mean 
+		&& (p.mean + gapSize + delta_dev) > mean )
 	{
-	    if( p.horizontal && 
-		    ((p.mean - p.height - thickness - p.stdev - stdev) < mean && 
-		     (p.mean + thickness + p.stdev + stdev) > mean ) )
+	    if( p.horizontal ) 
 	    {
-		double pvar = p.stdev * p.stdev;
-		double var = stdev * stdev;
-		double gain = pvar / (pvar + var);
-		p.mean = p.mean + gain * (mean - p.mean);
-		p.stdev = sqrt((1.0-gain)*pvar);
-	    }
-	    else
-	    {
-		p.horizontal = false;
+		if( (p.mean - p.height - thickness - delta_dev) < mean && 
+			 (p.mean + thickness + delta_dev) > mean )
+		{
+		    // for horizontal patches, perform an update similar to the kalman
+		    // update rule
+		    double pvar = p.stdev * p.stdev;
+		    double var = stdev * stdev;
+		    double gain = pvar / (pvar + var);
+		    p.mean = p.mean + gain * (mean - p.mean);
+		    p.stdev = sqrt((1.0-gain)*pvar);
+		}
+		else
+		{
+		    // convert into a vertical patch element
+		    p.mean += p.stdev;
+		    p.height = 2 * p.stdev; 
+		    p.horizontal = false;
+		}
 	    }
 
+	    // no else here since we could have just been converted to a
+	    // horizontal patch
 	    if( !p.horizontal )
 	    {
 		if( mean > p.mean )
 		{
+		    p.height += ( mean - p.mean );
 		    p.mean = mean;
 		    p.stdev = stdev;
-		    p.height += ( mean - p.mean );
 		}
 		else
 		{
@@ -104,7 +117,7 @@ bool MLSProjection::updateAll()
 	
 	for(size_t i=0;i<points.size();i++)
 	{
-	    Eigen::Vector3d p = env->getRootNode()->getTransform() * C_m2g * points[i];
+	    Eigen::Vector3d p = C_m2g * points[i];
 
 	    size_t x, y;
 	    if( grid->toGrid( p.x(), p.y(), x, y ) )
