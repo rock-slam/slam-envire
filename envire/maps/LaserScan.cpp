@@ -29,6 +29,35 @@ void LaserScan::serialize(Serialization& so)
     writeScan( getMapFileName(so.getMapPath()) );
 }
 
+void LaserScan::addScanLine( double tilt_angle, const base::samples::LaserScan& scan )
+{
+    if( lines.empty() )
+    {
+	// set the scan properties
+	origin_psi = scan.start_angle;
+	delta_psi = scan.angular_resolution;	
+	points_per_line = scan.ranges.size();
+    }
+    else
+    {
+	// check scanline properties
+	if( origin_psi != scan.start_angle )
+	    std::cerr << "[envire] WARNING: laser start angle mismatch" << std::endl;
+	if( delta_psi != scan.angular_resolution )
+	    std::cerr << "[envire] WARNING: laser angular resolution mismatch" << std::endl;
+	if( static_cast<unsigned int>(points_per_line) != scan.ranges.size() )
+	    std::cerr << "[envire] WARNING: laser points per line mismatch" << std::endl; 
+    }
+
+    // copy the scanline
+    scanline_t line;
+    line.delta_phi = tilt_angle;
+    std::copy( scan.ranges.begin(), scan.ranges.end(), std::back_inserter( line.ranges ) );
+    std::copy( scan.remission.begin(), scan.remission.end(), std::back_inserter( line.remissions ) );
+
+    lines.push_back( line );
+}
+
 LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
 {
     if( !node->isAttached() )

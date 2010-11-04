@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <envire/Core.hpp>
 #include <vector>
+#include <base/samples/laser_scan.h>
 
 namespace envire {
 
@@ -44,6 +45,8 @@ namespace envire {
 
         public:
 	    static const std::string className;
+
+	    void addScanLine( double tilt_angle, const base::samples::LaserScan& scan );
 
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	    LaserScan();
