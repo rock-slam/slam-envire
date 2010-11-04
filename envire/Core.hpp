@@ -503,7 +503,7 @@ namespace envire
 	void itemModified(EnvironmentItem* item);
 	
 	template<class T> T getItem(int uniqueId) 
-	    { return reinterpret_cast<T>(items[uniqueId]); };
+	    { return dynamic_cast<T>(items[uniqueId]); };
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
