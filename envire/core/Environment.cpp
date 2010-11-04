@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <Eigen/LU>
 
+#include <memory>
+
 using namespace std;
 using namespace envire;
 
@@ -457,3 +459,16 @@ FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, c
 
     return FrameNode::TransformType( C_tg.inverse() * C_fg );
 }
+
+void Environment::serialize(std::string const& path)
+{
+    std::auto_ptr<Serialization> serializer;
+    serializer->serialize(this, path);
+}
+
+Environment* Environment::unserialize(std::string const& path)
+{
+    std::auto_ptr<Serialization> serializer;
+    return serializer->unserialize(path);
+}
+

@@ -537,6 +537,12 @@ namespace envire
 
 	void updateOperators();
 
+        /** Serializes this environment to the given directory */
+        void serialize(std::string const& path);
+
+        /** Loads the environment from the given directory and returns it */
+        static Environment* unserialize(std::string const& path);
+
 
 	/**
 	 * returns all items of a particular type
