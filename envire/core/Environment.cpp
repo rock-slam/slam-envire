@@ -336,6 +336,9 @@ std::list<CartesianMap*> Environment::getMaps(FrameNode* node)
 
 bool Environment::addInput(Operator* op, Layer* input)
 {
+    if( !op->isAttached() )
+	attachItem( op );
+
     if( !input->isAttached() )
 	attachItem( input );
     
@@ -346,6 +349,9 @@ bool Environment::addInput(Operator* op, Layer* input)
 
 bool Environment::addOutput(Operator* op, Layer* output)
 {
+    if( !op->isAttached() )
+	attachItem( op );
+
     if( !output->isAttached() )
 	attachItem( output );
 
