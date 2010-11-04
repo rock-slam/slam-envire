@@ -29,6 +29,10 @@ pkg_check_modules(PLY_TYPES REQUIRED "ply")
 include_directories(${PLY_TYPES_INCLUDE_DIRS})
 link_directories(${PLY_TYPES_LIBRARY_DIRS})
 
+pkg_check_modules(BASE "base-types")
+include_directories(${BASE_INCLUDE_DIRS})
+link_directories(${BASE_LIBRARY_DIRS})
+
 include(cmake/IncludeCGAL.cmake)
 
 #### Build Libraries #################################################

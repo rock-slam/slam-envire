@@ -9,7 +9,8 @@
     </copyright>
 
     <depend package="external/libply" />
-    <rosdep name="libkdtree"
+    <depend package="base" />
+    <rosdep name="libkdtree" />
     <rosdep name="yaml" />
     <rosdep name="gdal" />
     <rosdep name="cgal" />
