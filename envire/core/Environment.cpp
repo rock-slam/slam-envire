@@ -7,6 +7,9 @@
 
 #include <memory>
 
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+
 using namespace std;
 using namespace envire;
 
@@ -175,8 +178,60 @@ void Environment::attachItem(EnvironmentItem* item)
     }
 } 
 
+template <class T>
+void findMapItem(const T& map, boost::function<void (typename T::key_type, typename T::mapped_type)> func, EnvironmentItem* item, std::vector<boost::function<void ()> >& list)
+{
+    for(typename T::const_iterator it = map.begin(); it != map.end(); it++)
+    {
+	if( it->first == item || it->second == item )
+	    list.push_back( boost::bind( func, it->first, it->second ) );
+    }
+}
+
 void Environment::detachItem(EnvironmentItem* item)
 {
+    // check if there are still some references to this object left
+    // effectively we need to go through all the maps, and find a reference to
+    // the object 
+    
+    // collecting the destruction calls in some sort of list, in order to allow
+    // rollback in case something can't be destructed, because of e.g.
+    // subtrees.  might actually be better to never deny destruction, and have
+    // some sort of cleanup method which will make sure that orphaned objects
+    // will be removed.
+    std::vector<boost::function<void ()> > func;
+
+    findMapItem<frameNodeTreeType>( 
+	    frameNodeTree, boost::bind( 
+		static_cast<void (Environment::*)(FrameNode*,FrameNode*)>(&Environment::removeChild), 
+		this, _1, _2 ), item, func );
+
+    findMapItem<layerTreeType>( 
+	    layerTree, boost::bind( 
+		static_cast<void (Environment::*)(Layer*,Layer*)>(&Environment::removeChild), 
+		this, _1, _2 ), item, func );
+
+    findMapItem<operatorGraphType>( 
+	    operatorGraphInput, boost::bind( 
+		&Environment::removeInput, 
+		this, _1, _2 ), item, func );
+
+    findMapItem<operatorGraphType>( 
+	    operatorGraphOutput, boost::bind( 
+		&Environment::removeOutput, 
+		this, _1, _2 ), item, func );
+
+    findMapItem<cartesianMapGraphType>( 
+	    cartesianMapGraph, boost::bind( 
+		&Environment::detachFrameNode, 
+		this, _1, _2 ), item, func );
+
+    // remove the links now
+    for(std::vector<boost::function<void ()> >::iterator it = func.begin(); it != func.end(); it++)
+    {
+	(*it)();
+    }
+
     for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
     {
 	(*it)->itemDetached(item);
@@ -310,12 +365,25 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
     if( !map->isAttached() )
 	attachItem(map);
 
+    cartesianMapGraph[map] = node;
+
     for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
     {
 	(*it)->frameNodeSet(map, node);
     }
+}
 
-    cartesianMapGraph[map] = node;
+void Environment::detachFrameNode(CartesianMap* map, FrameNode* node)
+{
+    if( cartesianMapGraph.count(map) && cartesianMapGraph[map] == node )
+    {
+	for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
+	{
+	    (*it)->frameNodeDetached(map, node);
+	}
+
+	cartesianMapGraph.erase( map );
+    }
 }
 
 FrameNode* Environment::getFrameNode(CartesianMap* map)
