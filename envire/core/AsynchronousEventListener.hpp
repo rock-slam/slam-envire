@@ -78,6 +78,7 @@ class AsynchronousEventListener : public EventListener
 public:
     EventListener* getHandler();
     void processEvents();
+    bool hasEvents() const;
 
 protected:
     Handler handler;
