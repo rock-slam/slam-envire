@@ -6,7 +6,7 @@ EventMessage::Result EventMessage::effects( const EventMessage& other ) const
 {
     if( operation == UPDATE )
     {
-	return (a == other.a && b == other.b) ? INVALIDATE : IGNORE;
+	return (type == other.type && operation == other.operation && a == other.a && b == other.b) ? INVALIDATE : IGNORE;
     }
     if( operation == REMOVE )
     {
@@ -17,7 +17,7 @@ EventMessage::Result EventMessage::effects( const EventMessage& other ) const
 	    case LAYER_TREE:
 		return (type == other.type && a == other.a && b == other.b) ? CANCEL : IGNORE;
 	    case ITEM: 
-		if( a == other.a || a == other.b )
+		if( (a == other.a || a == other.b) && (other.operation == ADD || other.operation == UPDATE) )
 		    return (type == other.type) ? CANCEL : INVALIDATE;
 		else
 		    return IGNORE;
