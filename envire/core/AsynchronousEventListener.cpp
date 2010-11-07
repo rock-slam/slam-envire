@@ -2,6 +2,47 @@
 
 using namespace envire;
 
+std::ostream& operator <<( std::ostream& ostream, EventMessage::Type type )
+{
+    switch( type )
+    {
+	case EventMessage::ITEM: ostream << "ITEM"; break;
+	case EventMessage::FRAMENODE_TREE: ostream << "FRAMENODE_TREE"; break;
+	case EventMessage::FRAMENODE: ostream << "FRAMENODE"; break;
+	case EventMessage::LAYER_TREE: ostream << "LAYER_TREE"; break;
+	case EventMessage::ROOT: ostream << "ROOT"; break;
+    }
+    return ostream;
+}
+
+std::ostream& operator <<( std::ostream& ostream, EventMessage::Operation operation )
+{
+    switch( operation )
+    {
+	case EventMessage::ADD: ostream << "ADD"; break;
+	case EventMessage::REMOVE: ostream << "REMOVE"; break;
+	case EventMessage::UPDATE: ostream << "UPDATE"; break;
+    }
+    return ostream;
+}
+
+std::ostream& operator <<( std::ostream& ostream, EventMessage::Result result )
+{
+    switch( result )
+    {
+	case EventMessage::IGNORE: ostream << "IGNORE"; break;
+	case EventMessage::INVALIDATE: ostream << "INVALIDATE"; break;
+	case EventMessage::CANCEL: ostream << "CANCEL"; break;
+    }
+    return ostream;
+}
+
+std::ostream& operator <<( std::ostream& ostream, const EventMessage& msg )
+{
+    ostream << "(" << msg.operation << " " << msg.type << " a:" << msg.a << " b:" << msg.b << ")";
+    return ostream;
+}
+
 EventMessage::Result EventMessage::effects( const EventMessage& other ) const
 {
     if( operation == UPDATE )
