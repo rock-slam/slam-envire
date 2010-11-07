@@ -11,6 +11,7 @@ using namespace std;
 const std::string LaserScan::className = "envire::LaserScan";
 
 LaserScan::LaserScan()
+    : origin_phi(0), center_offset( Eigen::Vector3d::Zero() )
 {
 }
 
