@@ -105,6 +105,7 @@ bool MergePointcloud::updateAll(){
 	}
     }
 
+    env->itemModified( targetcloud );
     return true;
 }
 

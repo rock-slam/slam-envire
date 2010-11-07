@@ -273,6 +273,8 @@ bool ScanMeshing::updateAll()
     // calculate vertex normals
     meshPtr->calcVertexNormals();
 
+    env->itemModified( meshPtr );
+
     return true;
 }
 

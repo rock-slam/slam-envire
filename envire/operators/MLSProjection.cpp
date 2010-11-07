@@ -128,5 +128,7 @@ bool MLSProjection::updateAll()
 	}
     }
 
+    env->itemModified( grid );
+
     return true;
 }
