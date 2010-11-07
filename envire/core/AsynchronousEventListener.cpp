@@ -117,6 +117,11 @@ EventListener* AsynchronousEventListener::getHandler()
     return &handler;
 }
 
+bool AsynchronousEventListener::hasEvents() const
+{
+    return !handler.msgQueue.empty();
+}
+
 void AsynchronousEventListener::processEvents()
 {
     boost::mutex::scoped_lock lock( handler.queueMutex );
