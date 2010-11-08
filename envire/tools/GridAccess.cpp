@@ -202,37 +202,13 @@ struct MLSAccess::MLSAccessImpl
 
     FrameNode::TransformType t;
 
-    bool evalGridPoint(Eigen::Vector3d position, double& zpos, double& zstdev)
-    {
-	Eigen::Vector3d local( t * position );
-	size_t x, y;
-	if( grid->toGrid(local.x(), local.y(), x, y) )
-	{
-	    MultiLevelSurfaceGrid::iterator it = grid->beginCell(x,y);
-	    while( it.isValid() )
-	    {
-		MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-		const double interval = (zstdev + p.stdev)*3.0 + 0.5;
-		if( position.z() - interval < p.mean && 
-			position.z() + interval > p.mean )
-		{
-		    zpos = p.mean;
-		    zstdev = p.stdev;
-		    return true;
-		}
-		it++;
-	    }
-	}
-	return false;
-    }
-
     bool getElevation(Eigen::Vector3d position, double& zpos, double& zstdev  )
     {
 	// to make this fast, we store the last grid and transform
 	// and see try that one first on the next call
 	if( grid )
 	{
-	    if( evalGridPoint( position, zpos, zstdev ) )
+	    if( grid->get( t*position, zpos, zstdev ) )
 		return true;
 
 	    // this is a shortcut, which will only allow one
@@ -255,7 +231,7 @@ struct MLSAccess::MLSAccessImpl
 	    grid = lgrid;
 	    t = lt;
 
-	    if( evalGridPoint( position, zpos, zstdev ) )
+	    if( grid->get( t*position, zpos, zstdev ) )
 		return true;
 	}
 

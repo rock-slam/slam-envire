@@ -79,6 +79,8 @@ namespace envire
 
 	MultiLevelSurfaceGrid* clone();
 
+	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
+
     protected:
 	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
 	ArrayType cells;

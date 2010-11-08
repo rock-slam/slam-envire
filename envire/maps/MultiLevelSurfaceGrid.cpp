@@ -200,3 +200,26 @@ MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone()
 {
     return new MultiLevelSurfaceGrid(*this);
 }
+
+bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
+{
+    size_t x, y;
+    if( toGrid(position.x(), position.y(), x, y) )
+    {
+	MultiLevelSurfaceGrid::iterator it = beginCell(x,y);
+	while( it.isValid() )
+	{
+	    MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+	    const double interval = (zstdev + p.stdev) * 3.0;
+	    if( position.z() - interval < p.mean && 
+		    position.z() + interval > p.mean )
+	    {
+		zpos = p.mean;
+		zstdev = p.stdev;
+		return true;
+	    }
+	    it++;
+	}
+    }
+    return false;
+}
