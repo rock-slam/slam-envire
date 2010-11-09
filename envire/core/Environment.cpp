@@ -28,6 +28,8 @@ EnvironmentItem::EnvironmentItem(Environment* envPtr)
 
 EnvironmentItem::~EnvironmentItem()
 {
+    if( isAttached() )
+	env->detachItem( this );
 }
 
 bool EnvironmentItem::isAttached() const
