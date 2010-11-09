@@ -1,4 +1,4 @@
-#include "Grid.hpp"
+#include "GridBase.hpp"
 
 using namespace envire;
 

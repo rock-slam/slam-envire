@@ -1,4 +1,5 @@
 #include "MultiLevelSurfaceGrid.hpp"
+#include <fstream>
 
 using namespace envire;
 

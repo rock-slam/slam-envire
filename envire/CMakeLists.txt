@@ -8,7 +8,7 @@ set(ENVMAP_SRCS
     core/EventListener.cpp
     core/AsynchronousEventListener.cpp
     maps/TriMesh.cpp
-    maps/Grid.cpp
+    maps/GridBase.cpp
     maps/Grids.cpp
     maps/Pointcloud.cpp
     maps/LaserScan.cpp

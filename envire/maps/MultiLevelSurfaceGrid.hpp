@@ -1,7 +1,8 @@
 #ifndef __MULTILEVELSURFACEGRID_HPP__
 #define __MULTILEVELSURFACEGRID_HPP__
 
-#include <envire/maps/Grid.hpp>
+#include <envire/maps/GridBase.hpp>
+#include <boost/multi_array.hpp>
 
 namespace envire
 {  

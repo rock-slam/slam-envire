@@ -2,6 +2,8 @@
 #define __ENVIRE_GRID_HPP__
 
 #include <envire/Core.hpp>
+#include <envire/maps/GridBase.hpp>
+
 #include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -21,31 +23,6 @@
 
 namespace envire 
 {
-    class GridBase : public CartesianMap
-    {
-    public:
-	static const std::string className;
-
-    protected:
-	size_t width, height;
-	double scalex, scaley;	
-
-    public:
-	GridBase(size_t width, size_t height, double scalex, double scaley);
-	~GridBase();
-	GridBase(Serialization& so);
-	void serialize(Serialization& so);
-	void unserialize(Serialization& so);
-
-	bool toGrid( double x, double y, size_t& m, size_t& n );
-
-	size_t getWidth() { return width; };
-	size_t getHeight() { return height; };
-
-	double getScaleX() { return scalex; };
-	double getScaleY() { return scaley; };
-    };
-
     template <typename T>
     class Grid : public GridBase
     {
