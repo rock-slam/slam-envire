@@ -26,6 +26,12 @@ namespace envire {
 
 	bool updateAll();
 
+	void setGapSize( double gapSize ) { this->gapSize = gapSize; }
+	double getGapSize() const { return gapSize; }
+
+	void setHorizontalPatchThickness( double thickness ) { this->thickness = thickness; }
+	double getHorizontalPatchThickness() const { return thickness; }
+
     protected:
 	void updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, double mean, double stdev );
 
