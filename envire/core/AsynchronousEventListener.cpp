@@ -59,7 +59,7 @@ EventMessage::Result EventMessage::effects( const EventMessage& other ) const
 		return (type == other.type && a == other.a && b == other.b) ? CANCEL : IGNORE;
 	    case ITEM: 
 		if( (a == other.a || a == other.b) && (other.operation == ADD || other.operation == UPDATE) )
-		    return (type == other.type) ? CANCEL : INVALIDATE;
+		    return (type == other.type && other.operation == ADD) ? CANCEL : INVALIDATE;
 		else
 		    return IGNORE;
 	    case ROOT:
