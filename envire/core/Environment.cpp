@@ -26,6 +26,11 @@ EnvironmentItem::EnvironmentItem(Environment* envPtr)
     envPtr->attachItem( this );
 }
 
+EnvironmentItem::EnvironmentItem(const EnvironmentItem& item)
+    : unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+{
+}
+
 EnvironmentItem::~EnvironmentItem()
 {
     if( isAttached() )

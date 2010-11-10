@@ -111,6 +111,10 @@ namespace envire
 	EnvironmentItem();	
 	explicit EnvironmentItem(Serialization &so);	
 
+	/** overide copy constructor, to allow copying, but remove environment
+	 * information for the copied item */
+	EnvironmentItem(const EnvironmentItem& item);
+
 	/** will attach the newly created object to the given Environment.
 	 */ 
 	explicit EnvironmentItem(Environment* env);	
