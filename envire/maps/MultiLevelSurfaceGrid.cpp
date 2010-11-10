@@ -5,64 +5,45 @@ using namespace envire;
 
 const std::string MultiLevelSurfaceGrid::className = "envire::MultiLevelSurfaceGrid";
 
-
-MultiLevelSurfaceGrid::iterator::iterator()
-    : initialized( false ), item(NULL)
-{
-}
-
-MultiLevelSurfaceGrid::iterator::iterator(size_t n, size_t m, SurfacePatchItem* item)
-    : initialized( true ), m(m), n(n), item(item)
-{
-}
-
-bool MultiLevelSurfaceGrid::iterator::isValid()
-{
-    return initialized && item;
-}
-
-MultiLevelSurfaceGrid::iterator& MultiLevelSurfaceGrid::iterator::operator ++()
-{
-    if( initialized && item )
-	item = item->next;
-
-    return *this;
-}
-
-MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::iterator::operator ++(int)
-{
-    iterator result( *this );
-    ++(*this);
-    return result;
-}
-
-MultiLevelSurfaceGrid::SurfacePatch& MultiLevelSurfaceGrid::iterator::operator*()
-{
-    if( initialized && item )
-	return *item;
-    else
-	throw std::runtime_error("iterator not initialized");
-}
-
-MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::iterator::operator->()
-{
-    return &*(*this);
-}
-
-bool MultiLevelSurfaceGrid::iterator::operator ==(const iterator& other) const 
-{
-    return( initialized == other.initialized && m == other.m && n == other.n && item == other.item );
-}
-
-std::ostream& envire::operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator it )
-{
-    os << it.item;
-    return os;
-}
-
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] )
 {
+}
+
+MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
+    : GridBase( other ), cells( boost::extents[other.width][other.height] )
+{
+    for(size_t m=0;m<width;m++)
+    {
+	for(size_t n=0;n<height;n++)
+	{
+	    for( const_iterator it = other.beginCell_const( m,n ); it != endCell_const(); it++ )
+		insertTail( m, n, *it );
+	}
+    }
+}
+
+MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceGrid& other)
+{
+    if( this != &other )
+    {
+	GridBase::operator=(other);
+
+	items.clear();
+	cells.resize( boost::extents[width][height] );
+
+	for(size_t m=0;m<width;m++)
+	{
+	    for(size_t n=0;n<height;n++)
+	    {
+		cells[m][n] = NULL;
+		for( const_iterator it = other.beginCell_const( m,n ); it != endCell_const(); it++ )
+		    insertTail( m, n, *it );
+	    }
+	}
+    }
+
+    return *this;
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(Serialization& so)
@@ -113,12 +94,10 @@ void MultiLevelSurfaceGrid::writeMap(const std::string& path)
     {
 	for(size_t n=0;n<height;n++)
 	{
-	    iterator it = beginCell( m,n );
-	    while( it.isValid() )
+	    for( iterator it = beginCell( m,n ); it != endCell(); it++ )
 	    {
 		SurfacePatchStore d( *it, m, n );
 		os.write( reinterpret_cast<const char*>(&d), sizeof( SurfacePatchStore ) );
-		it++;
 	    }
 	}
     }
@@ -158,12 +137,22 @@ void MultiLevelSurfaceGrid::readMap(const std::string& path)
 
 MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::beginCell( size_t m, size_t n )
 {
-    return iterator( n, m, cells[m][n] );
+    return iterator( cells[m][n] );
 }
 
-MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::endCell( size_t m, size_t n )
+MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::beginCell_const( size_t m, size_t n ) const
 {
-    return iterator( n, m, NULL );
+    return const_iterator( cells[m][n] );
+}
+
+MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::endCell()
+{
+    return iterator( NULL );
+}
+
+MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::endCell_const() const
+{
+    return const_iterator( NULL );
 }
 
 void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& value )
@@ -180,7 +169,7 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
 {
     iterator last, it;
     last = it = beginCell( m, n );
-    while( it.isValid() )
+    while( it != endCell() )
     {
 	last = it;
 	it++;
@@ -191,8 +180,8 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
 
     items.push_back( item );
 
-    if( last.isValid() )
-	last.item->next = &items.back();
+    if( last != endCell() )
+	last.m_item->next = &items.back();
     else
 	cells[m][n] = &items.back();
 }
@@ -208,10 +197,10 @@ bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, d
     if( toGrid(position.x(), position.y(), x, y) )
     {
 	MultiLevelSurfaceGrid::iterator it = beginCell(x,y);
-	while( it.isValid() )
+	while( it != endCell() )
 	{
 	    MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-	    const double interval = (zstdev + p.stdev) * 3.0;
+	    const double interval = (zstdev + p.stdev) * 3.0 + 0.5;
 	    if( position.z() - interval < p.mean && 
 		    position.z() + interval > p.mean )
 	    {

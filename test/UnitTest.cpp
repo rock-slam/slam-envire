@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     it++;
     BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
     ++it;
-    BOOST_CHECK_EQUAL( it, mls->endCell(0,0) );
+    BOOST_CHECK_EQUAL( it, mls->endCell() );
 
     MultiLevelSurfaceGrid::iterator it2 = mls->beginCell(2,1);
     BOOST_CHECK_EQUAL( it2->mean, 3.0 );
@@ -345,12 +345,14 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     it3++;
     BOOST_CHECK_EQUAL( (*it3).mean, 1.0 );
     ++it3;
-    BOOST_CHECK_EQUAL( it3, mls->endCell(0,0) );
+    BOOST_CHECK_EQUAL( it3, mls->endCell() );
 
+    /*
     MultiLevelSurfaceGrid *mlsClone = mls2->clone();
     MultiLevelSurfaceGrid::iterator it4 = mlsClone->beginCell(2,1);
     BOOST_CHECK_EQUAL( it4->mean, 3.0 );
     it4++;
+    */
 }
 // EOF
 //

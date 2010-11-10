@@ -37,8 +37,7 @@ void MLSProjection::addOutput( MultiLevelSurfaceGrid* grid )
 
 void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, double mean, double stdev )
 {
-    MultiLevelSurfaceGrid::iterator it = grid->beginCell( m, n );
-    while( it.isValid() )
+    for(MultiLevelSurfaceGrid::iterator it = grid->beginCell( m, n ); it != grid->endCell(); it++ )
     {
 	// check for all surface patches in the cell, if the new point can be
 	// part of that cell or if it needs to create a new cell
@@ -87,7 +86,6 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
 	    }
 	    return;
 	}
-	it++;
     }
 
     MultiLevelSurfaceGrid::SurfacePatch p;

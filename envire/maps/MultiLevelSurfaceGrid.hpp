@@ -4,6 +4,8 @@
 #include <envire/maps/GridBase.hpp>
 #include <boost/multi_array.hpp>
 
+#include <boost/iterator/iterator_facade.hpp>
+
 namespace envire
 {  
     class MultiLevelSurfaceGrid : public GridBase
@@ -29,40 +31,42 @@ namespace envire
 	    SurfacePatchItem* next;
 	};
 
-	class iterator
+	template <class Value>
+	class iterator_base :
+	    public boost::iterator_facade<
+		iterator_base<Value>,
+		Value,
+		boost::forward_traversal_tag
+		>
 	{
-	public:
-	    friend std::ostream& envire::operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator it );
+	    template <class T>
+		friend std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T> it );
+	    friend class boost::iterator_core_access;
 	    friend class MultiLevelSurfaceGrid;
-
-	protected:
-	    bool initialized;
-
-	    size_t m, n;
-	    SurfacePatchItem* item;
+	    Value* m_item;
 
 	public:
-	    iterator();
-	    iterator(size_t n, size_t m, SurfacePatchItem* item);
+	    iterator_base() : m_item(NULL) {}
+	    iterator_base(Value* item) : m_item(item) {}
 
-	    bool isValid();
-
-	    iterator& operator ++();
-	    iterator operator ++(int unused);
-
-	    bool operator ==(const iterator& other) const;
-
-	    SurfacePatch& operator*();
-	    SurfacePatch* operator->();
+	    void increment() { m_item =	m_item->next; }
+	    bool equal( iterator_base const& other ) const { return m_item == other.m_item; }
+	    Value& dereference() const { return *m_item; }
 	};
+
+	typedef	iterator_base<SurfacePatchItem> iterator;
+	typedef iterator_base<const SurfacePatchItem> const_iterator;
 
     public:
 	static const std::string className;
 
     public:
+	MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other);
 	MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley);
 	MultiLevelSurfaceGrid(Serialization& so);
 	~MultiLevelSurfaceGrid();
+
+	MultiLevelSurfaceGrid& operator=(const MultiLevelSurfaceGrid& other);
 
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
@@ -73,7 +77,9 @@ namespace envire
 	virtual const std::string& getClassName() const {return className;};
 
 	iterator beginCell( size_t m, size_t n );
-	iterator endCell( size_t m, size_t n );
+	const_iterator beginCell_const( size_t m, size_t n ) const;
+	iterator endCell();
+	const_iterator endCell_const() const;
 
 	void insertHead( size_t m, size_t n, const SurfacePatch& value );
 	void insertTail( size_t m, size_t n, const SurfacePatch& value );
@@ -89,7 +95,12 @@ namespace envire
 	std::list<SurfacePatchItem> items;
     };
 
-    std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator it );
+    template <class T>
+    std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T> it )
+    {
+	os << it.m_item;
+	return os;
+    }
 }
 
 #endif
