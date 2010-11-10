@@ -33,8 +33,7 @@ EnvironmentItem::EnvironmentItem(const EnvironmentItem& item)
 
 EnvironmentItem::~EnvironmentItem()
 {
-    if( isAttached() )
-	env->detachItem( this );
+    assert( !isAttached() );
 }
 
 bool EnvironmentItem::isAttached() const
@@ -79,7 +78,8 @@ Environment::~Environment()
     // perform a delete on all the owned objects
     for(itemListType::iterator it=items.begin();it!=items.end();++it)
     {
-	delete (*it).second;
+	detachItem( it->second );
+	delete it->second;
     }
 }
 
