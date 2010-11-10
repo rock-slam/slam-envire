@@ -246,6 +246,7 @@ void Environment::detachItem(EnvironmentItem* item)
     
     items.erase( item->getUniqueId() );
     item->unique_id = ITEM_NOT_ATTACHED;
+    item->env = NULL;
 }
 
 void Environment::itemModified(EnvironmentItem* item) {
