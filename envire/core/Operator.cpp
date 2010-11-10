@@ -30,8 +30,18 @@ void Operator::removeInput( Layer* layer )
     env->removeInput( this, layer );
 }
 
+void Operator::removeInputs()
+{
+    env->removeInputs( this );
+}
+
 void Operator::removeOutput( Layer* layer )
 {
     env->removeOutput( this, layer );
+}
+
+void Operator::removeOutputs()
+{
+    env->removeOutputs( this );
 }
 

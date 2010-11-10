@@ -63,6 +63,17 @@ void EnvironmentItem::serialize(Serialization &so)
     so.write( "id", unique_id );
 }
 
+void EnvironmentItem::detach()
+{
+    if( env )
+	env->detachItem( this );
+}
+
+void EnvironmentItem::dispose()
+{
+    detach();
+    delete this;
+}
 
 Environment::Environment() :
     last_id(0)
@@ -436,6 +447,11 @@ bool Environment::addOutput(Operator* op, Layer* output)
     return true;
 }
 
+bool Environment::removeInputs(Operator* op)
+{
+    return operatorGraphInput.erase( op );
+}
+
 bool Environment::removeInput(Operator* op, Layer* input)
 {
     for(operatorGraphType::iterator it=operatorGraphInput.begin();it != operatorGraphInput.end();)
@@ -447,6 +463,11 @@ bool Environment::removeInput(Operator* op, Layer* input)
     }
 
     return true;
+}
+
+bool Environment::removeOutputs(Operator* op)
+{
+    return operatorGraphOutput.erase( op );
 }
 
 bool Environment::removeOutput(Operator* op, Layer* output)

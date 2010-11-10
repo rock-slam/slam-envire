@@ -136,6 +136,17 @@ namespace envire
 	/** @return the unique id of this environmentitem
 	 */
 	long getUniqueId() const;
+
+	/** will detach the item from the current environment
+	 */
+	void detach();
+
+	/** will detach the item from the current environment
+	 * and also delete the memory associated.
+	 *
+	 * After this call the pointer to this object is no longer valid
+	 */
+	void dispose();
     };
 
 
@@ -408,20 +419,26 @@ namespace envire
          */
         virtual bool addInput(Layer* layer);
 
-        /** Removes an input from this operator. The operator may not support
-         * this, in which case it will return false
-         */
+        /** Removes an input from this operator. 
+	 */ 
         virtual void removeInput(Layer* layer);
+
+	/** Removes all inputs connected to this operator
+	 */
+	void removeInputs();
 
          /** Adds a new input to this operator. The operator may not support
          * this, in which case it will return false
          */
         virtual bool addOutput(Layer* layer);
 
-        /** Removes an output from this operator. The operator may not support
-         * this, in which case it will return false.
-         */
+        /** Removes an output from this operator.          
+	 */
         virtual void removeOutput(Layer* layer);
+
+	/** Removes all outputs connected to this operator
+	 */
+	void removeOutputs();
     };
 
     class EventListener 
@@ -533,6 +550,9 @@ namespace envire
 
 	bool removeInput(Operator* op, Layer* input);
 	bool removeOutput(Operator* op, Layer* output);
+
+	bool removeInputs(Operator* op);
+	bool removeOutputs(Operator* op);
 
 	std::list<Layer*> getInputs(Operator* op);
 	std::list<Layer*> getOutputs(Operator* op);
