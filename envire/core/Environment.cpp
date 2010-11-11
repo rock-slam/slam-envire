@@ -87,7 +87,8 @@ Environment::Environment() :
 Environment::~Environment() 
 {
     // perform a delete on all the owned objects
-    for(itemListType::iterator it=items.begin();it!=items.end();++it)
+    itemListType::iterator it;
+    while( (it = items.begin()) != items.end() )
     {
 	detachItem( it->second );
 	delete it->second;
@@ -176,6 +177,8 @@ void Environment::removeEventListener(EventListener *evl)
 
 void Environment::attachItem(EnvironmentItem* item)
 {
+    assert( item );
+
     if( item->getUniqueId() == ITEM_NOT_ATTACHED )
 	item->unique_id = last_id++;
 
@@ -208,6 +211,8 @@ void findMapItem(const T& map, boost::function<void (typename T::key_type, typen
 
 void Environment::detachItem(EnvironmentItem* item)
 {
+    assert( item );
+
     // check if there are still some references to this object left
     // effectively we need to go through all the maps, and find a reference to
     // the object 
