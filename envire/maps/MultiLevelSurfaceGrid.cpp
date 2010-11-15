@@ -13,6 +13,8 @@ MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
     : GridBase( other ), cells( boost::extents[other.width][other.height] )
 {
+    read_lock(other.mutex);
+
     for(size_t m=0;m<width;m++)
     {
 	for(size_t n=0;n<height;n++)
@@ -27,6 +29,10 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
 {
     if( this != &other )
     {
+	//read_lock(other.mutex);
+	//write_lock(mutex);
+	this->mutex.lock();
+
 	GridBase::operator=(other);
 
 	items.clear();
@@ -41,6 +47,7 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
 		    insertTail( m, n, *it );
 	    }
 	}
+	this->mutex.unlock();
     }
 
     return *this;

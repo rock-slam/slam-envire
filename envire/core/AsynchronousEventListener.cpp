@@ -79,6 +79,7 @@ void AsynchronousEventListener::Handler::addEvent( const EventMessage& event )
 {
     boost::mutex::scoped_lock lock( queueMutex );
     std::list<EventMessage>::iterator it = msgQueue.begin();
+    // std::cerr << "----- add message " << event << std::endl;
     bool valid = true;
     while( it != msgQueue.end() )
     {
@@ -86,13 +87,17 @@ void AsynchronousEventListener::Handler::addEvent( const EventMessage& event )
 	    event.effects( *it );
 
 	if( res == EventMessage::CANCEL || res == EventMessage::INVALIDATE )
+	{
+	    // std::cerr << "remove " << *it << std::endl;
 	    it = msgQueue.erase( it );
+	}
 
 	if( res == EventMessage::CANCEL )
 	    valid = false;
 
 	++it;
     }
+    // std::cerr << "valid - " << valid << " count " << msgQueue.size() << std::endl;
 
     if( valid )
 	msgQueue.push_back( event );
@@ -170,11 +175,22 @@ void AsynchronousEventListener::processEvents()
     {
 	EventMessage &event( *it );
 	if( event.type == EventMessage::ITEM && event.operation == EventMessage::ADD )
+	{
+	    EnvironmentItem::read_lock( event.a->mutex );
 	    itemAttached( event.a );
+	}
 	else if( event.type == EventMessage::ITEM && event.operation == EventMessage::REMOVE )
+	{
+	    EnvironmentItem::read_lock( event.a->mutex );
 	    itemDetached( event.a );
+	}
 	else if( event.type == EventMessage::ITEM && event.operation == EventMessage::UPDATE )
+	{
+	    //EnvironmentItem::read_lock( event.a->mutex );
+	    event.a->mutex.lock();
 	    itemModified( event.a );
+	    event.a->mutex.unlock();
+	}
 	else if( event.type == EventMessage::FRAMENODE_TREE && event.operation == EventMessage::ADD )
 	    childAdded( static_cast<FrameNode*>(event.a), static_cast<FrameNode*>(event.b) );
 	else if( event.type == EventMessage::FRAMENODE_TREE && event.operation == EventMessage::REMOVE )

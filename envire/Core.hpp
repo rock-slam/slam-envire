@@ -9,6 +9,8 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
+#include <boost/thread/shared_mutex.hpp>
+
 #include <boost/serialization/singleton.hpp>
 #include <boost/lexical_cast.hpp>
 #include <vector>
@@ -106,7 +108,17 @@ namespace envire
 	Environment* env;
 
     public:
+	//typedef boost::unique_lock<boost::shared_mutex> write_lock;
+	//typedef boost::shared_lock<boost::shared_mutex> read_lock;
+	typedef boost::mutex::scoped_lock write_lock;
+	typedef boost::mutex::scoped_lock read_lock;
+
 	static const std::string className;
+
+	/** shared mutex for multithreaded access
+	 */
+	//mutable boost::shared_mutex mutex;
+	mutable boost::mutex mutex;
 	
 	EnvironmentItem();	
 	explicit EnvironmentItem(Serialization &so);	
@@ -195,7 +207,7 @@ namespace envire
 
         /** Returns the transformation from this FrameNode to the parent framenode
          */
-	TransformType const& getTransform() const;
+	TransformType getTransform() const;
 
         /** Updates the transformation between that node and its parent.
          * Relevant operators will be notified of that change, and all data that

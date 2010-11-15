@@ -101,11 +101,13 @@ bool MLSProjection::updateAll()
 {
     // TODO add checking of connections
     MultiLevelSurfaceGrid* grid = static_cast<envire::MultiLevelSurfaceGrid*>(*env->getOutputs(this).begin());
+    write_lock( grid->mutex );
 
     std::list<Layer*> inputs = env->getInputs(this);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
 	Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(*it);
+	read_lock( mesh->mutex );
 
 	FrameNode::TransformType C_m2g = env->relativeTransform( mesh->getFrameNode(), grid->getFrameNode() );
 

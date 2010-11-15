@@ -51,13 +51,15 @@ FrameNode* FrameNode::getParent()
     return const_cast<FrameNode*>(static_cast<const FrameNode&>(*this).getParent());
 }
 
-FrameNode::TransformType const& FrameNode::getTransform() const 
+FrameNode::TransformType FrameNode::getTransform() const 
 {
+    read_lock( mutex );
     return frame;
 }
 
 void FrameNode::setTransform(TransformType const& transform)
 {
+    write_lock( mutex );
     frame = transform;
     if(env) {
 	env->itemModified(this);
