@@ -95,8 +95,8 @@ Environment::~Environment()
     itemListType::iterator it;
     while( (it = items.begin()) != items.end() )
     {
-	detachItem( it->second );
-	delete it->second;
+	EnvironmentItem* item = it->second;
+	item->dispose();
     }
 }
 
