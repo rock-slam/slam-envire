@@ -114,6 +114,7 @@ namespace envire
 	/** overide copy constructor, to allow copying, but remove environment
 	 * information for the copied item */
 	EnvironmentItem(const EnvironmentItem& item);
+	EnvironmentItem& operator=(const EnvironmentItem& other);
 
 	/** will attach the newly created object to the given Environment.
 	 */ 
