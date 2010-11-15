@@ -31,6 +31,11 @@ EnvironmentItem::EnvironmentItem(const EnvironmentItem& item)
 {
 }
 
+EnvironmentItem& EnvironmentItem::operator=(const EnvironmentItem& other)
+{
+    return *this;
+}
+
 EnvironmentItem::~EnvironmentItem()
 {
     assert( !isAttached() );
