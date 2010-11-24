@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "Event.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -100,44 +101,52 @@ Environment::~Environment()
     }
 }
 
-void Environment::publishChilds(EventListener *evl, FrameNode *parent)
+void Environment::handle( const Event& event )
+{
+    // pass the event on to the handlers
+    for(eventHandlerType::iterator it = eventHandlers.begin(); it != eventHandlers.end(); it++ )
+    {
+	(*it)->handle( event );
+    }
+}
+
+void Environment::publishChilds(EventHandler *evl, FrameNode *parent)
 {
   
     std::list<FrameNode*> childs = getChildren(parent);
     for(std::list<FrameNode*>::iterator it = childs.begin(); it != childs.end(); it++)
     {
-	evl->childAdded(parent, *it);
+	evl->handle( Event( Event::FRAMENODE_TREE, Event::ADD, parent, *it ) );
 	publishChilds(evl, *it);
     }
 }
 
-void Environment::addEventListener(EventListener *listener) 
+void Environment::addEventHandler(EventHandler *handler) 
 {
-    EventListener* evl = listener->getHandler();
-
     //new listener was added, iterate over all items and 
     //attach them at the listener
     for(itemListType::iterator it = items.begin(); it != items.end(); it++) 
     {
-	evl->itemAttached((*it).second );
+	handler->handle( Event( Event::ITEM, Event::ADD, it->second ) );
     }
     
     //set root node
-    evl->setRootNode(getRootNode());
+    handler->handle( Event( Event::ROOT, Event::ADD, getRootNode() ) );
     
     //iterate over frame tree
-    publishChilds(evl, getRootNode());    
+    publishChilds(handler, getRootNode());    
 
     //publish connections between maps and Framenodes
     for(cartesianMapGraphType::iterator it = cartesianMapGraph.begin(); it != cartesianMapGraph.end(); it++) 
     {
-	evl->frameNodeSet(it->first, it->second);
+	handler->handle( Event( Event::FRAMENODE, Event::ADD, it->first, it->second ) );
     }
     
-    eventListeners.push_back(evl);
+    eventHandlers.push_back(handler);
 }
 
-void Environment::detachChilds(FrameNode *parent, EventListener *evl) {
+void Environment::detachChilds(FrameNode *parent, EventHandler *evl)
+{
     std::list<FrameNode *> childList = getChildren(parent);
     
     for(std::list<FrameNode *>::iterator it = childList.begin(); it != childList.end(); it++) {
@@ -152,31 +161,31 @@ void Environment::detachChilds(FrameNode *parent, EventListener *evl) {
 	
 	//now it is a leaf, detach all maps attached to framenode
 	for(std::list<CartesianMap*>::iterator mapit = maplist.begin(); mapit != maplist.end(); mapit++) {
-	    evl->frameNodeDetached(*mapit, *it);
+	    evl->handle( Event( Event::FRAMENODE, Event::REMOVE, *mapit, *it ) );
 	}
 	
 	//and remove the leaf
-	evl->childRemoved(parent, *it);
+	evl->handle( Event( Event::FRAMENODE_TREE, Event::REMOVE, parent, *it ) );
     }    
 };
 
-void Environment::removeEventListener(EventListener *evl) 
+void Environment::removeEventHandler(EventHandler *handler) 
 {
     //reverse iterate over the frame node tree and detach all children    
-    detachChilds(getRootNode(), evl);
+    detachChilds(getRootNode(), handler);
     
     //remove root node
-    evl->removeRootNode(getRootNode());
+    handler->handle( Event( Event::ROOT, Event::REMOVE, getRootNode() ) );
     
     //detach all environmentItems
     for(itemListType::iterator it = items.begin(); it != items.end(); it++) 
     {
-	evl->itemDetached((*it).second );
+	handler->handle( Event( Event::ITEM, Event::REMOVE, it->second ) );
     }
     
-    eventListenerType::iterator it = std::find(eventListeners.begin(), eventListeners.end(), evl);
-    if(it != eventListeners.end()) {
-	eventListeners.erase(it);
+    eventHandlerType::iterator it = std::find(eventHandlers.begin(), eventHandlers.end(), handler);
+    if(it != eventHandlers.end()) {
+	eventHandlers.erase(it);
     }
 }
 
@@ -198,10 +207,7 @@ void Environment::attachItem(EnvironmentItem* item)
     // set a pointer to environment object
     item->env = this;
     
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-    {
-	(*it)->itemAttached(item);
-    }
+    handle( Event( Event::ITEM, Event::ADD, item ) );
 } 
 
 template <class T>
@@ -260,21 +266,16 @@ void Environment::detachItem(EnvironmentItem* item)
 	(*it)();
     }
 
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-    {
-	(*it)->itemDetached(item);
-    }
+    handle( Event( Event::ITEM, Event::REMOVE, item ) );
     
     items.erase( item->getUniqueId() );
     item->unique_id = ITEM_NOT_ATTACHED;
     item->env = NULL;
 }
 
-void Environment::itemModified(EnvironmentItem* item) {
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-    {
-	(*it)->itemModified(item);
-    }    
+void Environment::itemModified(EnvironmentItem* item) 
+{
+    handle( Event( Event::ITEM, Event::UPDATE, item ) );
 }
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
@@ -289,10 +290,7 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 
     frameNodeTree.insert(make_pair(child, parent));
     
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-    {
-	(*it)->childAdded(parent, child);
-    }
+    handle( Event( Event::FRAMENODE_TREE, Event::ADD, parent, child ) );
 }
 
 void Environment::addChild(Layer* parent, Layer* child)
@@ -307,20 +305,14 @@ void Environment::addChild(Layer* parent, Layer* child)
 
     layerTree.insert(make_pair(child, parent));
 
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-    {
-	(*it)->childAdded(parent, child);
-    }
+    handle( Event( Event::LAYER_TREE, Event::ADD, parent, child ) );
 }
 
 void Environment::removeChild(FrameNode* parent, FrameNode* child)
 {
     if( getParent( child ) == parent )
     {
-	for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-	{
-	    (*it)->childRemoved(parent, child);
-	}
+	handle( Event( Event::FRAMENODE_TREE, Event::REMOVE, parent, child ) );
 
 	frameNodeTree.erase( frameNodeTree.find( child ) );
     }
@@ -330,10 +322,7 @@ void Environment::removeChild(Layer* parent, Layer* child)
 {
     if( getParent( child ) == parent )
     {
-	for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-	{
-	    (*it)->childRemoved(parent, child);
-	}
+	handle( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
 
 	layerTree.erase( layerTree.find( child ) );
     }
@@ -396,20 +385,14 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 
     cartesianMapGraph[map] = node;
 
-    for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-    {
-	(*it)->frameNodeSet(map, node);
-    }
+    handle( Event( Event::FRAMENODE, Event::ADD, map, node ) );
 }
 
 void Environment::detachFrameNode(CartesianMap* map, FrameNode* node)
 {
     if( cartesianMapGraph.count(map) && cartesianMapGraph[map] == node )
     {
-	for(eventListenerType::iterator it = eventListeners.begin(); it != eventListeners.end(); it++) 
-	{
-	    (*it)->frameNodeDetached(map, node);
-	}
+	handle( Event( Event::FRAMENODE, Event::REMOVE, map, node ) );
 
 	cartesianMapGraph.erase( map );
     }

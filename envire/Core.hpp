@@ -23,6 +23,8 @@ namespace envire
     class Environment;
     class EnvironmentItem;
     class Serialization;
+    class EventHandler;
+    class Event;
 
     /** Baseclass for generically holding pointer to objects, while still
      * ensuring, that the destructor of that object is called, when the holder
@@ -442,29 +444,6 @@ namespace envire
 	void removeOutputs();
     };
 
-    class EventListener 
-    {
-	public:
-	    virtual EventListener* getHandler();
-
-	public:
-	    virtual void itemAttached(EnvironmentItem *item);
-	    virtual void itemDetached(EnvironmentItem *item);
-	    virtual void childAdded(FrameNode* parent, FrameNode* child);
-	    virtual void childAdded(Layer* parent, Layer* child);
-
-	    virtual void frameNodeSet(CartesianMap* map, FrameNode* node);
-	    virtual void frameNodeDetached(CartesianMap* map, FrameNode* node) = 0;
-
-	    virtual void childRemoved(FrameNode* parent, FrameNode* child);
-	    virtual void childRemoved(Layer* parent, Layer* child);
-
-	    virtual void setRootNode(FrameNode *root) = 0;
-	    virtual void removeRootNode(FrameNode *root) = 0;
-
-	    virtual void itemModified(EnvironmentItem *item);
-    };
-    
     /** The environment class manages EnvironmentItem objects and has ownership
      * of these.  all dependencies between the objects are handled in the
      * environment class, and convenience methods of the individual objects are
@@ -487,8 +466,7 @@ namespace envire
 	typedef std::map<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
 	typedef std::map<CartesianMap*, FrameNode*> cartesianMapGraphType;
-	typedef std::vector<EventListener *> eventListenerType;
-	
+	typedef std::vector<EventHandler *> eventHandlerType;
 	
 	itemListType items;
 	frameNodeTreeType frameNodeTree;
@@ -496,11 +474,12 @@ namespace envire
 	operatorGraphType operatorGraphInput;
 	operatorGraphType operatorGraphOutput;
 	cartesianMapGraphType cartesianMapGraph;
-	eventListenerType eventListeners;
+	eventHandlerType eventHandlers;
 	
 	FrameNode* rootNode;
-	void publishChilds(EventListener *evl, FrameNode *parent);
-	void detachChilds(FrameNode *parent, EventListener *evl);
+	void publishChilds(EventHandler* handler, FrameNode *parent);
+	void detachChilds(FrameNode *parent, EventHandler* handler);
+
     public:
         Environment();
 	virtual ~Environment();
@@ -587,16 +566,21 @@ namespace envire
 	}
 
 	/**
-	 * Adds an eventListener that gets called whenever there
+	 * Adds an eventHandler that gets called whenever there
 	 * are modifications to the evironment.
-	 * Note, the listener gets called from the evire thread context.
+	 * Note, the handler gets called from the evire thread context.
 	 */
-	void addEventListener(EventListener *evl);
+	void addEventHandler(EventHandler *handler);
 	
 	/**
-	 * Remove the given eventListener fromt the environment
+	 * Remove the given eventHandler fromt the environment
 	 */
-	void removeEventListener(EventListener *evl);
+	void removeEventHandler(EventHandler *handler);
+
+	/**
+	 * will pass the @param event to the registered event handlers
+	 */
+	void handle( const Event& event );
 	
         /** 
 	 * Returns the transformation from the frame represented by @a from to
