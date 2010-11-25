@@ -116,18 +116,21 @@ void EventListener::handle( const Event& event )
 	throw std::runtime_error("Event message not handled");
 }
 
-EventMessage( const Event& event )
+EventMessage::EventMessage( const Event& event )
     : Event( event )
 {
     // store unique id's
     if( a ) id_a = a->getUniqueId();
     if( b ) id_b = b->getUniqueId();
 
-    if( event->type == Event::ITEM && ( event->operation == ADD || event->operation == UPDATE ) )
+    if( event.type == Event::ITEM && ( event.operation == ADD || event.operation == UPDATE ) )
     {
 	// perform a copy of the EnvironmentItem in these cases
 	a = a->clone();
     }
 }
 
+void EventMessage::apply( Environment* env )
+{
+}
 

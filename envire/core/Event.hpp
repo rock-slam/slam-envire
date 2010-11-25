@@ -2,6 +2,7 @@
 #define __ENVIRE_EVENT__
 
 #include <envire/Core.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace envire
 {

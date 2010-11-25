@@ -28,6 +28,7 @@ template<class T> bool contains(const std::list<T>& list, const T& element)
 class DummyOperator : public Operator 
 {
 public:
+    Operator* clone() const {return new DummyOperator(*this);}
     bool updateAll() { return true; };
     void serialize(Serialization &) {};
 };
@@ -35,14 +36,14 @@ public:
 class DummyLayer : public Layer 
 {
 public:
-    Layer* clone() {return new DummyLayer(*this);};
+    Layer* clone() const {return new DummyLayer(*this);};
     void serialize(Serialization &) {};
 };
 
 class DummyCartesianMap : public CartesianMap 
 {
 public:
-    CartesianMap* clone() {return new DummyCartesianMap(*this);};
+    CartesianMap* clone() const {return new DummyCartesianMap(*this);};
     void serialize(Serialization &) {};
 };
 
