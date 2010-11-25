@@ -186,7 +186,7 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
 	cells[m][n] = &items.back();
 }
 
-MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone()
+MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone() const
 {
     return new MultiLevelSurfaceGrid(*this);
 }

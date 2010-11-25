@@ -60,7 +60,7 @@ namespace envire {
 
 	    const std::string getMapFileName(const std::string& path) const;
 
-            LaserScan* clone();
+            LaserScan* clone() const;
 
 	    static LaserScan* importScanFile( const std::string& file, FrameNode* frame );
     };

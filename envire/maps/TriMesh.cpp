@@ -30,7 +30,7 @@ void TriMesh::serialize(Serialization& so)
     writePly( getMapFileName(so.getMapPath()) + ".ply" );
 }
 
-TriMesh* TriMesh::clone() 
+TriMesh* TriMesh::clone() const
 {
     return new TriMesh(*this);
 }

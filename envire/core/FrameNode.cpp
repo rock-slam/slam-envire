@@ -64,3 +64,8 @@ void FrameNode::setTransform(TransformType const& transform)
     }
 }
 
+FrameNode* FrameNode::clone() const
+{
+    return new FrameNode( *this );
+}
+

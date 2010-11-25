@@ -55,7 +55,7 @@ namespace envire {
 
 	const std::string& getClassName() const {return className;};
 
-	Pointcloud* clone();
+	Pointcloud* clone() const;
     };
 }
 

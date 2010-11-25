@@ -47,7 +47,7 @@ void Pointcloud::serialize(Serialization& so, bool handleMap)
 	writePly( getMapFileName(so.getMapPath()) + ".ply" );
 }
 
-Pointcloud* Pointcloud::clone() 
+Pointcloud* Pointcloud::clone() const
 {
     return new Pointcloud(*this);
 }
