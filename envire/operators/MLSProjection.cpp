@@ -130,3 +130,8 @@ bool MLSProjection::updateAll()
 
     return true;
 }
+
+MLSProjection* MLSProjection::clone() const 
+{
+    return new MLSProjection( *this );
+}

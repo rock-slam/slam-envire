@@ -232,7 +232,7 @@ bool LaserScan::writeScan( const std::string& file )
     return true;
 }
 
-LaserScan* LaserScan::clone() 
+LaserScan* LaserScan::clone() const
 {
     return new LaserScan(*this);
 }

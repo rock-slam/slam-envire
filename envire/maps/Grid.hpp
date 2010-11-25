@@ -68,7 +68,7 @@ namespace envire
 	virtual const std::string& getClassName() const {return className;};
 	virtual const std::vector<std::string>& getBands() const {return bands;};
 	
-	Grid* clone();
+	Grid* clone() const;
 
 	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
 
@@ -199,7 +199,7 @@ namespace envire
 	  readGridData(*iter,getFullPath(path,*iter));
     }
     
-    template<class T>Grid<T>* Grid<T>::clone() 
+    template<class T>Grid<T>* Grid<T>::clone() const
     {
 	return new Grid<T>(*this);
     }

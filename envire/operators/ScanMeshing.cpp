@@ -278,3 +278,8 @@ bool ScanMeshing::updateAll()
     return true;
 }
 
+ScanMeshing* ScanMeshing::clone() const
+{
+    return new ScanMeshing( *this );
+}
+

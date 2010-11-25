@@ -157,6 +157,11 @@ bool Projection::interpolateMap(const std::string& type)
     return true;
 }
 
+Projection* Projection::clone() const
+{
+    return new Projection( *this );
+}
+
 // TODO add this to a new operator
 /*
 bool Projection::updateTraversibilityMap()

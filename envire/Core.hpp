@@ -118,6 +118,10 @@ namespace envire
 	EnvironmentItem(const EnvironmentItem& item);
 	EnvironmentItem& operator=(const EnvironmentItem& other);
 
+	/** Creates a clone of this item. 
+	 */
+        virtual EnvironmentItem* clone() const = 0;
+
 	/** will attach the newly created object to the given Environment.
 	 */ 
 	explicit EnvironmentItem(Environment* env);	
@@ -204,6 +208,8 @@ namespace envire
          * has been generated based on that information will be marked as dirty
          */
         void setTransform(TransformType const& transform);
+
+	FrameNode* clone() const;
     };
     
     /** The layer is the base object that holds map data. It can be a cartesian
@@ -248,12 +254,6 @@ namespace envire
          * afterwards, as some operators will depend on it.
          */
         void setImmutable();
-
-        /** Creates a clone of this layer with the given ID. The clone is
-         * detached from any operator and is not immutable. It is not added to
-         * any environment either.
-         */
-        virtual Layer* clone() = 0;
 
         /** Unsets the dirty flag on this layer
          * @see isDirty

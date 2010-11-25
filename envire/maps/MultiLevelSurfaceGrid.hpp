@@ -84,7 +84,7 @@ namespace envire
 	void insertHead( size_t m, size_t n, const SurfacePatch& value );
 	void insertTail( size_t m, size_t n, const SurfacePatch& value );
 
-	MultiLevelSurfaceGrid* clone();
+	MultiLevelSurfaceGrid* clone() const;
 
 	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
 
