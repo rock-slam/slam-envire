@@ -121,28 +121,13 @@ public:
 
 /** EventHandler that will apply the handled events to the given Environment
  */
-class EventProcessor : public EventListener
+class EventProcessor : public EventHandler
 {
     Environment *env;
 
 public:
     EventProcessor( Environment *env );
-
-    void itemAttached(EnvironmentItem *item);
-    void itemDetached(EnvironmentItem *item);
-    void childAdded(FrameNode* parent, FrameNode* child);
-    void childAdded(Layer* parent, Layer* child);
-
-    void frameNodeSet(CartesianMap* map, FrameNode* node);
-    void frameNodeDetached(CartesianMap* map, FrameNode* node);
-
-    void childRemoved(FrameNode* parent, FrameNode* child);
-    void childRemoved(Layer* parent, Layer* child);
-
-    void setRootNode(FrameNode *root);
-    void removeRootNode(FrameNode *root);
-
-    void itemModified(EnvironmentItem *item);
+    void handle( const Event& message );
 };
 
 class EventQueue : public EventHandler, public EventSource
