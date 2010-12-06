@@ -2,6 +2,7 @@
 #define __ENVIRE_EVENT__
 
 #include <envire/Core.hpp>
+#include <envire/core/EventSource.hpp>
 #include <boost/thread/mutex.hpp>
 
 namespace envire
@@ -63,7 +64,7 @@ struct Event
 
 /** The EventMessage class is derived from Event, and holds information about an
  * environment in a thread safe manner. It does that by copying relevant
- * information about the environment, when passed and event in the constructor.
+ * information about the environment, when passed an event in the constructor.
  * EventMessages in a way encode information about an environment, but are not
  * bound to a particular instance. They can be used to copy environments between
  * threads or processes.
@@ -118,22 +119,40 @@ public:
     void handle( const Event& message );
 };
 
-/** Handler that maintains a copy of an environment in a thread safe manner.
- * Call the constructor with a pointer to the target environment and register
- * as an EventHandler with the target environment. Call apply within the
- * target's thread context, to apply the queued changes of the source
- * Environment.
+/** EventHandler that will apply the handled events to the given Environment
  */
-class CopyEnvironmentHandler : public EventHandler
+class EventProcessor : public EventListener
 {
-    Environment* env;
+    Environment *env;
+
+public:
+    EventProcessor( Environment *env );
+
+    void itemAttached(EnvironmentItem *item);
+    void itemDetached(EnvironmentItem *item);
+    void childAdded(FrameNode* parent, FrameNode* child);
+    void childAdded(Layer* parent, Layer* child);
+
+    void frameNodeSet(CartesianMap* map, FrameNode* node);
+    void frameNodeDetached(CartesianMap* map, FrameNode* node);
+
+    void childRemoved(FrameNode* parent, FrameNode* child);
+    void childRemoved(Layer* parent, Layer* child);
+
+    void setRootNode(FrameNode *root);
+    void removeRootNode(FrameNode *root);
+
+    void itemModified(EnvironmentItem *item);
+};
+
+class EventQueue : public EventHandler, public EventSource
+{
     std::list<EventMessage> msgQueue;
     boost::mutex queueMutex;
 
 public:
-    CopyEnvironmentHandler( Environment* env );
     void handle( const Event& message );
-    void apply();
+    void flush();
 };
     
 }

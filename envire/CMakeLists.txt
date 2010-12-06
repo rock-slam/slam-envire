@@ -6,6 +6,7 @@ set(ENVMAP_SRCS
     core/Serialization.cpp
     core/SerializationFactory.cpp
     core/Event.cpp
+    core/EventSource.cpp
     maps/TriMesh.cpp
     maps/GridBase.cpp
     maps/Grids.cpp
