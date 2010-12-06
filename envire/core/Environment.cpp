@@ -101,15 +101,6 @@ Environment::~Environment()
     }
 }
 
-void Environment::handle( const Event& event )
-{
-    // pass the event on to the handlers
-    for(eventHandlerType::iterator it = eventHandlers.begin(); it != eventHandlers.end(); it++ )
-    {
-	(*it)->handle( event );
-    }
-}
-
 void Environment::publishChilds(EventHandler *evl, FrameNode *parent)
 {
   
@@ -119,6 +110,12 @@ void Environment::publishChilds(EventHandler *evl, FrameNode *parent)
 	evl->handle( Event( Event::FRAMENODE_TREE, Event::ADD, parent, *it ) );
 	publishChilds(evl, *it);
     }
+}
+
+
+void Environment::emit( const Event& event )
+{
+    eventHandlers.emit( event );
 }
 
 void Environment::addEventHandler(EventHandler *handler) 
@@ -142,7 +139,7 @@ void Environment::addEventHandler(EventHandler *handler)
 	handler->handle( Event( Event::FRAMENODE, Event::ADD, it->first, it->second ) );
     }
     
-    eventHandlers.push_back(handler);
+    eventHandlers.addEventHandler(handler);
 }
 
 void Environment::detachChilds(FrameNode *parent, EventHandler *evl)
@@ -183,10 +180,7 @@ void Environment::removeEventHandler(EventHandler *handler)
 	handler->handle( Event( Event::ITEM, Event::REMOVE, it->second ) );
     }
     
-    eventHandlerType::iterator it = std::find(eventHandlers.begin(), eventHandlers.end(), handler);
-    if(it != eventHandlers.end()) {
-	eventHandlers.erase(it);
-    }
+    eventHandlers.removeEventHandler( handler );
 }
 
 void Environment::attachItem(EnvironmentItem* item)
@@ -207,7 +201,7 @@ void Environment::attachItem(EnvironmentItem* item)
     // set a pointer to environment object
     item->env = this;
     
-    handle( Event( Event::ITEM, Event::ADD, item ) );
+    emit( Event( Event::ITEM, Event::ADD, item ) );
 } 
 
 template <class T>
@@ -266,7 +260,7 @@ void Environment::detachItem(EnvironmentItem* item)
 	(*it)();
     }
 
-    handle( Event( Event::ITEM, Event::REMOVE, item ) );
+    emit( Event( Event::ITEM, Event::REMOVE, item ) );
     
     items.erase( item->getUniqueId() );
     item->unique_id = ITEM_NOT_ATTACHED;
@@ -275,7 +269,7 @@ void Environment::detachItem(EnvironmentItem* item)
 
 void Environment::itemModified(EnvironmentItem* item) 
 {
-    handle( Event( Event::ITEM, Event::UPDATE, item ) );
+    emit( Event( Event::ITEM, Event::UPDATE, item ) );
 }
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
@@ -290,7 +284,7 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 
     frameNodeTree.insert(make_pair(child, parent));
     
-    handle( Event( Event::FRAMENODE_TREE, Event::ADD, parent, child ) );
+    emit( Event( Event::FRAMENODE_TREE, Event::ADD, parent, child ) );
 }
 
 void Environment::addChild(Layer* parent, Layer* child)
@@ -305,14 +299,14 @@ void Environment::addChild(Layer* parent, Layer* child)
 
     layerTree.insert(make_pair(child, parent));
 
-    handle( Event( Event::LAYER_TREE, Event::ADD, parent, child ) );
+    emit( Event( Event::LAYER_TREE, Event::ADD, parent, child ) );
 }
 
 void Environment::removeChild(FrameNode* parent, FrameNode* child)
 {
     if( getParent( child ) == parent )
     {
-	handle( Event( Event::FRAMENODE_TREE, Event::REMOVE, parent, child ) );
+	emit( Event( Event::FRAMENODE_TREE, Event::REMOVE, parent, child ) );
 
 	frameNodeTree.erase( frameNodeTree.find( child ) );
     }
@@ -322,7 +316,7 @@ void Environment::removeChild(Layer* parent, Layer* child)
 {
     if( getParent( child ) == parent )
     {
-	handle( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
+	emit( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
 
 	layerTree.erase( layerTree.find( child ) );
     }
@@ -385,14 +379,14 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 
     cartesianMapGraph[map] = node;
 
-    handle( Event( Event::FRAMENODE, Event::ADD, map, node ) );
+    emit( Event( Event::FRAMENODE, Event::ADD, map, node ) );
 }
 
 void Environment::detachFrameNode(CartesianMap* map, FrameNode* node)
 {
     if( cartesianMapGraph.count(map) && cartesianMapGraph[map] == node )
     {
-	handle( Event( Event::FRAMENODE, Event::REMOVE, map, node ) );
+	emit( Event( Event::FRAMENODE, Event::REMOVE, map, node ) );
 
 	cartesianMapGraph.erase( map );
     }

@@ -14,6 +14,8 @@
 #include <vector>
 #include <stdexcept>
 
+#include <envire/core/EventSource.hpp>
+
 namespace envire
 {
     class Layer;
@@ -449,7 +451,7 @@ namespace envire
      * environment class, and convenience methods of the individual objects are
      * available to simplify usage.
      */
-    class Environment
+    class Environment 
     {
 	friend class Serialization;
 	friend class SerializationImpl;
@@ -466,7 +468,6 @@ namespace envire
 	typedef std::map<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
 	typedef std::map<CartesianMap*, FrameNode*> cartesianMapGraphType;
-	typedef std::vector<EventHandler *> eventHandlerType;
 	
 	itemListType items;
 	frameNodeTreeType frameNodeTree;
@@ -474,9 +475,10 @@ namespace envire
 	operatorGraphType operatorGraphInput;
 	operatorGraphType operatorGraphOutput;
 	cartesianMapGraphType cartesianMapGraph;
-	eventHandlerType eventHandlers;
 	
 	FrameNode* rootNode;
+
+	EventSource eventHandlers;
 	void publishChilds(EventHandler* handler, FrameNode *parent);
 	void detachChilds(FrameNode *parent, EventHandler* handler);
 
@@ -547,6 +549,24 @@ namespace envire
         /** Loads the environment from the given directory and returns it */
         static Environment* unserialize(std::string const& path);
 
+	/**
+	 * Adds an eventHandler that gets called whenever there
+	 * are modifications to the evironment.
+	 * On registration, all content of the environment is put to the
+	 * handler as if it was being generated.
+	 */
+	void addEventHandler(EventHandler *handler);
+
+	/**
+	 * Remove the given eventHandler from the environment.
+	 * The handler will receive events as if the Environment was destroyed.
+	 */
+	void removeEventHandler(EventHandler *handler);
+
+	/**
+	 * will pass the @param event to the registered event handlers
+	 */
+	void emit( const Event& event );
 
 	/**
 	 * returns all items of a particular type
@@ -565,23 +585,6 @@ namespace envire
 	    return result;
 	}
 
-	/**
-	 * Adds an eventHandler that gets called whenever there
-	 * are modifications to the evironment.
-	 * Note, the handler gets called from the evire thread context.
-	 */
-	void addEventHandler(EventHandler *handler);
-	
-	/**
-	 * Remove the given eventHandler fromt the environment
-	 */
-	void removeEventHandler(EventHandler *handler);
-
-	/**
-	 * will pass the @param event to the registered event handlers
-	 */
-	void handle( const Event& event );
-	
         /** 
 	 * Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
