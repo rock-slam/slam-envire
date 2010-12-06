@@ -34,6 +34,7 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR}/envire)
 add_library(envire SHARED ${ENVMAP_SRCS})
 target_link_libraries(envire 
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_THREAD_LIBRARY}
     ${LIBYAML_LIBRARIES}
     ${CGAL_LIBRARIES}
     ${PLY_TYPES_LIBRARIES}
