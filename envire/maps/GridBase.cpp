@@ -14,7 +14,7 @@ GridBase::~GridBase()
 }
 
 GridBase::GridBase(Serialization& so)
-    : CartesianMap( so )
+    : Map<2>( so )
 {
     unserialize(so);
 }
@@ -55,3 +55,8 @@ bool GridBase::toGrid( double x, double y, size_t& m, size_t& n )
     }
 }
         
+GridBase::Extents GridBase::getExtents() const
+{
+    // TODO provide proper extents
+    return Extents( Eigen::Vector2d( width * scalex, height * scaley ) ); 
+}

@@ -391,6 +391,24 @@ namespace envire
         /** Returns the frame node on which this map is attached */
         const FrameNode* getFrameNode() const;
 
+	/** @return the dimension of the cartesian space (2 or 3) */
+	virtual int getDimension() const = 0;
+
+    };
+
+    template <int _DIMENSION>
+	class Map : public CartesianMap
+    {
+	static const int DIMENSION = _DIMENSION;
+
+    public:
+	Map() {};
+        Map(Serialization& so) : CartesianMap( so ) {};
+
+	typedef Eigen::AlignedBox<double, DIMENSION> Extents;
+
+	int getDimension() const { return DIMENSION; }
+	virtual Extents getExtents() const = 0;
     };
 
     /** An operator generates a set of output maps based on a set of input maps.

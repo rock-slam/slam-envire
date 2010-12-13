@@ -5,7 +5,7 @@
 
 namespace envire 
 {
-    class GridBase : public CartesianMap
+    class GridBase : public Map<2> 
     {
     public:
 	static const std::string className;
@@ -28,6 +28,8 @@ namespace envire
 
 	double getScaleX() { return scalex; };
 	double getScaleY() { return scaley; };
+
+	Extents getExtents() const;
     };
 }
 

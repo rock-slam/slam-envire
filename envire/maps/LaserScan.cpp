@@ -16,7 +16,7 @@ LaserScan::LaserScan()
 }
 
 LaserScan::LaserScan(Serialization& so) :
-    CartesianMap(so)
+    Map<3>(so)
 {
     so.setClassName(className);
     readScan( getMapFileName(so.getMapPath()) );
@@ -237,3 +237,8 @@ LaserScan* LaserScan::clone() const
     return new LaserScan(*this);
 }
 
+LaserScan::Extents LaserScan::getExtents() const
+{
+    // TODO provide proper extents
+    return Extents(); 
+}

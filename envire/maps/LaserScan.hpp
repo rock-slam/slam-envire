@@ -8,7 +8,7 @@
 
 namespace envire {
 
-    class LaserScan : public CartesianMap
+    class LaserScan : public Map<3>
     {
         public:
 	    /** delta_phi is the step size in rads perpendicular to the scan
@@ -63,6 +63,8 @@ namespace envire {
             LaserScan* clone() const;
 
 	    static LaserScan* importScanFile( const std::string& file, FrameNode* frame );
+
+	    Extents getExtents() const;
     };
                 
 };
