@@ -33,6 +33,7 @@ namespace envire {
 	double getHorizontalPatchThickness() const { return thickness; }
 
 	MLSProjection* clone() const;
+	void set( EnvironmentItem* other );
 
     protected:
 	void updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, double mean, double stdev );

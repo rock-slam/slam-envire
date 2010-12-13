@@ -6,6 +6,9 @@
 #include "envire/maps/TriMesh.hpp"
 #include "envire/operators/ScanMeshing.hpp"
 
+#include "envire/core/Event.hpp"
+#include "envire/core/EventHandler.hpp"
+
 #define BOOST_TEST_MODULE EnvireTest 
 #include <boost/test/included/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -28,6 +31,7 @@ template<class T> bool contains(const std::list<T>& list, const T& element)
 class DummyOperator : public Operator 
 {
 public:
+    void set( EnvironmentItem* other ) {}
     Operator* clone() const {return new DummyOperator(*this);}
     bool updateAll() { return true; };
     void serialize(Serialization &) {};
@@ -36,6 +40,7 @@ public:
 class DummyLayer : public Layer 
 {
 public:
+    void set( EnvironmentItem* other ) {}
     Layer* clone() const {return new DummyLayer(*this);};
     void serialize(Serialization &) {};
 };
@@ -43,6 +48,7 @@ public:
 class DummyCartesianMap : public Map<2> 
 {
 public:
+    void set( EnvironmentItem* other ) {}
     CartesianMap* clone() const {return new DummyCartesianMap(*this);};
     void serialize(Serialization &) {};
     Extents getExtents() const { return Extents(); }

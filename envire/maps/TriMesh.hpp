@@ -39,6 +39,7 @@ namespace envire {
 	const std::string& getClassName() const {return className;};
 
 	TriMesh* clone() const;
+	void set( EnvironmentItem* other );
 
 	void calcVertexNormals( void );
     };

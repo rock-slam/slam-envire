@@ -283,3 +283,8 @@ ScanMeshing* ScanMeshing::clone() const
     return new ScanMeshing( *this );
 }
 
+void ScanMeshing::set( EnvironmentItem* other )
+{
+    ScanMeshing* fn = dynamic_cast<ScanMeshing*>( other ); 
+    if( fn ) operator=( *fn );
+}

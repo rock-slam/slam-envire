@@ -135,3 +135,9 @@ MLSProjection* MLSProjection::clone() const
 {
     return new MLSProjection( *this );
 }
+
+void MLSProjection::set( EnvironmentItem* other )
+{
+    MLSProjection* fn = dynamic_cast<MLSProjection*>( other ); 
+    if( fn ) operator=( *fn );
+}
