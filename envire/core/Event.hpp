@@ -59,7 +59,7 @@ struct Event
     /** will apply the changes this event represents to the give environment.
      * Event needs to have the ref function called before it can be applied.
      */
-    void apply( Environment* env );
+    void apply( Environment* env ) const;
 
     /** resolve the references to the items referenced in the event, and
      * perform copies if needed.
