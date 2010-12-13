@@ -403,36 +403,36 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 			if( getScalarInMap<std::string>("type") == "frameNodeTree" )
 			{
 			    env->frameNodeTree.insert( make_pair( 
-					env->getItem<FrameNode*>( getScalarInMap<long>("child") ), 
-					env->getItem<FrameNode*>( getScalarInMap<long>("parent") ) ) );
+					env->getItem<FrameNode>( getScalarInMap<long>("child") ).get(), 
+					env->getItem<FrameNode>( getScalarInMap<long>("parent") ).get() ) );
 			}
 
 			if( getScalarInMap<std::string>("type") == "layerTree" )
 			{
 			    env->layerTree.insert( make_pair( 
-					env->getItem<Layer*>( getScalarInMap<long>("child") ), 
-					env->getItem<Layer*>( getScalarInMap<long>("parent") ) ) );
+					env->getItem<Layer>( getScalarInMap<long>("child") ).get(), 
+					env->getItem<Layer>( getScalarInMap<long>("parent") ).get() ) );
 			}
 
 			if( getScalarInMap<std::string>("type") == "operatorGraphInput" )
 			{
 			    env->operatorGraphInput.insert( make_pair( 
-					env->getItem<Operator*>( getScalarInMap<long>("operator") ), 
-					env->getItem<Layer*>( getScalarInMap<long>("layer") ) ) );
+					env->getItem<Operator>( getScalarInMap<long>("operator") ).get(), 
+					env->getItem<Layer>( getScalarInMap<long>("layer") ).get() ) );
 			}
 
 			if( getScalarInMap<std::string>("type") == "operatorGraphOutput" )
 			{
 			    env->operatorGraphOutput.insert( make_pair( 
-					env->getItem<Operator*>( getScalarInMap<long>("operator") ), 
-					env->getItem<Layer*>( getScalarInMap<long>("layer") ) ) );
+					env->getItem<Operator>( getScalarInMap<long>("operator") ).get(), 
+					env->getItem<Layer>( getScalarInMap<long>("layer") ).get() ) );
 			}
 
 			if( getScalarInMap<std::string>("type") == "cartesianMapGraph" )
 			{
 			    env->cartesianMapGraph.insert( make_pair( 
-					env->getItem<CartesianMap*>( getScalarInMap<long>("map") ), 
-					env->getItem<FrameNode*>( getScalarInMap<long>("node") ) ) );
+					env->getItem<CartesianMap>( getScalarInMap<long>("map") ).get(), 
+					env->getItem<FrameNode>( getScalarInMap<long>("node") ).get() ) );
 			}
 		    }
 		}
