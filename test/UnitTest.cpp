@@ -354,17 +354,51 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     BOOST_CHECK_EQUAL( (*it3).mean, 1.0 );
     ++it3;
     BOOST_CHECK_EQUAL( it3, mls->endCell() );
-
-    /*
-    MultiLevelSurfaceGrid *mlsClone = mls2->clone();
-    MultiLevelSurfaceGrid::iterator it4 = mlsClone->beginCell(2,1);
-    BOOST_CHECK_EQUAL( it4->mean, 3.0 );
-    it4++;
-    */
 }
 
 BOOST_AUTO_TEST_CASE( env_eventsync ) 
 {
+    boost::scoped_ptr<Environment> env( new Environment() );
+    boost::scoped_ptr<Environment> env2( new Environment() );
+
+    // the eventprocessor will queue events until flush is called,
+    // then all events are applied to the given environment
+    EventProcessor ep( env2.get() );
+    env->addEventHandler( &ep );
+
+    // create some child framenodes
+    FrameNode *fn1, *fn2, *fn3;
+    fn1 = new FrameNode();
+    Eigen::Transform3d t1(Eigen::Translation3d( 0.0, 0.0, 0.5 ));
+    Eigen::Transform3d t2(Eigen::Translation3d( 0.0, 0.0, 0.5 ));
+    Eigen::Transform3d t3(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 ));
+
+    fn1->setTransform( t1 );
+    fn2 = new FrameNode();
+    fn2->setTransform( t2 ); 
+    fn3 = new FrameNode();
+    
+    // attach explicitely
+    env->attachItem( fn1 );
+    env->addChild( env->getRootNode(), fn1 );
+    env->addChild( fn1, fn2 );
+    env->addChild( env->getRootNode(), fn3 );
+
+    ep.flush();
+    BOOST_CHECK( env2->getItem( fn1->getUniqueId() ) );
+    BOOST_CHECK_EQUAL( 
+	    env2->getItem<FrameNode>( fn1->getUniqueId() )->getTransform().translation().z(), 
+	    fn1->getTransform().translation().z()
+	    );
+
+    fn1->setTransform( t3 );
+    ep.flush();
+    BOOST_CHECK_EQUAL( 
+	    env2->getItem<FrameNode>( fn1->getUniqueId() )->getTransform().translation().z(), 
+	    fn1->getTransform().translation().z()
+	    );
+
+    env->removeEventHandler( &ep );
 }
 
 // EOF

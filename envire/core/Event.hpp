@@ -72,6 +72,11 @@ struct Event
     long id_a, id_b;
 };
 
+std::ostream& operator <<( std::ostream& ostream, Event::Type type );
+std::ostream& operator <<( std::ostream& ostream, Event::Operation operation );
+std::ostream& operator <<( std::ostream& ostream, Event::Result result );
+std::ostream& operator <<( std::ostream& ostream, const Event& msg );
+
 }
 
 #endif

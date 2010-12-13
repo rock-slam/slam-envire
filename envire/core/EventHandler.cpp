@@ -49,7 +49,7 @@ void EventDispatcher::dispatch( Event::Type type, Event::Operation operation, En
 
 void EventQueue::handle( const Event& message )
 {
-    boost::mutex::scoped_lock lock( queueMutex );
+    boost::lock_guard<boost::mutex> lock( queueMutex );
     std::list<Event>::iterator it = msgQueue.begin();
     // create a local copy of the event
     Event event(message);
@@ -77,11 +77,12 @@ void EventQueue::handle( const Event& message )
 
 void EventQueue::flush()
 {
-    boost::mutex::scoped_lock lock( queueMutex );
+    boost::lock_guard<boost::mutex> lock( queueMutex );
     for( std::list<Event>::iterator it = msgQueue.begin(); it != msgQueue.end(); it++ )
     {
 	emit( *it );
     }
+    msgQueue.clear();
 }
 
 EventProcessor::EventProcessor( Environment *env )
