@@ -132,6 +132,10 @@ namespace envire
 	 */
         virtual EnvironmentItem* clone() const = 0;
 
+	/** virtual assignemt of other value to this
+	 */
+	virtual void set( EnvironmentItem* other ) = 0;
+
 	/** will attach the newly created object to the given Environment.
 	 */ 
 	explicit EnvironmentItem(Environment* env);	
@@ -215,6 +219,7 @@ namespace envire
         void setTransform(TransformType const& transform);
 
 	FrameNode* clone() const;
+	void set( EnvironmentItem* other );  
     };
     
     /** The layer is the base object that holds map data. It can be a cartesian
@@ -527,11 +532,11 @@ namespace envire
 	void itemModified(EnvironmentItem* item);
 	
 	EnvironmentItem::Ptr getItem(int uniqueId) 
-	    { return items[uniqueId]; };
+	    { return items.count( uniqueId ) ? items[uniqueId] : NULL; };
 
 	template <class T>
 	boost::intrusive_ptr<T> getItem(int uniqueId) 
-	    { return boost::dynamic_pointer_cast<T>(items[uniqueId]); };
+	    { return items.count( uniqueId ) ? boost::dynamic_pointer_cast<T>(items[uniqueId]) : NULL; };
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);

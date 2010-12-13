@@ -69,3 +69,9 @@ FrameNode* FrameNode::clone() const
     return new FrameNode( *this );
 }
 
+void FrameNode::set( EnvironmentItem* other )
+{
+    FrameNode* fn = dynamic_cast<FrameNode*>( other ); 
+    if( fn ) operator=( *fn );
+}
+

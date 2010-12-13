@@ -69,6 +69,7 @@ namespace envire
 	virtual const std::vector<std::string>& getBands() const {return bands;};
 	
 	Grid* clone() const;
+	void set( EnvironmentItem* other );
 
 	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
 
@@ -204,6 +205,12 @@ namespace envire
 	return new Grid<T>(*this);
     }
    
+    template<class T>void Grid<T>::set(EnvironmentItem* other)
+    {
+	Grid<T>* gp = dynamic_cast<Grid<T>*>( other );
+	if( gp ) operator=( *gp );
+    }
+
     template<class T>void Grid<T>::writeGridData(const std::string &key,const std::string& path)
     {
 	std::vector<std::string> string_vector;

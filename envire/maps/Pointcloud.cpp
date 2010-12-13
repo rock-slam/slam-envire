@@ -52,6 +52,12 @@ Pointcloud* Pointcloud::clone() const
     return new Pointcloud(*this);
 }
 
+void Pointcloud::set( EnvironmentItem* other )
+{
+    Pointcloud *p = dynamic_cast<Pointcloud*>( other );
+    if( p ) operator=( *p );
+}
+
 bool Pointcloud::writePly(const std::string& path)
 {
     PlyFile ply(path);

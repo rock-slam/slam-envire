@@ -162,6 +162,12 @@ Projection* Projection::clone() const
     return new Projection( *this );
 }
 
+void Projection::set( EnvironmentItem* other )
+{
+    Projection* fn = dynamic_cast<Projection*>( other ); 
+    if( fn ) operator=( *fn );
+}
+
 // TODO add this to a new operator
 /*
 bool Projection::updateTraversibilityMap()

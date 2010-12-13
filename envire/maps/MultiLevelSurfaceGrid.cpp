@@ -191,6 +191,12 @@ MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone() const
     return new MultiLevelSurfaceGrid(*this);
 }
 
+void MultiLevelSurfaceGrid::set( EnvironmentItem* other )
+{
+    MultiLevelSurfaceGrid *p = dynamic_cast<MultiLevelSurfaceGrid*>( other );
+    if( p ) operator=( *p );
+}
+
 bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
 {
     size_t x, y;

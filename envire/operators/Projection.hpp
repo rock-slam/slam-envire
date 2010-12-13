@@ -31,6 +31,7 @@ namespace envire {
 	bool interpolateMap(const std::string& type);
 
 	Projection* clone() const;
+	void set( EnvironmentItem* other );
     };
 }
 #endif

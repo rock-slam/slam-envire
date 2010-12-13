@@ -35,6 +35,13 @@ TriMesh* TriMesh::clone() const
     return new TriMesh(*this);
 }
 
+void TriMesh::set( EnvironmentItem* other )
+{
+    TriMesh* fn = dynamic_cast<TriMesh*>( other ); 
+    if( fn ) operator=( *fn );
+}
+
+
 void TriMesh::calcVertexNormals()
 {
     // calculate the Triangle normals first

@@ -38,6 +38,7 @@ namespace envire {
 	void setDefaultConfiguration();
 
 	ScanMeshing* clone() const;
+	void set( EnvironmentItem* other );
     };
 }
 

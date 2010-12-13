@@ -237,6 +237,12 @@ LaserScan* LaserScan::clone() const
     return new LaserScan(*this);
 }
 
+void LaserScan::set( EnvironmentItem* other )
+{
+    LaserScan* fn = dynamic_cast<LaserScan*>( other ); 
+    if( fn ) operator=( *fn );
+}
+
 LaserScan::Extents LaserScan::getExtents() const
 {
     // TODO provide proper extents
