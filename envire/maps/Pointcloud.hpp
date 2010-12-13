@@ -5,7 +5,7 @@
 #include <Eigen/Core>
 
 namespace envire {
-    class Pointcloud : public CartesianMap 
+    class Pointcloud : public Map<3> 
     {
     public:
 	typedef int vertex_attr;
@@ -56,6 +56,8 @@ namespace envire {
 	const std::string& getClassName() const {return className;};
 
 	Pointcloud* clone() const;
+
+	Extents getExtents() const;
     };
 }
 

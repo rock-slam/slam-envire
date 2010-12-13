@@ -40,11 +40,12 @@ public:
     void serialize(Serialization &) {};
 };
 
-class DummyCartesianMap : public CartesianMap 
+class DummyCartesianMap : public Map<2> 
 {
 public:
     CartesianMap* clone() const {return new DummyCartesianMap(*this);};
     void serialize(Serialization &) {};
+    Extents getExtents() const { return Extents(); }
 };
 
 BOOST_AUTO_TEST_CASE( TreeTest )

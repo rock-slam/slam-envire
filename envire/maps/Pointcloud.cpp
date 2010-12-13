@@ -22,7 +22,7 @@ Pointcloud::~Pointcloud()
 }
 
 Pointcloud::Pointcloud(Serialization& so, bool handleMap)
-    : CartesianMap(so)
+    : Map<3>(so)
 {
     so.setClassName(className);
 
@@ -112,3 +112,8 @@ Pointcloud* Pointcloud::importCsv(const std::string& path, FrameNode* fm)
     return pc;
 }
 
+Pointcloud::Extents Pointcloud::getExtents() const
+{
+    // TODO provide proper extents
+    return Extents(); 
+}
