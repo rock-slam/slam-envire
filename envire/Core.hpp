@@ -526,8 +526,12 @@ namespace envire
 	**/
 	void itemModified(EnvironmentItem* item);
 	
-	template<class T> T getItem(int uniqueId) 
-	    { return dynamic_cast<T>(items[uniqueId].get()); };
+	EnvironmentItem::Ptr getItem(int uniqueId) 
+	    { return items[uniqueId]; };
+
+	template <class T>
+	boost::intrusive_ptr<T> getItem(int uniqueId) 
+	    { return boost::dynamic_pointer_cast<T>(items[uniqueId]); };
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
