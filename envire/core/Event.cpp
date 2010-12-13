@@ -4,7 +4,7 @@
 
 using namespace envire;
 
-std::ostream& operator <<( std::ostream& ostream, Event::Type type )
+std::ostream& envire::operator <<( std::ostream& ostream, Event::Type type )
 {
     switch( type )
     {
@@ -17,7 +17,7 @@ std::ostream& operator <<( std::ostream& ostream, Event::Type type )
     return ostream;
 }
 
-std::ostream& operator <<( std::ostream& ostream, Event::Operation operation )
+std::ostream& envire::operator <<( std::ostream& ostream, Event::Operation operation )
 {
     switch( operation )
     {
@@ -28,7 +28,7 @@ std::ostream& operator <<( std::ostream& ostream, Event::Operation operation )
     return ostream;
 }
 
-std::ostream& operator <<( std::ostream& ostream, Event::Result result )
+std::ostream& envire::operator <<( std::ostream& ostream, Event::Result result )
 {
     switch( result )
     {
@@ -39,9 +39,16 @@ std::ostream& operator <<( std::ostream& ostream, Event::Result result )
     return ostream;
 }
 
-std::ostream& operator <<( std::ostream& ostream, const Event& msg )
+std::ostream& envire::operator <<( std::ostream& ostream, const Event& msg )
 {
-    ostream << "(" << msg.operation << " " << msg.type << " a:" << msg.a << " b:" << msg.b << ")";
+    ostream << "(" 
+	<< msg.operation 
+	<< " " << msg.type 
+	<< " a:" << msg.a 
+	<< " b:" << msg.b 
+	<< " id_a:" << msg.id_a 
+	<< " id_b:" << msg.id_b 
+	<< ")";
     return ostream;
 }
 
@@ -83,13 +90,17 @@ void Event::ref()
     if( a ) id_a = a->getUniqueId();
     if( b ) id_b = b->getUniqueId();
 
-    // destroy original pointers
-    a = b = 0;
-
     if( type == Event::ITEM && ( operation == Event::ADD || operation == Event::UPDATE ) )
     {
 	// perform a copy of the EnvironmentItem in these cases
+	std::cout << *this << " " << typeid( a.get() ).name() << std::endl;
 	a = a->clone();
+	b = 0;
+    }
+    else 
+    {
+	// destroy original pointers
+	a = b = 0;
     }
 }
 
@@ -109,7 +120,7 @@ struct ApplyEventHelper : public EventDispatcher
     {
 	// for the time being copy the whole item
 	// TODO: implement partial updates
-	item->operator=( *(event.a) );
+	item->set( event.a.get() );
 	
 	env.itemModified( item );
     }
