@@ -47,3 +47,48 @@ void EventDispatcher::dispatch( Event::Type type, Event::Operation operation, En
 	throw std::runtime_error("Event message not handled");
 }
 
+void EventQueue::handle( const Event& message )
+{
+    boost::mutex::scoped_lock lock( queueMutex );
+    std::list<Event>::iterator it = msgQueue.begin();
+    // create a local copy of the event
+    Event event(message);
+    bool valid = true;
+    while( it != msgQueue.end() )
+    {
+	Event::Result res = 
+	    event.merge( *it );
+
+	if( res == Event::CANCEL || res == Event::INVALIDATE )
+	    it = msgQueue.erase( it );
+
+	if( res == Event::CANCEL )
+	    valid = false;
+
+	++it;
+    }
+
+    if( valid )
+    {
+	event.ref();
+	msgQueue.push_back( event );
+    }
+}
+
+void EventQueue::flush()
+{
+    boost::mutex::scoped_lock lock( queueMutex );
+    for( std::list<Event>::iterator it = msgQueue.begin(); it != msgQueue.end(); it++ )
+    {
+	emit( *it );
+    }
+}
+
+EventProcessor::EventProcessor( Environment *env )
+    : env( env ) {}
+
+void EventProcessor::emit( const Event& message )
+{
+    message.apply( env );
+}
+

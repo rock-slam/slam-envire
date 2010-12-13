@@ -1,5 +1,6 @@
 #include "Core.hpp"
 #include "core/Event.hpp"
+#include "core/EventHandler.hpp"
 
 using namespace envire;
 
@@ -94,31 +95,78 @@ void Event::ref()
 
 struct ApplyEventHelper : public EventDispatcher
 {
-    Event &event;
-    ApplyEventHelper( Event& event ) : event( event ) {}
+    const Event &event;
+    Environment &env;
 
-    void itemAttached(EnvironmentItem *item);
-    void itemDetached(EnvironmentItem *item);
-    void childAdded(FrameNode* parent, FrameNode* child);
-    void childAdded(Layer* parent, Layer* child);
+    ApplyEventHelper( const Event& event, Environment& env ) : event( event ), env( env ) {}
 
-    void frameNodeSet(CartesianMap* map, FrameNode* node);
-    void frameNodeDetached(CartesianMap* map, FrameNode* node);
+    void itemAttached(EnvironmentItem *item)
+    {
+	env.attachItem( event.a.get() );
+    };
 
-    void childRemoved(FrameNode* parent, FrameNode* child);
-    void childRemoved(Layer* parent, Layer* child);
+    void itemModified(EnvironmentItem *item)
+    {
+	// for the time being copy the whole item
+	// TODO: implement partial updates
+	item->operator=( *(event.a) );
+	
+	env.itemModified( item );
+    }
 
-    void setRootNode(FrameNode *root);
-    void removeRootNode(FrameNode *root);
+    void itemDetached(EnvironmentItem *item)
+    {
+	env.detachItem( item );
+    }
 
-    void itemModified(EnvironmentItem *item);
-}
+    void childAdded(FrameNode* parent, FrameNode* child)
+    {
+	env.addChild( parent, child );
+    }
 
-void Event::apply( Environment* env )
+    void childAdded(Layer* parent, Layer* child)
+    {
+	env.addChild( parent, child );
+    }
+
+    void frameNodeSet(CartesianMap* map, FrameNode* node)
+    {
+	env.setFrameNode( map, node );
+    }
+
+    void frameNodeDetached(CartesianMap* map, FrameNode* node)
+    {
+	env.detachFrameNode( map, node );
+    }
+
+    void childRemoved(FrameNode* parent, FrameNode* child)
+    {
+	env.removeChild( parent, child );
+    }
+
+    void childRemoved(Layer* parent, Layer* child)
+    {
+	env.removeChild( parent, child );
+    }
+
+    void setRootNode(FrameNode *root)
+    {
+	// the root node should stay the same for all environments
+	// TODO: maybe improve handling of the root node
+    }
+
+    void removeRootNode(FrameNode *root)
+    {
+    }
+
+};
+
+void Event::apply( Environment* env ) const
 {
-    EnvironmentItem *a = env->getItem<EnvironmentItem>( id_a );
-    EnvironmentItem *b = env->getItem<EnvironmentItem>( id_b );
+    EnvironmentItem *a = env->getItem( id_a ).get();
+    EnvironmentItem *b = env->getItem( id_b ).get();
 
-    ApplyEventHelper helper( *this );
+    ApplyEventHelper helper( *this, *env );
+    EventDispatcher::dispatch( type, operation, a, b, &helper );
 }
 
