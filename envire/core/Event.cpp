@@ -92,7 +92,33 @@ void Event::ref()
     }
 }
 
+struct ApplyEventHelper : public EventDispatcher
+{
+    Event &event;
+    ApplyEventHelper( Event& event ) : event( event ) {}
+
+    void itemAttached(EnvironmentItem *item);
+    void itemDetached(EnvironmentItem *item);
+    void childAdded(FrameNode* parent, FrameNode* child);
+    void childAdded(Layer* parent, Layer* child);
+
+    void frameNodeSet(CartesianMap* map, FrameNode* node);
+    void frameNodeDetached(CartesianMap* map, FrameNode* node);
+
+    void childRemoved(FrameNode* parent, FrameNode* child);
+    void childRemoved(Layer* parent, Layer* child);
+
+    void setRootNode(FrameNode *root);
+    void removeRootNode(FrameNode *root);
+
+    void itemModified(EnvironmentItem *item);
+}
+
 void Event::apply( Environment* env )
 {
+    EnvironmentItem *a = env->getItem<EnvironmentItem>( id_a );
+    EnvironmentItem *b = env->getItem<EnvironmentItem>( id_b );
+
+    ApplyEventHelper helper( *this );
 }
 
