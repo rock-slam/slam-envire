@@ -11,6 +11,7 @@
 
 #include <boost/serialization/singleton.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/intrusive_ptr.hpp>
 #include <vector>
 #include <stdexcept>
 
@@ -97,8 +98,15 @@ namespace envire
      */
     class EnvironmentItem 
     {
+    public:
+	typedef boost::intrusive_ptr<EnvironmentItem> Ptr; 
+
     protected:
 	friend class Environment;
+	friend void intrusive_ptr_add_ref( EnvironmentItem* item );
+	friend void intrusive_ptr_release( EnvironmentItem* item );
+
+	long ref_count;
 
 	/** each environment item must have a unique id.
 	 */
@@ -148,16 +156,11 @@ namespace envire
 
 	/** will detach the item from the current environment
 	 */
-	void detach();
-
-	/** will detach the item from the current environment
-	 * and also delete the memory associated.
-	 *
-	 * After this call the pointer to this object is no longer valid
-	 */
-	void dispose();
+	EnvironmentItem::Ptr detach();
     };
 
+    void intrusive_ptr_add_ref( EnvironmentItem* item );
+    void intrusive_ptr_release( EnvironmentItem* item );
 
     /** An object of this class represents a node in the FrameTree. The
      * FrameTree has one root node (call to env->getRootNode()), which
@@ -481,7 +484,7 @@ namespace envire
 	static const long ITEM_NOT_ATTACHED = -1;
 
     protected:
-	typedef std::map<long, EnvironmentItem*> itemListType;
+	typedef std::map<long, EnvironmentItem::Ptr > itemListType;
 	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
 	typedef std::map<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
@@ -513,7 +516,7 @@ namespace envire
 	 * by the environment. All links to this object from other objects in the environment are
 	 * removed.
 	 */
-	void detachItem(EnvironmentItem* item);
+	EnvironmentItem::Ptr detachItem(EnvironmentItem* item);
 	
 	/**
 	* This method will be called by any EnvironmentItem, which was
@@ -524,7 +527,7 @@ namespace envire
 	void itemModified(EnvironmentItem* item);
 	
 	template<class T> T getItem(int uniqueId) 
-	    { return dynamic_cast<T>(items[uniqueId]); };
+	    { return dynamic_cast<T>(items[uniqueId].get()); };
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
@@ -596,7 +599,7 @@ namespace envire
 	    for(itemListType::iterator it=items.begin();it != items.end(); ++it )
 	    {
 		// TODO this is not very efficient...
-		T* item = dynamic_cast<T*>( it->second );
+		T* item = dynamic_cast<T*>( it->second.get() );
 		if( item )
 		    result.push_back( item );
 	    }

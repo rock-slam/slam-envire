@@ -1,5 +1,6 @@
 #include "Core.hpp"
 #include "Event.hpp"
+#include "EventHandler.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -16,19 +17,22 @@ using namespace envire;
 
 const std::string EnvironmentItem::className = "envire::EnvironmentItem";
 
+void envire::intrusive_ptr_add_ref( EnvironmentItem* item ) { item->ref_count++; }
+void envire::intrusive_ptr_release( EnvironmentItem* item ) { item->ref_count--; }
+
 EnvironmentItem::EnvironmentItem()
-    : unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+    : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
 {
 }
 
 EnvironmentItem::EnvironmentItem(Environment* envPtr)
-   : unique_id( Environment::ITEM_NOT_ATTACHED ) 
+   : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ) 
 {
     envPtr->attachItem( this );
 }
 
 EnvironmentItem::EnvironmentItem(const EnvironmentItem& item)
-    : unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+    : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
 {
 }
 
@@ -69,16 +73,10 @@ void EnvironmentItem::serialize(Serialization &so)
     so.write( "id", unique_id );
 }
 
-void EnvironmentItem::detach()
+EnvironmentItem::Ptr EnvironmentItem::detach()
 {
-    if( env )
-	env->detachItem( this );
-}
-
-void EnvironmentItem::dispose()
-{
-    detach();
-    delete this;
+    assert( env );
+    return env->detachItem( this );
 }
 
 Environment::Environment() :
@@ -96,8 +94,7 @@ Environment::~Environment()
     itemListType::iterator it;
     while( (it = items.begin()) != items.end() )
     {
-	EnvironmentItem* item = it->second;
-	item->dispose();
+	it->second->detach();
     }
 }
 
@@ -214,9 +211,10 @@ void findMapItem(const T& map, boost::function<void (typename T::key_type, typen
     }
 }
 
-void Environment::detachItem(EnvironmentItem* item)
+EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item)
 {
     assert( item );
+    assert( items.count( item->getUniqueId() ) );
 
     // check if there are still some references to this object left
     // effectively we need to go through all the maps, and find a reference to
@@ -262,9 +260,12 @@ void Environment::detachItem(EnvironmentItem* item)
 
     emit( Event( Event::ITEM, Event::REMOVE, item ) );
     
+    EnvironmentItem::Ptr itemPtr = items[ item->getUniqueId() ];
     items.erase( item->getUniqueId() );
     item->unique_id = ITEM_NOT_ATTACHED;
     item->env = NULL;
+
+    return itemPtr;
 }
 
 void Environment::itemModified(EnvironmentItem* item) 
