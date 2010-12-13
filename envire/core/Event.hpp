@@ -2,8 +2,7 @@
 #define __ENVIRE_EVENT__
 
 #include <envire/Core.hpp>
-#include <envire/core/EventSource.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace envire
 {
@@ -46,7 +45,7 @@ struct Event
      * @param a - the first subject of the change
      * @param b - optional second subject of the change
      */
-    Event( Type type, Operation operation, EnvironmentItem* a, EnvironmentItem* b = 0 );
+    Event( Type type, Operation operation, EnvironmentItem::Ptr a, EnvironmentItem::Ptr b = 0 );
 
     /** This method will check the message has any effect on the other message.
      * There are three possible scenarios which are returned by the result value.
@@ -55,91 +54,24 @@ struct Event
      * INVALIDATE - the current message makes the other invalid
      * CANCEL - both messages cancel each other out 
      */ 
-    virtual Result merge( const Event& other );
+    Result merge( const Event& other );
+
+    /** will apply the changes this event represents to the give environment.
+     * Event needs to have the ref function called before it can be applied.
+     */
+    void apply( Environment* env );
+
+    /** resolve the references to the items referenced in the event, and
+     * perform copies if needed.
+     */
+    void ref();
 
     Type type;
     Operation operation;
-    EnvironmentItem *a, *b;
+    EnvironmentItem::Ptr a, b;
+    long id_a, id_b;
 };
 
-/** The EventMessage class is derived from Event, and holds information about an
- * environment in a thread safe manner. It does that by copying relevant
- * information about the environment, when passed an event in the constructor.
- * EventMessages in a way encode information about an environment, but are not
- * bound to a particular instance. They can be used to copy environments between
- * threads or processes.
- */
-struct EventMessage : public Event
-{
-    long id_a;
-    long id_b;
-
-    EventMessage( const Event& event );
-    virtual void apply( Environment* env );
-};
-
-/** An EventHandler can be registered with an environment, and is then called,
- * whenever an new Event is generated within the Environment
- */
-class EventHandler
-{
-public:
-    virtual void handle( const Event& message ) = 0;
-};
-
-/** Event dispatcher interface class. Override the callbacks methods that you
- * are interested in.
- */
-class EventDispatcher
-{
-public:
-    virtual void itemAttached(EnvironmentItem *item);
-    virtual void itemDetached(EnvironmentItem *item);
-    virtual void childAdded(FrameNode* parent, FrameNode* child);
-    virtual void childAdded(Layer* parent, Layer* child);
-
-    virtual void frameNodeSet(CartesianMap* map, FrameNode* node);
-    virtual void frameNodeDetached(CartesianMap* map, FrameNode* node);
-
-    virtual void childRemoved(FrameNode* parent, FrameNode* child);
-    virtual void childRemoved(Layer* parent, Layer* child);
-
-    virtual void setRootNode(FrameNode *root);
-    virtual void removeRootNode(FrameNode *root);
-
-    virtual void itemModified(EnvironmentItem *item);
-};
-
-/** Convenience class, that performs the dispatching of particular event
- * types into callback methods.
- */
-class EventListener : public EventHandler, public EventDispatcher
-{
-public:
-    void handle( const Event& message );
-};
-
-/** EventHandler that will apply the handled events to the given Environment
- */
-class EventProcessor : public EventHandler
-{
-    Environment *env;
-
-public:
-    EventProcessor( Environment *env );
-    void handle( const Event& message );
-};
-
-class EventQueue : public EventHandler, public EventSource
-{
-    std::list<EventMessage> msgQueue;
-    boost::mutex queueMutex;
-
-public:
-    void handle( const Event& message );
-    void flush();
-};
-    
 }
 
 #endif

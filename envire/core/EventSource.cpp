@@ -1,4 +1,5 @@
 #include "EventSource.hpp"
+#include "EventHandler.hpp"
 #include "Event.hpp"
 
 using namespace envire;
