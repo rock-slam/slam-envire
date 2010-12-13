@@ -356,5 +356,10 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     it4++;
     */
 }
+
+BOOST_AUTO_TEST_CASE( env_eventsync ) 
+{
+}
+
 // EOF
 //

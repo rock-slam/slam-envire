@@ -3,18 +3,6 @@
 
 using namespace envire;
 
-void EventDispatcher::itemAttached(EnvironmentItem *item) {}
-void EventDispatcher::itemDetached(EnvironmentItem *item) {}
-void EventDispatcher::childAdded(FrameNode* parent, FrameNode* child) {}
-void EventDispatcher::childAdded(Layer* parent, Layer* child) {}
-void EventDispatcher::frameNodeSet(CartesianMap* map, FrameNode* node) {}
-void EventDispatcher::frameNodeDetached(CartesianMap* map, FrameNode* node) {}
-void EventDispatcher::childRemoved(FrameNode* parent, FrameNode* child) {}
-void EventDispatcher::childRemoved(Layer* parent, Layer* child) {}
-void EventDispatcher::setRootNode(FrameNode *root) {}
-void EventDispatcher::removeRootNode(FrameNode *root) {}
-void EventDispatcher::itemModified(EnvironmentItem *item) {}
-
 std::ostream& operator <<( std::ostream& ostream, Event::Type type )
 {
     switch( type )
@@ -56,8 +44,8 @@ std::ostream& operator <<( std::ostream& ostream, const Event& msg )
     return ostream;
 }
 
-Event::Event( Type type, Operation operation, EnvironmentItem* a, EnvironmentItem* b  )
-    : type(type), operation(operation), a(a), b(b)
+Event::Event( Type type, Operation operation, EnvironmentItem::Ptr a, EnvironmentItem::Ptr b  )
+    : type(type), operation(operation), a(a), b(b), id_a( Environment::ITEM_NOT_ATTACHED ), id_b( Environment::ITEM_NOT_ATTACHED )
 {
 }
 
@@ -88,49 +76,23 @@ Event::Result Event::merge( const Event& other )
     return IGNORE;
 }
 
-void EventListener::handle( const Event& event )
-{
-    if( event.type == Event::ITEM && event.operation == Event::ADD )
-	itemAttached( event.a );
-    else if( event.type == Event::ITEM && event.operation == Event::REMOVE )
-	itemDetached( event.a );
-    else if( event.type == Event::ITEM && event.operation == Event::UPDATE )
-	itemModified( event.a );
-    else if( event.type == Event::FRAMENODE_TREE && event.operation == Event::ADD )
-	childAdded( static_cast<FrameNode*>(event.a), static_cast<FrameNode*>(event.b) );
-    else if( event.type == Event::FRAMENODE_TREE && event.operation == Event::REMOVE )
-	childRemoved( static_cast<FrameNode*>(event.a), static_cast<FrameNode*>(event.b) );
-    else if( event.type == Event::LAYER_TREE && event.operation == Event::ADD )
-	childAdded( static_cast<Layer*>(event.a), static_cast<Layer*>(event.b) );
-    else if( event.type == Event::LAYER_TREE && event.operation == Event::REMOVE )
-	childRemoved( static_cast<Layer*>(event.a), static_cast<Layer*>(event.b) );
-    else if( event.type == Event::FRAMENODE && event.operation == Event::ADD )
-	frameNodeSet( static_cast<CartesianMap*>(event.a), static_cast<FrameNode*>(event.b) );
-    else if( event.type == Event::FRAMENODE && event.operation == Event::REMOVE )
-	frameNodeDetached( static_cast<CartesianMap*>(event.a), static_cast<FrameNode*>(event.b) );
-    else if( event.type == Event::ROOT && event.operation == Event::ADD )
-	setRootNode( static_cast<FrameNode*>(event.a) );
-    else if( event.type == Event::ROOT && event.operation == Event::REMOVE )
-	removeRootNode( static_cast<FrameNode*>(event.a) );
-    else 
-	throw std::runtime_error("Event message not handled");
-}
-
-EventMessage::EventMessage( const Event& event )
-    : Event( event )
+void Event::ref()
 {
     // store unique id's
     if( a ) id_a = a->getUniqueId();
     if( b ) id_b = b->getUniqueId();
 
-    if( event.type == Event::ITEM && ( event.operation == ADD || event.operation == UPDATE ) )
+    // destroy original pointers
+    a = b = 0;
+
+    if( type == Event::ITEM && ( operation == Event::ADD || operation == Event::UPDATE ) )
     {
 	// perform a copy of the EnvironmentItem in these cases
 	a = a->clone();
     }
 }
 
-void EventMessage::apply( Environment* env )
+void Event::apply( Environment* env )
 {
 }
 
