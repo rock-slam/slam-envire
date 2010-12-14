@@ -370,13 +370,14 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
     Eigen::Transform3d t1(Eigen::Translation3d( 0.0, 0.0, 0.5 ));
-    Eigen::Transform3d t2(Eigen::Translation3d( 0.0, 0.0, 0.5 ));
+    Eigen::Transform3d t2(Eigen::Translation3d( 0.0, 0.0, 1.5 ));
     Eigen::Transform3d t3(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 ));
 
     fn1->setTransform( t1 );
     fn2 = new FrameNode();
     fn2->setTransform( t2 ); 
     fn3 = new FrameNode();
+    fn3->setTransform( t3 );
     
     // attach explicitely
     env->attachItem( fn1 );
@@ -391,7 +392,7 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
 	    fn1->getTransform().translation().z()
 	    );
 
-    fn1->setTransform( t3 );
+    fn1->setTransform( t2 );
     ep.flush();
     BOOST_CHECK_EQUAL( 
 	    env2->getItem<FrameNode>( fn1->getUniqueId() )->getTransform().translation().z(), 
