@@ -93,8 +93,9 @@ void Event::ref()
     if( type == Event::ITEM && ( operation == Event::ADD || operation == Event::UPDATE ) )
     {
 	// perform a copy of the EnvironmentItem in these cases
-	std::cout << *this << " " << typeid( a.get() ).name() << std::endl;
+	// and already set the unique_id to the source id
 	a = a->clone();
+	a->unique_id = id_a;
 	b = 0;
     }
     else 
@@ -113,7 +114,14 @@ struct ApplyEventHelper : public EventDispatcher
 
     void itemAttached(EnvironmentItem *item)
     {
-	env.attachItem( event.a.get() );
+	// the root node is the only node to already exist
+	FrameNode* fn = dynamic_cast<FrameNode*>(item);
+	if( fn && fn->isRoot() )
+	    item->set( event.a.get() );
+	else
+	{
+	    env.attachItem( event.a.get() );
+	}
     };
 
     void itemModified(EnvironmentItem *item)

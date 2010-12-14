@@ -103,6 +103,7 @@ namespace envire
 
     protected:
 	friend class Environment;
+	friend class Event;
 	friend void intrusive_ptr_add_ref( EnvironmentItem* item );
 	friend void intrusive_ptr_release( EnvironmentItem* item );
 
