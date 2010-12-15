@@ -33,6 +33,10 @@ pkg_check_modules(BASE "base-types")
 include_directories(${BASE_INCLUDE_DIRS})
 link_directories(${BASE_LIBRARY_DIRS})
 
+pkg_check_modules(VIZKIT "vizkit")
+include_directories(${VIZKIT_INCLUDE_DIRS})
+link_directories(${VIZKIT_LIBRARY_DIRS})
+
 include(cmake/IncludeCGAL.cmake)
 
 #### Build Libraries #################################################
@@ -50,4 +54,8 @@ add_subdirectory(tools)
 configure_file(${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}.pc.in
 		${PROJECT_BINARY_DIR}/configuration/${PROJECT_NAME}.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/configuration/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
+
+if( VIZKIT_FOUND )
+    add_subdirectory(viz)
+endif( VIZKIT_FOUND )
 

@@ -8,6 +8,7 @@
         DFKI/robotik@dfki.de
     </copyright>
 
+    <depend package="gui/vizkit" optional="1" />
     <depend package="external/libply" />
     <depend package="base/types" />
     <rosdep name="libkdtree" />
