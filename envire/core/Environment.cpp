@@ -110,9 +110,9 @@ void Environment::publishChilds(EventHandler *evl, FrameNode *parent)
 }
 
 
-void Environment::emit( const Event& event )
+void Environment::handle( const Event& event )
 {
-    eventHandlers.emit( event );
+    eventHandlers.handle( event );
 }
 
 void Environment::addEventHandler(EventHandler *handler) 
@@ -198,7 +198,7 @@ void Environment::attachItem(EnvironmentItem* item)
     // set a pointer to environment object
     item->env = this;
     
-    emit( Event( Event::ITEM, Event::ADD, item ) );
+    handle( Event( Event::ITEM, Event::ADD, item ) );
 } 
 
 template <class T>
@@ -258,7 +258,7 @@ EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item)
 	(*it)();
     }
 
-    emit( Event( Event::ITEM, Event::REMOVE, item ) );
+    handle( Event( Event::ITEM, Event::REMOVE, item ) );
     
     EnvironmentItem::Ptr itemPtr = items[ item->getUniqueId() ];
     items.erase( item->getUniqueId() );
@@ -270,7 +270,7 @@ EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item)
 
 void Environment::itemModified(EnvironmentItem* item) 
 {
-    emit( Event( Event::ITEM, Event::UPDATE, item ) );
+    handle( Event( Event::ITEM, Event::UPDATE, item ) );
 }
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
@@ -285,7 +285,7 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 
     frameNodeTree.insert(make_pair(child, parent));
     
-    emit( Event( Event::FRAMENODE_TREE, Event::ADD, parent, child ) );
+    handle( Event( Event::FRAMENODE_TREE, Event::ADD, parent, child ) );
 }
 
 void Environment::addChild(Layer* parent, Layer* child)
@@ -300,14 +300,14 @@ void Environment::addChild(Layer* parent, Layer* child)
 
     layerTree.insert(make_pair(child, parent));
 
-    emit( Event( Event::LAYER_TREE, Event::ADD, parent, child ) );
+    handle( Event( Event::LAYER_TREE, Event::ADD, parent, child ) );
 }
 
 void Environment::removeChild(FrameNode* parent, FrameNode* child)
 {
     if( getParent( child ) == parent )
     {
-	emit( Event( Event::FRAMENODE_TREE, Event::REMOVE, parent, child ) );
+	handle( Event( Event::FRAMENODE_TREE, Event::REMOVE, parent, child ) );
 
 	frameNodeTree.erase( frameNodeTree.find( child ) );
     }
@@ -317,7 +317,7 @@ void Environment::removeChild(Layer* parent, Layer* child)
 {
     if( getParent( child ) == parent )
     {
-	emit( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
+	handle( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
 
 	layerTree.erase( layerTree.find( child ) );
     }
@@ -380,14 +380,14 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
 
     cartesianMapGraph[map] = node;
 
-    emit( Event( Event::FRAMENODE, Event::ADD, map, node ) );
+    handle( Event( Event::FRAMENODE, Event::ADD, map, node ) );
 }
 
 void Environment::detachFrameNode(CartesianMap* map, FrameNode* node)
 {
     if( cartesianMapGraph.count(map) && cartesianMapGraph[map] == node )
     {
-	emit( Event( Event::FRAMENODE, Event::REMOVE, map, node ) );
+	handle( Event( Event::FRAMENODE, Event::REMOVE, map, node ) );
 
 	cartesianMapGraph.erase( map );
     }

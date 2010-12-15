@@ -4,7 +4,7 @@
 
 using namespace envire;
 
-void EventSource::emit( const Event& event )
+void EventSource::handle( const Event& event )
 {
     // pass the event on to the handlers
     for(std::vector<EventHandler*>::iterator it = eventHandlers.begin(); it != eventHandlers.end(); it++ )

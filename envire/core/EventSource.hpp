@@ -30,7 +30,7 @@ public:
     /**
      * will pass the @param event to the registered event handlers
      */
-    void emit( const Event& event );
+    void handle( const Event& event );
 };
 
 }

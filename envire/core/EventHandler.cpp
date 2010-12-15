@@ -80,7 +80,7 @@ void EventQueue::flush()
     boost::lock_guard<boost::mutex> lock( queueMutex );
     for( std::list<Event>::iterator it = msgQueue.begin(); it != msgQueue.end(); it++ )
     {
-	emit( *it );
+	process( *it );
     }
     msgQueue.clear();
 }
@@ -88,7 +88,7 @@ void EventQueue::flush()
 EventProcessor::EventProcessor( Environment *env )
     : env( env ) {}
 
-void EventProcessor::emit( const Event& message )
+void EventProcessor::process( const Event& message )
 {
     message.apply( env );
 }

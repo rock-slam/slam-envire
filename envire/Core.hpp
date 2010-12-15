@@ -597,7 +597,7 @@ namespace envire
 	/**
 	 * will pass the @param event to the registered event handlers
 	 */
-	void emit( const Event& event );
+	void handle( const Event& event );
 
 	/**
 	 * returns all items of a particular type

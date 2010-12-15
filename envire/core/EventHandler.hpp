@@ -60,7 +60,7 @@ class EventQueue : public EventHandler
 public:
     void handle( const Event& message );
     void flush();
-    virtual void emit( const Event& message ) = 0;
+    virtual void process( const Event& message ) = 0;
 };
 
 /** EventHandler that will apply the handled events to the given Environment
@@ -71,7 +71,7 @@ class EventProcessor : public EventQueue
 
 public:
     EventProcessor( Environment *env );
-    void emit( const Event& message );
+    void process( const Event& message );
 };
 
 }
