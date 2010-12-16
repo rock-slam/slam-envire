@@ -33,7 +33,7 @@ set(TARGET_SRC
 
 # compile shared library
 add_library(${PROJECT_NAME}-viz SHARED ${TARGET_SRC} ${moc_cpp})
-target_link_libraries(${PROJECT_NAME}-viz
+target_link_libraries(${PROJECT_NAME}-viz ${PROJECT_NAME}
     ${VIZKIT_LIBRARIES}
     )
 
