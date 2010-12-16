@@ -22,7 +22,7 @@ EnvireVisualization::EnvireVisualization()
     : env( NULL )
 {
     ownNode = new osg::Group();
-    ownNode->setUpdateCallback( this );
+    setMainNode( ownNode );
 
     // setup eventlistener
     eventListener = boost::shared_ptr<EnvireEventListener>(

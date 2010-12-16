@@ -11,9 +11,10 @@
 
 class QTreeWidget;
 
-namespace vizkit {
+namespace vizkit 
+{
 
-class EnvireVisualization : public VizPlugin<envire::Environment*>
+class EnvireVisualization : public VizPluginAdapter<envire::Environment*>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
