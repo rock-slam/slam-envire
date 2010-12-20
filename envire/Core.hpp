@@ -532,12 +532,24 @@ namespace envire
 	**/
 	void itemModified(EnvironmentItem* item);
 	
-	EnvironmentItem::Ptr getItem(int uniqueId) 
-	    { return items.count( uniqueId ) ? items[uniqueId] : NULL; };
+	EnvironmentItem::Ptr getItem(int uniqueId) const
+	{
+            itemListType::const_iterator it = items.find(uniqueId);
+            if (it == items.end())
+                return 0;
+            else
+                return it->second;
+        }
 
 	template <class T>
-	boost::intrusive_ptr<T> getItem(int uniqueId) 
-	    { return items.count( uniqueId ) ? boost::dynamic_pointer_cast<T>(items[uniqueId]) : NULL; };
+	boost::intrusive_ptr<T> getItem(int uniqueId) const
+	{
+            itemListType::const_iterator it = items.find(uniqueId);
+            if (it == items.end())
+                return 0;
+            else
+                return boost::dynamic_pointer_cast<T>(it->second);
+        }
 
 	void addChild(FrameNode* parent, FrameNode* child);
 	void addChild(Layer* parent, Layer* child);
