@@ -493,6 +493,21 @@ std::list<Layer*> Environment::getOutputs(Operator* op)
     return outputs;
 }
 
+std::list<Layer*> Environment::getLayersGeneratedFrom(Layer* input) 
+{
+    std::list<Layer*> result;
+    for(operatorGraphType::iterator it=operatorGraphInput.begin();it != operatorGraphInput.end();++it)
+    {
+	if( it->second == input )
+        {
+            std::list<Layer*> op_output = getOutputs(it->first);
+            result.splice(result.end(), op_output);
+        }
+    }
+
+    return result;
+}
+
 Operator* Environment::getGenerator(Layer* output) 
 {
     for(operatorGraphType::iterator it=operatorGraphOutput.begin();it != operatorGraphOutput.end();++it)

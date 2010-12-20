@@ -584,6 +584,22 @@ namespace envire
 
 	Operator* getGenerator(Layer* output);
 
+        std::list<Layer*> getLayersGeneratedFrom(Layer* input);
+
+        template<typename T>
+        std::list<T> getGeneratedFrom(Layer* input)
+        {
+            std::list<Layer*> all = getLayersGeneratedFrom(input);
+            std::list<T> result;
+            for (std::list<Layer*>::const_iterator it = all.begin();
+                    it != all.end(); ++it)
+            {
+                T as_T = dynamic_cast<T>(*it);
+                if (as_T) result.push_back(as_T);
+            }
+            return result;
+        }
+
 	void updateOperators();
 
         /** Serializes this environment to the given directory */
