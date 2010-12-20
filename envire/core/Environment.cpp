@@ -7,8 +7,6 @@
 #include <stdexcept>
 #include <Eigen/LU>
 
-#include <memory>
-
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
@@ -568,13 +566,13 @@ FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, c
 
 void Environment::serialize(std::string const& path)
 {
-    std::auto_ptr<Serialization> serializer;
-    serializer->serialize(this, path);
+    Serialization serializer;
+    serializer.serialize(this, path);
 }
 
 Environment* Environment::unserialize(std::string const& path)
 {
-    std::auto_ptr<Serialization> serializer;
-    return serializer->unserialize(path);
+    Serialization serializer;
+    return serializer.unserialize(path);
 }
 
