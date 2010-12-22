@@ -41,6 +41,11 @@ bool FrameNode::isRoot() const
     return !getParent();
 }
 
+void FrameNode::addChild( FrameNode *child )
+{
+    env->addChild( this, child );
+}
+
 const FrameNode* FrameNode::getParent() const
 {
     return env->getParent(const_cast<FrameNode*>(this));

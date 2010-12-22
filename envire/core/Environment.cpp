@@ -71,6 +71,12 @@ void EnvironmentItem::serialize(Serialization &so)
     so.write( "id", unique_id );
 }
 
+void EnvironmentItem::itemModified()
+{
+    if( isAttached() )
+	env->itemModified(this);
+}
+
 EnvironmentItem::Ptr EnvironmentItem::detach()
 {
     assert( env );

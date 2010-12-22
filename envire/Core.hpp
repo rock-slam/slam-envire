@@ -159,6 +159,10 @@ namespace envire
 	 */
 	long getUniqueId() const;
 
+	/** marks this item as modified
+	 */
+	void itemModified();
+
 	/** will detach the item from the current environment
 	 */
 	EnvironmentItem::Ptr detach();
@@ -209,6 +213,11 @@ namespace envire
          */
         FrameNode* getParent();
 
+	/** Will add the @param child to the current list of children, if this
+	 * item is attached.
+	 */
+	void addChild( FrameNode *child );
+
         /** Returns the transformation from this FrameNode to the parent framenode
          */
 	TransformType const& getTransform() const;
@@ -220,6 +229,9 @@ namespace envire
         void setTransform(TransformType const& transform);
 
 	FrameNode* clone() const;
+
+	/** will asign @param other to this, if other is also a FrameNode
+	 * object. Implementation of virtual asigment operator */
 	void set( EnvironmentItem* other );  
     };
     
