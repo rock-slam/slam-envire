@@ -76,6 +76,8 @@ namespace envire
 
 	virtual const std::string& getClassName() const {return className;};
 
+	void clear();
+
 	iterator beginCell( size_t m, size_t n );
 	const_iterator beginCell_const( size_t m, size_t n ) const;
 	iterator endCell();

@@ -10,6 +10,18 @@ MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double
 {
 }
 
+void MultiLevelSurfaceGrid::clear()
+{
+    for(size_t m=0;m<width;m++)
+    {
+	for(size_t n=0;n<height;n++)
+	{
+	    cells[m][n] = NULL;
+	}
+    }
+    items.clear();
+}
+
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
     : GridBase( other ), cells( boost::extents[other.width][other.height] )
 {
