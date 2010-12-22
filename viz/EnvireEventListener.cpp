@@ -1,13 +1,107 @@
 #include "EnvireEventListener.hpp"
-#include <envire/maps/LaserScan.hpp>
-#include "LaserScanVisualization.hpp"
-#include <osg/Node>
-#include <algorithm>
-#include <osg/Group>
 
-namespace vizkit {
-    
-    
+using namespace envire;
+
+namespace vizkit 
+{
+
+EnvireNode::EnvireNode( EnvironmentItem *item, EnvironmentItemVisualizer *viz )
+    : item( item ), viz( viz )
+{
+    update();
+    this->setDataVariance(osg::Object::DYNAMIC);        
+}
+
+void EnvireNode::addChildNode( osg::Group* child )
+{
+    boost::mutex::scoped_lock lock(mu);
+    if( !children.back )
+    {
+	children.back = new osg::Group();
+    }
+
+    children.back->addChild( child );
+    children.dirty = true;
+}
+
+void EnvireNode::removeChildNode( osg::Group* child )
+{
+    boost::mutex::scoped_lock lock(mu);
+    children.back->removeChild( child );
+    children.dirty = true;
+}
+
+void EnvireNode::update()
+{
+    boost::mutex::scoped_lock lock(mu);
+    if( !node.back )
+    {
+	node.back = viz->getNodeForItem( item );
+	node.back->setDataVariance(osg::Object::DYNAMIC);        
+    }
+    else
+    {
+	viz->updateNode( item, node.back );
+    }
+
+    node.dirty = true;
+}
+
+void EnvireNode::apply()
+{
+    if( mu.try_lock() )
+    {
+	// detach children first
+	if( node.front && children.front )
+	    node.front->removeChild( children.front );
+
+	// copy references to child nodes from back to front
+	// if necessary
+	if( children.dirty )
+	{
+	    if( !children.front )
+		children.front = new osg::Group();
+
+	    children.front->removeChildren(0, children.front->getNumChildren() );
+	    for( size_t i=0; i<children.back->getNumChildren(); i++ )
+		children.front->addChild( children.back->getChild( i ) );
+
+	    children.dirty = false;
+	}
+
+	if( node.dirty )
+	{
+	    if( node.front )
+		removeChild( node.front );
+
+	    // swap front and back references
+	    node.swap();
+
+	    // attach new front node
+	    addChild( node.front );
+
+	    node.dirty = false;
+	}
+
+	// (re)attach the child nodes to front node
+	if( node.front && children.front )
+	    node.front->addChild( children.front );
+
+	mu.unlock();
+    }
+}
+
+void EnvireEventListener::apply()
+{
+    boost::mutex::scoped_lock lock(mu);
+    typedef std::map<envire::EnvironmentItem*, osg::ref_ptr<EnvireNode> > mapType;
+    for( mapType::iterator it=environmentToNode.begin(); it!=environmentToNode.end(); it++ )
+    {
+	// perform the swap between front and back if needed
+	it->second->apply();
+    }
+}
+
 EnvireEventListener::EnvireEventListener(nodeCallback add, nodeCallback remove)
     : osgAddNode(add), osgRemoveNode(remove)
 {    
@@ -16,6 +110,7 @@ EnvireEventListener::EnvireEventListener(nodeCallback add, nodeCallback remove)
 
 osg::Group* EnvireEventListener::getNodeForItem(envire::EnvironmentItem* item)
 {
+    boost::mutex::scoped_lock lock(mu);
     if(environmentToNode.count(item))
 	return environmentToNode[item];
     
@@ -24,6 +119,7 @@ osg::Group* EnvireEventListener::getNodeForItem(envire::EnvironmentItem* item)
 
 void EnvireEventListener::setRootNode(envire::FrameNode* root)
 {
+    boost::mutex::scoped_lock lock(mu);
     if(environmentToNode.count(root) == 0)
 	itemAttached(root);
     
@@ -32,6 +128,7 @@ void EnvireEventListener::setRootNode(envire::FrameNode* root)
 
 void EnvireEventListener::removeRootNode(envire::FrameNode* root)
 {
+    boost::mutex::scoped_lock lock(mu);
     if(environmentToNode.count(root))
 	osgRemoveNode( environmentToNode[root] );
 }
@@ -47,42 +144,29 @@ void EnvireEventListener::removeVisualizer ( EnvironmentItemVisualizer* viz )
     
     visualizers.erase(item);
     
-    //TODO recalculate nodes
+    //TODO: not sure if this operation should be allowed. 
 }
+
 void EnvireEventListener::addChild(envire::EnvironmentItem* parent, envire::EnvironmentItem* child)
 {
+    boost::mutex::scoped_lock lock(mu);
+    // if we don't have a reference to both parent and child, they are not
+    // relevant for us
     if( !(environmentToNode.count(parent) && environmentToNode.count(child)) )
-    {
-	// std::cout << "missing item: skipped adding relationship" << std::endl;
 	return;
-    }
 
-    //be shure child and parent where attached
-    assert(environmentToNode.count(parent));
-    assert(environmentToNode.count(child));
-
-    //std::cout << "Connection Parent:"<< parent->getUniqueId() << " Child:"<< child->getUniqueId() << std::endl;
-
-    {
-	//as we should know visualizers for every node we can simply 
-	//map to osg nodes
-	environmentToNode[parent]->addChild(environmentToNode[child]);        
-    }
+    environmentToNode[parent]->addChildNode(environmentToNode[child]);        
 }
 
 void EnvireEventListener::removeChild(envire::EnvironmentItem* parent, envire::EnvironmentItem* child)
 {
-    //be shure child and parent where attached
-    assert(environmentToNode.count(parent));
-    assert(environmentToNode.count(child));
+    boost::mutex::scoped_lock lock(mu);
+    // same as for addChild
+    if( !(environmentToNode.count(parent) && environmentToNode.count(child)) )
+	return;
     
-    {
-	//as we should know visualizers for every node we can simply 
-	//map to osg nodes
-	environmentToNode[parent]->removeChild(environmentToNode[child]);
-    }
+    environmentToNode[parent]->removeChildNode(environmentToNode[child]);
 }
-
 
 void EnvireEventListener::frameNodeSet(envire::CartesianMap* map, envire::FrameNode* node)
 {
@@ -116,77 +200,51 @@ void EnvireEventListener::childRemoved ( envire::Layer* parent, envire::Layer* c
 
 EnvironmentItemVisualizer* EnvireEventListener::getVisualizerForItem(envire::EnvironmentItem* item)
 {
-    EnvironmentItemVisualizer *viz = 0;
-    for(std::vector<EnvironmentItemVisualizer *>::reverse_iterator it = visualizers.rbegin(); it != visualizers.rend(); it++) {
-	if((*it)->handlesItem(item)) {
-	    viz = *it;
-	    break;
-	}
+    for(std::vector<EnvironmentItemVisualizer *>::reverse_iterator it = visualizers.rbegin(); it != visualizers.rend(); it++) 
+    {
+	if((*it)->handlesItem(item)) 
+	    return *it;
     }
 
-    return viz;
+    return 0;
 }
 
 
 void EnvireEventListener::itemAttached ( envire::EnvironmentItem* item )
 {
-    osg::Group *itemNode = 0;
-    
-    EnvironmentItemVisualizer *viz = getVisualizerForItem(item);
-    
-    //std::cout << "Item ID that was attached:"<< item->getUniqueId() << std::endl;
-    //an item should never be attached two times !
+    //an item should never be attached twice !
     assert(environmentToNode.count(item) == 0);    
-    
+
+    EnvironmentItemVisualizer *viz = getVisualizerForItem(item);
     //item not handled
     if(viz == 0) {
 	// std::cout << "item not handled: " << item->getClassName() << std::endl;
 	return;
     }
     
-    itemNode = viz->getNodeForItem(item);
+    EnvireNode* itemNode = new EnvireNode( item, viz ); 
     
-    assert(itemNode);
-    
-    itemNode->setDataVariance(osg::Object::DYNAMIC);        
-    
+    boost::mutex::scoped_lock lock(mu);
     environmentToNode[item] = itemNode;
-    nodeToEnvironment[itemNode] = item;    
 }
 
 void EnvireEventListener::itemDetached ( envire::EnvironmentItem* item )
 {
-    //we did not handle the item
+    boost::mutex::scoped_lock lock(mu);
+    // we did not handle the item
     if(environmentToNode.count(item) == 0)
 	return;
     
-    osg::Group *group = environmentToNode[item];
-    //delte item and graphical representation from map
-    nodeToEnvironment.erase(group);
-    
-    //this group should never have a parent, as 
-    //node needs to be removed from the tree
-    //before it is dettached
-    assert(group->getNumParents() == 0);
-
-    //note osg node is held in an autopointer in environmentToNode
-    //therefore reasing the autopointer also frees the osg::Node
     environmentToNode.erase(item);
-
 }
 
 void EnvireEventListener::itemModified ( envire::EnvironmentItem* item )
 {
+    boost::mutex::scoped_lock lock(mu);
     if( !environmentToNode.count(item) )
 	return;
 
-    // TODO: it's very inefficient, to always look for the visualizer again
-    // could also be stored in a map
-    EnvironmentItemVisualizer *viz = getVisualizerForItem(item);
-    assert(viz);
-    {
-	viz->updateNode(item, environmentToNode[item]);
-    }
+    environmentToNode[item]->update();
 }    
     
 }

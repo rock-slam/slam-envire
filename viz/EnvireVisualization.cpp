@@ -48,6 +48,7 @@ EnvireVisualization::EnvireVisualization()
 
 void EnvireVisualization::attachTreeWidget( QTreeWidget *treeWidget )
 {
+    // TODO fix the widget handling stuff
     //create context menu for TreeWidget
     treeWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
     QAction* hideItem = new QAction(QString("hide item"), treeWidget);
@@ -70,18 +71,18 @@ void EnvireVisualization::attachTreeWidget( QTreeWidget *treeWidget )
 
 bool EnvireVisualization::isDirty() const
 {
-    // TODO fix this
+    // TODO instead of going through the list to find dirty events
+    // the event listener could actually keep a list. But for now, 
+    // assume we are dirty, if not proven otherwise :)
     return true;
-    //return eventListener->hasEvents();
 }
     
 void EnvireVisualization::operatorIntern( osg::Node* node, osg::NodeVisitor* nv )
 {
-    // this one is called from the osg thread
-    // and will open the lock at each frame iteration cycle
-    //
-    // TODO fix this
-    //eventListener->processEvents();
+    // since we are in the update call here, we can modify the osg tree
+    // we'll call the apply method of the eventlistener, to perform back/front
+    // swapping on all nodes that have been modified since the last call.
+    eventListener->apply();
 }
 
 void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
