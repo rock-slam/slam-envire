@@ -40,12 +40,18 @@ link_directories(${VIZKIT_LIBRARY_DIRS})
 include(cmake/IncludeCGAL.cmake)
 
 #### Build Libraries #################################################
-include_directories(BEFORE ${PROJECT_SOURCE_DIR})
+include_directories(BEFORE .)
 add_subdirectory(envire)
+include_directories(BEFORE envire)
 
 add_subdirectory(icp)
-include_directories(${PROJECT_SOURCE_DIR}/icp)
+include_directories(icp)
 link_directories(${PROJECT_BINARY_DIR}/icp)
+
+if( VIZKIT_FOUND )
+    add_subdirectory(viz)
+    include_directories(BEFORE viz)
+endif( VIZKIT_FOUND )
 
 add_subdirectory(test)
 add_subdirectory(tools)
@@ -54,8 +60,4 @@ add_subdirectory(tools)
 configure_file(${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}.pc.in
 		${PROJECT_BINARY_DIR}/configuration/${PROJECT_NAME}.pc @ONLY)
 install(FILES ${CMAKE_BINARY_DIR}/configuration/${PROJECT_NAME}.pc DESTINATION lib/pkgconfig)
-
-if( VIZKIT_FOUND )
-    add_subdirectory(viz)
-endif( VIZKIT_FOUND )
 

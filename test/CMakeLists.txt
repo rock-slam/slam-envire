@@ -8,3 +8,10 @@ target_link_libraries(unit_test envire)
 add_executable(test_icp test_icp.cpp)
 target_link_libraries(test_icp icp envire)
 
+IF( VIZKIT_FOUND )
+    add_executable(testWidget testWidget.cpp)
+    target_link_libraries(testWidget 
+	envire-viz
+	${VIZKIT_LIBRARIES}
+	)
+ENDIF( VIZKIT_FOUND )
