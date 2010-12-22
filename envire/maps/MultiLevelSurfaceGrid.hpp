@@ -26,36 +26,36 @@ namespace envire
 	struct SurfacePatchItem : public SurfacePatch
 	{
 	    SurfacePatchItem() {};
-	    SurfacePatchItem( const SurfacePatch& data ) : SurfacePatch( data ) {};
+	    explicit SurfacePatchItem( const SurfacePatch& data ) : SurfacePatch( data ) {};
 
 	    SurfacePatchItem* next;
 	};
 
-	template <class Value>
+	template <class Value, class Data>
 	class iterator_base :
 	    public boost::iterator_facade<
-		iterator_base<Value>,
+		iterator_base<Value, Data>,
 		Value,
 		boost::forward_traversal_tag
 		>
 	{
-	    template <class T>
-		friend std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T> it );
+	    template <class T, class T2>
+		friend std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T, T2> it );
 	    friend class boost::iterator_core_access;
 	    friend class MultiLevelSurfaceGrid;
-	    Value* m_item;
+	    Data* m_item;
 
 	public:
 	    iterator_base() : m_item(NULL) {}
-	    iterator_base(Value* item) : m_item(item) {}
+	    iterator_base(Data* item) : m_item(item) {}
 
 	    void increment() { m_item =	m_item->next; }
 	    bool equal( iterator_base const& other ) const { return m_item == other.m_item; }
 	    Value& dereference() const { return *m_item; }
 	};
 
-	typedef	iterator_base<SurfacePatchItem> iterator;
-	typedef iterator_base<const SurfacePatchItem> const_iterator;
+	typedef	iterator_base<SurfacePatch, SurfacePatchItem> iterator;
+	typedef iterator_base<const SurfacePatch, const SurfacePatchItem> const_iterator;
 
     public:
 	static const std::string className;
@@ -98,8 +98,8 @@ namespace envire
 	std::list<SurfacePatchItem> items;
     };
 
-    template <class T>
-    std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T> it )
+    template <class T, class T2>
+    std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T, T2> it )
     {
 	os << it.m_item;
 	return os;
