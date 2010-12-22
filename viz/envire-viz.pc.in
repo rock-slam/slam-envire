@@ -6,6 +6,7 @@ includedir=${prefix}/include
 Name: @PROJECT_NAME@-viz
 Description: Library for @PROJECT_NAME@ specific visualization code
 Version: @PROJECT_VERSION@
+Requires: vizkit, @PROJECT_NAME@
 Libs: -L${libdir} -l@PROJECT_NAME@-viz
 Cflags: -I${includedir}
 
