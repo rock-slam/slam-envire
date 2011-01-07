@@ -9,7 +9,7 @@
 #include <osg/ShapeDrawable>
 
 MLSVisualization::MLSVisualization()
-    : vertexColor(osg::Vec4(0.1,0.5,0.9,1.0)), showUncertainty(false)
+    : vertexColor(osg::Vec4(0.1,0.5,0.9,1.0)), showUncertainty(true)
 {
 }
 

@@ -52,7 +52,7 @@ int main( int argc, char **argv )
 
     app.widget->setEnvironment( env.get() );
 
-    for(int i=0;i<500 && app.isRunning();i++)
+    for(int i=0;i<5000 && app.isRunning();i++)
     {
 	double r = i/10.0;
 	for(int x=0;x<100;x++)
