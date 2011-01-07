@@ -170,6 +170,53 @@ namespace envire
 
     void intrusive_ptr_add_ref( EnvironmentItem* item );
     void intrusive_ptr_release( EnvironmentItem* item );
+    
+    typedef Eigen::Vector3d Point;
+    
+    class PointWithUncertainty
+    {
+    public:
+	typedef Eigen::Matrix<double,3,3> Covariance;
+
+    public:
+	PointWithUncertainty();
+	PointWithUncertainty( const Point& point, const Covariance& cov );
+
+	const Covariance& getCovariance() const { return cov; }
+	void setCovariance( const Covariance& cov ) { this->cov = cov; }
+	const Point& getPoint() const { return point; }
+	void setPoint( const Point& point ) { this->point = point; }
+
+    protected:
+	Point point;
+	Covariance cov;
+    };
+
+    typedef Eigen::Transform3d Transform;
+
+    class TransformWithUncertainty
+    {
+    public:
+	typedef Eigen::Matrix<double,6,6> Covariance;
+
+    public:
+	TransformWithUncertainty();
+	TransformWithUncertainty( const Transform& trans );
+	TransformWithUncertainty( const Transform& trans, const Covariance& cov );
+
+	TransformWithUncertainty operator*( const TransformWithUncertainty& trans ) const;
+	PointWithUncertainty operator*( const PointWithUncertainty& point ) const;
+	TransformWithUncertainty inverse() const;
+
+	const Covariance& getCovariance() const { return cov; }
+	void setCovariance( const Covariance& cov ) { this->cov = cov; }
+	const Transform& getTransform() const { return trans; }
+	void setTransform( const Transform& trans ) { this->trans = trans; }
+
+    protected:
+	Transform trans;
+	Covariance cov;
+    };
 
     /** An object of this class represents a node in the FrameTree. The
      * FrameTree has one root node (call to env->getRootNode()), which
@@ -182,10 +229,7 @@ namespace envire
     class FrameNode : public EnvironmentItem
     {
     public:
-	typedef Eigen::Transform<double,3> TransformType;
-
-    protected:
-	TransformType frame;
+	typedef Transform TransformType;
 
     public:
 	static const std::string className;
@@ -228,13 +272,17 @@ namespace envire
          */
         void setTransform(TransformType const& transform);
 
-	FrameNode* clone() const;
+	TransformWithUncertainty const& getTransformWithUncertainty() const;
+	void setTransform(TransformWithUncertainty const& transform);
 
-	/** will asign @param other to this, if other is also a FrameNode
-	 * object. Implementation of virtual asigment operator */
+    public:
+	FrameNode* clone() const;
 	void set( EnvironmentItem* other );  
+
+    protected:
+	TransformWithUncertainty frame;
     };
-    
+
     /** The layer is the base object that holds map data. It can be a cartesian
      * map (CartesianMap) or a non-cartesian one (AttributeList, TopologicalMap)
      */
@@ -665,6 +713,12 @@ namespace envire
 	 * child->getTransform().
          */
 	FrameNode::TransformType relativeTransform(const FrameNode* from, const FrameNode* to);
+
+	/** @return a new transform object, that specifies the transformation
+	 * from the @param from frame to the @param to frame, and will take care of
+	 * uncertainty (linearised) on the way.
+	 */
+	TransformWithUncertainty relativeTransformWithUncertainty(const FrameNode* from, const FrameNode* to);
     };
 
     class Serialization

@@ -537,37 +537,46 @@ void Environment::updateOperators(){
     }
 }
 
+template <class T> 
+T getTransform( const FrameNode* fn ) { return fn->getTransform(); }
+
+template <>
+TransformWithUncertainty getTransform( const FrameNode* fn ) { return fn->getTransformWithUncertainty(); }
+
+template <class T>
+std::pair<T, const FrameNode*> relativeFrameNodeRoot( const FrameNode* from )
+{
+    T C_fg(envire::Transform(Eigen::Transform3d::Identity()));
+
+    const FrameNode *t = from;
+    while(!t->isRoot())
+    {
+	C_fg = getTransform<T>(t) * C_fg;
+	t = t->getParent();
+    }
+    return make_pair( C_fg, t );
+}
+
+template <class T>
+T relativeTransform(const FrameNode* from, const FrameNode* to)
+{
+    std::pair<T, const FrameNode*> fg = relativeFrameNodeRoot<T>(from);
+    std::pair<T, const FrameNode*> tg = relativeFrameNodeRoot<T>(to);
+
+    if( fg.second != tg.second )
+	throw std::runtime_error("relativeTransform: FrameNodes don't have a common root.");
+
+    return T( tg.first.inverse() * fg.first );
+}
+
 FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
 {
-    // the simplest but not most efficient way is to go through the root node
-    // a better way would be to look for the closest common ancestor...
+    return ::relativeTransform<FrameNode::TransformType>( from, to );
+}
 
-    FrameNode::TransformType C_fg(Eigen::Matrix4d::Identity()), C_tg(Eigen::Matrix4d::Identity());
-    const FrameNode* t = from;
-    while(!t->isRoot())
-    {
-	C_fg = t->getTransform() * C_fg;
-	t = t->getParent();
-
-	if( !t )
-	{
-	    throw std::runtime_error("FrameNode is not in main FrameTree");
-	}
-    }
-
-    t = to;
-    while(!t->isRoot())
-    {
-	C_tg = t->getTransform() * C_tg;
-	t = t->getParent();
-
-	if( !t )
-	{
-	    throw std::runtime_error("FrameNode is not in main FrameTree");
-	}
-    }
-
-    return FrameNode::TransformType( C_tg.inverse() * C_fg );
+TransformWithUncertainty Environment::relativeTransformWithUncertainty(const FrameNode* from, const FrameNode* to)
+{
+    return ::relativeTransform<TransformWithUncertainty>( from, to );
 }
 
 void Environment::serialize(std::string const& path)

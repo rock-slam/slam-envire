@@ -12,7 +12,7 @@ using namespace envire;
 const std::string FrameNode::className = "envire::FrameNode";
 
 FrameNode::FrameNode()
-    : frame( Eigen::Matrix4d::Identity() )
+    : frame( Transform( Eigen::Transform3d::Identity()) )
 {
 }
 
@@ -25,7 +25,9 @@ FrameNode::FrameNode(Serialization &so)
     : EnvironmentItem( so )
 {
     so.setClassName(className);
-    so.read("transform", frame);
+    Eigen::Transform3d t;
+    so.read("transform", t );
+    frame.setTransform( t );
 }
 
 void FrameNode::serialize(Serialization &so)
@@ -33,7 +35,7 @@ void FrameNode::serialize(Serialization &so)
     EnvironmentItem::serialize( so );
 
     so.setClassName(className);
-    so.write("transform", frame);
+    so.write("transform", frame.getTransform() );
 }
 
 bool FrameNode::isRoot() const
@@ -58,12 +60,27 @@ FrameNode* FrameNode::getParent()
 
 FrameNode::TransformType const& FrameNode::getTransform() const 
 {
-    return frame;
+    return frame.getTransform();
 }
 
 void FrameNode::setTransform(TransformType const& transform)
 {
+    frame = TransformWithUncertainty( transform );
+
+    if(env) {
+	env->itemModified(this);
+    }
+}
+
+TransformWithUncertainty const& FrameNode::getTransformWithUncertainty() const
+{
+    return frame;
+}
+
+void FrameNode::setTransform(TransformWithUncertainty const& transform)
+{
     frame = transform;
+
     if(env) {
 	env->itemModified(this);
     }

@@ -1,6 +1,7 @@
 set(ENVMAP_SRCS
     core/Environment.cpp
     core/FrameNode.cpp
+    core/Transform.cpp
     core/Layer.cpp
     core/Operator.cpp
     core/Serialization.cpp
