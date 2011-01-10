@@ -14,4 +14,10 @@ IF( VIZKIT_FOUND )
 	envire-viz
 	${VIZKIT_LIBRARIES}
 	)
+
+    add_executable(testUncertainty testUncertainty.cpp)
+    target_link_libraries(testUncertainty 
+	envire-viz
+	${VIZKIT_LIBRARIES}
+	)
 ENDIF( VIZKIT_FOUND )

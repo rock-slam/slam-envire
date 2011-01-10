@@ -29,6 +29,7 @@ set(TARGET_SRC
     TriMeshVisualization.cpp
     TreeViewListener.cpp
     ItemManipulator.cpp
+    Uncertainty.cpp
     )
 
 # compile shared library
