@@ -19,7 +19,7 @@ TransformWithUncertainty::TransformWithUncertainty( const Transform& trans, cons
 // Methods Based on Points and Frames. International Journal of Computer
 // Vision. 2004.
 
-Eigen::Quaterniond r_to_q( const Eigen::Vector3d r )
+Eigen::Quaterniond r_to_q( const Eigen::Vector3d& r )
 {
     double theta = r.norm();
     if( fabs(theta) > 1e-5 )
@@ -28,7 +28,7 @@ Eigen::Quaterniond r_to_q( const Eigen::Vector3d r )
 	return Eigen::Quaterniond::Identity();
 }
 
-Eigen::Vector3d q_to_r( const Eigen::Quaterniond q )
+Eigen::Vector3d q_to_r( const Eigen::Quaterniond& q )
 {
     Eigen::AngleAxisd aa( q );
     return aa.axis() * aa.angle();
@@ -39,7 +39,7 @@ inline double sign( double v )
     return v > 0 ? 1.0 : -1.0;
 }
 
-Eigen::Matrix<double,3,3> skew_symmetric( const Eigen::Vector3d r )
+Eigen::Matrix<double,3,3> skew_symmetric( const Eigen::Vector3d& r )
 {
     Eigen::Matrix3d res;
     res << 0, -r.z(), r.y(),
@@ -48,7 +48,7 @@ Eigen::Matrix<double,3,3> skew_symmetric( const Eigen::Vector3d r )
     return res;
 }
 
-Eigen::Matrix<double,4,3> dq_by_dr( const Eigen::Quaterniond q )
+Eigen::Matrix<double,4,3> dq_by_dr( const Eigen::Quaterniond& q )
 {
     const Eigen::Vector3d r( q_to_r( q ) );
 
@@ -62,7 +62,7 @@ Eigen::Matrix<double,4,3> dq_by_dr( const Eigen::Quaterniond q )
     return res;
 }
 
-Eigen::Matrix<double,3,4> dr_by_dq( const Eigen::Quaterniond q )
+Eigen::Matrix<double,3,4> dr_by_dq( const Eigen::Quaterniond& q )
 {
     const Eigen::Vector3d r( q_to_r( q ) );
     const double mu = q.vec().norm();
@@ -75,7 +75,7 @@ Eigen::Matrix<double,3,4> dr_by_dq( const Eigen::Quaterniond q )
     return res;
 }
 
-Eigen::Matrix<double,4,4> dq2q1_by_dq1( const Eigen::Quaterniond q2 )
+Eigen::Matrix<double,4,4> dq2q1_by_dq1( const Eigen::Quaterniond& q2 )
 {
     Eigen::Matrix<double,4,4> res;
     res << 0, q2.vec().transpose(),
@@ -83,7 +83,7 @@ Eigen::Matrix<double,4,4> dq2q1_by_dq1( const Eigen::Quaterniond q2 )
     return res;
 }
 
-Eigen::Matrix<double,4,4> dq2q1_by_dq2( const Eigen::Quaterniond q1 )
+Eigen::Matrix<double,4,4> dq2q1_by_dq2( const Eigen::Quaterniond& q1 )
 {
     Eigen::Matrix<double,4,4> res;
     res << 0, q1.vec().transpose(),
@@ -91,7 +91,7 @@ Eigen::Matrix<double,4,4> dq2q1_by_dq2( const Eigen::Quaterniond q1 )
     return res;
 }
 
-Eigen::Matrix<double,3,3> dr2r1_by_r1( Eigen::Quaterniond q, Eigen::Quaterniond q1, Eigen::Quaterniond q2 )
+Eigen::Matrix<double,3,3> dr2r1_by_r1( const Eigen::Quaterniond& q, const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2 )
 {
     return Eigen::Matrix3d(
 	    dr_by_dq( q )
@@ -99,7 +99,7 @@ Eigen::Matrix<double,3,3> dr2r1_by_r1( Eigen::Quaterniond q, Eigen::Quaterniond 
 	    * dq_by_dr( q1 ) );
 }
 
-Eigen::Matrix<double,3,3> dr2r1_by_r2( Eigen::Quaterniond q, Eigen::Quaterniond q1, Eigen::Quaterniond q2 )
+Eigen::Matrix<double,3,3> dr2r1_by_r2( const Eigen::Quaterniond& q, const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2 )
 {
     return Eigen::Matrix3d(
 	    dr_by_dq( q )
@@ -107,7 +107,7 @@ Eigen::Matrix<double,3,3> dr2r1_by_r2( Eigen::Quaterniond q, Eigen::Quaterniond 
 	    * dq_by_dr( q2 ) );
 }
 
-Eigen::Matrix<double,3,3> drx_by_dr( Eigen::Quaterniond q, Eigen::Vector3d x )
+Eigen::Matrix<double,3,3> drx_by_dr( const Eigen::Quaterniond& q, const Eigen::Vector3d& x )
 {
     const Eigen::Vector3d r( q_to_r( q ) );
     const double theta = r.norm();
@@ -149,10 +149,10 @@ TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWit
 
 PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncertainty& point ) const
 {
-    Eigen::Quaterniond q( getTransform().rotation() );
+    Eigen::Matrix3d R( getTransform().rotation() );
+    Eigen::Quaterniond q( R );
     Eigen::Matrix<double,3,6> J;
     J << drx_by_dr( q, point.getPoint() ), Eigen::Matrix3d::Identity();
-    Eigen::Matrix3d R( q.toRotationMatrix() );
     
     return PointWithUncertainty( 
 	    getTransform() * point.getPoint(),
