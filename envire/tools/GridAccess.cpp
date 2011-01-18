@@ -63,7 +63,7 @@ struct GridAccess::GridAccessImpl
 	    grid = lgrid;
 	    gridData = &grid->getGridData(ElevationGrid::ELEVATION);
 	    t = lt;
-	    z_offset = t.inverse()(2,3);
+	    z_offset = t.inverse(Eigen::Isometry)(2,3);
 
 	    if( evalGridPoint( position ) )
 		return true;

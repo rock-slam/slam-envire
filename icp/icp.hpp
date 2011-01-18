@@ -146,7 +146,7 @@ public:
     void applyTransform(const Eigen::Transform3d& t)
     {
 	envire::FrameNode* fn = model->getFrameNode();
-	fn->setTransform( envire::FrameNode::TransformType( fn->getTransform()*(C_local2global.inverse() * t * C_local2global ) ) );
+	fn->setTransform( envire::FrameNode::TransformType( fn->getTransform()*(C_local2global.inverse(Eigen::Isometry) * t * C_local2global ) ) );
     }
 
 protected:
@@ -175,7 +175,7 @@ public:
 	const size_t idx = index;
 	n.point = C_local2globalnew * (*vertices)[idx];
 	n.edge = (*attrs)[idx] & (1 << envire::Pointcloud::SCAN_EDGE);
-	n.normal = C_local2globalnew.rotation() * (*normals)[idx];
+	n.normal = C_local2globalnew.linear() * (*normals)[idx];
 	index += 1.0/density;
 	return n;
     }

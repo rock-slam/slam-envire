@@ -78,7 +78,7 @@ bool MergePointcloud::updateAll(){
 	    if( !cloud->hasData( Pointcloud::VERTEX_NORMAL ) )
 		throw std::runtime_error("merge currently needs to have the same metadata on all inputs");
 
-	    Eigen::Quaterniond rot(trans.rotation());
+	    Eigen::Quaterniond rot(trans.linear());
 
 	    std::vector<Eigen::Vector3d> &source_data( cloud->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
 	    std::vector<Eigen::Vector3d> &target_data( targetcloud->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );

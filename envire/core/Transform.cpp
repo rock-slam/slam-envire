@@ -129,17 +129,17 @@ TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWit
 
     // convert the rotations of the respective transforms into quaternions
     Eigen::Quaterniond 
-	q1( t1.getTransform().rotation() ),
-	q2( t2.getTransform().rotation() );
+	q1( t1.getTransform().linear() ),
+	q2( t2.getTransform().linear() );
     Eigen::Quaterniond q( q2 * q1 );
 
     // calculate the Jacobians (this is what all the above functions are for)
     Eigen::Matrix<double,6,6> J1, J2;
     J1 << dr2r1_by_r1(q, q1, q2), Eigen::Matrix3d::Zero(),
-       Eigen::Matrix3d::Zero(), t2.getTransform().rotation();
+       Eigen::Matrix3d::Zero(), t2.getTransform().linear();
 
     J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
-       drx_by_dr(q, t1.getTransform().translation()), t2.getTransform().rotation();
+       drx_by_dr(q, t1.getTransform().translation()), t2.getTransform().linear();
 
     // and calculate the resulting uncertainty transform
     return TransformWithUncertainty( 
@@ -149,7 +149,7 @@ TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWit
 
 PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncertainty& point ) const
 {
-    Eigen::Matrix3d R( getTransform().rotation() );
+    Eigen::Matrix3d R( getTransform().linear() );
     Eigen::Quaterniond q( R );
     Eigen::Matrix<double,3,6> J;
     J << drx_by_dr( q, point.getPoint() ), Eigen::Matrix3d::Identity();
@@ -159,15 +159,15 @@ PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncerta
 	    J*getCovariance()*J.transpose() + R*point.getCovariance()*R.transpose() );
 }
 
-TransformWithUncertainty TransformWithUncertainty::inverse() const
+TransformWithUncertainty TransformWithUncertainty::inverse( Eigen::TransformTraits traits ) const
 {
-    Eigen::Quaterniond q( getTransform().rotation() );
+    Eigen::Quaterniond q( getTransform().linear() );
     Eigen::Vector3d t( getTransform().translation() );
     Eigen::Matrix<double,6,6> J;
     J << Eigen::Matrix3d::Identity(), Eigen::Matrix3d::Zero(),
 	drx_by_dr( q.inverse(), t ), q.toRotationMatrix().transpose();
 
     return TransformWithUncertainty(
-	    Eigen::Transform3d( getTransform().inverse() ),
+	    Eigen::Transform3d( getTransform().inverse( traits ) ),
 	    J*getCovariance()*J.transpose() );
 }

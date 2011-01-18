@@ -206,7 +206,7 @@ namespace envire
 
 	TransformWithUncertainty operator*( const TransformWithUncertainty& trans ) const;
 	PointWithUncertainty operator*( const PointWithUncertainty& point ) const;
-	TransformWithUncertainty inverse() const;
+	TransformWithUncertainty inverse( Eigen::TransformTraits traits = Eigen::Isometry ) const;
 
 	const Covariance& getCovariance() const { return cov; }
 	void setCovariance( const Covariance& cov ) { this->cov = cov; }
