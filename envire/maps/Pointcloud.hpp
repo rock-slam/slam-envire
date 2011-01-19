@@ -13,7 +13,7 @@ namespace envire {
 	static const std::string VERTEX_COLOR;
 	static const std::string VERTEX_NORMAL;
 	static const std::string VERTEX_ATTRIBUTES;
-	static const std::string VERTEX_UNCERTAINTY;
+	static const std::string VERTEX_VARIANCE;
 
 	enum attr_flag
 	{

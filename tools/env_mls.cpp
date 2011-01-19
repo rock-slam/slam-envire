@@ -43,7 +43,7 @@ int main( int argc, char* argv[] )
     for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
 	std::cout << "adding pointcloud to projection" << std::endl;
-	if( (*it)->hasData( Pointcloud::VERTEX_UNCERTAINTY ) )
+	if( (*it)->hasData( Pointcloud::VERTEX_VARIANCE ) )
 	    proj->addInput( *it );
     }
 

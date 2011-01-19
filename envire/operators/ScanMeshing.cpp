@@ -113,7 +113,7 @@ bool ScanMeshing::updateAll()
     std::vector<Eigen::Vector3d>& points(meshPtr->vertices);
     std::vector<Eigen::Vector3d>& colors(meshPtr->getVertexData<Eigen::Vector3d>(TriMesh::VERTEX_COLOR));
     std::vector<TriMesh::vertex_attr>& point_attrs(meshPtr->getVertexData<TriMesh::vertex_attr>(TriMesh::VERTEX_ATTRIBUTES));
-    std::vector<double>& uncertainty(meshPtr->getVertexData<double>(Pointcloud::VERTEX_UNCERTAINTY));
+    std::vector<double>& uncertainty(meshPtr->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
 
     typedef TriMesh::triangle_t triangle_t;
     std::vector< triangle_t >& faces(meshPtr->faces);
@@ -160,7 +160,7 @@ bool ScanMeshing::updateAll()
 		// calculate uncertainty of the point
 		// TODO remove numbers and put into parameters
 		double sigma = std::min(0.01 * range, 0.02);
-		uncertainty.push_back( sigma );
+		uncertainty.push_back( sigma * sigma );
 
 		if( has_rem )
 		{

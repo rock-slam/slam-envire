@@ -10,7 +10,7 @@ const std::string Pointcloud::className = "envire::Pointcloud";
 
 const std::string Pointcloud::VERTEX_COLOR = "vertex_color";
 const std::string Pointcloud::VERTEX_NORMAL = "vertex_normal";
-const std::string Pointcloud::VERTEX_UNCERTAINTY = "vertex_uncertainty";
+const std::string Pointcloud::VERTEX_VARIANCE = "vertex_variance";
 const std::string Pointcloud::VERTEX_ATTRIBUTES = "vertex_attributes";
 
 Pointcloud::Pointcloud()
