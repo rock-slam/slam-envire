@@ -10,9 +10,9 @@ PointWithUncertainty::PointWithUncertainty( const Point& point, const Covariance
 
 TransformWithUncertainty::TransformWithUncertainty() {}
 TransformWithUncertainty::TransformWithUncertainty( const Transform& trans )
-    : trans( trans ), cov( Covariance::Zero() ) {}
+    : trans( trans ), cov( Covariance::Zero() ), uncertain(false) {}
 TransformWithUncertainty::TransformWithUncertainty( const Transform& trans, const Covariance& cov )
-    : trans( trans ), cov( cov ) {}
+    : trans( trans ), cov( cov ), uncertain(true) {}
 
 // The uncertainty transformations are implemented according to: 
 // Cedex SA. A Framework for Uncertainty and Validation of 3-D Registration
@@ -126,6 +126,9 @@ Eigen::Matrix<double,3,3> drx_by_dr( const Eigen::Quaterniond& q, const Eigen::V
 TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWithUncertainty& t1 ) const
 {
     const TransformWithUncertainty &t2(*this);
+    // short path if there is no uncertainty 
+    if( !t1.hasUncertainty() && !t2.hasUncertainty() )
+	return TransformWithUncertainty( t2.getTransform() * t1.getTransform() );
 
     // convert the rotations of the respective transforms into quaternions
     Eigen::Quaterniond 
@@ -161,6 +164,10 @@ PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncerta
 
 TransformWithUncertainty TransformWithUncertainty::inverse( Eigen::TransformTraits traits ) const
 {
+    // short path if there is no uncertainty 
+    if( !hasUncertainty() )
+	return TransformWithUncertainty( Transform( getTransform().inverse( traits ) ) );
+
     Eigen::Quaterniond q( getTransform().linear() );
     Eigen::Vector3d t( getTransform().translation() );
     Eigen::Matrix<double,6,6> J;

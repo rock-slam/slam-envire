@@ -201,7 +201,7 @@ namespace envire
 
     public:
 	TransformWithUncertainty();
-	TransformWithUncertainty( const Transform& trans );
+	explicit TransformWithUncertainty( const Transform& trans );
 	TransformWithUncertainty( const Transform& trans, const Covariance& cov );
 
 	TransformWithUncertainty operator*( const TransformWithUncertainty& trans ) const;
@@ -209,13 +209,16 @@ namespace envire
 	TransformWithUncertainty inverse( Eigen::TransformTraits traits = Eigen::Isometry ) const;
 
 	const Covariance& getCovariance() const { return cov; }
-	void setCovariance( const Covariance& cov ) { this->cov = cov; }
+	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }
 	const Transform& getTransform() const { return trans; }
 	void setTransform( const Transform& trans ) { this->trans = trans; }
+
+	bool hasUncertainty() const { return uncertain; }
 
     protected:
 	Transform trans;
 	Covariance cov;
+	bool uncertain;
     };
 
     /** An object of this class represents a node in the FrameTree. The
@@ -272,7 +275,14 @@ namespace envire
          */
         void setTransform(TransformType const& transform);
 
+	/** @return the transformation from this FrameNode to the parent
+	 * FrameNode with attached uncertainty.
+	 */
 	TransformWithUncertainty const& getTransformWithUncertainty() const;
+
+	/** overloaded setTransform() which also sets the uncertainty associated
+	 * with a transformation.
+	 */
 	void setTransform(TransformWithUncertainty const& transform);
 
     public:
