@@ -5,7 +5,7 @@ using namespace envire;
 const std::string MLSProjection::className = "envire::MLSProjection";
 
 MLSProjection::MLSProjection()
-    : gapSize( 1.0 ), thickness( 0.05 )
+    : gapSize( 1.0 ), thickness( 0.05 ), withUncertainty( true )
 {
 }
 
@@ -97,6 +97,54 @@ void MLSProjection::updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, 
     grid->insertHead( m, n, p );
 }
 
+void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
+{
+    TransformWithUncertainty C_m2g = env->relativeTransformWithUncertainty( pc->getFrameNode(), grid->getFrameNode() );
+
+    std::vector<Eigen::Vector3d>& points(pc->vertices);
+    std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+    assert(points.size() == uncertainty.size());
+
+    for(size_t i=0;i<points.size();i++)
+    {
+	const double p_var = uncertainty[i];
+	PointWithUncertainty p = C_m2g * PointWithUncertainty( points[i], Eigen::Matrix3d::Identity() * p_var );
+
+	const Eigen::Vector3d &mean( p.getPoint() );
+
+	size_t x, y;
+	if( grid->toGrid( mean.x(), mean.y(), x, y ) )
+	{
+	    const double stdev = sqrt(p.getCovariance()(2,2));
+	    updateCell(grid, x, y, mean.z(), stdev);
+	}
+    }
+}
+
+void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
+{
+    Transform C_m2g = env->relativeTransform( pc->getFrameNode(), grid->getFrameNode() );
+
+    std::vector<Eigen::Vector3d>& points(pc->vertices);
+    std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+    assert(points.size() == uncertainty.size());
+
+    for(size_t i=0;i<points.size();i++)
+    {
+	const double p_var = uncertainty[i];
+	Point p = C_m2g * points[i];
+
+	const Eigen::Vector3d &mean( p );
+
+	size_t x, y;
+	if( grid->toGrid( mean.x(), mean.y(), x, y ) )
+	{
+	    const double stdev = sqrt(p_var);
+	    updateCell(grid, x, y, mean.z(), stdev);
+	}
+    }
+}
+
 bool MLSProjection::updateAll() 
 {
     // TODO add checking of connections
@@ -106,28 +154,13 @@ bool MLSProjection::updateAll()
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
 	Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(*it);
-
-	FrameNode::TransformType C_m2g = env->relativeTransform( mesh->getFrameNode(), grid->getFrameNode() );
-
-	std::vector<Eigen::Vector3d>& points(mesh->vertices);
-	std::vector<double>& uncertainty(mesh->getVertexData<double>(Pointcloud::VERTEX_UNCERTAINTY));
-	assert(points.size() == uncertainty.size());
-	
-	for(size_t i=0;i<points.size();i++)
-	{
-	    Eigen::Vector3d p = C_m2g * points[i];
-
-	    size_t x, y;
-	    if( grid->toGrid( p.x(), p.y(), x, y ) )
-	    {
-		const double stdev = uncertainty[i];
-		updateCell(grid, x, y, p.z(), stdev);
-	    }
-	}
+	if( withUncertainty )
+	    projectPointcloudWithUncertainty( grid, mesh );
+	else
+	    projectPointcloud( grid, mesh );
     }
 
     env->itemModified( grid );
-
     return true;
 }
 
