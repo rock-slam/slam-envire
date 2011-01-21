@@ -5,6 +5,7 @@
 #include <boost/multi_array.hpp>
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/pool/pool.hpp>
 
 namespace envire
 {  
@@ -95,7 +96,7 @@ namespace envire
 	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
 	ArrayType cells;
 
-	std::list<SurfacePatchItem> items;
+	boost::pool<> mem_pool;
     };
 
     template <class T, class T2>
