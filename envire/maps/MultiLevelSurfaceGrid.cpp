@@ -6,7 +6,7 @@ using namespace envire;
 const std::string MultiLevelSurfaceGrid::className = "envire::MultiLevelSurfaceGrid";
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
-    : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] )
+    : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), mem_pool( sizeof( SurfacePatchItem ) )
 {
 }
 
@@ -19,11 +19,11 @@ void MultiLevelSurfaceGrid::clear()
 	    cells[m][n] = NULL;
 	}
     }
-    items.clear();
+    mem_pool.purge_memory();
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
-    : GridBase( other ), cells( boost::extents[other.width][other.height] )
+    : GridBase( other ), cells( boost::extents[other.width][other.height] ), mem_pool( sizeof( SurfacePatchItem ) )
 {
     for(size_t m=0;m<width;m++)
     {
@@ -41,7 +41,7 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
     {
 	GridBase::operator=(other);
 
-	items.clear();
+	mem_pool.purge_memory();
 	cells.resize( boost::extents[width][height] );
 
 	for(size_t m=0;m<width;m++)
@@ -59,7 +59,7 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(Serialization& so)
-    : GridBase(so)
+    : GridBase(so), mem_pool( sizeof( SurfacePatchItem ) )
 {
     unserialize(so);
 }
@@ -169,12 +169,11 @@ MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::endCell_const() con
 
 void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& value )
 {
-    SurfacePatchItem item( value );
-    item.next = cells[m][n];
+    SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
+    static_cast<SurfacePatch&>(*n_item).operator=(value);
+    n_item->next = cells[m][n];
 
-    items.push_back( item );
-
-    cells[m][n] = &items.back();
+    cells[m][n] = n_item;
 }
 
 void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& value )
@@ -187,15 +186,14 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
 	it++;
     }
 
-    SurfacePatchItem item( value );
-    item.next = NULL;
-
-    items.push_back( item );
-
+    SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
+    static_cast<SurfacePatch&>(*n_item).operator=(value);
+    n_item->next = NULL;
+    
     if( last != endCell() )
-	last.m_item->next = &items.back();
+	last.m_item->next = n_item;
     else
-	cells[m][n] = &items.back();
+	cells[m][n] = n_item;
 }
 
 MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone() const

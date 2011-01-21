@@ -5,6 +5,7 @@
 #include <boost/multi_array.hpp>
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/pool/pool.hpp>
 
 namespace envire
 {  
@@ -106,7 +107,8 @@ namespace envire
 
 	double gapSize;
 	double thickness;
-	std::list<SurfacePatchItem> items;
+
+	boost::pool<> mem_pool;
     };
 
     template <class T, class T2>
