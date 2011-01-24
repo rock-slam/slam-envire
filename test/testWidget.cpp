@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( mlsviz_test )
 		MultiLevelSurfaceGrid::iterator it = mls->beginCell(x,y);
 		if( it == mls->endCell() )
 		{
-		    mls->push_front( x, y, p );
+		    mls->insertHead( x, y, p );
 		}
 		else 
 		{
