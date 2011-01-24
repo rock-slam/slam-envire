@@ -54,6 +54,12 @@ bool GridBase::toGrid( double x, double y, size_t& m, size_t& n )
 	return false;
     }
 }
+
+void GridBase::fromGrid( size_t m, size_t n, double& x, double& y )
+{
+    x = (m+0.5) * scalex;
+    y = (n+0.5) * scaley;
+}
         
 GridBase::Extents GridBase::getExtents() const
 {

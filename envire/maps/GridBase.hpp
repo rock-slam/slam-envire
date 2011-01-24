@@ -22,6 +22,7 @@ namespace envire
 	void unserialize(Serialization& so);
 
 	bool toGrid( double x, double y, size_t& m, size_t& n );
+	void fromGrid( size_t m, size_t n, double& x, double& y );
 
 	size_t getWidth() { return width; };
 	size_t getHeight() { return height; };
