@@ -1,3 +1,6 @@
+#define BOOST_TEST_MODULE EnvireVizTest 
+#include <boost/test/included/unit_test.hpp>
+
 #include <Eigen/Geometry>
 #include <boost/scoped_ptr.hpp>
 
@@ -7,39 +10,16 @@
 #include "maps/MultiLevelSurfaceGrid.hpp"
 
 #include "Core.hpp"
+#include "Uncertainty.hpp"
 
 using namespace envire;
 
-namespace vizkit
+BOOST_AUTO_TEST_CASE( mlsviz_test ) 
 {
-class QEnvireWidget : public QVizkitWidget
-{
-    public:
-	QEnvireWidget( QWidget* parent = 0, Qt::WindowFlags f = 0 )
-	    : QVizkitWidget( parent, f ), envViz( new EnvireVisualization() )
-	{
-	    addDataHandler( envViz.get() );
-	}
-
-	~QEnvireWidget()
-	{
-	    removeDataHandler( envViz.get() );
-	}
-
-	void setEnvironment( Environment* env )
-	{
-	    envViz->updateData( env );
-	}
-
-    private:
-	boost::shared_ptr<EnvireVisualization> envViz;
-};
-}
-
-int main( int argc, char **argv )
-{
-    QtThreadedWidget<vizkit::QEnvireWidget> app;
+    QtThreadedWidget<vizkit::QVizkitWidget> app;
+    vizkit::EnvireVisualization envViz;
     app.start();
+    app.widget->addDataHandler( &envViz );
 
     // set up test environment
     boost::scoped_ptr<Environment> env( new Environment() );
@@ -50,7 +30,7 @@ int main( int argc, char **argv )
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
 
-    app.widget->setEnvironment( env.get() );
+    envViz.updateData( env.get() );
 
     for(int i=0;i<5000 && app.isRunning();i++)
     {
@@ -64,7 +44,7 @@ int main( int argc, char **argv )
 		MultiLevelSurfaceGrid::iterator it = mls->beginCell(x,y);
 		if( it == mls->endCell() )
 		{
-		    mls->insertHead( x, y, p );
+		    mls->push_front( x, y, p );
 		}
 		else 
 		{
