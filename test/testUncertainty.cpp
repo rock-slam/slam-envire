@@ -21,6 +21,8 @@ namespace vizkit
 class UncertaintyVisualization : public VizPlugin<envire::PointWithUncertainty>
 {
 public:
+    UncertaintyVisualization()
+	: point( Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero() ) {}
     osg::ref_ptr<osg::Node> createMainNode()
     {
 	m_uncertainty = new Uncertainty();
@@ -120,7 +122,7 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
     {
 	const double r = i/100.0;
 	pc->vertices.push_back( Eigen::Vector3d( r-0.5, 1.0, 0 ) );
-	vars.push_back( 0.001 );
+	vars.push_back( 0 );
     }
 
     FrameNode *pcfm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( 0, 0, 0 ) ) );
@@ -140,7 +142,7 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 	//c << 0, M_PI/8.0, 0, 0, 0, 0;
 	c << 0, 0, 0, 0, 0, 1;
 	pcfm->setTransform( TransformWithUncertainty( 
-		    Eigen::Transform3d( Eigen::Translation3d( r, r, 0 ) ),
+		    Eigen::Transform3d( Eigen::Translation3d( r+0.05, r+0.05, 0 ) ),
 		   c.cwise().square().asDiagonal() ) );
 	proj->updateAll();
 
