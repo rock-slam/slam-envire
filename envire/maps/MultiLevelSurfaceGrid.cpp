@@ -6,7 +6,8 @@ using namespace envire;
 const std::string MultiLevelSurfaceGrid::className = "envire::MultiLevelSurfaceGrid";
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
-    : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), mem_pool( sizeof( SurfacePatchItem ) )
+    : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
+     gapSize( 1.0 ), thickness( 0.05 ), mem_pool( sizeof( SurfacePatchItem ) )
 {
 }
 
