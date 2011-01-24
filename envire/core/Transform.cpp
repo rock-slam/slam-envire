@@ -15,9 +15,10 @@ TransformWithUncertainty::TransformWithUncertainty( const Transform& trans, cons
     : trans( trans ), cov( cov ), uncertain(true) {}
 
 // The uncertainty transformations are implemented according to: 
-// Cedex SA. A Framework for Uncertainty and Validation of 3-D Registration
-// Methods Based on Points and Frames. International Journal of Computer
-// Vision. 2004.
+// Pennec X, Thirion JP. A framework for uncertainty and validation of 3-D
+// registration methods based on points and frames. International Journal of
+// Computer Vision. 1997;25(3):203–229. Available at:
+// http://www.springerlink.com/index/JJ25N2Q23T402682.pdf.
 
 Eigen::Quaterniond r_to_q( const Eigen::Vector3d& r )
 {
@@ -80,7 +81,7 @@ Eigen::Matrix<double,4,4> dq2q1_by_dq1( const Eigen::Quaterniond& q2 )
     Eigen::Matrix<double,4,4> res;
     res << 0, q2.vec().transpose(),
 	q2.vec(), skew_symmetric( q2.vec() );
-    return res;
+    return Eigen::Matrix<double,4,4>::Identity() * q2.w() + res;
 }
 
 Eigen::Matrix<double,4,4> dq2q1_by_dq2( const Eigen::Quaterniond& q1 )
@@ -88,7 +89,7 @@ Eigen::Matrix<double,4,4> dq2q1_by_dq2( const Eigen::Quaterniond& q1 )
     Eigen::Matrix<double,4,4> res;
     res << 0, q1.vec().transpose(),
 	q1.vec(), -skew_symmetric( q1.vec() );
-    return res;
+    return Eigen::Matrix<double,4,4>::Identity() * q1.w() + res;
 }
 
 Eigen::Matrix<double,3,3> dr2r1_by_r1( const Eigen::Quaterniond& q, const Eigen::Quaterniond& q1, const Eigen::Quaterniond& q2 )
