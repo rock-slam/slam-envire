@@ -67,6 +67,8 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	}
     }
 
+    Eigen::Transform3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
+
     // go through all the cells that have been touched
     for(std::set<position>::iterator it = pos_vector.begin(); it != pos_vector.end(); it++)
     {
@@ -78,7 +80,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	    // get center of cell
 	    double x, y;
 	    t_grid->fromGrid( m, n, x, y );
-	    Eigen::Vector3d cellcenter( x, y, cit->mean );
+	    Eigen::Vector3d cellcenter = C_g2m * Eigen::Vector3d(x, y, cit->mean);
 
 	    // use the cells stdev for the point, this is not quite exact, but should do 
 	    const double p_var = cit->stdev * cit->stdev;
