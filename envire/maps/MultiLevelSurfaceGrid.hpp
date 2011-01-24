@@ -24,39 +24,73 @@ namespace envire
 	    bool horizontal;
 	};
 
+    protected:
 	struct SurfacePatchItem : public SurfacePatch
 	{
+	    typedef SurfacePatchItem Item;
+	    typedef SurfacePatch Value;
+
 	    SurfacePatchItem() {};
 	    explicit SurfacePatchItem( const SurfacePatch& data ) : SurfacePatch( data ) {};
 
 	    SurfacePatchItem* next;
 	};
 
-	template <class Value, class Data>
+	template <class T>
+	struct traits 
+	{
+	    typedef typename T::Item Item;
+	    typedef typename T::Value Value;
+	    typedef T* pItem;
+	};
+
+	template <class T>
+	struct traits<const T>
+	{
+	    typedef const typename T::Item Item;
+	    typedef const typename T::Value Value;
+	    typedef const typename T::Item* const pItem;
+	};
+
+    public:
+	template <class T>
 	class iterator_base :
 	    public boost::iterator_facade<
-		iterator_base<Value, Data>,
-		Value,
+		iterator_base<T>,
+		typename traits<T>::Value,
 		boost::forward_traversal_tag
 		>
 	{
-	    template <class T, class T2>
-		friend std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T, T2> it );
+	    template <class T1>
+		friend std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T1> it );
 	    friend class boost::iterator_core_access;
 	    friend class MultiLevelSurfaceGrid;
-	    Data* m_item;
 
+	    typedef typename traits<T>::Item Data;
+	    typedef typename traits<T>::pItem pData;
+	    typedef typename traits<T>::Value Value;
+
+	    Data* m_item;
+	    // store a handle to the pointer to the element. this is used to
+	    // avoid having double linked lists, but still be able to erase
+	    // list items in constant time
+	    pData* m_pitem; 
+
+	    iterator_base(pData* pitem) : m_item(*pitem), m_pitem(pitem) {}
 	public:
 	    iterator_base() : m_item(NULL) {}
-	    iterator_base(Data* item) : m_item(item) {}
 
-	    void increment() { m_item =	m_item->next; }
+	    void increment() 
+	    { 
+		m_pitem = &m_item->next;
+		m_item = m_item->next; 
+	    }
 	    bool equal( iterator_base const& other ) const { return m_item == other.m_item; }
 	    Value& dereference() const { return *m_item; }
 	};
 
-	typedef	iterator_base<SurfacePatch, SurfacePatchItem> iterator;
-	typedef iterator_base<const SurfacePatch, const SurfacePatchItem> const_iterator;
+	typedef	iterator_base<SurfacePatchItem> iterator;
+	typedef iterator_base<const SurfacePatchItem> const_iterator;
 
     public:
 	static const std::string className;
@@ -111,8 +145,8 @@ namespace envire
 	boost::pool<> mem_pool;
     };
 
-    template <class T, class T2>
-    std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T, T2> it )
+    template <class T>
+    std::ostream& operator <<( std::ostream& os, const MultiLevelSurfaceGrid::iterator_base<T> it )
     {
 	os << it.m_item;
 	return os;

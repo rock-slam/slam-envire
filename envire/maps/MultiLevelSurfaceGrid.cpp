@@ -149,22 +149,22 @@ void MultiLevelSurfaceGrid::readMap(const std::string& path)
 
 MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::beginCell( size_t m, size_t n )
 {
-    return iterator( cells[m][n] );
+    return iterator( &cells[m][n] );
 }
 
 MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::beginCell_const( size_t m, size_t n ) const
 {
-    return const_iterator( cells[m][n] );
+    return const_iterator( &cells[m][n] );
 }
 
 MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::endCell()
 {
-    return iterator( NULL );
+    return iterator();
 }
 
 MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::endCell_const() const
 {
-    return const_iterator( NULL );
+    return const_iterator();
 }
 
 void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& value )
@@ -207,6 +207,15 @@ void MultiLevelSurfaceGrid::set( EnvironmentItem* other )
     if( p ) operator=( *p );
 }
 
+MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position )
+{
+    iterator res( &position.m_item->next );
+    *position.m_pitem = position.m_item->next;
+    mem_pool.free( position.m_item );
+
+    return res; 
+}
+
 bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
 {
     size_t x, y;
@@ -216,6 +225,7 @@ bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, d
 	while( it != endCell() )
 	{
 	    MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+	    // TODO remove this hack
 	    const double interval = (zstdev + p.stdev) * 3.0 + 0.5;
 	    if( position.z() - interval < p.mean && 
 		    position.z() + interval > p.mean )
