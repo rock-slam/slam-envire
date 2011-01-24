@@ -26,24 +26,15 @@ namespace envire {
 
 	bool updateAll();
 
-	void setGapSize( double gapSize ) { this->gapSize = gapSize; }
-	double getGapSize() const { return gapSize; }
-
-	void setHorizontalPatchThickness( double thickness ) { this->thickness = thickness; }
-	double getHorizontalPatchThickness() const { return thickness; }
-
 	MLSProjection* clone() const;
 	void set( EnvironmentItem* other );
 
 	void useUncertainty( bool use ) { withUncertainty = use; }
 
     protected:
-	void updateCell(MultiLevelSurfaceGrid* grid, size_t m, size_t n, double mean, double stdev );
 	void projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
 	void projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
 
-	double gapSize;
-	double thickness;
 	bool withUncertainty;
     };
 }

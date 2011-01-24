@@ -231,3 +231,99 @@ bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, d
     }
     return false;
 }
+
+void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, double mean, double stdev )
+{
+    updateCell( m, n, SurfacePatch( mean, stdev ) );
+}
+
+void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, const SurfacePatch& o )
+{
+    std::vector<MultiLevelSurfaceGrid::iterator> merged;
+
+    for(MultiLevelSurfaceGrid::iterator it = beginCell( m, n ); it != endCell(); it++ )
+    {
+	// merge the patches and remember the ones which where merged 
+	if( mergePatch( *it, o ) )
+	    merged.push_back( it );
+    }
+
+    if( merged.empty() )
+    {
+	// insert the patch since we didn't merge it with any other
+	insertHead( m, n, o );
+    }
+    else
+    {
+	// if there is more than one affected patch, merge them until 
+	// there is only one left
+	while( merged.size() > 1 )
+	{
+	    for( size_t i=0;i<merged.size()-1;i++ )
+	    {
+		if( mergePatch( *merged.back(), *merged[i] ) )
+		{
+		    // remove the merged patch from the cell
+		}
+	    }
+	    merged.pop_back();
+	}
+    }
+}
+
+bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
+{
+    const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
+
+    if( (p.mean - p.height - gapSize - delta_dev) < o.mean 
+	    && (p.mean + gapSize + delta_dev) > (o.mean - o.height) )
+    {
+	// if both patches are horizontal, we see if we can merge them
+	if( p.horizontal && o.horizontal ) 
+	{
+	    if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
+		    (p.mean + thickness + delta_dev) > o.mean )
+	    {
+		// for horizontal patches, perform an update similar to the kalman
+		// update rule
+		const double pvar = p.stdev * p.stdev;
+		const double var = o.stdev * o.stdev;
+		double gain = pvar / (pvar + var);
+		if( gain != gain )
+		    gain = 0.5; // this happens when both stdevs are 0. 
+		p.mean = p.mean + gain * (o.mean - p.mean);
+		p.stdev = sqrt((1.0-gain)*pvar);
+	    }
+	    else
+	    {
+		// convert into a vertical patch element
+		//p.mean += p.stdev;
+		//p.height = 2 * p.stdev; 
+		p.horizontal = false;
+	    }
+	}
+
+	// if either of the patches is vertical, the result is also going
+	// to be vertical
+	if( !p.horizontal || !o.horizontal)
+	{
+	    p.horizontal = false;
+	    if( o.mean > p.mean )
+	    {
+		p.height += ( o.mean - p.mean );
+		p.mean = o.mean;
+		p.stdev = o.stdev;
+	    }
+
+	    const double o_min = o.mean - o.height;
+	    const double p_min = p.mean - p.height;
+	    if( o_min < p_min )
+	    {
+		p.height = p.mean - o_min;
+	    }
+	}
+	return true;
+    }
+    return false;
+}
+

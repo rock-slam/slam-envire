@@ -14,7 +14,7 @@ namespace envire
 	struct SurfacePatch
 	{
 	    SurfacePatch() {};
-	    SurfacePatch( double mean, double stdev, double height, double horizontal )
+	    SurfacePatch( double mean, double stdev, double height = 0, double horizontal = true )
 		: mean(mean), stdev(stdev), height(height), horizontal(horizontal) {};
 
 	    double mean;
@@ -85,16 +85,27 @@ namespace envire
 
 	void insertHead( size_t m, size_t n, const SurfacePatch& value );
 	void insertTail( size_t m, size_t n, const SurfacePatch& value );
+	iterator erase( iterator position );
 
 	MultiLevelSurfaceGrid* clone() const;
 	void set( EnvironmentItem* other );
 
 	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
+	void updateCell( size_t m, size_t n, double mean, double stdev );
+	void updateCell( size_t m, size_t n, const SurfacePatch& patch );
+
+	void setGapSize( double gapsize ) { this->gapSize = gapsize; }
+	double getGapSize() const { return gapSize; }
+	void setHorizontalPatchThickness( double thickness ) { this->thickness = thickness; }
+	double getHorizontalPatchThickness() const { return thickness; }
 
     protected:
+	bool mergePatch( SurfacePatch& p, const SurfacePatch& o );
 	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
 	ArrayType cells;
 
+	double gapSize;
+	double thickness;
 	std::list<SurfacePatchItem> items;
     };
 
