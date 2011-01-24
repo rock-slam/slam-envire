@@ -163,7 +163,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 		if( showUncertainty )
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs/2.0, ys/2.0, p.height+p.stdev ), osg::Vec4( 0.6, 0.1, 0.1, 0.5) );
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs/2.0, ys/2.0, p.height+2.0*p.stdev ), osg::Vec4( 0.6, 0.1, 0.1, 0.5) );
 		}
 	    }
 	}
