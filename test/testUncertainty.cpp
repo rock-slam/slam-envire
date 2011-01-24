@@ -95,14 +95,26 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
     }
 }
 
+std::ostream& operator<<( std::ostream &os, const envire::TransformWithUncertainty& t )
+{
+    os << "transform:" << std::endl;
+    os << t.getTransform().matrix() << std::endl;
+    os << "uncertainty:" << std::endl;
+    os << t.getCovariance() << std::endl;
+    os << std::endl;
+    return os;
+}
+
 BOOST_AUTO_TEST_CASE( uncertaintymls_test ) 
 {
+    const size_t uncertainty_points = 10;
     QtThreadedWidget<vizkit::QVizkitWidget> app;
     vizkit::EnvireVisualization envViz;
-    vizkit::UncertaintyVisualization viz;
+    vizkit::UncertaintyVisualization viz[uncertainty_points];
     app.start();
     app.widget->addDataHandler( &envViz );
-    app.widget->addDataHandler( &viz );
+    for(size_t i=0;i<uncertainty_points;i++)
+	app.widget->addDataHandler( &viz[i] );
 
     // set up test environment
     boost::scoped_ptr<Environment> env( new Environment() );
@@ -140,14 +152,20 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 	double r = i*0.1;
 	Eigen::Matrix<double,6,1> c;
 	//c << 0, M_PI/8.0, 0, 0, 0, 0;
-	c << 0, 0, 0, 0, 0, 1;
+	c << 0, r*0.1, 0, 0, 0, 0;
 	pcfm->setTransform( TransformWithUncertainty( 
-		    Eigen::Transform3d( Eigen::Translation3d( r+0.05, r+0.05, 0 ) ),
+		    Eigen::Transform3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
 		   c.cwise().square().asDiagonal() ) );
 	proj->updateAll();
 
-	PointWithUncertainty p( pc->vertices[0], Eigen::Matrix3d::Identity() * vars[0] );
-	viz.updateData( pcfm->getTransformWithUncertainty() * p );
+	TransformWithUncertainty fm2g = env->relativeTransformWithUncertainty( pcfm, env->getRootNode() );
+	//TransformWithUncertainty fm2g = env->getRootNode()->getTransformWithUncertainty().inverse() * pcfm->getTransformWithUncertainty();
+
+	for(size_t i=0;i<uncertainty_points;i++)
+	{
+	    PointWithUncertainty p( pc->vertices[i*10], Eigen::Matrix3d::Identity() * vars[i*10] );
+	    viz[i].updateData( fm2g * p );
+	}
 
 	usleep(1000*1000);
     }
