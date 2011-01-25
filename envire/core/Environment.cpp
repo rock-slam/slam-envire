@@ -16,7 +16,7 @@ using namespace envire;
 const std::string EnvironmentItem::className = "envire::EnvironmentItem";
 
 void envire::intrusive_ptr_add_ref( EnvironmentItem* item ) { item->ref_count++; }
-void envire::intrusive_ptr_release( EnvironmentItem* item ) { item->ref_count--; }
+void envire::intrusive_ptr_release( EnvironmentItem* item ) { if(!--item->ref_count) delete item; }
 
 EnvironmentItem::EnvironmentItem()
     : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
