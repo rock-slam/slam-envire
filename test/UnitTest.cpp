@@ -17,6 +17,7 @@
 #include "envire/maps/Grids.hpp"
 
 #include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/operators/MLSProjection.hpp"
 
 #include "base/timemark.h"
    
@@ -402,5 +403,49 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
     env->removeEventHandler( &ep );
 }
 
+BOOST_AUTO_TEST_CASE( mlsprojection_test ) 
+{
+    // set up test environment
+    boost::scoped_ptr<Environment> env( new Environment() );
+
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    env->attachItem( mls );
+
+    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    env->getRootNode()->addChild( fm );
+    mls->setFrameNode( fm );
+
+    envire::Pointcloud* pc = new envire::Pointcloud();
+    env->attachItem( pc );
+    std::vector<double> &vars = pc->getVertexData<double>( Pointcloud::VERTEX_VARIANCE );
+    for( int i=0; i<100; i++ )
+    {
+	const double r = i/100.0;
+	pc->vertices.push_back( Eigen::Vector3d( r-0.5, 1.0, 0 ) );
+	vars.push_back( 0 );
+    }
+
+    FrameNode *pcfm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    env->getRootNode()->addChild( pcfm );
+    pc->setFrameNode( pcfm );
+
+    envire::MLSProjection *proj = new envire::MLSProjection();
+    env->attachItem( proj );
+    proj->addInput( pc );
+    proj->addOutput( mls );
+    proj->useUncertainty( true );
+
+    for(int i=0;i<500;i++)
+    {
+	double r = i*0.1;
+	Eigen::Matrix<double,6,1> c;
+	//c << 0, M_PI/8.0, 0, 0, 0, 0;
+	c << 0, r*0.1, 0, 0, 0, 0;
+	pcfm->setTransform( TransformWithUncertainty( 
+		    Eigen::Transform3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
+		   c.cwise().square().asDiagonal() ) );
+	proj->updateAll();
+    }
+}
 // EOF
 //
