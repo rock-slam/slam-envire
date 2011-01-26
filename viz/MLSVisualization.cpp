@@ -9,7 +9,10 @@
 #include <osg/ShapeDrawable>
 
 MLSVisualization::MLSVisualization()
-    : vertexColor(osg::Vec4(0.1,0.5,0.9,1.0)), showUncertainty(true)
+    : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
+    verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
+    uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
+    showUncertainty(true)
 {
 }
 
@@ -32,20 +35,12 @@ bool MLSVisualization::handlesItem(envire::EnvironmentItem* item) const
 
 void MLSVisualization::highlightNode(envire::EnvironmentItem* item, osg::Group* group) const
 {
-    osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-    color->push_back(osg::Vec4(1,0,0,1));
-    osg::Geometry *geom = group->getChild(0)->asGeode()->getDrawable(0)->asGeometry();
-    geom->setColorArray(color.get());
-    geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+    // TODO handle highlight and unhighlight
 }
 
 void MLSVisualization::unHighlightNode(envire::EnvironmentItem* item, osg::Group* group) const
 {
-    osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-    color->push_back(vertexColor);
-    osg::Geometry *geom = group->getChild(0)->asGeode()->getDrawable(0)->asGeometry();
-    geom->setColorArray(color.get());
-    geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+    // TODO handle highlight and unhighlight
 }
 
 void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array> normals, osg::ref_ptr<osg::Vec4Array> colors,  const osg::Vec3& position, const osg::Vec3& extents, const osg::Vec4& color )
@@ -153,17 +148,21 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 		if( p.horizontal == true )
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), vertexColor );
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), horizontalCellColor );
 		    hor++;
 		}
 		else
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), vertexColor );
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), verticalCellColor );
 		}
 
 		if( showUncertainty )
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs/2.0, ys/2.0, p.height+2.0*p.stdev ), osg::Vec4( 0.6, 0.1, 0.1, 0.5) );
+		    const double sizefactor = 0.2;
+		    drawBox( vertices, normals, color, 
+			    osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
+			    osg::Vec3( xs*sizefactor, ys*sizefactor, p.height+2.0*p.stdev ), 
+			    uncertaintyColor );
 		}
 	    }
 	}

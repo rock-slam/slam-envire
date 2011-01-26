@@ -16,7 +16,10 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 	virtual void updateNode(envire::EnvironmentItem* item, osg::Group* group) const;
 
     protected:
-	osg::Vec4 vertexColor;
+	osg::Vec4 horizontalCellColor;
+	osg::Vec4 verticalCellColor;
+	osg::Vec4 uncertaintyColor;
+
 	bool showUncertainty;
 };
 
