@@ -358,7 +358,6 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 	// and remove the root node
 	EnvironmentItem* rootNode = env->getRootNode();
 	env->detachItem( rootNode );
-	delete rootNode;
 
 	// browse root mapping for object or links	
 	for(yaml_node_pair_t* pair=root->data.mapping.pairs.start;
