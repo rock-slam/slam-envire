@@ -7,7 +7,7 @@ const std::string MultiLevelSurfaceGrid::className = "envire::MultiLevelSurfaceG
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
-     gapSize( 1.0 ), thickness( 0.05 ), mem_pool( sizeof( SurfacePatchItem ) )
+     gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), mem_pool( sizeof( SurfacePatchItem ) )
 {
 }
 
@@ -21,6 +21,7 @@ void MultiLevelSurfaceGrid::clear()
 	}
     }
     mem_pool.purge_memory();
+    cellcount = 0;
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
@@ -150,12 +151,12 @@ void MultiLevelSurfaceGrid::readMap(const std::string& path)
 
 MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::beginCell( size_t m, size_t n )
 {
-    return iterator( &cells[m][n] );
+    return iterator( cells[m][n] );
 }
 
 MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::beginCell_const( size_t m, size_t n ) const
 {
-    return const_iterator( &cells[m][n] );
+    return const_iterator( cells[m][n] );
 }
 
 MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::endCell()
@@ -173,8 +174,10 @@ void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& 
     SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
     static_cast<SurfacePatch&>(*n_item).operator=(value);
     n_item->next = cells[m][n];
+    n_item->pthis = &cells[m][n];
 
     cells[m][n] = n_item;
+    cellcount++;
 }
 
 void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& value )
@@ -192,9 +195,31 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
     n_item->next = NULL;
     
     if( last != endCell() )
+    {
 	last.m_item->next = n_item;
+	n_item->pthis = &last.m_item->next;
+    }
     else
+    {
 	cells[m][n] = n_item;
+	n_item->pthis = &cells[m][n];
+    }
+
+    cellcount++;
+}
+
+MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position )
+{
+    SurfacePatchItem* &p( position.m_item );
+    iterator res( p->next );
+
+    *p->pthis = p->next;
+    if( p->next )
+	p->next->pthis = p->pthis; 
+
+    cellcount--;
+
+    return res; 
 }
 
 MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone() const
@@ -206,15 +231,6 @@ void MultiLevelSurfaceGrid::set( EnvironmentItem* other )
 {
     MultiLevelSurfaceGrid *p = dynamic_cast<MultiLevelSurfaceGrid*>( other );
     if( p ) operator=( *p );
-}
-
-MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position )
-{
-    iterator res( &position.m_item->next );
-    *position.m_pitem = position.m_item->next;
-    mem_pool.free( position.m_item );
-
-    return res; 
 }
 
 bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
@@ -248,7 +264,8 @@ void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, double mean, double 
 
 void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, const SurfacePatch& o )
 {
-    std::vector<MultiLevelSurfaceGrid::iterator> merged;
+    typedef std::list<MultiLevelSurfaceGrid::iterator> iterator_list;
+    iterator_list merged;
 
     for(MultiLevelSurfaceGrid::iterator it = beginCell( m, n ); it != endCell(); it++ )
     {
@@ -266,16 +283,20 @@ void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, const SurfacePatch& 
     {
 	// if there is more than one affected patch, merge them until 
 	// there is only one left
-	while( merged.size() > 1 )
+	while( !merged.empty() )
 	{
-	    for( size_t i=0;i<merged.size()-1;i++ )
+	    iterator_list::iterator it = ++merged.begin();
+	    while( it != merged.end() ) 
 	    {
-		if( mergePatch( *merged.back(), *merged[i] ) )
+		if( mergePatch( **merged.begin(), **it ) )
 		{
-		    // remove the merged patch from the cell
+		    erase( *it );
+		    it = merged.erase( it );
 		}
+		else
+		    it++;
 	    }
-	    merged.pop_back();
+	    merged.pop_front();
 	}
     }
 }
@@ -284,6 +305,7 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 {
     const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
 
+    // see if the distance between the patches is small enough
     if( (p.mean - p.height - gapSize - delta_dev) < o.mean 
 	    && (p.mean + gapSize + delta_dev) > (o.mean - o.height) )
     {

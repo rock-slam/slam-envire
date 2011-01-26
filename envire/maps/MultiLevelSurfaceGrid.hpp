@@ -34,6 +34,7 @@ namespace envire
 	    explicit SurfacePatchItem( const SurfacePatch& data ) : SurfacePatch( data ) {};
 
 	    SurfacePatchItem* next;
+	    SurfacePatchItem** pthis;
 	};
 
 	template <class T>
@@ -71,18 +72,13 @@ namespace envire
 	    typedef typename traits<T>::Value Value;
 
 	    Data* m_item;
-	    // store a handle to the pointer to the element. this is used to
-	    // avoid having double linked lists, but still be able to erase
-	    // list items in constant time
-	    pData* m_pitem; 
 
-	    iterator_base(pData* pitem) : m_item(*pitem), m_pitem(pitem) {}
+	    iterator_base(Data* item) : m_item(item) {}
 	public:
 	    iterator_base() : m_item(NULL) {}
 
 	    void increment() 
 	    { 
-		m_pitem = &m_item->next;
 		m_item = m_item->next; 
 	    }
 	    bool equal( iterator_base const& other ) const { return m_item == other.m_item; }
@@ -134,6 +130,8 @@ namespace envire
 	void setHorizontalPatchThickness( double thickness ) { this->thickness = thickness; }
 	double getHorizontalPatchThickness() const { return thickness; }
 
+	size_t getCellCount() const { return cellcount; }
+
     protected:
 	bool mergePatch( SurfacePatch& p, const SurfacePatch& o );
 	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
@@ -141,6 +139,7 @@ namespace envire
 
 	double gapSize;
 	double thickness;
+	size_t cellcount;
 
 	boost::pool<> mem_pool;
     };

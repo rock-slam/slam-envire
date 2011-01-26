@@ -105,6 +105,46 @@ std::ostream& operator<<( std::ostream &os, const envire::TransformWithUncertain
     return os;
 }
 
+BOOST_AUTO_TEST_CASE( mlsmerge_test ) 
+{
+    QtThreadedWidget<vizkit::QVizkitWidget> app;
+    vizkit::EnvireVisualization envViz;
+    app.start();
+    app.widget->addDataHandler( &envViz );
+    
+    boost::scoped_ptr<Environment> env( new Environment() );
+    envViz.updateData( env.get() );
+
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    env->attachItem( mls );
+
+    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    env->getRootNode()->addChild( fm );
+    mls->setFrameNode( fm );
+
+    for( int i=0; i<10; i++ )
+    {
+	for( int j=0; j<10; j++ )
+	{
+	    double h = (i*j)/20.0;
+	    mls->insertTail( 50, 45+i, MultiLevelSurfaceGrid::SurfacePatch( h, 0.05 ) );
+	}
+    }
+    mls->itemModified();
+
+    for(int i=0;i<500 && app.isRunning();i++)
+    {
+	int n = i%10;
+	double h = i/10.0;
+
+	mls->updateCell( 50, 45+n, MultiLevelSurfaceGrid::SurfacePatch( h, 0.05 ) );
+	mls->itemModified();
+
+	usleep( 1000*1000 );
+	std::cout << mls->getCellCount() << std::endl;
+    }
+}
+
 BOOST_AUTO_TEST_CASE( uncertaintymls_test ) 
 {
     const size_t uncertainty_points = 10;
@@ -152,9 +192,10 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 	double r = i*0.1;
 	Eigen::Matrix<double,6,1> c;
 	//c << 0, M_PI/8.0, 0, 0, 0, 0;
-	c << 0, r*0.1, 0, 0, 0, 0;
+	c << 0, 0, 0, 0, 0, 0.2;
 	pcfm->setTransform( TransformWithUncertainty( 
-		    Eigen::Transform3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
+		    //Eigen::Transform3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
+		    Eigen::Transform3d( Eigen::Translation3d( 0, 0, r+0.05 ) ),
 		   c.cwise().square().asDiagonal() ) );
 	proj->updateAll();
 
@@ -166,6 +207,8 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 	    PointWithUncertainty p( pc->vertices[i*10], Eigen::Matrix3d::Identity() * vars[i*10] );
 	    viz[i].updateData( fm2g * p );
 	}
+
+	std::cout << mls->getCellCount() << std::endl;
 
 	usleep(1000*1000);
     }
