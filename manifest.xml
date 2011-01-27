@@ -15,4 +15,5 @@
     <rosdep name="yaml" />
     <rosdep name="gdal" />
     <rosdep name="cgal" />
+    <tags>needs_opt</tags>
 </package>
