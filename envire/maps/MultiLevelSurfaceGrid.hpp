@@ -18,6 +18,21 @@ namespace envire
 	    SurfacePatch( double mean, double stdev, double height = 0, double horizontal = true )
 		: mean(mean), stdev(stdev), height(height), horizontal(horizontal) {};
 
+	    double distance( const SurfacePatch& other ) const
+	    {
+		if( horizontal && other.horizontal )
+		    return 0;
+		if( horizontal )
+		    return other.mean > mean ?
+			other.mean - mean :
+			std::max( 0, mean - height - other.mean);
+		if( other.horizontal )
+		    return mean > other.mean ?
+			mean - other.mean :
+			std::max( 0, other.mean - other.height - mean);
+		return std::abs( mean - other.mean );
+	    };
+
 	    double mean;
 	    double stdev;
 	    double height;
@@ -131,6 +146,9 @@ namespace envire
 	double getHorizontalPatchThickness() const { return thickness; }
 
 	size_t getCellCount() const { return cellcount; }
+
+    public:
+	std::pair<double, double> matchHeight( const MultiLevelSurfaceGrid& other );
 
     protected:
 	bool mergePatch( SurfacePatch& p, const SurfacePatch& o );

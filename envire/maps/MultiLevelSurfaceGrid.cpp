@@ -363,3 +363,58 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
     return false;
 }
 
+std::pair<SurfacePatch*, double> getNearestPatch( const SurfacePatch& p, iterator begin, iterator end )
+{
+    SurfacePatch* min = NULL;
+    double dist = std::numeric_limits<double>::Infinity();
+
+    // find the cell with the smallest z-diff
+    while( begin != end )
+    {
+	double d;
+	if( d = p.distance( **it ) < dist )
+	{
+	    min = *it;
+	    dist = d;
+	}
+	begin++;
+    }
+
+    return make_pair( min, dist );
+}
+
+template <class T> inline T sq( const T& a ) { return a * a; }
+
+std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSurfaceGrid& other )
+{
+    assert( other.getWidth() == getWidth() && other.getHeight() == getHeight() );
+
+    double d1=0, d2=0;
+
+    for(size_t m=0;m<width;m++)
+    {
+	for(size_t n=0;n<height;n++)
+	{
+	    if( other.cells[m][n] )
+	    {
+		for( iterator it = other.beginCell(m,n); it != other.endCell(); it++ )
+		{
+		    SurfacePatch &p( *it );
+		    std::pair<SurfacePatch*,double> res = getNearestPatch( p, beginCell(m,n), endCell() );
+
+		    const double diff = res.second;
+		    const double var = sq( res.first->stdev ) + sq( p.stdev );
+
+		    d1 += diff / var;
+		    d2 += 1.0 / var;
+		}
+	    }
+	}
+    }
+
+    double delta = d1 / d2;
+    double var = 1.0 / d2;
+
+    return make_pair( delta, var );
+}
+
