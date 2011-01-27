@@ -25,7 +25,8 @@ void MultiLevelSurfaceGrid::clear()
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
-    : GridBase( other ), cells( boost::extents[other.width][other.height] ), mem_pool( sizeof( SurfacePatchItem ) )
+    : GridBase( other ), cells( boost::extents[other.width][other.height] ),
+     gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount ), mem_pool( sizeof( SurfacePatchItem ) )
 {
     for(size_t m=0;m<width;m++)
     {
@@ -56,6 +57,10 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
 	    }
 	}
     }
+
+    gapSize = other.gapSize;
+    thickness = other.thickness;
+    cellcount = other.cellcount;
 
     return *this;
 }
