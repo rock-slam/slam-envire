@@ -1,5 +1,6 @@
 #include "MultiLevelSurfaceGrid.hpp"
 #include <fstream>
+#include <limits>
 
 using namespace envire;
 
@@ -363,24 +364,25 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
     return false;
 }
 
-std::pair<SurfacePatch*, double> getNearestPatch( const SurfacePatch& p, iterator begin, iterator end )
+std::pair<MultiLevelSurfaceGrid::SurfacePatch*, double> 
+    getNearestPatch( const MultiLevelSurfaceGrid::SurfacePatch& p, MultiLevelSurfaceGrid::iterator begin, MultiLevelSurfaceGrid::iterator end )
 {
-    SurfacePatch* min = NULL;
-    double dist = std::numeric_limits<double>::Infinity();
+    MultiLevelSurfaceGrid::SurfacePatch* min = NULL;
+    double dist = std::numeric_limits<double>::infinity();
 
     // find the cell with the smallest z-diff
     while( begin != end )
     {
 	double d;
-	if( d = p.distance( **it ) < dist )
+	if( (d = p.distance( *begin )) < dist )
 	{
-	    min = *it;
+	    min = &(*begin);
 	    dist = d;
 	}
 	begin++;
     }
 
-    return make_pair( min, dist );
+    return std::make_pair( min, dist );
 }
 
 template <class T> inline T sq( const T& a ) { return a * a; }
@@ -397,9 +399,9 @@ std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSu
 	{
 	    if( other.cells[m][n] )
 	    {
-		for( iterator it = other.beginCell(m,n); it != other.endCell(); it++ )
+		for( const_iterator it = other.beginCell_const(m,n); it != other.endCell_const(); it++ )
 		{
-		    SurfacePatch &p( *it );
+		    const SurfacePatch &p( *it );
 		    std::pair<SurfacePatch*,double> res = getNearestPatch( p, beginCell(m,n), endCell() );
 
 		    const double diff = res.second;
@@ -415,6 +417,6 @@ std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSu
     double delta = d1 / d2;
     double var = 1.0 / d2;
 
-    return make_pair( delta, var );
+    return std::make_pair( delta, var );
 }
 

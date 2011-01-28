@@ -7,6 +7,8 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/pool/pool.hpp>
 
+#include <algorithm>
+
 namespace envire
 {  
     class MultiLevelSurfaceGrid : public GridBase
@@ -25,11 +27,11 @@ namespace envire
 		if( horizontal )
 		    return other.mean > mean ?
 			other.mean - mean :
-			std::max( 0, mean - height - other.mean);
+			std::max( 0.0, mean - height - other.mean);
 		if( other.horizontal )
 		    return mean > other.mean ?
 			mean - other.mean :
-			std::max( 0, other.mean - other.height - mean);
+			std::max( 0.0, other.mean - other.height - mean);
 		return std::abs( mean - other.mean );
 	    };
 
