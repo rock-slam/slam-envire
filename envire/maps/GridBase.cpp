@@ -40,7 +40,7 @@ void GridBase::unserialize(Serialization& so)
 
 }
 
-bool GridBase::toGrid( double x, double y, size_t& m, size_t& n )
+bool GridBase::toGrid( double x, double y, size_t& m, size_t& n ) const
 {
     size_t am = floor(x/scalex);
     size_t an = floor(y/scaley);
@@ -55,7 +55,7 @@ bool GridBase::toGrid( double x, double y, size_t& m, size_t& n )
     }
 }
 
-void GridBase::fromGrid( size_t m, size_t n, double& x, double& y )
+void GridBase::fromGrid( size_t m, size_t n, double& x, double& y ) const
 {
     x = (m+0.5) * scalex;
     y = (n+0.5) * scaley;

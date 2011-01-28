@@ -21,14 +21,14 @@ namespace envire
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
-	bool toGrid( double x, double y, size_t& m, size_t& n );
-	void fromGrid( size_t m, size_t n, double& x, double& y );
+	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
+	void fromGrid( size_t m, size_t n, double& x, double& y ) const;
 
-	size_t getWidth() { return width; };
-	size_t getHeight() { return height; };
+	size_t getWidth() const { return width; };
+	size_t getHeight() const { return height; };
 
-	double getScaleX() { return scalex; };
-	double getScaleY() { return scaley; };
+	double getScaleX() const { return scalex; };
+	double getScaleY() const { return scaley; };
 
 	Extents getExtents() const;
     };
