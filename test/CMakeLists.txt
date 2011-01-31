@@ -20,4 +20,10 @@ IF( VIZKIT_FOUND )
 	envire-viz
 	${VIZKIT_LIBRARIES}
 	)
+
+    add_executable(testMLS testMLS.cpp)
+    target_link_libraries(testMLS 
+	envire-viz
+	${VIZKIT_LIBRARIES}
+	)
 ENDIF( VIZKIT_FOUND )
