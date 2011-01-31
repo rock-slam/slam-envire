@@ -385,7 +385,7 @@ std::pair<MultiLevelSurfaceGrid::SurfacePatch*, double>
     return std::make_pair( min, dist );
 }
 
-template <class T> inline T sq( const T& a ) { return a * a; }
+template <class T> inline T sq( T a ) { return a * a; }
 
 std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSurfaceGrid& other )
 {
@@ -397,7 +397,7 @@ std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSu
     {
 	for(size_t n=0;n<height;n++)
 	{
-	    if( other.cells[m][n] )
+	    if( other.cells[m][n] && cells[m][n] )
 	    {
 		for( const_iterator it = other.beginCell_const(m,n); it != other.endCell_const(); it++ )
 		{
