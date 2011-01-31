@@ -22,13 +22,13 @@ namespace envire
 
 	    double distance( const SurfacePatch& other ) const
 	    {
-		if( horizontal && other.horizontal )
+		if( !horizontal && !other.horizontal )
 		    return 0;
-		if( horizontal )
+		if( !horizontal )
 		    return other.mean > mean ?
 			other.mean - mean :
 			std::max( 0.0, mean - height - other.mean);
-		if( other.horizontal )
+		if( !other.horizontal )
 		    return mean > other.mean ?
 			mean - other.mean :
 			std::max( 0.0, other.mean - other.height - mean);
