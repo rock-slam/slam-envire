@@ -18,6 +18,7 @@
 
 #include "envire/maps/MultiLevelSurfaceGrid.hpp"
 #include "envire/operators/MLSProjection.hpp"
+#include "envire/operators/MergeMLS.hpp"
 
 #include "base/timemark.h"
    
@@ -446,6 +447,44 @@ BOOST_AUTO_TEST_CASE( mlsprojection_test )
 		   c.cwise().square().asDiagonal() ) );
 	proj->updateAll();
     }
+}
+
+BOOST_AUTO_TEST_CASE( mlsmerge_test ) 
+{
+    // set up test environment
+    boost::scoped_ptr<Environment> env( new Environment() );
+
+    MultiLevelSurfaceGrid *mls1 = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    env->attachItem( mls1 );
+
+    MultiLevelSurfaceGrid *mls2 = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    env->attachItem( mls2 );
+
+    for( size_t m=0; m<100; m++ )
+    {
+	for( size_t n=0; n<100; n++ )
+	{
+	    double h1 = cos(n*0.1)*sin(n*0.1);
+	    double h2 = cos(n*0.2)*sin(n*0.3);
+	    mls1->insertHead( m, n, MultiLevelSurfaceGrid::SurfacePatch( h1, 0.1 ) );
+	    mls2->insertHead( m, n, MultiLevelSurfaceGrid::SurfacePatch( h2, 0.1 ) );
+	}
+    }
+
+    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    env->getRootNode()->addChild( fm );
+    mls1->setFrameNode( fm );
+
+    FrameNode *fm2 = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 1 ) ) );
+    env->getRootNode()->addChild( fm2 );
+    mls2->setFrameNode( fm2 );
+
+    envire::MergeMLS *merge = new envire::MergeMLS();
+    env->attachItem( merge );
+    merge->addInput( mls1 );
+    merge->addOutput( mls2 );
+    merge->updateAll();
+
 }
 // EOF
 //

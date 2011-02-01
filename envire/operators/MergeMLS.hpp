@@ -5,17 +5,32 @@
 
 namespace envire 
 {
-class MergeMLS : public Operator 
+
+template <class T, class D>
+class EnvironmentItemAdapter : public D
 {
-public:
-    MergeMLS() {};
-    MergeMLS(Serialization& so) {};
+    EnvironmentItem* clone() const 
+    {
+	const T* fn = dynamic_cast<const T*>( this ); 
+	if( fn )
+	    return new T( *fn );
+	else 
+	    return NULL;
+    }
 
-    void serialize(Serialization& so) {};
+    void set( EnvironmentItem* other ) 
+    {
+	T* fn = dynamic_cast<T*>( other ); 
+	if( fn ) 
+	{
+	    T* t = dynamic_cast<T*>( this ); 
+	    t->operator=( *fn );
+	}
+    }
+};
 
-    MergeMLS* clone() const {};
-    void set( EnvironmentItem* it) {};
-
+class MergeMLS : public EnvironmentItemAdapter<MergeMLS, Operator>
+{
 public:
     bool updateAll()
     {
@@ -46,6 +61,8 @@ public:
 		}
 	    }
 	}
+
+	return true;
     };
 };
 }
