@@ -23,6 +23,7 @@ void MultiLevelSurfaceGrid::clear()
     }
     mem_pool.purge_memory();
     cellcount = 0;
+    extents.reset();
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
@@ -183,6 +184,7 @@ void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& 
     n_item->pthis = &cells[m][n];
 
     cells[m][n] = n_item;
+    if( extents ) extents->addCell( m, n );
     cellcount++;
 }
 
@@ -211,6 +213,7 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
 	n_item->pthis = &cells[m][n];
     }
 
+    if( extents ) extents->addCell( m, n );
     cellcount++;
 }
 

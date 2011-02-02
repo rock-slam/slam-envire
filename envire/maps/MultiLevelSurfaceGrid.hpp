@@ -6,14 +6,53 @@
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/pool/pool.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <algorithm>
+#include <set>
 
 namespace envire
 {  
     class MultiLevelSurfaceGrid : public GridBase
     {
     public:
+	enum ExtentType
+	{
+	    Set
+	};
+
+	struct Extents
+	{
+	    virtual void addCell( size_t m, size_t n ) = 0;
+	};
+
+	struct SetExtents : public Extents
+	{
+	    struct Position 
+	    {
+		size_t m;
+		size_t n;
+
+		Position( size_t m, size_t n ) : m(m), n(n) {}
+		bool operator<( const Position& other ) const
+		{
+		    if( m < other.m )
+			return true;
+		    else
+			if( m == other.m )
+			    return n < other.n;
+			else
+			    return false;
+		}
+	    };
+
+	    std::set<Position> cells;
+	    void addCell( size_t m, size_t n )
+	    {
+		cells.insert( Position( m, n ) );
+	    }
+	};
+
 	struct SurfacePatch
 	{
 	    SurfacePatch() {};
@@ -148,9 +187,17 @@ namespace envire
 	double getHorizontalPatchThickness() const { return thickness; }
 
 	size_t getCellCount() const { return cellcount; }
+	bool empty() const { return cellcount == 0; }
 
     public:
 	std::pair<double, double> matchHeight( const MultiLevelSurfaceGrid& other );
+	void initExtents( ExtentType type )
+	{
+	    if( type == Set && !getExtents<SetExtents>() )
+		setExtents( boost::shared_ptr<SetExtents>(new SetExtents()) );
+	};
+	void setExtents( boost::shared_ptr<Extents> extents ) { this->extents = extents; }
+	template <class T> boost::shared_ptr<T> getExtents() { return boost::dynamic_pointer_cast<T>(extents); }
 
     protected:
 	bool mergePatch( SurfacePatch& p, const SurfacePatch& o );
@@ -161,6 +208,7 @@ namespace envire
 	double thickness;
 	size_t cellcount;
 
+	boost::shared_ptr<Extents> extents;
 	boost::pool<> mem_pool;
     };
 

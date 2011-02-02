@@ -38,14 +38,22 @@ void MLSProjection::addOutput( MultiLevelSurfaceGrid* grid )
 
 void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
 {
-    TransformWithUncertainty C_m2g = env->relativeTransformWithUncertainty( pc->getFrameNode(), grid->getFrameNode() );
-    // create a new grid with the same dimensions
-    boost::intrusive_ptr<envire::MultiLevelSurfaceGrid> 
-	t_grid( new MultiLevelSurfaceGrid( grid->getWidth(), grid->getHeight(), grid->getScaleX(), grid->getScaleY() ) );
+    TransformWithUncertainty C_m2g = env->relativeTransformWithUncertainty(
+	    pc->getFrameNode(), grid->getFrameNode() );
+    // create a new grid with the same dimensions in case the given grid is not
+    // empty
+    boost::intrusive_ptr<envire::MultiLevelSurfaceGrid> t_grid;
+    if( !grid->empty() )
+	t_grid = new MultiLevelSurfaceGrid( 
+		grid->getWidth(), grid->getHeight(), grid->getScaleX(), grid->getScaleY() );
+    else
+	t_grid = grid;
+
+    // make sure we are recording the cell positions in a set
+    t_grid->initExtents( MultiLevelSurfaceGrid::Set );
+
     // store the updated positions in the vector, since we won't probably touch
     // so many items in the grid
-    typedef std::pair<size_t,size_t> position;
-    std::set<position> pos_vector;
 
     std::vector<Eigen::Vector3d>& points(pc->vertices);
     std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
@@ -63,17 +71,19 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	{
 	    const double stdev = sqrt(p_var);
 	    t_grid->updateCell(m, n, mean.z(), stdev);
-	    pos_vector.insert( std::make_pair( m, n ) );
 	}
     }
 
     Eigen::Transform3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
+    typedef MultiLevelSurfaceGrid::SetExtents::Position position;
+    std::set<position> &cells = t_grid->getExtents<MultiLevelSurfaceGrid::SetExtents>()->cells;
+
     // go through all the cells that have been touched
-    for(std::set<position>::iterator it = pos_vector.begin(); it != pos_vector.end(); it++)
+    for(std::set<position>::iterator it = cells.begin(); it != cells.end(); it++)
     {
-	size_t m = it->first;
-	size_t n = it->second;
+	const size_t m = it->m;
+	const size_t n = it->n;
 
 	for(MultiLevelSurfaceGrid::iterator cit = t_grid->beginCell(m,n); cit != t_grid->endCell(); cit++ )
 	{
@@ -90,7 +100,11 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	    cit->stdev = sqrt(p_var + p.getCovariance()(2,2));
 
 	    // add the patch with the updated uncertainty into the target grid
-	    grid->updateCell( m, n, *cit );
+	    // TODO: in case we are operating on the target grid already, 
+	    // we may have to call some sort of merge, since through the updated
+	    // variance we might have some patches that actually belong together.
+	    if( t_grid != grid )
+		grid->updateCell( m, n, *cit );
 	}
     }
 }
