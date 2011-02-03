@@ -23,7 +23,7 @@ void MultiLevelSurfaceGrid::clear()
     }
     mem_pool.purge_memory();
     cellcount = 0;
-    extents.reset();
+    if(extents) extents->reset();
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)

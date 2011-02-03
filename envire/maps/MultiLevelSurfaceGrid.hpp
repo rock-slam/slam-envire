@@ -24,6 +24,7 @@ namespace envire
 	struct Extents
 	{
 	    virtual void addCell( size_t m, size_t n ) = 0;
+	    virtual void reset() = 0;
 	};
 
 	struct SetExtents : public Extents
@@ -51,6 +52,8 @@ namespace envire
 	    {
 		cells.insert( Position( m, n ) );
 	    }
+
+	    void reset() { cells.clear(); }
 	};
 
 	struct SurfacePatch
