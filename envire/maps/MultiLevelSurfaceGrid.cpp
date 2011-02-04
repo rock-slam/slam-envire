@@ -376,6 +376,7 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 		p.height = p.mean - o_min;
 	    }
 	}
+	p.update_idx = o.update_idx;
 	return true;
     }
     return false;

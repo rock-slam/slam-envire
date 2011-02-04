@@ -62,7 +62,7 @@ namespace envire
 	{
 	    SurfacePatch() {};
 	    SurfacePatch( double mean, double stdev, double height = 0, double horizontal = true )
-		: mean(mean), stdev(stdev), height(height), horizontal(horizontal) {};
+		: mean(mean), stdev(stdev), height(height), horizontal(horizontal), update_idx(0) {};
 
 	    double distance( const SurfacePatch& other ) const
 	    {
@@ -83,6 +83,8 @@ namespace envire
 	    double stdev;
 	    double height;
 	    bool horizontal;
+
+	    size_t update_idx;
 	};
 
     protected:
