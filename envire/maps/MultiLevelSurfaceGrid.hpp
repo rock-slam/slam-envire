@@ -56,6 +56,8 @@ namespace envire
 	    void reset() { cells.clear(); }
 	};
 
+	typedef SetExtents::Position Position;
+
 	struct SurfacePatch
 	{
 	    SurfacePatch() {};
@@ -180,6 +182,7 @@ namespace envire
 	MultiLevelSurfaceGrid* clone() const;
 	void set( EnvironmentItem* other );
 
+	SurfacePatch* get( const Position& position, const SurfacePatch& patch );
 	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
 	void updateCell( size_t m, size_t n, double mean, double stdev );
 	void updateCell( size_t m, size_t n, const SurfacePatch& patch );

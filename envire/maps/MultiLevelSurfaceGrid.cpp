@@ -1,6 +1,7 @@
 #include "MultiLevelSurfaceGrid.hpp"
 #include <fstream>
 #include <limits>
+#include "tools/Numeric.hpp"
 
 using namespace envire;
 
@@ -242,25 +243,35 @@ void MultiLevelSurfaceGrid::set( EnvironmentItem* other )
     if( p ) operator=( *p );
 }
 
+MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::get( const Position& position, const SurfacePatch& patch )
+{
+    MultiLevelSurfaceGrid::iterator it = beginCell(position.m, position.n);
+    while( it != endCell() )
+    {
+	MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * 3.0;
+	if( p.distance( patch ) < interval )
+	{
+	    return &p;
+	}
+	it++;
+    }
+    return NULL;
+}
+
+
 bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
 {
-    size_t x, y;
-    if( toGrid(position.x(), position.y(), x, y) )
+    size_t m, n;
+    if( toGrid(position.x(), position.y(), m, n) )
     {
-	MultiLevelSurfaceGrid::iterator it = beginCell(x,y);
-	while( it != endCell() )
+	SurfacePatch patch( position.z(), zstdev ); 
+	SurfacePatch *p = get( Position(m, n), patch );
+	if( p )
 	{
-	    MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-	    // TODO remove this hack
-	    const double interval = (zstdev + p.stdev) * 3.0 + 0.5;
-	    if( position.z() - interval < p.mean && 
-		    position.z() + interval > p.mean )
-	    {
-		zpos = p.mean;
-		zstdev = p.stdev;
-		return true;
-	    }
-	    it++;
+	    zpos = p->mean;
+	    zstdev = p->stdev;
+	    return true;
 	}
     }
     return false;
@@ -324,6 +335,8 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	    if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
 		    (p.mean + thickness + delta_dev) > o.mean )
 	    {
+		kalman_update( p.mean, p.stdev, o.mean, o.stdev );
+		/*
 		// for horizontal patches, perform an update similar to the kalman
 		// update rule
 		const double pvar = p.stdev * p.stdev;
@@ -333,6 +346,7 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 		    gain = 0.5; // this happens when both stdevs are 0. 
 		p.mean = p.mean + gain * (o.mean - p.mean);
 		p.stdev = sqrt((1.0-gain)*pvar);
+		*/
 	    }
 	    else
 	    {
@@ -387,8 +401,6 @@ std::pair<MultiLevelSurfaceGrid::SurfacePatch*, double>
 
     return std::make_pair( min, dist );
 }
-
-template <class T> inline T sq( T a ) { return a * a; }
 
 std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSurfaceGrid& other )
 {
