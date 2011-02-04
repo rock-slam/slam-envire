@@ -60,6 +60,7 @@ Environment* EnvironmentItem::getEnvironment()
 }
 
 EnvironmentItem::EnvironmentItem(Serialization &so)
+    : ref_count(0)
 {
     so.setClassName(className);
     so.read( "id", unique_id );
