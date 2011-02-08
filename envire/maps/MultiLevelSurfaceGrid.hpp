@@ -15,6 +15,8 @@ namespace envire
 {  
     class MultiLevelSurfaceGrid : public GridBase
     {
+	ENVIRONMENT_ITEM( MultiLevelSurfaceGrid )
+
     public:
 	enum ExtentType
 	{
@@ -132,9 +134,6 @@ namespace envire
 	typedef iterator_base<const SurfacePatchItem> const_iterator;
 
     public:
-	static const std::string className;
-
-    public:
 	MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other);
 	MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley);
 	MultiLevelSurfaceGrid(Serialization& so);
@@ -148,8 +147,6 @@ namespace envire
 	void writeMap(const std::string& path);
 	void readMap(const std::string& path);
 
-	virtual const std::string& getClassName() const {return className;};
-
 	void clear();
 
 	iterator beginCell( size_t m, size_t n );
@@ -160,9 +157,6 @@ namespace envire
 	void insertHead( size_t m, size_t n, const SurfacePatch& value );
 	void insertTail( size_t m, size_t n, const SurfacePatch& value );
 	iterator erase( iterator position );
-
-	MultiLevelSurfaceGrid* clone() const;
-	void set( EnvironmentItem* other );
 
 	SurfacePatch* get( const Position& position, const SurfacePatch& patch, double sigma_threshold = 3.0 );
 	/** @deprecated */

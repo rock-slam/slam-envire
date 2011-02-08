@@ -6,31 +6,10 @@
 namespace envire 
 {
 
-template <class T, class D>
-class EnvironmentItemAdapter : public D
+class MergeMLS : public Operator
 {
-    EnvironmentItem* clone() const 
-    {
-	const T* fn = dynamic_cast<const T*>( this ); 
-	if( fn )
-	    return new T( *fn );
-	else 
-	    return NULL;
-    }
+    ENVIRONMENT_ITEM( MergeMLS )
 
-    void set( EnvironmentItem* other ) 
-    {
-	T* fn = dynamic_cast<T*>( other ); 
-	if( fn ) 
-	{
-	    T* t = dynamic_cast<T*>( this ); 
-	    t->operator=( *fn );
-	}
-    }
-};
-
-class MergeMLS : public EnvironmentItemAdapter<MergeMLS, Operator>
-{
 public:
     bool updateAll()
     {

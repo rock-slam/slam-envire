@@ -5,8 +5,6 @@
 
 using namespace envire;
 
-const std::string MultiLevelSurfaceGrid::className = "envire::MultiLevelSurfaceGrid";
-
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
      gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), mem_pool( sizeof( SurfacePatchItem ) )
@@ -81,14 +79,14 @@ MultiLevelSurfaceGrid::~MultiLevelSurfaceGrid()
 void MultiLevelSurfaceGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
-    so.setClassName( className );
+    so.setClassName( getClassName() );
 
     writeMap( getMapFileName(so.getMapPath()) + ".mls" );
 }
 
 void MultiLevelSurfaceGrid::unserialize(Serialization& so)
 {
-    so.setClassName( className );
+    so.setClassName( getClassName() );
 
     cells.resize( boost::extents[width][height] );
     readMap( getMapFileName(so.getMapPath()) + ".mls" );
@@ -230,17 +228,6 @@ MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position 
     cellcount--;
 
     return res; 
-}
-
-MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::clone() const
-{
-    return new MultiLevelSurfaceGrid(*this);
-}
-
-void MultiLevelSurfaceGrid::set( EnvironmentItem* other )
-{
-    MultiLevelSurfaceGrid *p = dynamic_cast<MultiLevelSurfaceGrid*>( other );
-    if( p ) operator=( *p );
 }
 
 MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold )
