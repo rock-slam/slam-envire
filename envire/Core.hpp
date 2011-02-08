@@ -17,6 +17,32 @@
 
 #include <envire/core/EventSource.hpp>
 
+#define ENVIRONMENT_ITEM( classname ) \
+	public:\
+	const std::string& getClassName() const { \
+	    static const std::string className = "envire::" #classname; \
+	    return className; \
+	}\
+	void set( classname* other ) \
+	{\
+	    classname* fn = dynamic_cast<classname*>( other ); \
+	    if( fn ) \
+	    {\
+		classname* t = dynamic_cast<classname*>( this ); \
+		t->operator=( *fn );\
+	    }\
+	}\
+	typedef boost::intrusive_ptr<classname> Ptr; \
+	classname* clone() const \
+	{ \
+	    const classname* fn = dynamic_cast<const classname*>( this ); \
+	    if( fn )\
+		return new classname( *fn );\
+	    else \
+		return NULL;\
+	}\
+	protected:\
+
 namespace envire
 {
     class Layer;
@@ -131,11 +157,11 @@ namespace envire
 
 	/** Creates a clone of this item. 
 	 */
-        virtual EnvironmentItem* clone() const = 0;
+        virtual EnvironmentItem* clone() const { throw std::runtime_error("clone() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
 
 	/** virtual assignemt of other value to this
 	 */
-	virtual void set( EnvironmentItem* other ) = 0;
+	virtual void set( EnvironmentItem* other ) { throw std::runtime_error("set() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
 
 	/** will attach the newly created object to the given Environment.
 	 */ 

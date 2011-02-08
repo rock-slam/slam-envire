@@ -56,6 +56,12 @@ public:
     Extents getExtents() const { return Extents(); }
 };
 
+BOOST_AUTO_TEST_CASE( EnvironmentItem_test )
+{
+    MergeMLS merge;
+    BOOST_CHECK_EQUAL( merge.getClassName(), "envire::MergeMLS" );
+}
+
 BOOST_AUTO_TEST_CASE( TreeTest )
 {
     // set up an environment
