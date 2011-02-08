@@ -76,7 +76,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
     Eigen::Transform3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
-    typedef MultiLevelSurfaceGrid::SetExtents::Position position;
+    typedef MultiLevelSurfaceGrid::Position position;
     std::set<position> &cells = t_grid->getExtents<MultiLevelSurfaceGrid::SetExtents>()->cells;
 
     // go through all the cells that have been touched

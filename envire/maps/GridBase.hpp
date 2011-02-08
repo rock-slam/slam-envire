@@ -10,6 +10,24 @@ namespace envire
     public:
 	static const std::string className;
 
+	struct Position 
+	{
+	    size_t m;
+	    size_t n;
+
+	    Position( size_t m, size_t n ) : m(m), n(n) {}
+	    bool operator<( const Position& other ) const
+	    {
+		if( m < other.m )
+		    return true;
+		else
+		    if( m == other.m )
+			return n < other.n;
+		    else
+			return false;
+	    }
+	};
+
     protected:
 	size_t width, height;
 	double scalex, scaley;	
