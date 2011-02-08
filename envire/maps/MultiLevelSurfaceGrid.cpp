@@ -243,13 +243,13 @@ void MultiLevelSurfaceGrid::set( EnvironmentItem* other )
     if( p ) operator=( *p );
 }
 
-MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::get( const Position& position, const SurfacePatch& patch )
+MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold )
 {
     MultiLevelSurfaceGrid::iterator it = beginCell(position.m, position.n);
     while( it != endCell() )
     {
 	MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * 3.0;
+	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
 	if( p.distance( patch ) < interval )
 	{
 	    return &p;
