@@ -39,6 +39,12 @@ target_link_libraries(${PROJECT_NAME}-viz ${PROJECT_NAME}
     ${Boost_THREAD_LIBRARY}
     )
 
+
+add_executable(envireViewer envireViewer.cpp)
+target_link_libraries(envireViewer
+    ${VIZKIT_LIBRARIES}
+    ${PROJECT_NAME}-viz)
+
 # install headers and library
 install(DIRECTORY . DESTINATION include/vizkit FILES_MATCHING PATTERN "*.hpp")
 install(TARGETS ${PROJECT_NAME}-viz
