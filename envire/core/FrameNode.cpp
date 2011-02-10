@@ -84,3 +84,7 @@ void FrameNode::setTransform(TransformWithUncertainty const& transform)
     }
 }
 
+FrameNode::TransformType FrameNode::relativeTransform( const FrameNode* to ) const
+{
+    return env->relativeTransform( this, to );
+}

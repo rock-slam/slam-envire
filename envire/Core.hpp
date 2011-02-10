@@ -310,6 +310,14 @@ namespace envire
 	 */
 	void setTransform(TransformWithUncertainty const& transform);
 
+        /** 
+	 * @return the transformation from this frame to
+         * the frame represented by @a to. This always defines an unique
+         * transformation, as the frames are sorted in a tree.
+	 * This is a convenince access to Environment::relativeTransform()
+         */
+	TransformType relativeTransform( const FrameNode* to ) const;
+
     protected:
 	TransformWithUncertainty frame;
     };
