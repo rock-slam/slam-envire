@@ -257,12 +257,12 @@ namespace envire
      */
     class FrameNode : public EnvironmentItem
     {
+	ENVIRONMENT_ITEM( FrameNode )
+
     public:
 	typedef Transform TransformType;
 
     public:
-	static const std::string className;
-
 	/** class needs to be 16byte aligned for Eigen vectorisation */
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -272,7 +272,6 @@ namespace envire
         FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
-	virtual const std::string& getClassName() const {return className;};
 
         /** Returns true if this frame is the root frame (i.e. has no parent) */
         bool isRoot() const;
@@ -310,10 +309,6 @@ namespace envire
 	 * with a transformation.
 	 */
 	void setTransform(TransformWithUncertainty const& transform);
-
-    public:
-	FrameNode* clone() const;
-	void set( EnvironmentItem* other );  
 
     protected:
 	TransformWithUncertainty frame;

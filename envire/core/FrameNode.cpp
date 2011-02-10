@@ -9,8 +9,6 @@
 
 using namespace envire;
 
-const std::string FrameNode::className = "envire::FrameNode";
-
 FrameNode::FrameNode()
     : frame( Transform( Eigen::Transform3d::Identity()) )
 {
@@ -84,16 +82,5 @@ void FrameNode::setTransform(TransformWithUncertainty const& transform)
     if(env) {
 	env->itemModified(this);
     }
-}
-
-FrameNode* FrameNode::clone() const
-{
-    return new FrameNode( *this );
-}
-
-void FrameNode::set( EnvironmentItem* other )
-{
-    FrameNode* fn = dynamic_cast<FrameNode*>( other ); 
-    if( fn ) operator=( *fn );
 }
 
