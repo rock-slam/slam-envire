@@ -60,6 +60,16 @@ void GridBase::fromGrid( size_t m, size_t n, double& x, double& y ) const
     x = (m+0.5) * scalex;
     y = (n+0.5) * scaley;
 }
+
+bool GridBase::toGrid( const Point2D& point, Position& pos ) const
+{
+    return toGrid( point.x(), point.y(), pos.m, pos.n );
+}
+
+void GridBase::fromGrid( const Position& pos, Point2D& point ) const
+{
+    fromGrid( pos.m, pos.n, point.x(), point.y() );
+}
         
 GridBase::Extents GridBase::getExtents() const
 {

@@ -15,6 +15,7 @@ namespace envire
 	    size_t m;
 	    size_t n;
 
+	    Position() {}
 	    Position( size_t m, size_t n ) : m(m), n(n) {}
 	    bool operator<( const Position& other ) const
 	    {
@@ -27,6 +28,7 @@ namespace envire
 			return false;
 	    }
 	};
+	typedef Eigen::Vector2d Point2D;
 
     protected:
 	size_t width, height;
@@ -41,6 +43,9 @@ namespace envire
 
 	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
 	void fromGrid( size_t m, size_t n, double& x, double& y ) const;
+
+	bool toGrid( const Point2D& point, Position& pos ) const;
+	void fromGrid( const Position& pos, Point2D& point ) const;
 
 	size_t getWidth() const { return width; };
 	size_t getHeight() const { return height; };
