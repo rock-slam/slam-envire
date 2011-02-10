@@ -66,6 +66,15 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
     return *this;
 }
 
+envire::MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::cloneShallow() const
+{
+    MultiLevelSurfaceGrid* res = new MultiLevelSurfaceGrid( width, height, scalex, scaley );
+    res->gapSize = gapSize;
+    res->thickness = thickness;
+    res->cellcount = cellcount;
+    return res;
+}
+
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(Serialization& so)
     : GridBase(so), mem_pool( sizeof( SurfacePatchItem ) )
 {

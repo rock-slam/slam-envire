@@ -141,6 +141,11 @@ namespace envire
 
 	MultiLevelSurfaceGrid& operator=(const MultiLevelSurfaceGrid& other);
 
+	/** @return a shallow clone of the object, which is effectively 
+	 * a map with the same properties as this, but without any content.
+	 */
+	MultiLevelSurfaceGrid* cloneShallow() const;
+
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
