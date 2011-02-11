@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
     QtThreadedWidget<vizkit::QVizkitWidget> app;
     vizkit::UncertaintyVisualization viz;
     app.start();
-    app.widget->addDataHandler( &viz );
+    app.getWidget()->addDataHandler( &viz );
 
     for(int i=0;i<5000 && app.isRunning();i++)
     {
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
     QtThreadedWidget<vizkit::QVizkitWidget> app;
     vizkit::EnvireVisualization envViz;
     app.start();
-    app.widget->addDataHandler( &envViz );
+    app.getWidget()->addDataHandler( &envViz );
     
     boost::scoped_ptr<Environment> env( new Environment() );
     envViz.updateData( env.get() );
@@ -152,9 +152,9 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
     vizkit::EnvireVisualization envViz;
     vizkit::UncertaintyVisualization viz[uncertainty_points];
     app.start();
-    app.widget->addDataHandler( &envViz );
+    app.getWidget()->addDataHandler( &envViz );
     for(size_t i=0;i<uncertainty_points;i++)
-	app.widget->addDataHandler( &viz[i] );
+	app.getWidget()->addDataHandler( &viz[i] );
 
     // set up test environment
     boost::scoped_ptr<Environment> env( new Environment() );

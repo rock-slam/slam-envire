@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
     QtThreadedWidget<vizkit::QVizkitWidget> app;
     vizkit::EnvireVisualization envViz;
     app.start();
-    app.widget->addDataHandler( &envViz );
+    app.getWidget()->addDataHandler( &envViz );
 
     boost::scoped_ptr<Environment> env( new Environment() );
     envViz.updateData( env.get() );
