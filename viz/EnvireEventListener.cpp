@@ -8,18 +8,33 @@ namespace vizkit
 EnvireNode::EnvireNode( EnvironmentItem *item, EnvironmentItemVisualizer *viz )
     : item( item ), viz( viz )
 {
+    node.front = viz->getNodeForItem(item);
+    node.front->setDataVariance(osg::Object::DYNAMIC);        
+
+    node.back = viz->getNodeForItem(item);  
+    node.back->setDataVariance(osg::Object::DYNAMIC);        
+    
+    children.front = new osg::Group;
+    children.back = new osg::Group;
+    
     update();
     this->setDataVariance(osg::Object::DYNAMIC);        
+}
+
+osg::Group* EnvireNode::getBack()
+{
+    return node.back;
+}
+
+osg::Group* EnvireNode::getFront()
+{
+    return node.front;
 }
 
 void EnvireNode::addChildNode( osg::Group* child )
 {
     boost::mutex::scoped_lock lock(mu);
-    if( !children.back )
-    {
-	children.back = new osg::Group();
-    }
-
+    
     children.back->addChild( child );
     children.dirty = true;
 }
@@ -34,15 +49,7 @@ void EnvireNode::removeChildNode( osg::Group* child )
 void EnvireNode::update()
 {
     boost::mutex::scoped_lock lock(mu);
-    if( !node.back )
-    {
-	node.back = viz->getNodeForItem( item );
-	node.back->setDataVariance(osg::Object::DYNAMIC);        
-    }
-    else
-    {
-	viz->updateNode( item, node.back );
-    }
+    viz->updateNode( item, node.back );
 
     node.dirty = true;
 }
@@ -59,9 +66,6 @@ void EnvireNode::apply()
 	// if necessary
 	if( children.dirty )
 	{
-	    if( !children.front )
-		children.front = new osg::Group();
-
 	    children.front->removeChildren(0, children.front->getNumChildren() );
 	    for( size_t i=0; i<children.back->getNumChildren(); i++ )
 		children.front->addChild( children.back->getChild( i ) );

@@ -55,6 +55,9 @@ public:
     void update();
     bool isDirty();
     void apply();
+    osg::Group *getFront();
+    osg::Group *getBack();
+    
 };
 
 class EnvireEventListener : public envire::EventListener
