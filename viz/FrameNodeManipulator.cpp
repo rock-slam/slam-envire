@@ -1,15 +1,16 @@
 #include "FrameNodeManipulator.hpp"
 
 
-vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::Group* group)
+vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::Group* pNode, osg::Group* group)
 {
+    parentNode = pNode;
     fr = dynamic_cast<envire::FrameNode *>(item);
     transform = dynamic_cast<osg::PositionAttitudeTransform *>(group);
 
-    osg::Group *pGroup = transform->getParent(0)->asGroup();
+    assert(fr && transform && parentNode);
     
     selectionForFrameNode = new vizkit::FrameNodeSelection(fr);
-    pGroup->addChild(selectionForFrameNode.get());
+    parentNode->addChild(selectionForFrameNode.get());
     
     translateDragger = new osgManipulator::TranslateAxisDragger();
     translateDragger->setupDefaultGeometry();
@@ -18,10 +19,10 @@ vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item
     rotateDragger->setupDefaultGeometry();
 
     selectionForTrackball = new osgManipulator::Selection();
-    pGroup->addChild(selectionForTrackball.get());
+    parentNode->addChild(selectionForTrackball.get());
 
     selectionForTrackball->addChild(rotateDragger.get());
-    pGroup->addChild(translateDragger.get());
+    parentNode->addChild(translateDragger.get());
     
     // Starting matrix for the Dragger 
     //float scale = transform->getBound().radius() * 1.5f;
@@ -46,16 +47,13 @@ vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item
 
 vizkit::FrameNodeManipulator::~FrameNodeManipulator()
 {
-    osg::Group *pGroup = transform->getParent(0)->asGroup();
-
     cm->disconnect(*(translateDragger.get()));
     cm->disconnect(*(rotateDragger.get()));
     cm->disconnect(*(translateDragger.get())); 
 
     selectionForTrackball->removeChild(rotateDragger);
-    pGroup->removeChild(rotateDragger);
-    pGroup->removeChild(translateDragger);
-    pGroup->removeChild(selectionForTrackball);
-    pGroup->removeChild(selectionForFrameNode);
-    
+    parentNode->removeChild(rotateDragger);
+    parentNode->removeChild(translateDragger);
+    parentNode->removeChild(selectionForTrackball);
+    parentNode->removeChild(selectionForFrameNode);
 }
