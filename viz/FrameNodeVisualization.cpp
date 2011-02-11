@@ -39,7 +39,8 @@ void FrameNodeVisualization::updateNode(envire::EnvironmentItem* item, osg::Grou
 
 void FrameNodeVisualization::highlightNode(envire::EnvironmentItem* item, osg::Group* group) const
 {    
-    osg::PositionAttitudeTransform *transform = dynamic_cast<osg::PositionAttitudeTransform *>(group);
+    osg::PositionAttitudeTransform *transform = dynamic_cast<osg::PositionAttitudeTransform *>(group);    
+    assert(transform);
     
     osg::ref_ptr<osg::Sphere> sp = new osg::Sphere(osg::Vec3d(0, 0, 0), 0.3);
     osg::ref_ptr<osg::ShapeDrawable> spd = new osg::ShapeDrawable(sp.get());
@@ -54,6 +55,7 @@ void FrameNodeVisualization::highlightNode(envire::EnvironmentItem* item, osg::G
 void FrameNodeVisualization::unHighlightNode(envire::EnvironmentItem* item, osg::Group* group) const
 {
     osg::PositionAttitudeTransform *transform = dynamic_cast<osg::PositionAttitudeTransform *>(group);
+    assert(transform);
 
     for(unsigned int i = 0; i < transform->getNumChildren();i++) {
 	if(group->getChild(i)->getName() == std::string("FrameNodeHighlighter")) {
