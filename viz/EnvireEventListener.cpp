@@ -116,6 +116,15 @@ osg::Group* EnvireEventListener::getNodeForItem(envire::EnvironmentItem* item)
 {
     boost::mutex::scoped_lock lock(mu);
     if(environmentToNode.count(item))
+	return environmentToNode[item]->getBack();
+    
+    return 0;
+}
+
+osg::Group* EnvireEventListener::getParentNodeForItem(EnvironmentItem* item)
+{
+    boost::mutex::scoped_lock lock(mu);
+    if(environmentToNode.count(item))
 	return environmentToNode[item];
     
     return 0;

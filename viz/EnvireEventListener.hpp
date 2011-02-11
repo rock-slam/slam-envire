@@ -70,7 +70,14 @@ class EnvireEventListener : public envire::EventListener
 	void addVisualizer(EnvironmentItemVisualizer *viz);
 	void removeVisualizer(EnvironmentItemVisualizer *viz);
 	
+	/**
+	 * returns the osg node that visualizes the environmentItem
+	 */
 	osg::Group *getNodeForItem(envire::EnvironmentItem* item);
+
+	///returns the parent osg node of the osg-node that visualizes the environmentItem 
+	osg::Group *getParentNodeForItem(envire::EnvironmentItem* item);
+	
 	EnvironmentItemVisualizer *getVisualizerForItem(envire::EnvironmentItem* item);
 	
 	virtual void childAdded( envire::FrameNode* parent, envire::FrameNode* child );    
