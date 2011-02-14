@@ -2,6 +2,8 @@
 #include "EventHandler.hpp"
 #include "Event.hpp"
 
+#include <boost/lambda/lambda.hpp>
+
 using namespace envire;
 
 void EventSource::handle( const Event& event )
@@ -20,8 +22,7 @@ void EventSource::addEventHandler(EventHandler *handler)
 
 void EventSource::removeEventHandler(EventHandler *handler) 
 {
-    std::vector<EventHandler*>::iterator it = std::find(eventHandlers.begin(), eventHandlers.end(), handler);
-    if(it != eventHandlers.end()) {
-	eventHandlers.erase(it);
-    }
+    eventHandlers.erase( 
+	    std::remove_if( eventHandlers.begin(), eventHandlers.end(), boost::lambda::_1 == handler ), 
+	    eventHandlers.end() );
 }
