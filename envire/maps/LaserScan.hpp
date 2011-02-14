@@ -10,6 +10,8 @@ namespace envire {
 
     class LaserScan : public Map<3>
     {
+	ENVIRONMENT_ITEM( LaserScan )
+
         public:
 	    /** delta_phi is the step size in rads perpendicular to the scan
 	     * direction of the laser scanner (normally axis of the pan unit)
@@ -44,8 +46,6 @@ namespace envire {
 	    bool parseScan( const std::string& file, envire::FrameNode::TransformType& transform );
 
         public:
-	    static const std::string className;
-
 	    void addScanLine( double tilt_angle, const base::samples::LaserScan& scan );
 
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -53,15 +53,11 @@ namespace envire {
             
             LaserScan(Serialization& so);
 	    void serialize(Serialization& so);
-	    const std::string& getClassName() const {return className;};
             
 	    bool readScan( const std::string& file );
 	    bool writeScan( const std::string& file ); 
 
 	    const std::string getMapFileName(const std::string& path) const;
-
-            LaserScan* clone() const;
-	    void set( EnvironmentItem* other );
 
 	    static LaserScan* importScanFile( const std::string& file, FrameNode* frame );
 

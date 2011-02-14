@@ -383,7 +383,7 @@ Environment* SerializationImpl::readFromFile( const std::string& path )
 
 			// create item and attach to environment
 			EnvironmentItem* envItem = 
-			    SerializationFactory::get_mutable_instance().createObject(className, so);
+			    SerializationFactory::createObject(className, so);
 
 			env->attachItem( envItem );
 			//hack to preserve root node

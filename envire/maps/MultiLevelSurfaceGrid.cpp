@@ -5,6 +5,8 @@
 
 using namespace envire;
 
+ENVIRONMENT_ITEM_DEF( MultiLevelSurfaceGrid )
+
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
      gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), mem_pool( sizeof( SurfacePatchItem ) )

@@ -18,6 +18,7 @@ set(ENVMAP_SRCS
     maps/MLSMap.cpp
     operators/Projection.cpp
     operators/MLSProjection.cpp
+    operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
     operators/ScanMeshing.cpp
     tools/PlyFile.cpp

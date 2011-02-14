@@ -2,7 +2,7 @@
 
 using namespace envire;
 
-const std::string TraversabilityGrid::className = "envire::TraversabilityGrid";
+ENVIRONMENT_ITEM_DEF( TraversabilityGrid )
 const std::string TraversabilityGrid::TRAVERSABILITY = "traversability";
 static const std::vector<std::string> &initTraversabilityBands()
 {
@@ -16,7 +16,7 @@ static const std::vector<std::string> &initTraversabilityBands()
 const std::vector<std::string> &TraversabilityGrid::bands = initTraversabilityBands();
 
 
-const std::string ConfidenceGrid::className = "envire::ConfidenceGrid";
+ENVIRONMENT_ITEM_DEF( ConfidenceGrid )
 const std::string ConfidenceGrid::CONFIDENCE = "confidence";
 static const std::vector<std::string> &initConfidenceBands()
 {
@@ -29,8 +29,7 @@ static const std::vector<std::string> &initConfidenceBands()
 }
 const std::vector<std::string> &ConfidenceGrid::bands = initConfidenceBands();
 
-
-const std::string ElevationGrid::className = "envire::ElevationGrid";
+ENVIRONMENT_ITEM_DEF( ElevationGrid )
 const std::string ElevationGrid::ELEVATION = "elevation_max"; // this will reference the max band
 const std::string ElevationGrid::ELEVATION_MIN = "elevation_min";
 const std::string ElevationGrid::ELEVATION_MAX = "elevation_max";
@@ -47,7 +46,7 @@ static const std::vector<std::string> &initElevationBands()
 const std::vector<std::string> &ElevationGrid::bands = initElevationBands();
 
 
-const std::string OccupancyGrid::className = "envire::OccupancyGrid";
+ENVIRONMENT_ITEM_DEF( OccupancyGrid )
 const std::string OccupancyGrid::OCCUPANCY = "occupancy";
 static const std::vector<std::string> &initOccupancyBands()
 {
@@ -60,8 +59,7 @@ static const std::vector<std::string> &initOccupancyBands()
 }
 const std::vector<std::string> &OccupancyGrid::bands = initOccupancyBands();
 
-
-const std::string ImageRGB24::className = "envire::ImageRGB24";
+ENVIRONMENT_ITEM_DEF( ImageRGB24 )
 const std::string ImageRGB24::R = "r";
 const std::string ImageRGB24::G = "g";
 const std::string ImageRGB24::B = "b";

@@ -8,7 +8,7 @@
 using namespace envire;
 using namespace std;
 
-const std::string LaserScan::className = "envire::LaserScan";
+ENVIRONMENT_ITEM_DEF( LaserScan )
 
 LaserScan::LaserScan()
     : origin_phi(0), center_offset( Eigen::Vector3d::Zero() )
@@ -230,17 +230,6 @@ bool LaserScan::writeScan( const std::string& file )
     data.close();
 
     return true;
-}
-
-LaserScan* LaserScan::clone() const
-{
-    return new LaserScan(*this);
-}
-
-void LaserScan::set( EnvironmentItem* other )
-{
-    LaserScan* fn = dynamic_cast<LaserScan*>( other ); 
-    if( fn ) operator=( *fn );
 }
 
 LaserScan::Extents LaserScan::getExtents() const

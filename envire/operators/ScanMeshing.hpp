@@ -5,9 +5,12 @@
 #include <envire/maps/LaserScan.hpp>
 #include <envire/maps/TriMesh.hpp>
 
-namespace envire {
+namespace envire 
+{
     class ScanMeshing : public Operator
     {
+	ENVIRONMENT_ITEM( ScanMeshing )
+
 	double maxEdgeLength;
 	double remissionScaleFactor;
 	long remissionMarkerThreshold;
@@ -16,14 +19,10 @@ namespace envire {
 	bool extractMarkers;
 
     public:
-	static const std::string className;
-
 	ScanMeshing();
 
 	ScanMeshing(Serialization& so);
 	void serialize(Serialization& so);
-
-	const std::string& getClassName() const {return className;};
 
 	void addInput( LaserScan* scan ); 
 	void addOutput( TriMesh* mesh ); 
@@ -36,9 +35,6 @@ namespace envire {
 	bool updateAll();
 
 	void setDefaultConfiguration();
-
-	ScanMeshing* clone() const;
-	void set( EnvironmentItem* other );
     };
 }
 

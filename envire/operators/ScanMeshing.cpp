@@ -4,7 +4,7 @@
 using namespace envire;
 using namespace std;
 
-const std::string ScanMeshing::className = "envire::ScanMeshing";
+ENVIRONMENT_ITEM_DEF( ScanMeshing )
 
 ScanMeshing::ScanMeshing()
 {
@@ -278,13 +278,3 @@ bool ScanMeshing::updateAll()
     return true;
 }
 
-ScanMeshing* ScanMeshing::clone() const
-{
-    return new ScanMeshing( *this );
-}
-
-void ScanMeshing::set( EnvironmentItem* other )
-{
-    ScanMeshing* fn = dynamic_cast<ScanMeshing*>( other ); 
-    if( fn ) operator=( *fn );
-}

@@ -10,16 +10,13 @@
 namespace envire {
     class Projection : public Operator
     {
+	ENVIRONMENT_ITEM( Projection )
 
     public:
-	static const std::string className;
-
 	Projection();
 
 	Projection(Serialization& so);
 	void serialize(Serialization& so);
-
-	const std::string& getClassName() const {return className;};
 
 	void addInput( Pointcloud* mesh ); 
 	void addOutput( ElevationGrid* grid ); 
@@ -29,9 +26,6 @@ namespace envire {
 	bool updateTraversibilityMap();
 	bool updateElevationMap();
 	bool interpolateMap(const std::string& type);
-
-	Projection* clone() const;
-	void set( EnvironmentItem* other );
     };
 }
 #endif

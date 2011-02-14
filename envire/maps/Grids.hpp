@@ -7,8 +7,8 @@ namespace envire
 {  
   class TraversabilityGrid : public Grid<uint8_t>
   {
+      ENVIRONMENT_ITEM( TraversabilityGrid )
     public:
-      static const std::string className;
       static const std::string TRAVERSABILITY;
     private:
       const static std::vector<std::string> &bands;
@@ -16,14 +16,13 @@ namespace envire
       TraversabilityGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
       TraversabilityGrid(Serialization& so):Grid<uint8_t>(so,className){unserialize(so);};
       ~TraversabilityGrid(){};
-      virtual const std::string& getClassName() const {return className;};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
   
   class ConfidenceGrid : public Grid<uint8_t>
   {
+      ENVIRONMENT_ITEM( ConfidenceGrid )
     public:
-      static const std::string className;
       static const std::string CONFIDENCE;
     private:
       const static std::vector<std::string> &bands;
@@ -31,14 +30,13 @@ namespace envire
       ConfidenceGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
       ConfidenceGrid(Serialization& so):Grid<uint8_t>(so,className){unserialize(so);};
       ~ConfidenceGrid(){};
-      virtual const std::string& getClassName() const {return className;};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
   
   class ElevationGrid : public Grid<double>
   {
+      ENVIRONMENT_ITEM( ElevationGrid )
     public:
-      static const std::string className;
       static const std::string ELEVATION;
       static const std::string ELEVATION_MIN;
       static const std::string ELEVATION_MAX;
@@ -48,7 +46,6 @@ namespace envire
       ElevationGrid(size_t width, size_t height, double scalex, double scaley):Grid<double>::Grid(width,height,scalex,scaley){};
       ElevationGrid(Serialization& so):Grid<double>(so,className){unserialize(so);};
       ~ElevationGrid(){};
-      virtual const std::string& getClassName() const {return className;};
       virtual const std::vector<std::string>& getBands() const {return bands;};
 
       double get(double x, double y) const
@@ -68,8 +65,8 @@ namespace envire
   
   class OccupancyGrid : public Grid<unsigned char>
   {
+      ENVIRONMENT_ITEM( OccupancyGrid )
     public:
-      static const std::string className;
       static const std::string OCCUPANCY;
     private:
       const static std::vector<std::string> &bands;  
@@ -77,14 +74,13 @@ namespace envire
       OccupancyGrid(size_t width, size_t height, double scalex, double scaley):Grid<unsigned char>::Grid(width,height,scalex,scaley){};
       OccupancyGrid(Serialization& so):Grid<unsigned char>(so,className){unserialize(so);};
       ~OccupancyGrid(){};
-      virtual const std::string& getClassName() const {return className;};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
   
   class ImageRGB24 : public Grid<unsigned char>
   {
+      ENVIRONMENT_ITEM( ImageRGB24 )
     public:
-      static const std::string className;
       static const std::string R;
       static const std::string G;
       static const std::string B;
@@ -94,7 +90,6 @@ namespace envire
       ImageRGB24(size_t width, size_t height, double scalex, double scaley):Grid<unsigned char>::Grid(width,height,scalex,scaley){};
       ImageRGB24(Serialization& so):Grid<unsigned char>(so,className){unserialize(so);};
       ~ImageRGB24(){};
-      virtual const std::string& getClassName() const {return className;};
       virtual const std::vector<std::string>& getBands() const {return bands;};
       
       //save all bands in one file

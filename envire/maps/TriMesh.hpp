@@ -15,6 +15,8 @@ namespace envire {
 
     class TriMesh : public Pointcloud 
     {
+	ENVIRONMENT_ITEM( TriMesh )
+
     public:
 	typedef boost::tuple<int, int, int> triangle_t;
 
@@ -26,20 +28,12 @@ namespace envire {
 	std::vector<triangle_t> faces;
 
     public:
-	static const std::string className;
-
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	TriMesh();
-	~TriMesh();
 
 	TriMesh(Serialization& so);
 	void serialize(Serialization& so);
-
-	const std::string& getClassName() const {return className;};
-
-	TriMesh* clone() const;
-	void set( EnvironmentItem* other );
 
 	void calcVertexNormals( void );
     };

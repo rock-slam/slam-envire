@@ -7,6 +7,8 @@
 namespace envire {
     class Pointcloud : public Map<3> 
     {
+	ENVIRONMENT_ITEM( Pointcloud )
+
     public:
 	typedef int vertex_attr;
 
@@ -25,11 +27,9 @@ namespace envire {
 	std::vector<Eigen::Vector3d> vertices;
 
     public:
-	static const std::string className;
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	static Pointcloud* importCsv(const std::string& file, FrameNode* fn);
-
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 	template <typename T>
 	    std::vector<T>& getVertexData(const std::string& key)
@@ -52,11 +52,6 @@ namespace envire {
 
 	bool writePly(const std::string& path);
 	bool readPly(const std::string& path);
-
-	const std::string& getClassName() const {return className;};
-
-	Pointcloud* clone() const;
-	void set( EnvironmentItem* other );
 
 	Extents getExtents() const;
     };

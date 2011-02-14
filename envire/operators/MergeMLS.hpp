@@ -2,6 +2,7 @@
 #define __ENVIRE_OPERATORS_MERGEMLS__
 
 #include <envire/Core.hpp>
+#include <envire/maps/MultiLevelSurfaceGrid.hpp>
 
 namespace envire 
 {
@@ -11,6 +12,9 @@ class MergeMLS : public Operator
     ENVIRONMENT_ITEM( MergeMLS )
 
 public:
+    MergeMLS() {};
+    MergeMLS( Serialization& so ) : Operator( so ) {}
+
     bool updateAll()
     {
 	MultiLevelSurfaceGrid* output = static_cast<envire::MultiLevelSurfaceGrid*>(*env->getOutputs(this).begin());

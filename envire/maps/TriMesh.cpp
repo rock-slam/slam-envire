@@ -5,13 +5,9 @@
 
 using namespace envire;
 
-const std::string TriMesh::className = "envire::TriMesh";
+ENVIRONMENT_ITEM_DEF( TriMesh )
 
 TriMesh::TriMesh()
-{
-}
-
-TriMesh::~TriMesh()
 {
 }
 
@@ -29,18 +25,6 @@ void TriMesh::serialize(Serialization& so)
 
     writePly( getMapFileName(so.getMapPath()) + ".ply" );
 }
-
-TriMesh* TriMesh::clone() const
-{
-    return new TriMesh(*this);
-}
-
-void TriMesh::set( EnvironmentItem* other )
-{
-    TriMesh* fn = dynamic_cast<TriMesh*>( other ); 
-    if( fn ) operator=( *fn );
-}
-
 
 void TriMesh::calcVertexNormals()
 {

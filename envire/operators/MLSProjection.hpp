@@ -10,24 +10,18 @@
 namespace envire {
     class MLSProjection : public Operator
     {
+	ENVIRONMENT_ITEM( MLSProjection )
 
     public:
-	static const std::string className;
-
 	MLSProjection();
 
 	MLSProjection(Serialization& so);
 	void serialize(Serialization& so);
 
-	const std::string& getClassName() const {return className;};
-
 	void addInput( Pointcloud* mesh ); 
 	void addOutput( MultiLevelSurfaceGrid* grid ); 
 
 	bool updateAll();
-
-	MLSProjection* clone() const;
-	void set( EnvironmentItem* other );
 
 	void useUncertainty( bool use ) { withUncertainty = use; }
 

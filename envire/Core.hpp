@@ -17,27 +17,35 @@
 
 #include <envire/core/EventSource.hpp>
 
-#define ENVIRONMENT_ITEM( classname ) \
+#define ENVIRONMENT_ITEM_DEF( _classname ) \
+const std::string& _classname::className = "envire::" #_classname; \
+_classname::Factory _classname::factory( _classname::className  );
+
+#define ENVIRONMENT_ITEM( _classname ) \
+	struct Factory { \
+	    Factory( const std::string& className ) { \
+		SerializationFactory::addClass( className, &createItem<_classname> ); \
+	    }\
+	}; \
+	static Factory factory;\
 	public:\
-	const std::string& getClassName() const { \
-	    static const std::string className = "envire::" #classname; \
-	    return className; \
-	}\
-	void set( classname* other ) \
+	static const std::string& className; \
+	const std::string& getClassName() const { return className; } \
+	void set( EnvironmentItem* other ) \
 	{\
-	    classname* fn = dynamic_cast<classname*>( other ); \
+	    _classname* fn = dynamic_cast<_classname*>( other ); \
 	    if( fn ) \
 	    {\
-		classname* t = dynamic_cast<classname*>( this ); \
+		_classname* t = dynamic_cast<_classname*>( this ); \
 		t->operator=( *fn );\
 	    }\
 	}\
-	typedef boost::intrusive_ptr<classname> Ptr; \
-	classname* clone() const \
+	typedef boost::intrusive_ptr<_classname> Ptr; \
+	_classname* clone() const \
 	{ \
-	    const classname* fn = dynamic_cast<const classname*>( this ); \
+	    const _classname* fn = dynamic_cast<const _classname*>( this ); \
 	    if( fn )\
-		return new classname( *fn );\
+		return new _classname( *fn );\
 	    else \
 		return NULL;\
 	}\
@@ -54,6 +62,7 @@ namespace envire
     class Serialization;
     class EventHandler;
     class Event;
+    class SerializationFactory;
 
     /** Baseclass for generically holding pointer to objects, while still
      * ensuring, that the destructor of that object is called, when the holder
@@ -199,6 +208,34 @@ namespace envire
     
     typedef Eigen::Vector3d Point;
     
+    template<class T> EnvironmentItem* createItem(Serialization &so) 
+    {
+	T* o = new T(so);
+	return o;
+    }
+
+    class SerializationFactory 
+    {
+    public:
+	/** Factory typedef, which needs to be implemented by all EnvironmentItems
+	 * that are serialized.
+	 */
+	typedef EnvironmentItem* (*Factory)(Serialization &);
+
+	/** Stores the mapping for all classes that can be serialized, and a function
+	 * pointer to the Factory method of that class.
+	 */
+	static std::map<std::string, Factory>& getMap();
+
+	/** create and object for the given class. Will throw if no such class is registered.
+	 */
+	static EnvironmentItem* createObject( const std::string& className, Serialization& so );
+
+	/** register a class with the factory
+	 */
+	static void addClass( const std::string& className, Factory f );
+    };
+
     class PointWithUncertainty
     {
     public:
@@ -539,8 +576,6 @@ namespace envire
 	Operator();
 	Operator(Serialization& so);
 
-	virtual const std::string& getClassName() const {return className;};
-
         /** Update the output layer(s) according to the defined operation.
          */
         virtual bool updateAll(){return false;};
@@ -581,6 +616,7 @@ namespace envire
     {
 	friend class Serialization;
 	friend class SerializationImpl;
+	friend class GraphViz;
 
 	/** we track the last id given to an item, for assigning new id's.
 	 */
@@ -773,7 +809,7 @@ namespace envire
 
 	void serialize(Environment* env, const std::string &path);
 	Environment* unserialize(const std::string &path);
-	
+
 	void setClassName(const std::string &key);
 
 	const std::string getMapPath() const;
@@ -793,31 +829,13 @@ namespace envire
 	if( read( key, tmp ) )
 	    value = boost::lexical_cast<T>(tmp);
     }
-    
+
     template <class T> void Serialization::write(const std::string &key, const T& value)
     {
 	write( key, boost::lexical_cast<std::string>(value) );
     }
 
-    class SerializationFactory : public boost::serialization::singleton<SerializationFactory>
-    {
-	/** Factory typedef, which needs to be implemented by all EnvironmentItems
-	 * that are serialized.
-	 */
-	typedef EnvironmentItem* (*Factory)(Serialization &);
-
-	/** Stores the mapping for all classes that can be serialized, and a function
-	 * pointer to the Factory method of that class.
-	 */
-	mutable std::map<std::string, Factory> classMap;
-
-    public:
-	EnvironmentItem* createObject( const std::string& className, Serialization& so );
-	void addClass( const std::string& className, Factory f );
-    };
 
 }
-
-
 
 #endif

@@ -9,6 +9,8 @@
 
 using namespace envire;
 
+ENVIRONMENT_ITEM_DEF( FrameNode )
+
 FrameNode::FrameNode()
     : frame( Transform( Eigen::Transform3d::Identity()) )
 {

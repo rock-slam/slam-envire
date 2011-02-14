@@ -13,7 +13,7 @@
 using namespace envire;
 using namespace std;
 
-const std::string Projection::className = "envire::Projection";
+ENVIRONMENT_ITEM_DEF( Projection )
 
 Projection::Projection()
 {
@@ -155,17 +155,6 @@ bool Projection::interpolateMap(const std::string& type)
     }
 
     return true;
-}
-
-Projection* Projection::clone() const
-{
-    return new Projection( *this );
-}
-
-void Projection::set( EnvironmentItem* other )
-{
-    Projection* fn = dynamic_cast<Projection*>( other ); 
-    if( fn ) operator=( *fn );
 }
 
 // TODO add this to a new operator

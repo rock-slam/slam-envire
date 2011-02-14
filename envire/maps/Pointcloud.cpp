@@ -6,7 +6,7 @@
 
 using namespace envire;
 
-const std::string Pointcloud::className = "envire::Pointcloud";
+ENVIRONMENT_ITEM_DEF( Pointcloud )
 
 const std::string Pointcloud::VERTEX_COLOR = "vertex_color";
 const std::string Pointcloud::VERTEX_NORMAL = "vertex_normal";
@@ -45,17 +45,6 @@ void Pointcloud::serialize(Serialization& so, bool handleMap)
 
     if(handleMap)
 	writePly( getMapFileName(so.getMapPath()) + ".ply" );
-}
-
-Pointcloud* Pointcloud::clone() const
-{
-    return new Pointcloud(*this);
-}
-
-void Pointcloud::set( EnvironmentItem* other )
-{
-    Pointcloud *p = dynamic_cast<Pointcloud*>( other );
-    if( p ) operator=( *p );
 }
 
 bool Pointcloud::writePly(const std::string& path)

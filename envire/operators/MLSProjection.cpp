@@ -3,7 +3,7 @@
 
 using namespace envire;
 
-const std::string MLSProjection::className = "envire::MLSProjection";
+ENVIRONMENT_ITEM_DEF( MLSProjection )
 
 MLSProjection::MLSProjection()
     : withUncertainty( true )
@@ -152,13 +152,3 @@ bool MLSProjection::updateAll()
     return true;
 }
 
-MLSProjection* MLSProjection::clone() const 
-{
-    return new MLSProjection( *this );
-}
-
-void MLSProjection::set( EnvironmentItem* other )
-{
-    MLSProjection* fn = dynamic_cast<MLSProjection*>( other ); 
-    if( fn ) operator=( *fn );
-}
