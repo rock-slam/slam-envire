@@ -23,6 +23,7 @@ set(ENVMAP_SRCS
     operators/ScanMeshing.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
+    tools/GraphViz.cpp
     )
 
 if( TAUCS_FOUND )

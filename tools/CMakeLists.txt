@@ -20,3 +20,6 @@ target_link_libraries(dem_helper icp envire)
 
 add_executable(env_info env_info.cpp)
 target_link_libraries(env_info icp envire)
+
+add_executable(env_graphviz env_graphviz.cpp)
+target_link_libraries(env_graphviz icp envire)
