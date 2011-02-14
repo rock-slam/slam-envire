@@ -35,14 +35,16 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	os << "]" << std::endl;
     }
 
+    os << "# framenodetree" << std::endl;
     foreach( const Environment::frameNodeTreeType::value_type& pair, env->frameNodeTree )
     {
 	os 
-	    << "g" << pair.second->getUniqueId() 
-	    << " -> g" << pair.first->getUniqueId()
+	    << "g" << pair.first->getUniqueId() 
+	    << " -> g" << pair.second->getUniqueId()
 	    << std::endl;
     }
 
+    os << "# layertree" << std::endl;
     foreach( const Environment::layerTreeType::value_type& pair, env->layerTree )
     {
 	os 
@@ -51,6 +53,7 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	    << std::endl;
     }
 
+    os << "# operatorGraphInput" << std::endl;
     foreach( const Environment::operatorGraphType::value_type& pair, env->operatorGraphInput )
     {
 	os 
@@ -59,6 +62,7 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	    << std::endl;
     }
 
+    os << "# operatorGraphOutput" << std::endl;
     foreach( const Environment::operatorGraphType::value_type& pair, env->operatorGraphOutput )
     {
 	os 
@@ -67,6 +71,7 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	    << std::endl;
     }
 
+    os << "# cartesianMapGraph" << std::endl;
     foreach( const Environment::cartesianMapGraphType::value_type& pair, env->cartesianMapGraph )
     {
 	os 
