@@ -24,7 +24,7 @@ EnvironmentItem::EnvironmentItem()
 }
 
 EnvironmentItem::EnvironmentItem(Environment* envPtr)
-   : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ) 
+   : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
 {
     envPtr->attachItem( this );
 }
@@ -235,12 +235,12 @@ EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item)
     findMapItem<frameNodeTreeType>( 
 	    frameNodeTree, boost::bind( 
 		static_cast<void (Environment::*)(FrameNode*,FrameNode*)>(&Environment::removeChild), 
-		this, _1, _2 ), item, func );
+		this, _2, _1 ), item, func );
 
     findMapItem<layerTreeType>( 
 	    layerTree, boost::bind( 
 		static_cast<void (Environment::*)(Layer*,Layer*)>(&Environment::removeChild), 
-		this, _1, _2 ), item, func );
+		this, _2, _1 ), item, func );
 
     findMapItem<operatorGraphType>( 
 	    operatorGraphInput, boost::bind( 
