@@ -24,7 +24,8 @@ void MultiLevelSurfaceGrid::clear()
     }
     mem_pool.purge_memory();
     cellcount = 0;
-    if(extents) extents->reset();
+    if(index) index->reset();
+    extents = Extents();
 }
 
 MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
@@ -194,8 +195,7 @@ void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& 
     n_item->pthis = &cells[m][n];
 
     cells[m][n] = n_item;
-    if( extents ) extents->addCell( m, n );
-    cellcount++;
+    addCell( Position( m, n ) );
 }
 
 void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& value )
@@ -223,8 +223,7 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
 	n_item->pthis = &cells[m][n];
     }
 
-    if( extents ) extents->addCell( m, n );
-    cellcount++;
+    addCell( Position( m, n ) );
 }
 
 MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position )
@@ -434,3 +433,19 @@ std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSu
     return std::make_pair( delta, var );
 }
 
+void MultiLevelSurfaceGrid::addCell( const Position& pos )
+{
+    cellcount++;
+
+    if( index )
+	index->addCell(pos);
+
+    Point2D p;
+    fromGrid( pos, p );
+    extents.extend( p );
+}
+
+void MultiLevelSurfaceGrid::initIndex()
+{
+   index = boost::shared_ptr<Index>( new Index() ); 
+}

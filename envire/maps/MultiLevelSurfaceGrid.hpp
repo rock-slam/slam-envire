@@ -18,23 +18,12 @@ namespace envire
 	ENVIRONMENT_ITEM( MultiLevelSurfaceGrid )
 
     public:
-	enum ExtentType
-	{
-	    Set
-	};
-
-	struct Extents
-	{
-	    virtual void addCell( size_t m, size_t n ) = 0;
-	    virtual void reset() = 0;
-	};
-
-	struct SetExtents : public Extents
+	struct Index 
 	{
 	    std::set<Position> cells;
-	    void addCell( size_t m, size_t n )
+	    void addCell( const Position& pos )
 	    {
-		cells.insert( Position( m, n ) );
+		cells.insert( pos );
 	    }
 
 	    void reset() { cells.clear(); }
@@ -179,13 +168,11 @@ namespace envire
 
     public:
 	std::pair<double, double> matchHeight( const MultiLevelSurfaceGrid& other );
-	void initExtents( ExtentType type )
-	{
-	    if( type == Set && !getExtents<SetExtents>() )
-		setExtents( boost::shared_ptr<SetExtents>(new SetExtents()) );
-	};
-	void setExtents( boost::shared_ptr<Extents> extents ) { this->extents = extents; }
-	template <class T> boost::shared_ptr<T> getExtents() { return boost::dynamic_pointer_cast<T>(extents); }
+
+	void addCell( const Position& pos );
+	void initIndex();
+	Index* getIndex() { return index.get(); }
+	Extents getExtents() { return extents; }
 
     protected:
 	bool mergePatch( SurfacePatch& p, const SurfacePatch& o );
@@ -196,7 +183,8 @@ namespace envire
 	double thickness;
 	size_t cellcount;
 
-	boost::shared_ptr<Extents> extents;
+	boost::shared_ptr<Index> index;
+	Extents extents;
 	boost::pool<> mem_pool;
     };
 

@@ -50,7 +50,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	t_grid = grid;
 
     // make sure we are recording the cell positions in a set
-    t_grid->initExtents( MultiLevelSurfaceGrid::Set );
+    t_grid->initIndex();
 
     // store the updated positions in the vector, since we won't probably touch
     // so many items in the grid
@@ -77,7 +77,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     Eigen::Transform3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
     typedef MultiLevelSurfaceGrid::Position position;
-    std::set<position> &cells = t_grid->getExtents<MultiLevelSurfaceGrid::SetExtents>()->cells;
+    std::set<position> &cells = t_grid->getIndex()->cells;
 
     // go through all the cells that have been touched
     for(std::set<position>::iterator it = cells.begin(); it != cells.end(); it++)
