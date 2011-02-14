@@ -7,6 +7,7 @@
 #include <envire/maps/MultiLevelSurfaceGrid.hpp>
 #include <osg/Drawable>
 #include <osg/ShapeDrawable>
+#include <osg/LineWidth>
 
 MLSVisualization::MLSVisualization()
     : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
@@ -15,6 +16,50 @@ MLSVisualization::MLSVisualization()
     showUncertainty(true)
 {
 }
+
+osg::Vec3 Vec3( const Eigen::Vector3d& v )
+{
+    return osg::Vec3( v.x(), v.y(), v.z() );
+}
+
+osg::Vec3 Vec3( const Eigen::Vector2d& v )
+{
+    return osg::Vec3( v.x(), v.y(), 0 );
+}
+
+class ExtentsRectangle : public osg::Geode
+{
+    osg::ref_ptr<osg::Geometry> geom;
+    osg::ref_ptr<osg::Vec4Array> color;
+    osg::ref_ptr<osg::Vec3Array> vertices;
+
+public:
+    ExtentsRectangle( const envire::GridBase::Extents& extents ) :
+	geom( new osg::Geometry() ),
+	color( new osg::Vec4Array() ), 
+	vertices( new osg::Vec3Array() )
+    {
+	Eigen::Vector2d min = extents.min(), max = extents.max();
+	vertices->push_back( osg::Vec3( min.x(), min.y(), 0 ));
+	vertices->push_back( osg::Vec3( min.x(), max.y(), 0 ));
+	vertices->push_back( osg::Vec3( max.x(), max.y(), 0 ));
+	vertices->push_back( osg::Vec3( max.x(), min.y(), 0 ));
+
+	geom->setVertexArray(vertices);
+	osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
+	geom->addPrimitiveSet(drawArrays.get());
+
+	color->push_back( osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) );
+	geom->setColorArray(color.get());
+	geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+	addDrawable(geom.get());    
+
+	osg::StateSet* ss = getOrCreateStateSet();
+	ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+	ss->setAttribute( new osg::LineWidth( 2.0 ) );
+    }
+};
 
 osg::Group* MLSVisualization::getNodeForItem(envire::EnvironmentItem* item) const
 {
@@ -122,10 +167,15 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     osg::ref_ptr<osg::Geode> geode = group->getChild(0)->asGeode();
     //remove old drawables
     while(geode->removeDrawables(0));
-    
+
     envire::MultiLevelSurfaceGrid *mls = dynamic_cast<envire::MultiLevelSurfaceGrid *>(item);
     assert(mls);
 
+    // add extents
+    group->removeChild( extents );
+    extents = new ExtentsRectangle( mls->getExtents() );
+    group->addChild( extents );
+    
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;

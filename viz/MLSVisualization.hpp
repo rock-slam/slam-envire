@@ -20,6 +20,8 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 	osg::Vec4 verticalCellColor;
 	osg::Vec4 uncertaintyColor;
 
+	mutable osg::ref_ptr<osg::Geode> extents;
+
 	bool showUncertainty;
 };
 
