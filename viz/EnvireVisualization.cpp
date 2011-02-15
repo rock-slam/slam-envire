@@ -19,7 +19,7 @@
 using namespace vizkit;
 
 EnvireVisualization::EnvireVisualization()
-    : env( NULL )
+    : m_handleDirty( true ), env( NULL )
 {
     ownNode = new osg::Group();
     setMainNode( ownNode );
@@ -75,7 +75,10 @@ bool EnvireVisualization::isDirty() const
     // TODO instead of going through the list to find dirty events
     // the event listener could actually keep a list. But for now, 
     // assume we are dirty, if not proven otherwise :)
-    return true;
+    if( m_handleDirty )
+	return true;
+    else
+	return VizPluginBase::isDirty();
 }
     
 void EnvireVisualization::operatorIntern( osg::Node* node, osg::NodeVisitor* nv )

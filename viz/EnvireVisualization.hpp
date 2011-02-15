@@ -23,12 +23,19 @@ public:
 
     void attachTreeWidget( QTreeWidget *treeWidget );
     bool isDirty() const;
-    
+
+    /** set to false if you want to manually handle the dirty flag by calling
+     * setDirty() directly 
+     */
+    void handleDirty( bool handleDirty ) { m_handleDirty = handleDirty; }
+
 protected:
     virtual void operatorIntern( osg::Node* node, osg::NodeVisitor* nv );
     virtual void updateDataIntern( envire::Environment* const& data );
 
 private:
+    bool m_handleDirty;
+
     envire::Environment *env;
     boost::recursive_mutex envLock;
 
