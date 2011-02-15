@@ -70,6 +70,13 @@ void GridBase::fromGrid( const Position& pos, Point2D& point ) const
 {
     fromGrid( pos.m, pos.n, point.x(), point.y() );
 }
+
+GridBase::Point2D GridBase::fromGrid( const Position& pos ) const
+{
+    Point2D point;
+    fromGrid( pos.m, pos.n, point.x(), point.y() );
+    return point;
+}
         
 GridBase::Extents GridBase::getExtents() const
 {

@@ -46,12 +46,15 @@ namespace envire
 
 	bool toGrid( const Point2D& point, Position& pos ) const;
 	void fromGrid( const Position& pos, Point2D& point ) const;
+	Point2D fromGrid( const Position& pos ) const;
 
 	size_t getWidth() const { return width; };
 	size_t getHeight() const { return height; };
 
 	double getScaleX() const { return scalex; };
 	double getScaleY() const { return scaley; };
+
+	Point2D getCenterPoint() const { return Point2D( width * scalex, height * scaley ) * 0.5; };
 
 	Extents getExtents() const;
     };
