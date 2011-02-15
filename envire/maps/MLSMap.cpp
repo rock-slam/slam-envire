@@ -42,7 +42,11 @@ MultiLevelSurfaceGrid::SurfacePatch*
 	MultiLevelSurfaceGrid::Position pos;
 	if( grid->toGrid((C_m2g * p).start<2>(), pos) )
 	{
-	    return grid->get( pos, patch, sigma_threshold );
+	    MultiLevelSurfaceGrid::SurfacePatch* res = 
+		grid->get( pos, patch, sigma_threshold );
+
+	    if( res )
+		return res;
 	}
     }
     return NULL;
