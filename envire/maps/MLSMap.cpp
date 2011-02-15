@@ -64,4 +64,6 @@ void MLSMap::createGrid( const Transform& trans )
     FrameNode* fn = new FrameNode( trans );
     env->addChild( active->getFrameNode(), fn );
     env->setFrameNode( grid_clone, fn );
+
+    addGrid( grid_clone );
 }
