@@ -1,6 +1,7 @@
 #include "GraphViz.hpp"
 
 #include <boost/foreach.hpp>
+#include <boost/format.hpp>
 #define foreach BOOST_FOREACH
 
 using namespace envire;
@@ -20,17 +21,31 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	if( classname.find("::") != std::string::npos )
 	    classname = classname.substr( classname.rfind("::") + 2 );
 
-	os << "g" << item->getUniqueId() << " "
-	    << "[label=\"" << classname << "[" << item->getUniqueId() << "]" << "\"";
+	os << "g" << item->getUniqueId() << " ";
+	std::string name = (boost::format("%s[%i]") % classname % item->getUniqueId()).str();
 
 	if( dynamic_cast<FrameNode*>(item) )
-	    os << ",shape=ellipse,style=filled,fillcolor=lightblue";
+	{
+	    FrameNode* fn = dynamic_cast<FrameNode*>(item);
+	    Eigen::Vector3d t = fn->getTransform().translation();
+	    Eigen::Vector3d r = fn->getTransform().linear().eulerAngles(2,1,0) / M_PI * 180;
+
+	    os 
+		<< "[label=\"" << name <<  
+		boost::format("\\nt: (%.1f %.1f %.1f)\\nr: (%.1f %.1f %.1f)") % t.x() % t.y() % t.z() % r.z() % r.y() % r.x() 
+		<< "\""
+		<< ",shape=ellipse,style=filled,fillcolor=lightblue";
+	}
 
 	if( dynamic_cast<Operator*>(item) )
-	    os << ",shape=octagon,style=filled,fillcolor=lightcoral";
+	    os 
+		<< "[label=\"" << name << "\""
+		<< ",shape=octagon,style=filled,fillcolor=lightcoral";
 
 	if( dynamic_cast<Layer*>(item) )
-	    os << ",shape=box,style=filled,fillcolor=palegreen";
+	    os 
+		<< "[label=\"" << name << "\""
+		<< ",shape=box,style=filled,fillcolor=palegreen";
 
 	os << "]" << std::endl;
     }
