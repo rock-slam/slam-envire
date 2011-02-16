@@ -43,6 +43,11 @@ public:
      */
     MultiLevelSurfaceGrid::Ptr getActiveGrid() const { return active; }
 
+    /** @return a deep clone of the object,
+     * which wil also clone the references to the children.
+     */
+    MLSMap* cloneDeep();
+
 public:
     // TODO we only store pointer to the grids here,
     // there is a little problem here, since we actually should

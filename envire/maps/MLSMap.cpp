@@ -28,6 +28,21 @@ MLSMap& MLSMap::operator=(const MLSMap& other)
     grids = other.grids;
     active = other.active;
 
+    if( isAttached() )
+    {
+	std::list<Layer*> children = env->getChildren( this );
+	for( std::list<Layer*>::iterator it = children.begin(); it != children.end(); it++ )
+	{
+	    env->removeChild( this, *it );
+	}
+
+	typedef std::vector<MultiLevelSurfaceGrid::Ptr>::iterator iterator;
+	for( iterator it = grids.begin(); it != grids.end(); it++ )
+	{
+	    env->addChild( this, (*it).get() );
+	}
+    }
+
     return *this;
 }
 
@@ -54,6 +69,8 @@ MultiLevelSurfaceGrid::SurfacePatch*
 
 void MLSMap::addGrid( MultiLevelSurfaceGrid::Ptr grid )
 {
+    env->addChild( this, grid.get() );
+
     grids.push_back( grid );
     active = grid;
 }
@@ -71,3 +88,29 @@ void MLSMap::createGrid( const Transform& trans )
 
     addGrid( grid_clone );
 }
+
+MLSMap* MLSMap::cloneDeep()
+{
+    MLSMap* res = clone();
+    // copy the layer structure as well
+    if( env )
+    {
+	// create a copy of the currently active map
+	// and reference the others
+	MultiLevelSurfaceGrid* active_clone = active->clone();
+	res->grids.back() = active_clone;
+	res->active = active_clone;
+
+	env->setFrameNode( active_clone, active->getFrameNode() );
+	
+	env->attachItem( res );
+
+	typedef std::vector<MultiLevelSurfaceGrid::Ptr>::iterator iterator;
+	for( iterator it = res->grids.begin(); it != res->grids.end(); it++ )
+	{
+	    env->addChild( res, (*it).get() );
+	}
+    }
+    return res;
+}
+
