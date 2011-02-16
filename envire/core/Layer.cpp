@@ -44,9 +44,9 @@ void Layer::addChild( Layer* child )
     env->addChild(this, child);
 }
 
-Layer* Layer::getParent()
+std::list<Layer*> Layer::getParents()
 {
-    return env->getParent(this);
+    return env->getParents(this);
 }
 
 std::string Layer::getName() const

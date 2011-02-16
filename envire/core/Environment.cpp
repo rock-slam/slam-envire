@@ -298,10 +298,12 @@ void Environment::addChild(Layer* parent, Layer* child)
     if( !child->isAttached() )
 	attachItem( child );
 
+    /* allow multiple parents for a child
     if( getParent(child) )
     {
 	removeChild( getParent(child), child );
     }
+    */
 
     layerTree.insert(make_pair(child, parent));
 
@@ -320,12 +322,22 @@ void Environment::removeChild(FrameNode* parent, FrameNode* child)
 
 void Environment::removeChild(Layer* parent, Layer* child) 
 {
-    if( getParent( child ) == parent )
-    {
-	handle( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
+    handle( Event( Event::LAYER_TREE, Event::REMOVE, parent, child ) );
 
-	layerTree.erase( layerTree.find( child ) );
+    typedef layerTreeType::iterator iterator;
+    std::pair<iterator,iterator> range = layerTree.equal_range( child );
+    for( iterator it = range.first; it != range.second; it++ )
+    {
+	if( it->second == parent )
+	{
+	    layerTree.erase( it );
+	    return;
+	}
     }
+
+    /*
+       layerTree.erase( layerTree.find( child ) );
+       */
 }
 
 FrameNode* Environment::getParent(FrameNode* node) 
@@ -337,13 +349,24 @@ FrameNode* Environment::getParent(FrameNode* node)
 	return it->second;
 }
 
-Layer* Environment::getParent(Layer* layer) 
+std::list<Layer*> Environment::getParents(Layer* layer) 
 {
+    std::list<Layer*> res;
+
+    typedef layerTreeType::iterator iterator;
+    std::pair<iterator,iterator> range = layerTree.equal_range( layer );
+    for( iterator it = range.first; it != range.second; it++ )
+	res.push_back( it->second );
+
+    return res;
+
+    /*
     layerTreeType::iterator it = layerTree.find( layer );
     if( it == layerTree.end() )
 	return NULL;
     else
 	return it->second;
+	*/
 }
 
 FrameNode* Environment::getRootNode() 

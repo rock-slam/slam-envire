@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( environment )
     BOOST_CHECK_EQUAL( l1->getEnvironment(), env.get() );
 
     env->addChild( l1, l2 );
-    BOOST_CHECK_EQUAL( l1, env->getParent(l2) );
+    BOOST_CHECK( contains(env->getParents(l2),l1) );
     BOOST_CHECK( contains(env->getChildren(l1),l2) );
 
     env->attachItem(l3);

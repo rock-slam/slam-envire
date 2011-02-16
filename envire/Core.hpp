@@ -448,7 +448,7 @@ namespace envire
 
 	/** @return the parent of this layer or NULL if the layer has no parent
 	 */
-        Layer* getParent();
+	std::list<Layer*> getParents();
 
 	/** @return for a given path, it will return a suggestion for a filename 
 	 * to use when making this layer persistant
@@ -627,7 +627,7 @@ namespace envire
     protected:
 	typedef std::map<long, EnvironmentItem::Ptr > itemListType;
 	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
-	typedef std::map<Layer*, Layer*> layerTreeType;
+	typedef std::multimap<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
 	typedef std::map<CartesianMap*, FrameNode*> cartesianMapGraphType;
 	
@@ -693,7 +693,7 @@ namespace envire
 	void removeChild(Layer* parent, Layer* child);
 
 	FrameNode* getParent(FrameNode* node);
-	Layer* getParent(Layer* layer);
+	std::list<Layer*> getParents(Layer* layer);
 
 	FrameNode* getRootNode();
 	std::list<FrameNode*> getChildren(FrameNode* parent);
