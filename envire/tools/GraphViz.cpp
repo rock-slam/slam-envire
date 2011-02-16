@@ -65,6 +65,7 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	os 
 	    << "g" << pair.second->getUniqueId() 
 	    << " -> g" << pair.first->getUniqueId()
+	    << " [style=dotted]"
 	    << std::endl;
     }
 
@@ -92,6 +93,7 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	os 
 	    << "g" << pair.first->getUniqueId() 
 	    << " -> g" << pair.second->getUniqueId()
+	    << " [shape=dot]"
 	    << std::endl;
     }
 
