@@ -355,6 +355,11 @@ namespace envire
          */
 	TransformType relativeTransform( const FrameNode* to ) const;
 
+	/** 
+	 * @return a list of maps attached to this framenode.
+	 */
+	std::list<CartesianMap*> getMaps(); 
+
     protected:
 	TransformWithUncertainty frame;
     };

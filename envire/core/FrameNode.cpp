@@ -90,3 +90,8 @@ FrameNode::TransformType FrameNode::relativeTransform( const FrameNode* to ) con
 {
     return env->relativeTransform( this, to );
 }
+
+std::list<CartesianMap*> FrameNode::getMaps()
+{
+    return env->getMaps( this );
+}
