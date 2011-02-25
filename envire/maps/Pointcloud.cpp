@@ -109,6 +109,11 @@ Pointcloud* Pointcloud::importCsv(const std::string& path, FrameNode* fm)
 
 Pointcloud::Extents Pointcloud::getExtents() const
 {
-    // TODO provide proper extents
-    return Extents(); 
+    //TODO: Implement some sort of caching
+    Extents res;
+    for(size_t i=0;i<vertices.size();i++)
+    {
+	res.extend( vertices[i] );
+    }
+    return res; 
 }
