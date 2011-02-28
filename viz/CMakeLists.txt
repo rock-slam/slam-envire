@@ -43,6 +43,7 @@ target_link_libraries(${PROJECT_NAME}-viz ${PROJECT_NAME}
 add_executable(envireViewer envireViewer.cpp)
 target_link_libraries(envireViewer
     ${VIZKIT_LIBRARIES}
+    ${QT_QTGUI_LIBRARY}
     ${PROJECT_NAME}-viz)
 
 # install headers and library
