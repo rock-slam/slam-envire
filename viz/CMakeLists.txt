@@ -55,3 +55,5 @@ install(TARGETS ${PROJECT_NAME}-viz
 configure_file(${PROJECT_NAME}-viz.pc.in ${PROJECT_NAME}-viz.pc @ONLY)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-viz.pc
     DESTINATION lib/pkgconfig)
+
+add_subdirectory(enview)
