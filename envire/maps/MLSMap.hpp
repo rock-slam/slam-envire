@@ -43,6 +43,8 @@ public:
      */
     MultiLevelSurfaceGrid::Ptr getActiveGrid() const { return active; }
 
+    std::vector<MultiLevelSurfaceGrid::Ptr>& getGrids() { return grids; }
+
     /** @return a deep clone of the object,
      * which wil also clone the references to the children.
      */
