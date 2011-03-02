@@ -20,8 +20,8 @@ struct ModelListItem : public QListWidgetItem
 };
 
 
-ICPHandler::ICPHandler(QObject* parent, Ui::MainWindow& ui, envire::EnvironmentItem*& selectedItem)
-    : QObject(parent), ui(ui), selectedItem(selectedItem)
+ICPHandler::ICPHandler(QObject* parent, Ui::MainWindow& ui, callback c)
+    : QObject(parent), ui(ui), getSelectedItem(c)
 {
     connect( ui.addToModelButton, SIGNAL(pressed(void)), this, SLOT(addToModel()) );
     connect( ui.clearModelButton, SIGNAL(pressed(void)), this, SLOT(clearModel()) );
@@ -37,6 +37,8 @@ ICPHandler::ICPHandler(QObject* parent, Ui::MainWindow& ui, envire::EnvironmentI
 
 void ICPHandler::addToModel()
 {
+    envire::EnvironmentItem* selectedItem = getSelectedItem();
+
     if( selectedItem != NULL && dynamic_cast<envire::Pointcloud*>(selectedItem) )
     {
 	ui.modelListWidget->addItem( new ModelListItem( dynamic_cast<envire::Pointcloud*>(selectedItem) ) );
@@ -54,6 +56,7 @@ void ICPHandler::clearModel()
 
 void ICPHandler::runICP()
 {
+    envire::EnvironmentItem* selectedItem = getSelectedItem();
     envire::Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(selectedItem);
 
     if( !mesh )

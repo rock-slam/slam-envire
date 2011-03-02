@@ -10,6 +10,7 @@ include(${QT_USE_FILE})
 
 set(QT_HEADERS 
     ItemManipulator.hpp 
+    TreeViewListener.hpp 
     )
 QT4_WRAP_CPP(moc_cpp ${QT_HEADERS})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

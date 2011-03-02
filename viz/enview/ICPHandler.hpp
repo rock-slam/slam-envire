@@ -6,6 +6,8 @@
 #include <envire/Core.hpp>
 #include <envire/icp.hpp>
 
+#include <boost/function.hpp>
+
 namespace enview
 {
     class ICPHandlerImpl; 
@@ -13,9 +15,10 @@ namespace enview
     class ICPHandler : public QObject 
     {
 	Q_OBJECT
-
+	
     public:
-	ICPHandler(QObject* parent, Ui::MainWindow& ui, envire::EnvironmentItem*& selectedItem);
+	typedef boost::function<envire::EnvironmentItem* ()> callback; 
+	ICPHandler(QObject* parent, Ui::MainWindow& ui, callback c);
 
     public slots:
 	void addToModel();
@@ -27,7 +30,7 @@ namespace enview
 	envire::icp::TrimmedKD icp;
 
 	Ui::MainWindow& ui;
-	envire::EnvironmentItem*& selectedItem;
+	callback getSelectedItem;
     };
 }
 

@@ -6,11 +6,14 @@
 #include <QAbstractItemModel>
 #include <QTreeWidget>
 #include <QList>
+#include <QObject>
 
 namespace vizkit {
 
-class TreeViewListener : public envire::EventListener
+class TreeViewListener : public QObject, public envire::EventListener
 {
+    Q_OBJECT
+
     public:
 	TreeViewListener(QTreeWidget *tw);
 	virtual void childAdded(envire::FrameNode* parent, envire::FrameNode* child);
@@ -32,6 +35,12 @@ class TreeViewListener : public envire::EventListener
 	QList<QTreeWidgetItem*> getSelectetWidgets();
 	
 	QTreeWidget *tw;
+
+	envire::EnvironmentItem *selected;
+
+    public slots:
+	void itemClicked ( QTreeWidgetItem * item, int column );
+
     private:
 	enum ItemTypes {
 	    FrameNode,

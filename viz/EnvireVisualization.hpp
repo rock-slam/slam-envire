@@ -29,6 +29,10 @@ public:
      */
     void handleDirty( bool handleDirty ) { m_handleDirty = handleDirty; }
 
+    /** @return the currently selected item, or NULL if there is no selection
+     */
+    envire::EnvironmentItem* getSelectedItem() { return twl ? twl->selected : NULL; }
+
 protected:
     virtual void operatorIntern( osg::Node* node, osg::NodeVisitor* nv );
     virtual void updateDataIntern( envire::Environment* const& data );

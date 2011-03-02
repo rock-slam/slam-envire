@@ -7,6 +7,12 @@
 namespace vizkit {
 
 
+void TreeViewListener::itemClicked(QTreeWidgetItem* item, int column)
+{
+    std::cout << "set selectedItem " << item << std::endl;
+    selected = getItemForWidget(item);
+}
+
 void TreeViewListener::setRootNode(envire::FrameNode* root)
 {
     getWidgetForEnvItem(root, FrameNode, true);    
@@ -94,8 +100,9 @@ void TreeViewListener::childRemoved(envire::FrameNode* parent, envire::FrameNode
 
 TreeViewListener::TreeViewListener(QTreeWidget* tw)
 {
+    assert( tw );
     this->tw = tw;
-    
+    connect(tw, SIGNAL(itemClicked ( QTreeWidgetItem *, int )), this, SLOT(itemClicked ( QTreeWidgetItem *, int)));
 }
 
 /*

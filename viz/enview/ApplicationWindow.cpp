@@ -12,11 +12,12 @@
 #include <osg/Depth>
 
 #include "ICPHandler.hpp"
+#include <boost/bind.hpp>
 
 namespace enview {
 
 ApplicationWindow::ApplicationWindow() 
-    : QMainWindow(), selectedItem( NULL )
+    : QMainWindow()
 {
     // connect menu items to functions
     ui.setupUi( this );
@@ -31,7 +32,7 @@ ApplicationWindow::ApplicationWindow()
     
 
     // installing handlers for different functionalities
-    icpHandler = new ICPHandler(this, ui, selectedItem);
+    icpHandler = new ICPHandler(this, ui, boost::bind( &ApplicationWindow::getSelectedItem, this ) );
     //sequenceHandler = new SequenceHandler(this, ui);
 
     // seting up envire plugin and creating an empty environment
@@ -112,7 +113,7 @@ void ApplicationWindow::addFromCsvDialog()
             ".",
             tr("Csv (*.txt)"));
 
-    envire::FrameNode *fn = dynamic_cast<envire::FrameNode*>(selectedItem);
+    envire::FrameNode *fn = dynamic_cast<envire::FrameNode*>(getSelectedItem());
     if( !fn )
 	fn = env->getRootNode();
 
@@ -161,7 +162,7 @@ void ApplicationWindow::saveAsEnvironment()
 
 void ApplicationWindow::pickedPoint(const Eigen::Vector3d& coord)
 {
-    envire::Pointcloud *pc = dynamic_cast<envire::Pointcloud*>(selectedItem);
+    envire::Pointcloud *pc = dynamic_cast<envire::Pointcloud*>(getSelectedItem());
     if( pc )
     {
 	pc->vertices.push_back( coord );

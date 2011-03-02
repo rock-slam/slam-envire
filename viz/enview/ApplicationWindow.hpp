@@ -41,6 +41,7 @@ public:
     void createTriMesh(envire::LaserScan* scan);
     void setEnvironment(envire::Environment* env);
     envire::Environment* getEnvironment();
+    envire::EnvironmentItem* getSelectedItem() { return envViz->getSelectedItem(); }
 
 public slots:
     void updateOperators();
@@ -62,7 +63,6 @@ public:  // for now
     //SequenceHandler *sequenceHandler;
     //TreeViewListener *twl;
     Ui::MainWindow ui;
-    envire::EnvironmentItem* selectedItem;
 
     boost::shared_ptr<vizkit::EnvireVisualization> envViz;
     boost::shared_ptr<envire::Environment> env;
