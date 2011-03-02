@@ -67,7 +67,8 @@ void EnvireVisualization::attachTreeWidget( QTreeWidget *treeWidget )
     QObject::connect(treeWidget, SIGNAL(itemChanged ( QTreeWidgetItem *, int )), im, SLOT(itemChanged ( QTreeWidgetItem *, int)));
     QObject::connect(removeItem, SIGNAL(triggered()), im, SLOT(removeSelectedItems()));
     //view->installEventFilter(im);
-    env->addEventHandler(twl.get());
+    if( env )
+	env->addEventHandler(twl.get());
 }
 
 bool EnvireVisualization::isDirty() const
