@@ -15,7 +15,7 @@ int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
     {
-	std::cout << "usage: env_mls input output [resolution]" << std::endl;
+	std::cout << "usage: env_mls input output [resolution] [variance]" << std::endl;
 	exit(0);
     }
     Serialization so;
@@ -31,17 +31,29 @@ int main( int argc, char* argv[] )
     envire::MLSProjection *proj = new envire::MLSProjection();
     env->attachItem( proj );
 
+    double res = 0.05;
+    if( argc >= 4 )
+	res = boost::lexical_cast<double>( argv[3] );
+
+    double var = res;
+    if( argc >= 5 )
+	var = boost::lexical_cast<double>( argv[4] );
+
     envire::Pointcloud::Extents extents;
     std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
     for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
-	//if( (*it)->hasData( Pointcloud::VERTEX_VARIANCE ) )
+	envire::Pointcloud *pc = *it;
+	std::cout << "adding pointcloud to projection" << std::endl;
+	if( !pc->hasData( Pointcloud::VERTEX_VARIANCE ) )
 	{
-	    std::cout << "adding pointcloud to projection" << std::endl;
-	    proj->addInput( *it );
-	    // TODO: rotate the extents to the grid coordinate frame
-	    extents.extend( (*it)->getExtents() );
+	    std::cout << "no point variances found. setting all values to " << var << std::endl;
+	    std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+	    uncertainty.resize( pc->vertices.size(), var );
 	}
+	proj->addInput( pc );
+	// TODO: rotate the extents to the grid coordinate frame
+	extents.extend( pc->getExtents() );
     }
     if( extents.isNull() )
     {
@@ -55,9 +67,6 @@ int main( int argc, char* argv[] )
     << "max: " << extents.max().transpose() << std::endl;
 
     // create the grid at the right size
-    double res = 0.05;
-    if( argc >= 4 )
-	res = boost::lexical_cast<double>( argv[3] );
     envire::MultiLevelSurfaceGrid *grid = new envire::MultiLevelSurfaceGrid(extents.max().x()/res, extents.max().y()/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
