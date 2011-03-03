@@ -2,6 +2,8 @@ project(envire)
 set(PROJECT_VERSION 1.0)
 cmake_minimum_required(VERSION 2.6)
 
+# TODO move all of the cmake to the new macros
+include(Rock)
 include(cmake/CommonSetup.cmake)
 
 #### Find required dependencies #################################################
@@ -45,8 +47,9 @@ add_subdirectory(envire)
 include_directories(BEFORE envire)
 
 add_subdirectory(icp)
-include_directories(icp)
+include_directories(BEFORE icp)
 link_directories(${PROJECT_BINARY_DIR}/icp)
+rock_export_includedir(${PROJECT_SOURCE_DIR}/icp envire)
 
 if( VIZKIT_FOUND )
     add_subdirectory(viz)
