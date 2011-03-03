@@ -67,7 +67,8 @@ int main( int argc, char* argv[] )
     << "max: " << extents.max().transpose() << std::endl;
 
     // create the grid at the right size
-    envire::MultiLevelSurfaceGrid *grid = new envire::MultiLevelSurfaceGrid(extents.max().x()/res, extents.max().y()/res, res, res);
+    envire::Pointcloud::Extents::VectorType dim = extents.max() - extents.min();
+    envire::MultiLevelSurfaceGrid *grid = new envire::MultiLevelSurfaceGrid(dim.x()/res, dim.y()/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
 
