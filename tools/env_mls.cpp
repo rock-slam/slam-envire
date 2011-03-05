@@ -52,8 +52,23 @@ int main( int argc, char* argv[] )
 	    uncertainty.resize( pc->vertices.size(), var );
 	}
 	proj->addInput( pc );
-	// TODO: rotate the extents to the grid coordinate frame
-	extents.extend( pc->getExtents() );
+
+	// rotate the extents to the grid frame, and extend the local grid 
+	// whith the extents corner
+	Eigen::Transform3d pc2grid = env->relativeTransform( pc->getFrameNode(), fm1 );
+	envire::Pointcloud::Extents pc_extents = pc->getExtents();
+	std::vector<Eigen::Vector3d> corners;
+	// go through all the permutations to get the corners
+	for( int i=0; i<8; i++ )
+	{
+	    Eigen::Vector3d corner;
+	    for( int j=0; j<3; j++ )
+		corner[j] = (i>>j)&1 ? pc_extents.min()[j] : pc_extents.max()[j];
+	    corners.push_back( corner );
+	}
+
+	for( std::vector<Eigen::Vector3d>::iterator it = corners.begin(); it != corners.end(); it++ )
+	    extents.extend( pc2grid * (*it) );
     }
     if( extents.isNull() )
     {
