@@ -247,7 +247,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 	osg::ref_ptr<osg::Vec4Array> var_color = new osg::Vec4Array;
 	var_color->push_back( osg::Vec4( 0.5, 0.1, 0.8, 1.0 ) );
-	var_geom->setColorArray(color.get());
+	var_geom->setColorArray( var_color.get() );
 	var_geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
 	geode->addDrawable( var_geom.get() );
