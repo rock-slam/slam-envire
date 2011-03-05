@@ -23,7 +23,7 @@ public:
 
 public:
     /** get a patch from the stored grids. @param p is in the coordinate from of this map. */
-    SurfacePatch* getPatch( const Point& p, const SurfacePatch& patch, double sigma_threshold = 3.0 );
+    bool getPatch( const Point& p, SurfacePatch& patch, double sigma_threshold = 3.0 );
 
     /** 
      * add new grid and make it active. The grid is assumed to be 

@@ -46,8 +46,7 @@ MLSMap& MLSMap::operator=(const MLSMap& other)
     return *this;
 }
 
-MultiLevelSurfaceGrid::SurfacePatch* 
-    MLSMap::getPatch( const Point& p, const SurfacePatch& patch, double sigma_threshold )
+bool MLSMap::getPatch( const Point& p, SurfacePatch& patch, double sigma_threshold )
 {
     // go backwards in the list, and try to find the point in any of the grids
     for( std::vector<MultiLevelSurfaceGrid::Ptr>::reverse_iterator it = grids.rbegin(); it != grids.rend(); it++ )
@@ -57,14 +56,24 @@ MultiLevelSurfaceGrid::SurfacePatch*
 	MultiLevelSurfaceGrid::Position pos;
 	if( grid->toGrid((C_m2g * p).start<2>(), pos) )
 	{
+	    // offset the z-coordinate which is given in map to grid 
+	    MultiLevelSurfaceGrid::SurfacePatch probe( patch );
+	    probe.mean += C_m2g.translation().z();
+	    
 	    MultiLevelSurfaceGrid::SurfacePatch* res = 
-		grid->get( pos, patch, sigma_threshold );
+		grid->get( pos, probe, sigma_threshold );
 
 	    if( res )
-		return res;
+	    {
+		patch = *res;
+		// offset the z-coordinate, so that it is expressed in terms
+		// of the map and not the grid
+		patch.mean -= C_m2g.translation().z();
+		return true;
+	    }
 	}
     }
-    return NULL;
+    return false;
 }
 
 void MLSMap::addGrid( MultiLevelSurfaceGrid::Ptr grid )
