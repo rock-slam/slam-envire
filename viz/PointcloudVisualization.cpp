@@ -66,7 +66,14 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-    color->push_back(vertexColor);
+
+    // cycle through colors
+    static int col = 0;
+    col++;
+    color->push_back( osg::Vec4( ((col*88734)%256)/255.0, ((col*398482)%256)/255.0, ((col*36784787)%256)/255.0, 1.0 ) );
+
+    //color->push_back(vertexColor);
+
     geom->setColorArray(color.get());
     geom->setColorBinding( osg::Geometry::BIND_OVERALL );
     
