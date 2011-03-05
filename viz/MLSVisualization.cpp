@@ -184,6 +184,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     const double xs = mls->getScaleX();
     const double ys = mls->getScaleY();
 
+    osg::ref_ptr<osg::Vec3Array> var_vertices = new osg::Vec3Array;
+
     //std::cerr << "grid size: " << mls->getWidth() << " x " << mls->getHeight() << std::endl;
     int hor = 0;
     for(size_t x=0;x<mls->getWidth();x++)
@@ -208,11 +210,16 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 		if( showUncertainty )
 		{
+		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
+		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
+
+		    /*
 		    const double sizefactor = 0.2;
 		    drawBox( vertices, normals, color, 
 			    osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
 			    osg::Vec3( xs*sizefactor, ys*sizefactor, p.height+2.0*p.stdev ), 
 			    uncertaintyColor );
+			    */
 		}
 	    }
 	}
@@ -230,4 +237,19 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     geom->setColorBinding( osg::Geometry::BIND_PER_VERTEX );
 
     geode->addDrawable(geom.get());    
+
+    if( showUncertainty )
+    {
+	osg::ref_ptr<osg::Geometry> var_geom = new osg::Geometry;
+	var_geom->setVertexArray( var_vertices );
+	osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINES, 0, var_vertices->size() );
+	var_geom->addPrimitiveSet(drawArrays.get());
+
+	osg::ref_ptr<osg::Vec4Array> var_color = new osg::Vec4Array;
+	var_color->push_back( osg::Vec4( 0.5, 0.1, 0.8, 1.0 ) );
+	var_geom->setColorArray(color.get());
+	var_geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+	geode->addDrawable( var_geom.get() );
+    }
 }
