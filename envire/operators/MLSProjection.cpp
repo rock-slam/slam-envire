@@ -1,5 +1,6 @@
 #include "MLSProjection.hpp"
 #include <set>
+#include <Eigen/LU>
 
 using namespace envire;
 
