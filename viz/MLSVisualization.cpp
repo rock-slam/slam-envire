@@ -9,11 +9,14 @@
 #include <osg/ShapeDrawable>
 #include <osg/LineWidth>
 
+using namespace envire;
+
 MLSVisualization::MLSVisualization()
     : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
-    showUncertainty(true)
+    showUncertainty(false),
+    estimateNormals(true)
 {
 }
 
@@ -88,7 +91,7 @@ void MLSVisualization::unHighlightNode(envire::EnvironmentItem* item, osg::Group
     // TODO handle highlight and unhighlight
 }
 
-void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array> normals, osg::ref_ptr<osg::Vec4Array> colors,  const osg::Vec3& position, const osg::Vec3& extents, const osg::Vec4& color )
+void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array> normals, osg::ref_ptr<osg::Vec4Array> colors,  const osg::Vec3& position, const osg::Vec3& extents, const osg::Vec4& color, const osg::Vec3& normal )
 {
     const double xp = position.x();
     const double yp = position.y();
@@ -104,7 +107,7 @@ void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array>
     vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp+zs*0.5));
     for(size_t i=0;i<4;i++)
     {
-	normals->push_back(osg::Vec3(0,0,1.0));
+	normals->push_back(normal);
 	colors->push_back(color);
     }
 
@@ -162,6 +165,39 @@ void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array>
     }
 }
 
+osg::Vec3 estimateNormal( MultiLevelSurfaceGrid::SurfacePatch patch, MultiLevelSurfaceGrid::Position pos, MultiLevelSurfaceGrid* grid ) {
+    patch.stdev = grid->getScaleX() * 2;
+
+    Eigen::Vector3d center;
+    center << grid->fromGrid( pos ), patch.mean;
+
+    Eigen::Vector3d d[2] = { Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero() };
+    for(int n=0;n<2;n++)
+    {
+	for(int i=-1;i<2;i+=2)
+	{
+	    MultiLevelSurfaceGrid::Position p( pos.m + n*i, pos.n + (n-1)*i );
+	    MultiLevelSurfaceGrid::SurfacePatch *res;
+	    if( grid->contains( p ) && (res = grid->get( p, patch )) )
+	    {
+		Eigen::Vector3d v;
+		v << grid->fromGrid( p ), res->mean;
+		d[n] += (v-center)*i;
+	    }
+	}
+    }
+
+    Eigen::Vector3d n = d[0].cross( d[1] );
+    if( n.norm() > 0.0 )
+    {
+	n.normalize();
+	return osg::Vec3(n.x(), n.y(), n.z());
+    }
+    else
+	return osg::Vec3(0,0,1.0);
+}
+
+
 void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* group) const
 {
     osg::ref_ptr<osg::Geode> geode = group->getChild(0)->asGeode();
@@ -200,12 +236,13 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 		if( p.horizontal == true )
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), horizontalCellColor );
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), horizontalCellColor,
+			  estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
 		    hor++;
 		}
 		else
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), verticalCellColor );
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), verticalCellColor, osg::Vec3(0, 0, 1.0) );
 		}
 
 		if( showUncertainty )

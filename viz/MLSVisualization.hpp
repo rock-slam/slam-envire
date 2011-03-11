@@ -23,6 +23,7 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 	mutable osg::ref_ptr<osg::Geode> extents;
 
 	bool showUncertainty;
+	bool estimateNormals;
 };
 
 #endif // POINTCLOUDVISUALIZATION_H

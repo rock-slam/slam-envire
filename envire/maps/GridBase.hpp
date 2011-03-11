@@ -48,6 +48,8 @@ namespace envire
 	void fromGrid( const Position& pos, Point2D& point ) const;
 	Point2D fromGrid( const Position& pos ) const;
 
+	bool contains( const Position& pos ) const;
+
 	size_t getWidth() const { return width; };
 	size_t getHeight() const { return height; };
 

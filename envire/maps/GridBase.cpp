@@ -77,6 +77,12 @@ GridBase::Point2D GridBase::fromGrid( const Position& pos ) const
     fromGrid( pos.m, pos.n, point.x(), point.y() );
     return point;
 }
+
+bool GridBase::contains( const Position& pos ) const
+{
+    return (pos.m >= 0 && pos.m < width 
+	    && pos.n >= 0 && pos.n < height);
+}
         
 GridBase::Extents GridBase::getExtents() const
 {
