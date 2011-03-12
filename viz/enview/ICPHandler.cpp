@@ -28,11 +28,11 @@ ICPHandler::ICPHandler(QObject* parent, Ui::MainWindow& ui, callback c)
     connect( ui.runStepButton, SIGNAL(pressed(void)), this, SLOT(runStep()) );
     connect( ui.runICPButton, SIGNAL(pressed(void)), this, SLOT(runICP()) );
 
-
     ui.iterationsLineEdit->setText("5");
-    ui.thresholdLineEdit->setText(".5");
     ui.densityLineEdit->setText(".01");
-    ui.minDistanceLineEdit->setText("1e-5");
+    ui.overlapLineEdit->setText(".8");
+    ui.minMSELineEdit->setText("1e-5");
+    ui.minMSEDiffLineEdit->setText("1e-8");
 }
 
 void ICPHandler::addToModel()
@@ -70,16 +70,20 @@ void ICPHandler::runICP()
     double min_mse_diff = 0.01;
     double density = 0.1;
 
+    /*
     double alpha = 0.4;
     double beta = 1.0;
     double eps = 0.01;
+    */
+    double overlap = 0.8;
 
     try
     {
 	max_iter = boost::lexical_cast<int>( ui.iterationsLineEdit->text().toStdString() );
-	min_mse = boost::lexical_cast<double>( ui.thresholdLineEdit->text().toStdString() );
+	min_mse = boost::lexical_cast<double>( ui.minMSELineEdit->text().toStdString() );
+	min_mse_diff = boost::lexical_cast<double>( ui.minMSEDiffLineEdit->text().toStdString() );
 	density = boost::lexical_cast<double>( ui.densityLineEdit->text().toStdString() );
-	min_mse_diff = boost::lexical_cast<double>( ui.minDistanceLineEdit->text().toStdString() );
+	overlap = boost::lexical_cast<double>( ui.overlapLineEdit->text().toStdString() );
     }
     catch(...) {}
 
@@ -94,7 +98,7 @@ void ICPHandler::runICP()
 	}
     }
 
-    icp.align( envire::icp::PointcloudAdapter(mesh, density), max_iter, min_mse, min_mse_diff, alpha, beta, eps );
+    icp.align( envire::icp::PointcloudAdapter(mesh, density), max_iter, min_mse, min_mse_diff, overlap );
 }
 
 void ICPHandler::runStep()

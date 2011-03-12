@@ -159,6 +159,7 @@
           <property name="fieldGrowthPolicy">
            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
           </property>
+
           <item row="0" column="0">
            <widget class="QLabel" name="label2">
             <property name="text">
@@ -169,36 +170,51 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="iterationsLineEdit"/>
           </item>
+
           <item row="1" column="0">
-           <widget class="QLabel" name="label1">
+           <widget class="QLabel" name="label3">
             <property name="text">
-             <string>Threshold</string>
+             <string>Min MSE</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="thresholdLineEdit"/>
+           <widget class="QLineEdit" name="minMSELineEdit"/>
           </item>
+
           <item row="2" column="0">
-           <widget class="QLabel" name="label">
+           <widget class="QLabel" name="label4">
+            <property name="text">
+             <string>Min MSE Diff</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="minMSEDiffLineEdit"/>
+          </item>
+
+          <item row="3" column="0">
+           <widget class="QLabel" name="label5">
             <property name="text">
              <string>Density</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_2">
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="densityLineEdit"/>
+          </item>
+
+          <item row="4" column="0">
+           <widget class="QLabel" name="label6">
             <property name="text">
-             <string>Min Distance</string>
+             <string>Overlap</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
-           <widget class="QLineEdit" name="densityLineEdit"/>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="overlapLineEdit"/>
           </item>
-          <item row="3" column="1">
-           <widget class="QLineEdit" name="minDistanceLineEdit"/>
-          </item>
+
          </layout>
         </item>
        </layout>

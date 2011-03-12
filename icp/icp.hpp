@@ -308,6 +308,16 @@ template <class _Adapter, class _FindPairs>
 class Trimmed {
     struct Result
     {
+	Result()
+	  : C_global2globalnew( Eigen::Transform3d::Identity() ), 
+	    iter(0), 
+	    pairs(0), 
+	    mse(0), 
+	    mse_diff(0), 
+	    d_box(0), 
+	    overlap(0) 
+	{}
+
 	const static double gamma = 2.0;
 
 	size_t iter;
@@ -435,7 +445,6 @@ private:
 
 	    result.iter++;
 
-	    /*
 	std::cout
 	    << "points: " << measurement.size()
 	    << "\titer: " << result.iter
@@ -445,12 +454,9 @@ private:
 	    << "\td_box: " << result.d_box
 	    << "\toverlap: " << result.overlap
 	    << std::endl;
-	    */
 	}
-	/*
 	std::cout
 	    << std::endl;
-	    */
 
 
 	return result;
