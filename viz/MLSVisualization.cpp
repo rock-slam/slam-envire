@@ -11,12 +11,46 @@
 
 using namespace envire;
 
+//
+// adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+// 
+float hue2rgb(float p, float q, float t)
+{
+    if(t < 0.0) t += 1.0;
+    if(t > 1.0) t -= 1.0;
+    if(t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if(t < 1.0/2.0) return q;
+    if(t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
+}
+
+osg::Vec4 hslToRgb(float h, float s, float l)
+{
+    float r, b, g;
+
+    if(s == 0)
+    {
+	r = g = b = l; // achromatic
+    } 
+    else 
+    {
+	float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+	float p = 2.0 * l - q;
+	r = hue2rgb(p, q, h + 1.0/3.0);
+	g = hue2rgb(p, q, h);
+	b = hue2rgb(p, q, h - 1.0/3.0);
+    }
+
+    return osg::Vec4( r, g, b, 1.0 );
+}
+
 MLSVisualization::MLSVisualization()
     : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
     showUncertainty(false),
-    estimateNormals(true)
+    estimateNormals(true),
+    cycleHeightColor(true)
 {
 }
 
@@ -236,8 +270,9 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 		if( p.horizontal == true )
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), horizontalCellColor,
-			  estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), 
+			    cycleHeightColor ? hslToRgb( p.mean - std::floor(p.mean), 1.0, 0.6 ) : horizontalCellColor,
+			    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
 		    hor++;
 		}
 		else
@@ -249,14 +284,6 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		{
 		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
 		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
-
-		    /*
-		    const double sizefactor = 0.2;
-		    drawBox( vertices, normals, color, 
-			    osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
-			    osg::Vec3( xs*sizefactor, ys*sizefactor, p.height+2.0*p.stdev ), 
-			    uncertaintyColor );
-			    */
 		}
 	    }
 	}

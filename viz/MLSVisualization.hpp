@@ -24,6 +24,7 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 
 	bool showUncertainty;
 	bool estimateNormals;
+	bool cycleHeightColor;
 };
 
 #endif // POINTCLOUDVISUALIZATION_H
