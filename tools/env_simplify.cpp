@@ -1,10 +1,10 @@
 #include <Eigen/Geometry>
 
 #include "envire/Core.hpp"
-#include "envire/Pointcloud.hpp"
-#include "envire/ScanMeshing.hpp"
-#include "envire/SimplifyPointcloud.hpp"
-#include "envire/MergePointcloud.hpp"
+#include "envire/maps/Pointcloud.hpp"
+#include "envire/operators/ScanMeshing.hpp"
+#include "envire/operators/SimplifyPointcloud.hpp"
+#include "envire/operators/MergePointcloud.hpp"
 
 #include "boost/scoped_ptr.hpp"
 
@@ -15,9 +15,13 @@ int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
     {
-	std::cout << "usage: env_simplify input output" << std::endl;
+	std::cout << "usage: env_simplify input output [cell_size]" << std::endl;
 	exit(0);
     }
+    double cell_size = 0.05;
+    if( argc >=3 )
+	cell_size = boost::lexical_cast<double>( argv[3] );
+    std::cout << "using cell size: " << cell_size << std::endl;
 
     Serialization so;
     boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
@@ -61,6 +65,7 @@ int main( int argc, char* argv[] )
     env->attachItem( simplify );
     simplify->addInput( mpc );
     simplify->addOutput( mpcs );
+    simplify->setSimplifyCellSize( cell_size );
 
     simplify->updateAll();
 
@@ -69,7 +74,7 @@ int main( int argc, char* argv[] )
     // detach the resulting pointcloud from the existing environment, and place
     // into a newly created one.
     boost::scoped_ptr<Environment> env2( new Environment() );
-    env->detachItem( mpcs );
+    envire::EnvironmentItem::Ptr mpcPtr = env->detachItem( mpcs );
 
     env2->attachItem( mpcs );
     env2->setFrameNode( mpcs, env2->getRootNode() );
