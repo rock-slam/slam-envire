@@ -2,6 +2,7 @@
 #define __ENVIRE_GRID_HPP__
 
 #include <envire/Core.hpp>
+#include <base/samples/frame.h>
 #include <envire/maps/GridBase.hpp>
 
 #include <boost/tuple/tuple.hpp>
@@ -48,7 +49,7 @@ namespace envire
 	
 	//be careful !!!
 	//because of the data layout of images the ArrayType
-	//as the following indices  
+	//has the following indices  
 	//data[height][width]
 	//the intern memory layout is p = (data.data())[width*row + col]
 	ArrayType& getGridData(){return getGridData(getBands().front());};
@@ -98,6 +99,10 @@ namespace envire
 	double getScaleY() const { return scaley; };
 
 	unsigned int getGridDepth(){return sizeof(T);};	//returns the depth per grid element
+
+        //converts the grid to base/samples/frame/Frame 
+        void convertToFrame(const std::string &key,base::samples::frame::Frame &frame);
+
       protected:
 	//saves the GridData with a specific key to a GTiff 
 	void writeGridData(const std::string &key,const std::string& path);
@@ -209,6 +214,17 @@ namespace envire
     {
 	Grid<T>* gp = dynamic_cast<Grid<T>*>( other );
 	if( gp ) operator=( *gp );
+    }
+
+    template<class T>
+    void Grid<T>::convertToFrame(const std::string &key,base::samples::frame::Frame &frame)
+    {
+        ArrayType& data_ = getGridData(key);
+        frame.init(width,height,sizeof(T)*8,base::samples::frame::MODE_GRAYSCALE);
+        memcpy(frame.image.data(),data_.data(),frame.image.size());
+        frame.frame_status = base::samples::frame::STATUS_VALID;
+        frame.setAttribute<std::string>("key",key);
+        frame.time = base::Time::now();
     }
 
     template<class T>void Grid<T>::writeGridData(const std::string &key,const std::string& path)

@@ -48,6 +48,11 @@ namespace envire
       ~ElevationGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
 
+      void convertToFrame(base::samples::frame::Frame &frame)
+      {
+        Grid<double>::convertToFrame(ElevationGrid::ELEVATION,frame);
+      }
+
       double get(double x, double y) const
       { return Grid<double>::get(ELEVATION, x, y); }
       
