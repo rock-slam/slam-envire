@@ -784,6 +784,16 @@ namespace envire
 	    return result;
 	}
 
+        //convenience function to create EnvironmentItems which are automatically attached
+        //to the environment 
+        template<class T>
+        T* create()
+        {
+            T* p = new T;
+            attachItem(p);
+            return p;
+        }
+
         /** 
 	 * Returns the transformation from the frame represented by @a from to
          * the frame represented by @a to. This always defines an unique
