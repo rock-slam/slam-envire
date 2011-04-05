@@ -21,6 +21,7 @@ set(ENVMAP_SRCS
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
     operators/ScanMeshing.cpp
+    operators/Traversability.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp

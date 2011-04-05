@@ -50,6 +50,11 @@ namespace envire
 		return std::abs( mean - other.mean );
 	    };
 
+	    bool operator<( const SurfacePatch& other ) const
+	    {
+		return mean < other.mean;
+	    };
+
 	    double mean;
 	    double stdev;
 	    double height;
