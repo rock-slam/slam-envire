@@ -23,3 +23,6 @@ target_link_libraries(env_info icp envire)
 
 add_executable(env_graphviz env_graphviz.cpp)
 target_link_libraries(env_graphviz icp envire)
+
+add_executable(env_mls_slopes env_mls_slopes.cpp)
+target_link_libraries(env_mls_slopes envire)
