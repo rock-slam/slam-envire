@@ -390,8 +390,10 @@ namespace envire
         /** @todo explain dirty for a layer */
         bool dirty; 
 
+        typedef std::map<std::string, HolderBase*> DataMap;
+
 	/** associating key values with metadata stored in holder objects */ 
-	std::map<std::string, HolderBase*> data_map;
+	DataMap data_map;
 
     public:
 	static const std::string className;
@@ -472,6 +474,13 @@ namespace envire
 	/** will return true if an entry for metadata for the given key exists
 	 */
 	bool hasData(const std::string& type);
+
+        /** Will return true if a metadata exists for the given key, and this
+         * metadata is of the specified type
+         */
+        template<typename T>
+        bool hasData(const std::string& type)
+        { return hasData(type) && data_map[type]->isOfType<T>(); }
 
 	/** For a given key, return the metadata associated with it. If the data
 	 * does not exist, it will be created.
