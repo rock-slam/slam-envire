@@ -49,14 +49,12 @@ int main( int argc, char* argv[] )
     env->attachItem(grid.get());
     grid->setFrameNode(mls->getFrameNode());
 
-    // Create the convertion operator
+    // Create the convertion operator and run it
     envire::MLSSlope *op = new envire::MLSSlope();
     env->attachItem( op );
     op->addInput(mls.get());
     op->addOutput(grid.get());
     op->updateAll();
-
-    std::cerr << "done, now serializing" << std::endl;
 
     // detach the resulting pointcloud from the existing environment, and place
     // into a newly created one.

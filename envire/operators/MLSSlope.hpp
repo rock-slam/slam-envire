@@ -20,6 +20,7 @@ namespace envire
     class MLSSlope : public Operator
     {
 	ENVIRONMENT_ITEM( MLSSlope )
+
     public:
         MLSSlope() {}
 	MLSSlope( Serialization &so ) : Operator( so ) {}

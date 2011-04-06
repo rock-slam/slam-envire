@@ -7,7 +7,7 @@ using namespace envire;
 
 ENVIRONMENT_ITEM_DEF( MLSSlope )
 
-static void updateGradient(MLSGrid const& mls, boost::multi_array<double,2>& angles,
+static void updateGradient(MLSGrid const& mls, boost::multi_array<double,2>& angles, boost::multi_array<double,2>& max_step, boost::multi_array<int, 2>& count,
         double scale, int this_x, int this_y, int x, int y, MLSGrid::const_iterator this_cell)
 {
     MLSGrid::const_iterator neighbour = 
@@ -25,10 +25,16 @@ static void updateGradient(MLSGrid const& mls, boost::multi_array<double,2>& ang
         g[1] = fabs(mean1 + stdev1 - mean0 - stdev0);
         g[2] = fabs(mean1 - mean0 - stdev0);
         g[3] = fabs(mean1 - mean0);
-        double gradient = *std::max_element(g, g + 4) / scale;
+        double step = *std::max_element(g, g + 4);
+        double gradient = step / scale;
 
-        angles[this_y][this_x] = std::max(angles[this_y][this_x], gradient);
-        angles[y][x] = std::max(angles[y][x], gradient);
+        max_step[this_y][this_x] = std::max(max_step[this_y][this_x], step);
+        angles[this_y][this_x] += gradient;
+        count[this_y][this_x]++;
+
+        max_step[y][x] = std::max(max_step[y][x], step);
+        angles[y][x] += gradient;
+        count[y][x]++;
     }
 }
 
@@ -50,8 +56,13 @@ bool MLSSlope::updateAll()
     double const UNKNOWN = -std::numeric_limits<double>::infinity();
     
     // init traversibility grid
-    boost::multi_array<double,2>& angles(travGrid.getGridData());
-    std::fill(angles.data(), angles.data() + angles.num_elements(), UNKNOWN);
+    boost::multi_array<double,2>& angles(travGrid.getGridData("mean_slope"));
+    std::fill(angles.data(), angles.data() + angles.num_elements(), 0);
+    boost::multi_array<double,2>& max_steps(travGrid.getGridData("max_step"));
+    std::fill(max_steps.data(), max_steps.data() + max_steps.num_elements(), UNKNOWN);
+    boost::multi_array<int,2> counts;
+    counts.resize( boost::extents[mls.getHeight()][mls.getWidth()]);
+    std::fill(counts.data(), counts.data() + counts.num_elements(), 0);
     travGrid.setNoData(UNKNOWN);
 
     size_t width = mls.getWidth(); 
@@ -70,9 +81,9 @@ bool MLSSlope::updateAll()
             if (this_cell == mls.endCell())
                 continue;
 
-            updateGradient(mls, angles, diagonal_scale, x, y, x - 1, y - 1, this_cell);
-            updateGradient(mls, angles, scaley, x, y, x, y - 1, this_cell);
-            updateGradient(mls, angles, scalex, x, y, x - 1, y, this_cell);
+            updateGradient(mls, angles, max_steps, counts, diagonal_scale, x, y, x - 1, y - 1, this_cell);
+            updateGradient(mls, angles, max_steps, counts, scaley, x, y, x, y - 1, this_cell);
+            updateGradient(mls, angles, max_steps, counts, scalex, x, y, x - 1, y, this_cell);
         }
     }
 
@@ -82,15 +93,24 @@ bool MLSSlope::updateAll()
         for(size_t y=1;y<(height - 1);y++)
         {
             double gradient = angles[y][x];
-            if (gradient != UNKNOWN)
-                angles[y][x] = atan(gradient);
+            int count = counts[y][x];
+            if (count == 0)
+                angles[y][x] = UNKNOWN;
+            else
+                angles[y][x] = atan(gradient / count);
         }
     }
     // ... and mark the remaining of the border as UNKNOWN
     for(size_t x=0; x < width; ++x)
+    {
         angles[height-1][x] = UNKNOWN;
+        max_steps[height-1][x] = UNKNOWN;
+    }
     for(size_t y=0; y < height; ++y)
+    {
         angles[y][width-1] = UNKNOWN;
+        max_steps[y][width-1] = UNKNOWN;
+    }
 
     return true;
 }
