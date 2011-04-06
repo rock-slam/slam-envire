@@ -72,17 +72,10 @@ namespace envire
     {
     public:
 	virtual ~HolderBase() {};
-	virtual void* getData() const = 0;
-	template <typename T> T& get()
-	{
-	    return *static_cast<T*>( getData() );
-	}
 
-    	template <typename T> 
-    	const T& get() const
-	{
-	    return *static_cast<const T*>( getData() );
-	}
+        template <typename T> bool isOfType() const;
+	template <typename T> T& get();
+    	template <typename T> const T& get() const;
     };
 
     /** Templated holder class, that will construct an object of type T,
@@ -105,11 +98,27 @@ namespace envire
 	    delete ptr;
 	};
 
-	void* getData() const
+	T* getData() const
 	{
 	    return ptr;
 	}
     };
+
+    template <typename T> bool HolderBase::isOfType() const
+    {
+        Holder<T> const* myself = dynamic_cast< Holder<T> const* >(this);
+        return myself ? true : false;
+    }
+    template <typename T> T& HolderBase::get()
+    {
+        return *dynamic_cast< Holder<T>* >(this)->getData();
+    }
+
+    template <typename T> 
+    const T& HolderBase::get() const
+    {
+        return *dynamic_cast< Holder<T>* >(this)->getData();
+    }
 
     /** Base class for alle items that are defined in the envire framework.
      * Mainly handles the unique_id feature and the pointer to the environment
