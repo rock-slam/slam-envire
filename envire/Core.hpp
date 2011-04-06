@@ -562,6 +562,12 @@ namespace envire
 	/** @return the dimension of the cartesian space (2 or 3) */
 	virtual int getDimension() const = 0;
 
+        virtual CartesianMap* clone() const { throw std::runtime_error("clone() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
+
+        /** Clones this map and the associated frame tree inside the target
+         * environment
+         */
+        void cloneTo(Environment& env) const;
     };
 
     template <int _DIMENSION>

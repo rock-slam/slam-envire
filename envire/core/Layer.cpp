@@ -148,3 +148,37 @@ const FrameNode* CartesianMap::getFrameNode() const
     return env->getFrameNode(const_cast<CartesianMap*>(this));
 }
 
+void CartesianMap::cloneTo(Environment& env) const
+{
+    CartesianMap* this_copy = clone();
+    env.attachItem(this_copy);
+
+    // Get the frame stack for +this+
+    std::vector<FrameNode const*> frame_stack;
+    FrameNode const* root_frame = getEnvironment()->getRootNode();
+    {
+        FrameNode const* frame = getFrameNode();
+        while (frame != root_frame)
+        {
+            frame_stack.push_back(frame);
+            frame = frame->getParent();
+        }
+    }
+
+    // And duplicate it on the target environment
+    {
+        FrameNode* frame = env.getRootNode();
+        while (!frame_stack.empty())
+        {
+            FrameNode* new_frame = frame_stack.back()->clone();
+            frame_stack.pop_back();
+            frame->addChild(new_frame);
+            frame = new_frame;
+        }
+        this_copy->setFrameNode(frame);
+    }
+}
+
+
+
+
