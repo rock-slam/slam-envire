@@ -46,18 +46,61 @@ namespace envire
 	typedef boost::multi_array<T,2> ArrayType; 
 	static const std::string className;
 	static const std::string GRID_DATA;
+
     private:
 	const static std::vector<std::string> &bands;
-    private:
+        std::map<std::string, T> nodata;
 	Grid(){};
+
     protected:	
 	Grid(Serialization& so,const std::string &class_name);
+
     public:
 	Grid(size_t width, size_t height, double scalex, double scaley);
 	~Grid();
 	Grid(Serialization& so);
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
+
+        /** Returns true if there is band information for the given key */
+        bool hasBand(std::string const& key) const
+        {
+            return hasData<ArrayType>(key);
+        }
+
+        /** Sets the nodata value for the given band */
+        void setNoData(std::string const& key, T value)
+        {
+            nodata[key] = value;
+        }
+
+        /** Returns the nodata value for the given band, if one has been
+         * defined.
+         *
+         * The boolean flag is true if there is one, and false otherwise
+         */
+        std::pair<T, bool> getNoData(std::string const& key) const
+        {
+            typename std::map<std::string, T>::const_iterator it =
+                nodata.find(key);
+            if (it == nodata.end())
+                return std::make_pair(T(), false);
+            else
+                return std::make_pair(it->second, true);
+        }
+
+        /** Sets the nodata value for all the bands */
+        void setNoData(T value)
+        {
+            for (DataMap::iterator it = data_map.begin(); it != data_map.end(); ++it)
+            {
+                if (it->second->isOfType<ArrayType>())
+                    nodata[it->first] = value;
+            }
+        }
+        /** Returns the nodata value of the first band */
+        std::pair<T, bool> getNoData() const
+        { return getNoData(getBands().front()); }
 
 	virtual void writeMap(const std::string& path);
 	virtual void readMap(const std::string& path);
@@ -299,6 +342,9 @@ namespace envire
 	    throw std::runtime_error(strstr.str());
 	  }
 	  ArrayType &data = getGridData(*iter);
+          std::pair<T, bool> no_data = getNoData(*iter);
+          if (no_data.second)
+              poBand->SetNoDataValue(no_data.first);
 	  poBand->RasterIO(GF_Write ,0,0,width,height,data.data(),width,height,poBand->GetRasterDataType(),0,0);
 	  preCallWriteBand(*iter,poBand);
 	}
@@ -347,6 +393,11 @@ namespace envire
 	checkBandType(poBand);
 	//writing data into the grid object
 	boost::multi_array<T,2> &data(getGridData(*iter));
+
+        int has_nodata = 0;
+        double nodata = poBand->GetNoDataValue(&has_nodata);
+        if (has_nodata)
+            setNoData(*iter, nodata);
 	poBand->RasterIO(GF_Read,0,0,width,height,data.data(),width,height,poBand->GetRasterDataType(),0,0);
 	preCallReadBand(*iter,poBand);
       }
