@@ -681,6 +681,34 @@ namespace envire
                 return it->second;
         }
 
+        /** Returns the only item of the given type.
+         *
+         * This is a convenience method to search for an item (usually, a map)
+         * in environments where it is known to be the only item of that type
+         *
+         * Throws std::runtime_error if there is not exactly one match (i.e.
+         * either more than one or none)
+         */
+	template <class T>
+	boost::intrusive_ptr<T> getItem() const
+	{
+            boost::intrusive_ptr<T> result;
+            for (itemListType::const_iterator it = items.begin(); it != items.end(); ++it)
+            {
+                boost::intrusive_ptr<T> map = boost::dynamic_pointer_cast<T>(it->second);
+                if (map)
+                {
+                    if (result)
+                        throw std::runtime_error("multiple maps in this environment are of the specified type");
+                    else
+                        result = map;
+                }
+            }
+            if (!result)
+                throw std::runtime_error("no maps in this environment are of the specified type");
+            return result;
+        }
+
 	template <class T>
 	boost::intrusive_ptr<T> getItem(int uniqueId) const
 	{
