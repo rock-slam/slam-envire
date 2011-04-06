@@ -3,7 +3,7 @@
 
 #include <envire/Core.hpp>
 #include <envire/maps/TriMesh.hpp>
-#include <envire/maps/MultiLevelSurfaceGrid.hpp>
+#include <envire/maps/MLSGrid.hpp>
 
 #include <Eigen/Core>
 

@@ -2,7 +2,7 @@
 
 #include "maps/Grids.hpp"
 #include "maps/Pointcloud.hpp"
-#include "maps/MultiLevelSurfaceGrid.hpp"
+#include "maps/MLSGrid.hpp"
 #include <Eigen/LU>
 
 #include<kdtree++/kdtree.hpp>
@@ -197,8 +197,8 @@ struct MLSAccess::MLSAccessImpl
 
     MLSAccessImpl(Environment* env) : env(env), grid(NULL) {};
 
-    std::vector<MultiLevelSurfaceGrid*> grids;
-    MultiLevelSurfaceGrid* grid;
+    std::vector<MLSGrid*> grids;
+    MLSGrid* grid;
 
     FrameNode::TransformType t;
 
@@ -218,11 +218,11 @@ struct MLSAccess::MLSAccessImpl
 	}
 
 	if( grids.size() == 0 )
-	    grids = env->getItems<MultiLevelSurfaceGrid>();
+	    grids = env->getItems<MLSGrid>();
 
-	for(std::vector<MultiLevelSurfaceGrid*>::iterator it = grids.begin();it != grids.end();it++)
+	for(std::vector<MLSGrid*>::iterator it = grids.begin();it != grids.end();it++)
 	{
-	    MultiLevelSurfaceGrid* lgrid = *it;
+	    MLSGrid* lgrid = *it;
 	    FrameNode::TransformType lt =
 		env->relativeTransform( 
 			env->getRootNode(),

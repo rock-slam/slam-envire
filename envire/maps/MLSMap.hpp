@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_MAPS_MLSMAP_HPP__
 #define __ENVIRE_MAPS_MLSMAP_HPP__
 
-#include <envire/maps/MultiLevelSurfaceGrid.hpp>
+#include <envire/maps/MLSGrid.hpp>
 
 namespace envire
 {
@@ -11,7 +11,7 @@ class MLSMap : public Map<2>
     ENVIRONMENT_ITEM( MLSMap )
 
 public:
-    typedef envire::MultiLevelSurfaceGrid::SurfacePatch SurfacePatch;
+    typedef envire::MLSGrid::SurfacePatch SurfacePatch;
 
     MLSMap();
     MLSMap(const MLSMap& other);
@@ -30,7 +30,7 @@ public:
      * attached to the environment. 
      * @param grid - to be added to the map
      */
-    void addGrid( MultiLevelSurfaceGrid::Ptr grid );
+    void addGrid( MLSGrid::Ptr grid );
 
     /** add a new grid taking the current active grid as a template
      * and placing it relative to the active grid 
@@ -41,9 +41,9 @@ public:
 
     /** @return the currently active grid
      */
-    MultiLevelSurfaceGrid::Ptr getActiveGrid() const { return active; }
+    MLSGrid::Ptr getActiveGrid() const { return active; }
 
-    std::vector<MultiLevelSurfaceGrid::Ptr>& getGrids() { return grids; }
+    std::vector<MLSGrid::Ptr>& getGrids() { return grids; }
 
     /** @return a deep clone of the object,
      * which wil also clone the references to the children.
@@ -54,8 +54,8 @@ public:
     // TODO we only store pointer to the grids here,
     // there is a little problem here, since we actually should
     // also add a framenode per grid
-    std::vector<MultiLevelSurfaceGrid::Ptr> grids;
-    MultiLevelSurfaceGrid::Ptr active;
+    std::vector<MLSGrid::Ptr> grids;
+    MLSGrid::Ptr active;
 };
 
 }

@@ -2,7 +2,7 @@
 #define __ENVIRE_OPERATORS_MERGEMLS__
 
 #include <envire/Core.hpp>
-#include <envire/maps/MultiLevelSurfaceGrid.hpp>
+#include <envire/maps/MLSGrid.hpp>
 
 namespace envire 
 {
@@ -17,13 +17,13 @@ public:
 
     bool updateAll()
     {
-	MultiLevelSurfaceGrid* output = static_cast<envire::MultiLevelSurfaceGrid*>(*env->getOutputs(this).begin());
+	MLSGrid* output = static_cast<envire::MLSGrid*>(*env->getOutputs(this).begin());
 	assert(output);
 
 	std::list<Layer*> inputs = env->getInputs(this);
 	for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
 	{
-	    MultiLevelSurfaceGrid* input = dynamic_cast<envire::MultiLevelSurfaceGrid*>(*it);
+	    MLSGrid* input = dynamic_cast<envire::MLSGrid*>(*it);
 	    assert(input);
 
 	    FrameNode::TransformType C_m2g = env->relativeTransform( input->getFrameNode(), output->getFrameNode() );
@@ -35,9 +35,9 @@ public:
 	    {
 		for(size_t n=0;n<input->getHeight();n++)
 		{
-		    for( MultiLevelSurfaceGrid::const_iterator cit = input->beginCell_const(m,n); cit != input->endCell_const(); cit++ )
+		    for( MLSGrid::const_iterator cit = input->beginCell(m,n); cit != input->endCell(); cit++ )
 		    {
-			MultiLevelSurfaceGrid::SurfacePatch p( *cit );
+			MLSGrid::SurfacePatch p( *cit );
 			p.mean += trans.z();
 			output->updateCell( m, n, p );
 		    }

@@ -4,7 +4,7 @@
 
 #include "envire/Core.hpp"
 
-#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MLSGrid.hpp"
 #include "envire/operators/MLSProjection.hpp"
 #include "envire/operators/MergeMLS.hpp"
 

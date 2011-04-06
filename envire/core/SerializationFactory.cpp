@@ -4,7 +4,7 @@
 #include "maps/TriMesh.hpp"
 #include "maps/Pointcloud.hpp"
 #include "maps/Grids.hpp"
-#include "maps/MultiLevelSurfaceGrid.hpp"
+#include "maps/MLSGrid.hpp"
 #include "operators/ScanMeshing.hpp"
 #include "operators/Projection.hpp"
 #include "operators/MLSProjection.hpp"
