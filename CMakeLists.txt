@@ -40,6 +40,9 @@ include_directories(${VIZKIT_INCLUDE_DIRS})
 link_directories(${VIZKIT_LIBRARY_DIRS})
 
 include(cmake/IncludeCGAL.cmake)
+if (NOT CGAL_FOUND)
+    message(FATAL_ERROR "cannot find CGAL")
+endif()
 
 #### Build Libraries #################################################
 include_directories(BEFORE .)
