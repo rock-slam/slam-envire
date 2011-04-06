@@ -1,19 +1,19 @@
-#include "MultiLevelSurfaceGrid.hpp"
+#include "MLSGrid.hpp"
 #include <fstream>
 #include <limits>
 #include "tools/Numeric.hpp"
 
 using namespace envire;
 
-ENVIRONMENT_ITEM_DEF( MultiLevelSurfaceGrid )
+ENVIRONMENT_ITEM_DEF( MLSGrid )
 
-MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(size_t width, size_t height, double scalex, double scaley)
+MLSGrid::MLSGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
      gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), mem_pool( sizeof( SurfacePatchItem ) )
 {
 }
 
-void MultiLevelSurfaceGrid::clear()
+void MLSGrid::clear()
 {
     for(size_t m=0;m<width;m++)
     {
@@ -28,7 +28,7 @@ void MultiLevelSurfaceGrid::clear()
     extents = Extents();
 }
 
-MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
+MLSGrid::MLSGrid(const MLSGrid& other)
     : GridBase( other ), cells( boost::extents[other.width][other.height] ),
      gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount ), mem_pool( sizeof( SurfacePatchItem ) )
 {
@@ -36,13 +36,13 @@ MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(const MultiLevelSurfaceGrid& other)
     {
 	for(size_t n=0;n<height;n++)
 	{
-	    for( const_iterator it = other.beginCell_const( m,n ); it != endCell_const(); it++ )
+	    for( const_iterator it = other.beginCell( m,n ); it != other.endCell(); it++ )
 		insertTail( m, n, *it );
 	}
     }
 }
 
-MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceGrid& other)
+MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 {
     if( this != &other )
     {
@@ -56,7 +56,7 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
 	    for(size_t n=0;n<height;n++)
 	    {
 		cells[m][n] = NULL;
-		for( const_iterator it = other.beginCell_const( m,n ); it != endCell_const(); it++ )
+		for( const_iterator it = other.beginCell( m,n ); it != endCell(); it++ )
 		    insertTail( m, n, *it );
 	    }
 	}
@@ -69,26 +69,26 @@ MultiLevelSurfaceGrid& MultiLevelSurfaceGrid::operator=(const MultiLevelSurfaceG
     return *this;
 }
 
-envire::MultiLevelSurfaceGrid* MultiLevelSurfaceGrid::cloneShallow() const
+envire::MLSGrid* MLSGrid::cloneShallow() const
 {
-    MultiLevelSurfaceGrid* res = new MultiLevelSurfaceGrid( width, height, scalex, scaley );
+    MLSGrid* res = new MLSGrid( width, height, scalex, scaley );
     res->gapSize = gapSize;
     res->thickness = thickness;
     res->cellcount = cellcount;
     return res;
 }
 
-MultiLevelSurfaceGrid::MultiLevelSurfaceGrid(Serialization& so)
+MLSGrid::MLSGrid(Serialization& so)
     : GridBase(so), mem_pool( sizeof( SurfacePatchItem ) )
 {
     unserialize(so);
 }
 
-MultiLevelSurfaceGrid::~MultiLevelSurfaceGrid()
+MLSGrid::~MLSGrid()
 {
 }
 
-void MultiLevelSurfaceGrid::serialize(Serialization& so)
+void MLSGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
     so.setClassName( getClassName() );
@@ -96,7 +96,7 @@ void MultiLevelSurfaceGrid::serialize(Serialization& so)
     writeMap( getMapFileName(so.getMapPath()) + ".mls" );
 }
 
-void MultiLevelSurfaceGrid::unserialize(Serialization& so)
+void MLSGrid::unserialize(Serialization& so)
 {
     so.setClassName( getClassName() );
 
@@ -104,17 +104,17 @@ void MultiLevelSurfaceGrid::unserialize(Serialization& so)
     readMap( getMapFileName(so.getMapPath()) + ".mls" );
 }
 
-struct SurfacePatchStore : MultiLevelSurfaceGrid::SurfacePatch
+struct SurfacePatchStore : MLSGrid::SurfacePatch
 {
     SurfacePatchStore() {};
 
-    SurfacePatchStore( const MultiLevelSurfaceGrid::SurfacePatch& data, size_t m, size_t n )
+    SurfacePatchStore( const MLSGrid::SurfacePatch& data, size_t m, size_t n )
 	: SurfacePatch(data), m(m), n(n) {}
 
     size_t m, n;
 };
 
-void MultiLevelSurfaceGrid::writeMap(const std::string& path)
+void MLSGrid::writeMap(const std::string& path)
 {
     std::ofstream os(path.c_str());
     os << "mls" << std::endl;
@@ -137,7 +137,7 @@ void MultiLevelSurfaceGrid::writeMap(const std::string& path)
     os.close();
 }
 
-void MultiLevelSurfaceGrid::readMap(const std::string& path)
+void MLSGrid::readMap(const std::string& path)
 {
     std::ifstream is(path.c_str());
     
@@ -167,27 +167,27 @@ void MultiLevelSurfaceGrid::readMap(const std::string& path)
     is.close();
 }
 
-MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::beginCell( size_t m, size_t n )
+MLSGrid::iterator MLSGrid::beginCell( size_t m, size_t n )
 {
     return iterator( cells[m][n] );
 }
 
-MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::beginCell_const( size_t m, size_t n ) const
+MLSGrid::const_iterator MLSGrid::beginCell( size_t m, size_t n ) const
 {
     return const_iterator( cells[m][n] );
 }
 
-MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::endCell()
+MLSGrid::iterator MLSGrid::endCell()
 {
     return iterator();
 }
 
-MultiLevelSurfaceGrid::const_iterator MultiLevelSurfaceGrid::endCell_const() const
+MLSGrid::const_iterator MLSGrid::endCell() const
 {
     return const_iterator();
 }
 
-void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& value )
+void MLSGrid::insertHead( size_t m, size_t n, const SurfacePatch& value )
 {
     SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
     static_cast<SurfacePatch&>(*n_item).operator=(value);
@@ -198,7 +198,7 @@ void MultiLevelSurfaceGrid::insertHead( size_t m, size_t n, const SurfacePatch& 
     addCell( Position( m, n ) );
 }
 
-void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& value )
+void MLSGrid::insertTail( size_t m, size_t n, const SurfacePatch& value )
 {
     iterator last, it;
     last = it = beginCell( m, n );
@@ -226,7 +226,7 @@ void MultiLevelSurfaceGrid::insertTail( size_t m, size_t n, const SurfacePatch& 
     addCell( Position( m, n ) );
 }
 
-MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position )
+MLSGrid::iterator MLSGrid::erase( iterator position )
 {
     SurfacePatchItem* &p( position.m_item );
     iterator res( p->next );
@@ -240,12 +240,12 @@ MultiLevelSurfaceGrid::iterator MultiLevelSurfaceGrid::erase( iterator position 
     return res; 
 }
 
-MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold )
+MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold )
 {
-    MultiLevelSurfaceGrid::iterator it = beginCell(position.m, position.n);
+    MLSGrid::iterator it = beginCell(position.m, position.n);
     while( it != endCell() )
     {
-	MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+	MLSGrid::SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
 	if( p.distance( patch ) < interval )
 	{
@@ -257,7 +257,7 @@ MultiLevelSurfaceGrid::SurfacePatch* MultiLevelSurfaceGrid::get( const Position&
 }
 
 
-bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
+bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
 {
     size_t m, n;
     if( toGrid(position.x(), position.y(), m, n) )
@@ -274,17 +274,17 @@ bool MultiLevelSurfaceGrid::get(const Eigen::Vector3d& position, double& zpos, d
     return false;
 }
 
-void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, double mean, double stdev )
+void MLSGrid::updateCell( size_t m, size_t n, double mean, double stdev )
 {
     updateCell( m, n, SurfacePatch( mean, stdev ) );
 }
 
-void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, const SurfacePatch& o )
+void MLSGrid::updateCell( size_t m, size_t n, const SurfacePatch& o )
 {
-    typedef std::list<MultiLevelSurfaceGrid::iterator> iterator_list;
+    typedef std::list<MLSGrid::iterator> iterator_list;
     iterator_list merged;
 
-    for(MultiLevelSurfaceGrid::iterator it = beginCell( m, n ); it != endCell(); it++ )
+    for(MLSGrid::iterator it = beginCell( m, n ); it != endCell(); it++ )
     {
 	// merge the patches and remember the ones which where merged 
 	if( mergePatch( *it, o ) )
@@ -318,7 +318,7 @@ void MultiLevelSurfaceGrid::updateCell( size_t m, size_t n, const SurfacePatch& 
     }
 }
 
-bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
+bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 {
     const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
 
@@ -379,10 +379,10 @@ bool MultiLevelSurfaceGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
     return false;
 }
 
-std::pair<MultiLevelSurfaceGrid::SurfacePatch*, double> 
-    getNearestPatch( const MultiLevelSurfaceGrid::SurfacePatch& p, MultiLevelSurfaceGrid::iterator begin, MultiLevelSurfaceGrid::iterator end )
+std::pair<MLSGrid::SurfacePatch*, double> 
+    getNearestPatch( const MLSGrid::SurfacePatch& p, MLSGrid::iterator begin, MLSGrid::iterator end )
 {
-    MultiLevelSurfaceGrid::SurfacePatch* min = NULL;
+    MLSGrid::SurfacePatch* min = NULL;
     double dist = std::numeric_limits<double>::infinity();
 
     // find the cell with the smallest z-diff
@@ -400,7 +400,7 @@ std::pair<MultiLevelSurfaceGrid::SurfacePatch*, double>
     return std::make_pair( min, dist );
 }
 
-std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSurfaceGrid& other )
+std::pair<double, double> MLSGrid::matchHeight( const MLSGrid& other )
 {
     assert( other.getWidth() == getWidth() && other.getHeight() == getHeight() );
 
@@ -412,7 +412,7 @@ std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSu
 	{
 	    if( other.cells[m][n] && cells[m][n] )
 	    {
-		for( const_iterator it = other.beginCell_const(m,n); it != other.endCell_const(); it++ )
+		for( const_iterator it = other.beginCell(m,n); it != other.endCell(); it++ )
 		{
 		    const SurfacePatch &p( *it );
 		    std::pair<SurfacePatch*,double> res = getNearestPatch( p, beginCell(m,n), endCell() );
@@ -433,7 +433,7 @@ std::pair<double, double> MultiLevelSurfaceGrid::matchHeight( const MultiLevelSu
     return std::make_pair( delta, var );
 }
 
-void MultiLevelSurfaceGrid::addCell( const Position& pos )
+void MLSGrid::addCell( const Position& pos )
 {
     cellcount++;
 
@@ -445,7 +445,7 @@ void MultiLevelSurfaceGrid::addCell( const Position& pos )
     extents.extend( p );
 }
 
-void MultiLevelSurfaceGrid::initIndex()
+void MLSGrid::initIndex()
 {
    index = boost::shared_ptr<Index>( new Index() ); 
 }

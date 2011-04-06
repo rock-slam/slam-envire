@@ -14,7 +14,7 @@ set(ENVMAP_SRCS
     maps/Grids.cpp
     maps/Pointcloud.cpp
     maps/LaserScan.cpp
-    maps/MultiLevelSurfaceGrid.cpp
+    maps/MLSGrid.cpp
     maps/MLSMap.cpp
     operators/Projection.cpp
     operators/MLSProjection.cpp
