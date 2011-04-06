@@ -15,7 +15,7 @@ int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
     {
-	std::cout << "usage: env_mls input output [resolution] [variance]" << std::endl;
+	std::cout << "usage: env_mls input output [resolution] [variance] [gap_size] [patch_thickness]" << std::endl;
 	exit(0);
     }
     Serialization so;
@@ -29,6 +29,7 @@ int main( int argc, char* argv[] )
     
     // and operator
     envire::MLSProjection *proj = new envire::MLSProjection();
+    proj->useUncertainty( false );
     env->attachItem( proj );
 
     double res = 0.05;
@@ -38,6 +39,14 @@ int main( int argc, char* argv[] )
     double var = res;
     if( argc >= 5 )
 	var = boost::lexical_cast<double>( argv[4] );
+
+    double gapSize = 0.5;
+    if( argc >= 6 )
+	gapSize = boost::lexical_cast<double>( argv[5] );
+
+    double patchThickness = res;
+    if( argc >= 7 )
+	patchThickness = boost::lexical_cast<double>( argv[6] );
 
     envire::Pointcloud::Extents extents;
     std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
@@ -86,6 +95,8 @@ int main( int argc, char* argv[] )
     envire::MultiLevelSurfaceGrid *grid = new envire::MultiLevelSurfaceGrid(dim.x()/res, dim.y()/res, res, res);
     env->attachItem( grid );
     grid->setFrameNode( fm1 );
+    grid->setGapSize( gapSize );
+    grid->setHorizontalPatchThickness( patchThickness );
 
     proj->addOutput( grid );
     proj->updateAll();
