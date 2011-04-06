@@ -24,6 +24,21 @@
 
 namespace envire 
 {
+    /** Generic handling of a multi-layer grid
+     *
+     * The data is stored as a boost multiarray. The indices in the boost
+     * multiarray is
+     *
+     * <code>
+     * getGridData()[y][x]
+     * </code>
+     *
+     * so that the internal memory layout is the classical
+     *
+     * <code>
+     * getGridData().data()[y * width + x]
+     * </code>
+     */
     template <typename T>
     class Grid : public GridBase
     {
@@ -47,11 +62,6 @@ namespace envire
 	virtual void writeMap(const std::string& path);
 	virtual void readMap(const std::string& path);
 	
-	//be careful !!!
-	//because of the data layout of images the ArrayType
-	//has the following indices  
-	//data[height][width]
-	//the intern memory layout is p = (data.data())[width*row + col]
 	ArrayType& getGridData(){return getGridData(getBands().front());};
 	const ArrayType& getGridData() const {return getGridData(getBands().front());};
 	ArrayType& getGridData( const std::string& key )
