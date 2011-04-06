@@ -101,9 +101,6 @@ namespace envire
         /** Returns the nodata value of the first band */
         std::pair<T, bool> getNoData() const
         { return getNoData(getBands().front()); }
-
-	virtual void writeMap(const std::string& path);
-	virtual void readMap(const std::string& path);
 	
 	ArrayType& getGridData(){return getGridData(getBands().front());};
 	const ArrayType& getGridData() const {return getGridData(getBands().front());};
@@ -231,33 +228,32 @@ namespace envire
     template<class T>void Grid<T>::unserialize(Serialization& so)
     {
 	so.setClassName(getClassName());
-	readMap( getMapFileName(so.getMapPath())); 
+        int count = so.read<int>("map_count");
+        std::string base_path = getMapFileName(so.getMapPath());
+        for (int i = 0; i < count; ++i)
+        {
+            std::string layer_name = so.read<std::string>(boost::lexical_cast<std::string>(i));
+            readGridData(layer_name,getFullPath(base_path,layer_name));
+        }
     }
     template<class T>void Grid<T>::serialize(Serialization& so)
     {
 	CartesianMap::serialize(so);
 	so.setClassName(getClassName());
-	writeMap( getMapFileName(so.getMapPath())); 
+        std::string base_path = getMapFileName(so.getMapPath());
+        int map_index = 0;
+        for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)
+        {
+            if (it->second->isOfType<ArrayType>())
+            {
+                so.write(boost::lexical_cast<std::string>(map_index), it->first);
+                map_index++;
+                writeGridData(it->first,getFullPath(base_path,it->first));
+            }
+        }
+        so.write("map_count", map_index);
     }
 
-    template<class T>void Grid<T>::writeMap(const std::string& path)
-    {
-	std::cout << "saving all GridData for " << getClassName() << std::endl;
-	const std::vector<std::string> &bands_ = getBands();
-	std::vector<std::string>::const_iterator iter = bands_.begin();
-	for(;iter != bands_.end();iter++)
-	  writeGridData(*iter,getFullPath(path,*iter));
-    }
-    
-    template<class T>void Grid<T>::readMap(const std::string& path)
-    {
-	std::cout << "loading all GridData for " << getClassName() << std::endl;
-	const std::vector<std::string> &bands_ = getBands();
-	std::vector<std::string>::const_iterator iter = bands_.begin();
-	for(;iter != bands_.end();iter++)
-	  readGridData(*iter,getFullPath(path,*iter));
-    }
-    
     template<class T>Grid<T>* Grid<T>::clone() const
     {
 	return new Grid<T>(*this);
