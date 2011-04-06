@@ -54,7 +54,7 @@ long EnvironmentItem::getUniqueId() const
     return unique_id;
 }
 
-Environment* EnvironmentItem::getEnvironment() 
+Environment* EnvironmentItem::getEnvironment() const
 {
     return env;
 }

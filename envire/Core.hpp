@@ -184,7 +184,7 @@ namespace envire
 
 	/** @return the environment this object is associated with 
 	 */
-	Environment* getEnvironment();	
+	Environment* getEnvironment() const;
 
 	/** @return true if attached to an environment
 	 */	
