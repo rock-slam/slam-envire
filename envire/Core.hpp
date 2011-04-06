@@ -720,7 +720,72 @@ namespace envire
 	bool removeOutputs(Operator* op);
 
 	std::list<Layer*> getInputs(Operator* op);
+
+        /** Returns the only layer that is an input of type LayerT for the given
+         * operator
+         *
+         * LayerT must be a pointer-to-map type:
+         * 
+         * <code>
+         * MLSGrid* mls = env->getInput< MLSGrid* >(mls_slope_operator);
+         * </code>
+         *
+         * If multiple matching layers are found, an exception is raised
+         */
+        template<typename LayerT>
+        LayerT getInput(Operator* op)
+        {
+            std::list<Layer*> inputs = getInputs(op);
+            LayerT result = 0;
+            for (std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); ++it)
+            {
+                LayerT layer = dynamic_cast<LayerT>(*it);
+                if (layer)
+                {
+                    if (result)
+                        throw std::runtime_error("more than one input layer with the required type found");
+                    else
+                        result = layer;
+                }
+            }
+            if (!result)
+                throw std::runtime_error("cannot find an input layer with the required type");
+            return result;
+        }
+
 	std::list<Layer*> getOutputs(Operator* op);
+
+        /** Returns the only layer that is an output of type T for the given
+         * operator
+         *
+         * LayerT must be a pointer-to-map type:
+         * 
+         * <code>
+         * Grid<double>* slopes = env->getOutput< Grid<double>* >(mls_slope_operator);
+         * </code>
+         *
+         * If multiple matching layers are found, an exception is raised
+         */
+        template<typename LayerT>
+        LayerT getOutput(Operator* op)
+        {
+            std::list<Layer*> outputs = getOutputs(op);
+            LayerT result = 0;
+            for (std::list<Layer*>::iterator it = outputs.begin(); it != outputs.end(); ++it)
+            {
+                LayerT layer = dynamic_cast<LayerT>(*it);
+                if (layer)
+                {
+                    if (result)
+                        throw std::runtime_error("more than one output layer with the required type found");
+                    else
+                        result = layer;
+                }
+            }
+            if (!result)
+                throw std::runtime_error("cannot find an output layer with the required type");
+            return result;
+        }
 
 	Operator* getGenerator(Layer* output);
 
