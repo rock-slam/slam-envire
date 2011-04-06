@@ -963,6 +963,12 @@ namespace envire
 	void write(const std::string &key, const FrameNode::TransformType &value);
 
 	template <class T> void read(const std::string &key, T& value);
+        template <typename T> T read(const std::string& key)
+        {
+            T value = T();
+            read(key, value);
+            return value;
+        }
 	bool read(const std::string &key, std::string &value);
 	bool read(const std::string &key, FrameNode::TransformType &value);
     };
