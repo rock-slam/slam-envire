@@ -7,10 +7,10 @@ target_link_libraries(env_dem envire)
 add_executable(env_mls env_mls.cpp)
 target_link_libraries(env_mls envire)
 
-if( TAUCS_FOUND )
 add_executable(env_simplify env_simplify.cpp)
 target_link_libraries(env_simplify icp envire)
 
+if( TAUCS_FOUND )
 add_executable(env_surface env_surface.cpp)
 target_link_libraries(env_surface icp envire)
 endif( TAUCS_FOUND )

@@ -22,6 +22,7 @@ set(ENVMAP_SRCS
     operators/MergePointcloud.cpp
     operators/ScanMeshing.cpp
     operators/Traversability.cpp
+    operators/SimplifyPointcloud.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
@@ -30,13 +31,13 @@ set(ENVMAP_SRCS
 if( TAUCS_FOUND )
     set(ENVMAP_SRCS ${ENVMAP_SRCS}
     operators/SurfaceReconstruction.cpp
-    operators/SimplifyPointcloud.cpp
     )
 endif( TAUCS_FOUND )
 
 include_directories(BEFORE ${PROJECT_SOURCE_DIR}/envire)
 
 add_library(envire SHARED ${ENVMAP_SRCS})
+message( ${CGAL_LIBRARIES} )
 target_link_libraries(envire 
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}

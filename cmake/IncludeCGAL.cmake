@@ -29,3 +29,5 @@ endif()
 if ( "${LAPACK_DEFINITIONS}" MATCHES ".*LAPACK_USE_F2C.*" )
     add_definitions( "-DCGAL_USE_F2C" )
 endif()
+
+set(CGAL_LIBRARIES ${CGAL_LIBRARIES} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
