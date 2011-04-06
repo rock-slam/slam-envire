@@ -787,10 +787,28 @@ namespace envire
             return result;
         }
 
+        /** Returns the operator that has \c output in its output, or NULL if
+         * none exist.
+         *
+         * Note that a layer can be output of a single operator only
+         */
 	Operator* getGenerator(Layer* output);
 
+        /** Returns the layers that are generated from \c input
+         *
+         * In practice, it returns the output layers of all the operators for
+         * which \c input is listed as input
+         */
         std::list<Layer*> getLayersGeneratedFrom(Layer* input);
 
+        /** Returns the layers of type T that are generated from \c input
+         *
+         * T must be a pointer on a map:
+         *
+         * <code>
+         * env->getGeneratedFrom<Grid<double>*>(mls);
+         * </code>
+         */
         template<typename T>
         std::list<T> getGeneratedFrom(Layer* input)
         {
