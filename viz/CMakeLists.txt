@@ -49,8 +49,9 @@ target_link_libraries(envireViewer
 
 # install headers and library
 install(DIRECTORY . DESTINATION include/vizkit FILES_MATCHING PATTERN "*.hpp")
-install(TARGETS ${PROJECT_NAME}-viz
-    DESTINATION lib)
+install(TARGETS envireViewer ${PROJECT_NAME}-viz
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib)
 
 # set-up pkg file
 configure_file(${PROJECT_NAME}-viz.pc.in ${PROJECT_NAME}-viz.pc @ONLY)
