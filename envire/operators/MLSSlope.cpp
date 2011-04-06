@@ -52,6 +52,7 @@ bool MLSSlope::updateAll()
     // init traversibility grid
     boost::multi_array<double,2>& angles(travGrid.getGridData());
     std::fill(angles.data(), angles.data() + angles.num_elements(), UNKNOWN);
+    travGrid.setNoData(UNKNOWN);
 
     size_t width = mls.getWidth(); 
     size_t height = mls.getHeight(); 
