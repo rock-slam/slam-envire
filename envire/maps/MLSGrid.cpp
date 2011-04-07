@@ -6,6 +6,10 @@
 using namespace envire;
 
 ENVIRONMENT_ITEM_DEF( MLSGrid )
+/** For backward compatibility reasons, we have to export MLSGrid as
+ * MultiLevelSurfaceGrid as well
+ */
+static Factory<MLSGrid> factory("MultiLevelSurfaceGrid");
 
 MLSGrid::MLSGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
@@ -101,7 +105,14 @@ void MLSGrid::unserialize(Serialization& so)
     so.setClassName( getClassName() );
 
     cells.resize( boost::extents[width][height] );
-    readMap( getMapFileName(so.getMapPath()) + ".mls" );
+    try { readMap( getMapFileName(so.getMapPath()) + ".mls" ); }
+    catch(std::exception& original_error)
+    {
+        // Try with MultiLevelSurfaceGrid (backward compatibility)
+        try { readMap(getMapFileName(so.getMapPath(), "MultiLevelSurfaceGrid") + ".mls"); }
+        catch(...)
+        { throw original_error; }
+    }
 }
 
 struct SurfacePatchStore : MLSGrid::SurfacePatch

@@ -470,6 +470,14 @@ namespace envire
 	 */
 	std::list<Layer*> getParents();
 
+	/** @overload
+         *
+         * Like getMapFileName, but allows to override the class name (i.e. not
+         * use the one from the map's class directly). This is meant to be used
+         * for backward compatibility, when map class names change.
+	 */
+	const std::string getMapFileName( const std::string& path, const std::string& className ) const;
+
 	/** @return for a given path, it will return a suggestion for a filename 
 	 * to use when making this layer persistant
 	 */

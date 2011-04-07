@@ -105,9 +105,14 @@ void Layer::updateFromOperator()
 
 const std::string Layer::getMapFileName(const std::string& path) const 
 {
+    return getMapFileName(path, getClassName());
+}
+
+const std::string Layer::getMapFileName(const std::string& path, const std::string& className) const 
+{
     fs::path scenePath(path); 
 
-    std::string fileName = getClassName() + "_" + boost::lexical_cast<std::string>(getUniqueId());
+    std::string fileName = className + "_" + boost::lexical_cast<std::string>(getUniqueId());
     if( !getName().empty() )
 	fileName += getName();
 
