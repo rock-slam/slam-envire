@@ -17,17 +17,21 @@
 
 #include <envire/core/EventSource.hpp>
 
+#define ENVIRONMENT_ITEM_FACTORY( name, klass ) \
+template<typename T> class Factory; \
+template<> \
+struct Factory<klass> { \
+    Factory ( const std::string& className ) { \
+        SerializationFactory::addClass( className, &createItem<klass> ); \
+    }\
+}; \
+static Factory<klass> klass ## factory ( name );
+
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
 const std::string& _classname::className = "envire::" #_classname; \
-_classname::Factory _classname::factory( _classname::className  );
+ENVIRONMENT_ITEM_FACTORY( _classname::className, _classname )
 
 #define ENVIRONMENT_ITEM( _classname ) \
-	struct Factory { \
-	    Factory( const std::string& className ) { \
-		SerializationFactory::addClass( className, &createItem<_classname> ); \
-	    }\
-	}; \
-	static Factory factory;\
 	public:\
 	static const std::string& className; \
 	const std::string& getClassName() const { return className; } \
