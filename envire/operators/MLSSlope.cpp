@@ -7,17 +7,25 @@ using namespace envire;
 
 ENVIRONMENT_ITEM_DEF( MLSSlope )
 
-static void updateGradient(MLSGrid const& mls, boost::multi_array<double,2>& angles, boost::multi_array<double,2>& max_step, boost::multi_array<int, 2>& count,
-        double scale, int this_x, int this_y, int x, int y, MLSGrid::const_iterator this_cell)
+static double const UNKNOWN = -std::numeric_limits<double>::infinity();
+    
+static void updateGradient(MLSGrid const& mls,
+        boost::multi_array<double,2>& angles,
+        boost::multi_array<double,3>& diffs,
+        boost::multi_array<int, 2>& count,
+        double scale,
+        int this_index, int this_x, int this_y,
+        int other_index, int x, int y,
+        MLSGrid::const_iterator this_cell)
 {
     MLSGrid::const_iterator neighbour = 
         std::max_element( mls.beginCell(x,y), mls.endCell() );
 
     if( neighbour != mls.endCell() )
     {
-        double mean0 = this_cell->mean;
+        double mean0  = this_cell->mean;
         double stdev0 = this_cell->stdev;
-        double mean1 = neighbour->mean;
+        double mean1  = neighbour->mean;
         double stdev1 = neighbour->stdev;
 
         double g[4];
@@ -28,13 +36,18 @@ static void updateGradient(MLSGrid const& mls, boost::multi_array<double,2>& ang
         double step = *std::max_element(g, g + 4);
         double gradient = step / scale;
 
-        max_step[this_y][this_x] = std::max(max_step[this_y][this_x], step);
+        diffs[this_y][this_x][this_index] = step;
         angles[this_y][this_x] += gradient;
         count[this_y][this_x]++;
 
-        max_step[y][x] = std::max(max_step[y][x], step);
-        angles[y][x] += gradient;
+        diffs[y][x][other_index] += step;
+        angles[y][x] -= gradient;
         count[y][x]++;
+    }
+    else
+    {
+        diffs[y][x][this_index] = UNKNOWN;
+        diffs[y][x][other_index] = UNKNOWN;
     }
 }
 
@@ -53,17 +66,20 @@ bool MLSSlope::updateAll()
     if( mls.getScaleX() != travGrid.getScaleX() && mls.getScaleY() != travGrid.getScaleY() )
         throw std::runtime_error("mismatching cell scale between MLSGradient input and output");
 
-    double const UNKNOWN = -std::numeric_limits<double>::infinity();
-    
     // init traversibility grid
     boost::multi_array<double,2>& angles(travGrid.getGridData("mean_slope"));
     std::fill(angles.data(), angles.data() + angles.num_elements(), 0);
     boost::multi_array<double,2>& max_steps(travGrid.getGridData("max_step"));
     std::fill(max_steps.data(), max_steps.data() + max_steps.num_elements(), UNKNOWN);
+    boost::multi_array<double,2>& corrected_max_steps(travGrid.getGridData("corrected_max_step"));
     boost::multi_array<int,2> counts;
     counts.resize( boost::extents[mls.getHeight()][mls.getWidth()]);
     std::fill(counts.data(), counts.data() + counts.num_elements(), 0);
     travGrid.setNoData(UNKNOWN);
+
+    boost::multi_array<double,3> diffs;
+    diffs.resize( boost::extents[mls.getHeight()][mls.getWidth()][8]);
+    std::fill(diffs.data(), diffs.data() + diffs.num_elements(), 0);
 
     size_t width = mls.getWidth(); 
     size_t height = mls.getHeight(); 
@@ -81,9 +97,19 @@ bool MLSSlope::updateAll()
             if (this_cell == mls.endCell())
                 continue;
 
-            updateGradient(mls, angles, max_steps, counts, diagonal_scale, x, y, x - 1, y - 1, this_cell);
-            updateGradient(mls, angles, max_steps, counts, scaley, x, y, x, y - 1, this_cell);
-            updateGradient(mls, angles, max_steps, counts, scalex, x, y, x - 1, y, this_cell);
+            updateGradient(mls, angles, diffs, counts,
+                    scaley,
+                    0, x, y, 1, x, y + 1,
+                    this_cell);
+            updateGradient(mls, angles, diffs, counts, diagonal_scale,
+                    2, x, y, 3, x - 1, y - 1,
+                    this_cell);
+            updateGradient(mls, angles, diffs, counts, scalex,
+                    4, x, y, 5, x - 1, y,
+                    this_cell);
+            updateGradient(mls, angles, diffs, counts, diagonal_scale,
+                    6, x, y, 7, x - 1, y + 1,
+                    this_cell);
         }
     }
 
@@ -92,12 +118,31 @@ bool MLSSlope::updateAll()
     {
         for(size_t y=1;y<(height - 1);y++)
         {
-            double gradient = angles[y][x];
             int count = counts[y][x];
             if (count == 0)
                 angles[y][x] = UNKNOWN;
             else
-                angles[y][x] = atan(gradient / count);
+            {
+                double mean_gradient = fabs(angles[y][x] / count);
+                angles[y][x] = atan(mean_gradient);
+            }
+
+            double max_step = UNKNOWN;
+            double corrected_max_step = UNKNOWN;
+            for (int i = 0; i < 8; i += 2)
+            {
+                double step0 = diffs[y][x][i];
+                double step1 = diffs[y][x][i + 1];
+                max_step = std::max(max_step, step0);
+                max_step = std::max(max_step, step1);
+                corrected_max_step = std::max(corrected_max_step, step0 - (step0 + step1) / 4);
+                corrected_max_step = std::max(corrected_max_step, step0 - (step0 + step1) * 3 / 4);
+            }
+            max_steps[y][x] = max_step;
+            if (max_step < corrected_step_threshold)
+                corrected_max_steps[y][x] = corrected_max_step;
+            else
+                corrected_max_steps[y][x] = max_step;
         }
     }
     // ... and mark the remaining of the border as UNKNOWN
@@ -105,11 +150,13 @@ bool MLSSlope::updateAll()
     {
         angles[height-1][x] = UNKNOWN;
         max_steps[height-1][x] = UNKNOWN;
+        corrected_max_steps[height-1][x] = UNKNOWN;
     }
     for(size_t y=0; y < height; ++y)
     {
         angles[y][width-1] = UNKNOWN;
         max_steps[y][width-1] = UNKNOWN;
+        corrected_max_steps[y][width-1] = UNKNOWN;
     }
 
     return true;
