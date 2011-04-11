@@ -120,12 +120,15 @@ bool MLSSlope::updateAll()
         {
             int count = counts[y][x];
             if (count == 0)
-                angles[y][x] = UNKNOWN;
-            else
             {
-                double mean_gradient = fabs(angles[y][x] / count);
-                angles[y][x] = atan(mean_gradient);
+                angles[y][x] = UNKNOWN;
+                max_steps[y][x] = UNKNOWN;
+                corrected_max_steps[y][x] = UNKNOWN;
+                continue;
             }
+
+            double mean_gradient = fabs(angles[y][x] / count);
+            angles[y][x] = atan(mean_gradient);
 
             double max_step = UNKNOWN;
             double corrected_max_step = UNKNOWN;
