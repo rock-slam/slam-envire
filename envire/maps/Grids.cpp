@@ -2,6 +2,11 @@
 
 using namespace envire;
 
+static envire::SerializationPlugin< Grid<double> >  Grid_double_plugin("Grid_d");
+static envire::SerializationPlugin< Grid<float> >   Grid_float_plugin("Grid_f");
+static envire::SerializationPlugin< Grid<int> >     Grid_int_plugin("Grid_i");
+static envire::SerializationPlugin< Grid<uint8_t> > Grid_byte_plugin("Grid_h");
+
 ENVIRONMENT_ITEM_DEF( TraversabilityGrid )
 const std::string TraversabilityGrid::TRAVERSABILITY = "traversability";
 static const std::vector<std::string> &initTraversabilityBands()
