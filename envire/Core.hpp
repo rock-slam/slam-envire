@@ -17,19 +17,9 @@
 
 #include <envire/core/EventSource.hpp>
 
-#define ENVIRONMENT_ITEM_FACTORY( name, klass ) \
-template<typename T> class Factory; \
-template<> \
-struct Factory<klass> { \
-    Factory ( const std::string& className ) { \
-        SerializationFactory::addClass( className, &createItem<klass> ); \
-    }\
-}; \
-static Factory<klass> klass ## factory ( name );
-
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
 const std::string& _classname::className = "envire::" #_classname; \
-ENVIRONMENT_ITEM_FACTORY( _classname::className, _classname )
+static envire::SerializationPlugin<_classname> _classname ## factory;
 
 #define ENVIRONMENT_ITEM( _classname ) \
 	public:\
@@ -956,6 +946,29 @@ namespace envire
 	 * uncertainty (linearised) on the way.
 	 */
 	TransformWithUncertainty relativeTransformWithUncertainty(const FrameNode* from, const FrameNode* to);
+    };
+
+    /* Generic implementation for registering new types in the serialization
+     * system
+     *
+     * Simply define a global variable in a compilation unit, as
+     *
+     * <code>
+     * static envire::SerializationPlugin<MLSGrid> plugin;
+     * </code>
+     *
+     * Note that you don't need to do that explicitely if you use
+     * ENVIRONMENT_ITEM_DEF
+     */
+    template<typename T>
+    struct SerializationPlugin
+    {
+        SerializationPlugin () {
+            SerializationFactory::addClass( T::className, &createItem<T> );
+        }
+        SerializationPlugin ( const std::string& className ) {
+            SerializationFactory::addClass( className, &createItem<T> );
+        }
     };
 
     class Serialization

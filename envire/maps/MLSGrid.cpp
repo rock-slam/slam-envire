@@ -9,7 +9,7 @@ ENVIRONMENT_ITEM_DEF( MLSGrid )
 /** For backward compatibility reasons, we have to export MLSGrid as
  * MultiLevelSurfaceGrid as well
  */
-static Factory<MLSGrid> factory("MultiLevelSurfaceGrid");
+static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
 MLSGrid::MLSGrid(size_t width, size_t height, double scalex, double scaley)
     : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
