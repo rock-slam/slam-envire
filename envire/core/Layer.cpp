@@ -119,7 +119,7 @@ const std::string Layer::getMapFileName(const std::string& path, const std::stri
     return (scenePath / fileName).string();
 }
 
-bool Layer::hasData(const std::string& type)
+bool Layer::hasData(const std::string& type) const
 {
     return data_map.count(type);
 }

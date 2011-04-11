@@ -485,14 +485,19 @@ namespace envire
 
 	/** will return true if an entry for metadata for the given key exists
 	 */
-	bool hasData(const std::string& type);
+	bool hasData(const std::string& type) const;
 
         /** Will return true if a metadata exists for the given key, and this
          * metadata is of the specified type
          */
         template<typename T>
-        bool hasData(const std::string& type)
-        { return hasData(type) && data_map[type]->isOfType<T>(); }
+        bool hasData(const std::string& type) const
+        {
+            DataMap::const_iterator it = data_map.find(type);
+            if (it == data_map.end())
+                return false;
+            else return it->second->isOfType<T>();
+        }
 
 	/** For a given key, return the metadata associated with it. If the data
 	 * does not exist, it will be created.
