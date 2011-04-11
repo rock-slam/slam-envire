@@ -40,7 +40,20 @@ void GridBase::unserialize(Serialization& so)
 
 }
 
-bool GridBase::toGrid( double x, double y, size_t& m, size_t& n ) const
+bool GridBase::toGrid( Eigen::Vector3d const& point, size_t& m, size_t& n, FrameNode const* frame) const
+{
+    if (frame)
+    {
+        Eigen::Vector3d transformed = toMap(point, *frame);
+        return toGrid(transformed.x(), transformed.y(), m, n);
+    }
+    else
+    {
+        return toGrid(point.x(), point.y(), m, n);
+    }
+}
+
+bool GridBase::toGrid( double x, double y, size_t& m, size_t& n) const
 {
     size_t am = floor(x/scalex);
     size_t an = floor(y/scaley);
@@ -55,26 +68,40 @@ bool GridBase::toGrid( double x, double y, size_t& m, size_t& n ) const
     }
 }
 
-void GridBase::fromGrid( size_t m, size_t n, double& x, double& y ) const
+Eigen::Vector3d GridBase::fromGrid(size_t m, size_t n, FrameNode const* frame) const
+{
+    double map_x, map_y;
+    fromGrid(m, n, map_x, map_y);
+    if (frame)
+    {
+        return fromMap(Eigen::Vector3d(map_x, map_y, 0), *frame);
+    }
+    else
+    {
+        return Eigen::Vector3d(map_x, map_y, 0);
+    }
+}
+
+void GridBase::fromGrid( size_t m, size_t n, double& x, double& y) const
 {
     x = (m+0.5) * scalex;
     y = (n+0.5) * scaley;
 }
 
-bool GridBase::toGrid( const Point2D& point, Position& pos ) const
+bool GridBase::toGrid( const Point2D& point, Position& pos) const
 {
-    return toGrid( point.x(), point.y(), pos.m, pos.n );
+    return toGrid( point.x(), point.y(), pos.m, pos.n);
 }
 
-void GridBase::fromGrid( const Position& pos, Point2D& point ) const
+void GridBase::fromGrid( const Position& pos, Point2D& point) const
 {
-    fromGrid( pos.m, pos.n, point.x(), point.y() );
+    fromGrid( pos.m, pos.n, point.x(), point.y());
 }
 
-GridBase::Point2D GridBase::fromGrid( const Position& pos ) const
+GridBase::Point2D GridBase::fromGrid( const Position& pos) const
 {
     Point2D point;
-    fromGrid( pos.m, pos.n, point.x(), point.y() );
+    fromGrid( pos.m, pos.n, point.x(), point.y());
     return point;
 }
 

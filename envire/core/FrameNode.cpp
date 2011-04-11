@@ -48,6 +48,19 @@ void FrameNode::addChild( FrameNode *child )
     env->addChild( this, child );
 }
 
+const FrameNode* FrameNode::getRoot() const
+{
+    const FrameNode* frame = this;
+    while (!frame->isRoot())
+        frame = frame->getParent();
+    return frame;
+}
+
+FrameNode* FrameNode::getRoot()
+{
+    return const_cast<FrameNode*>(static_cast<const FrameNode&>(*this).getRoot());
+}
+
 const FrameNode* FrameNode::getParent() const
 {
     return env->getParent(const_cast<FrameNode*>(this));

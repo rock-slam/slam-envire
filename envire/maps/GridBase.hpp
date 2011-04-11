@@ -41,12 +41,39 @@ namespace envire
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
-	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
-	void fromGrid( size_t m, size_t n, double& x, double& y ) const;
+        /** Converts coordinates from the frame specified by \c frame to the
+         * map-local grid coordinates
+         *
+         * If the frame is not specified, the map's own frame is used (i.e. it
+         * is equivalent to the other forms of toGrid)
+         *
+         * @return { true if (x, y) is within the grid and false otherwise. If
+         * false is returned, the values of \c m and \n are not set }
+         */
+	bool toGrid(Eigen::Vector3d const& point, size_t& m, size_t& n, FrameNode const* frame = 0) const;
 
-	bool toGrid( const Point2D& point, Position& pos ) const;
-	void fromGrid( const Position& pos, Point2D& point ) const;
-	Point2D fromGrid( const Position& pos ) const;
+        /** Converts coordinates in the map-local frame to grid coordinates
+         *
+         * @return true if (x, y) is within the grid and false otherwise
+         */
+	bool toGrid(double x, double y, size_t& m, size_t& n) const;
+
+        /** Converts coordinates from the map-local grid coordinates to
+         * the coordinates in the specified \c frame
+         *
+         * If the frame is not specified, the map's own frame is used (i.e. it
+         * is equivalent to the other forms of fromGrid)
+         */
+        Eigen::Vector3d fromGrid(size_t m, size_t n, FrameNode const* frame = 0) const;
+
+        /** Converts coordinates from the map-local grid coordinates to
+         * coordinates in the map-local frame
+         */
+	void fromGrid(size_t m, size_t n, double& x, double& y) const;
+
+	bool toGrid(const Point2D& point, Position& pos) const;
+	void fromGrid(const Position& pos, Point2D& point) const;
+	Point2D fromGrid(const Position& pos) const;
 
 	bool contains( const Position& pos ) const;
 

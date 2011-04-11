@@ -325,6 +325,16 @@ namespace envire
          */
         FrameNode* getParent();
 
+        /** Returns the frame that is the root of the frame tree in which this
+         * frame itself is stored
+         */
+        const FrameNode* getRoot() const;
+
+        /** Returns the frame that is the root of the frame tree in which this
+         * frame is stored
+         */
+        FrameNode* getRoot();
+
 	/** Will add the @param child to the current list of children, if this
 	 * item is attached.
 	 */
@@ -585,6 +595,42 @@ namespace envire
 
 	int getDimension() const { return DIMENSION; }
 	virtual Extents getExtents() const = 0;
+
+        /** @overload
+         *
+         * It uses the root frame as the point's frame
+         */
+        Eigen::Vector3d toMap(Eigen::Vector3d const& point) const
+        {
+            return toMap(point, *getFrameNode()->getRoot());
+        }
+
+        /** Transforms a point from an arbitrary frame to the map's own frame
+         *
+         * This is valid only for maps of dimension less than 3
+         */
+        Eigen::Vector3d toMap(Eigen::Vector3d const& point, FrameNode const& frame) const
+        {
+            return frame.relativeTransform(getFrameNode()) * point;
+        }
+
+        /** @overload
+         *
+         * It uses the root frame as the target frame
+         */
+        Eigen::Vector3d fromMap(Eigen::Vector3d const& point) const
+        {
+            return toMap(point, *getFrameNode()->getRoot());
+        }
+
+        /** Transforms a point from the map's own frame to an arbitrary frame
+         *
+         * This is valid only for maps of dimension less than 3
+         */
+        Eigen::Vector3d fromMap(Eigen::Vector3d const& point, FrameNode const& frame) const
+        {
+            return getFrameNode()->relativeTransform(&frame) * point;
+        }
     };
 
     /** An operator generates a set of output maps based on a set of input maps.
