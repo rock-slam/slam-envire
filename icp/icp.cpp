@@ -6,6 +6,42 @@ USING_PART_OF_NAMESPACE_EIGEN
 
 using namespace envire::icp;
 
+
+void Histogram::calculateHistogram(std::vector<double> pairs_distance)
+{
+    int bin = 1; 
+    double number_of_points = 0; 
+    histogram.clear();
+    int i = 0; 
+    while (i < pairs_distance.size()) 
+    {
+	  if ( pairs_distance.at(i) < bin * BIN_WIDTH) 
+	  {
+		number_of_points ++; 
+		i++; 
+	  }
+	  else 
+	  {
+		histogram.push_back(number_of_points/pairs_distance.size()); 
+		bin ++; 
+		if (bin >= MAX_BIN) 
+		{
+		    number_of_points = pairs_distance.size() - i; 
+		    histogram.push_back(number_of_points/pairs_distance.size());
+		    return; 
+		}
+		  
+		number_of_points = 0; 
+	  }
+    }
+    histogram.push_back(number_of_points/pairs_distance.size());
+}
+
+std::vector<double> Histogram::getHistogram()
+{
+    return histogram; 
+}
+
 void Pairs::add( const Eigen::Vector3d& a, const Eigen::Vector3d& b, double dist )
 {
     pair pair;

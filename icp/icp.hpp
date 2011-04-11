@@ -55,7 +55,7 @@ public:
     /** remove all pairs */
     void clear();
 
-private:
+public:
     std::vector<Eigen::Vector3d> x, p;
 
     struct pair
@@ -304,6 +304,21 @@ struct GoldenBracket
     }
 };
 
+class Histogram 
+{ 
+  public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    static const double BIN_WIDTH = 0.05; 
+    static const double MAX_BIN = 6; 
+    bool reject; 
+    std::vector<double> getHistogram();
+    void calculateHistogram(std::vector<double> pairs_distance);
+  private:
+    std::vector<double> histogram; 
+  
+}; 
+
+
 template <class _Adapter, class _FindPairs>
 class Trimmed {
     struct Result
@@ -317,7 +332,10 @@ class Trimmed {
 	    d_box(0), 
 	    overlap(0) 
 	{}
-
+	
+	std::vector<double> pairs_distance;
+	std::vector<double> histogram;
+	
 	const static double gamma = 2.0;
 
 	size_t iter;
@@ -332,6 +350,7 @@ class Trimmed {
 	bool operator< (const Result& other) const { return optFunc() < other.optFunc(); }
 	double operator+ (const Result& other) const { return optFunc() + other.optFunc(); }
     };
+
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -352,6 +371,7 @@ public:
      */
     void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double alpha, double beta, double eps )
     {
+      
 	typedef Trimmed<_Adapter, _FindPairs> t;
 
 	boost::function<Result (double)> evalfunc =
@@ -379,6 +399,7 @@ public:
      */
     void align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double overlap )
     {
+	
 	minResult = _align( measurement, max_iter, min_mse, min_mse_diff, overlap );
 	measurement.applyTransform( minResult.C_global2globalnew );
     }
@@ -401,6 +422,8 @@ public:
     double getMeanSquareErrorDiff() { return minResult.mse_diff; }
     double getOverlap() { return minResult.overlap; }
     size_t getPairs() { return minResult.pairs; }
+     std::vector<double> getPairsDistance() { return minResult.pairs_distance; }
+     std::vector<double> getHistogram() { return minResult.histogram; }
 
 private:
     /** performs a single alignment of the measurement to the model.
@@ -415,8 +438,10 @@ private:
      */
     Result _align( _Adapter measurement, size_t max_iter, double min_mse, double min_mse_diff, double overlap )
     {
+
 	Result result;
 	Pairs pairs;
+	Histogram histogram; 
 	result.C_global2globalnew = Eigen::Transform3d::Identity();
 
 	result.iter = 0;
@@ -445,19 +470,28 @@ private:
 
 	    result.iter++;
 
-	std::cout
-	    << "points: " << measurement.size()
-	    << "\titer: " << result.iter
-	    << "\tpairs: " << pairs.size()
-	    << "\tmse: " << result.mse
-	    << "\tmse_diff: " << result.mse_diff
-	    << "\td_box: " << result.d_box
-	    << "\toverlap: " << result.overlap
-	    << std::endl;
+//	 	std::cout
+// 	    << "points: " << measurement.size()
+// 	    << "\titer: " << result.iter
+// 	    << "\tpairs: " << pairs.size()
+// 	    << "\tmse: " << result.mse
+// 	    << "\tmse_diff: " << result.mse_diff
+// 	    << "\td_box: " << result.d_box
+// 	    << "\toverlap: " << result.overlap
+// 	    << std::endl;
 	}
-	std::cout
-	    << std::endl;
-
+// 	std::cout
+// 	    << std::endl;
+ 	
+ 	std::vector<double> pairs_distance; 
+	for(size_t i=0;i<pairs.size();i++) {
+	    pairs_distance.push_back(pairs.pairs[i].distance); 
+	}
+	
+	histogram.calculateHistogram(pairs_distance);
+	
+	result.histogram = histogram.getHistogram(); 
+	result.pairs_distance = pairs_distance; 
 
 	return result;
     }
