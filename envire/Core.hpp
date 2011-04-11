@@ -682,6 +682,33 @@ namespace envire
 	/** Removes all outputs connected to this operator
 	 */
 	void removeOutputs();
+
+        /** Returns the only layer that is an output of type T for this operator
+         *
+         * LayerT must be a pointer-to-map type:
+         * 
+         * <code>
+         * Grid<double>* slopes = mls_slope_operator->getOutput< Grid<double>* >();
+         * </code>
+         *
+         * If multiple matching layers are found, an exception is raised
+         */
+        template<typename LayerT>
+        LayerT getOutput();
+
+        /** Returns the only layer that is an input of type LayerT for this
+         * operator
+         *
+         * LayerT must be a pointer-to-map type:
+         * 
+         * <code>
+         * MLSGrid* mls = mls_slope_operator->getInput< MLSGrid* >();
+         * </code>
+         *
+         * If multiple matching layers are found, an exception is raised
+         */
+        template<typename LayerT>
+        LayerT getInput();
     };
 
     /** The environment class manages EnvironmentItem objects and has ownership
@@ -1062,7 +1089,13 @@ namespace envire
 	write( key, boost::lexical_cast<std::string>(value) );
     }
 
+    template<typename LayerT>
+    LayerT Operator::getInput()
+    { return getEnvironment()->getInput<LayerT>(this); }
 
+    template<typename LayerT>
+    LayerT Operator::getOutput()
+    { return getEnvironment()->getOutput<LayerT>(this); }
 }
 
 #endif
