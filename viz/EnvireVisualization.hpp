@@ -20,9 +20,13 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     EnvireVisualization();    
+    ~EnvireVisualization();    
 
     void attachTreeWidget( QTreeWidget *treeWidget );
     bool isDirty() const;
+
+    /** Load the environment from disk and display it */
+    void load(std::string const& path);
 
     /** set to false if you want to manually handle the dirty flag by calling
      * setDirty() directly 
@@ -39,6 +43,8 @@ protected:
 
 private:
     bool m_handleDirty;
+    /** If true, the object pointed-to by @c env is owned by this object */
+    bool m_ownsEnvironment;
 
     envire::Environment *env;
     boost::recursive_mutex envLock;

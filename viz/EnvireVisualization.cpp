@@ -19,7 +19,7 @@
 using namespace vizkit;
 
 EnvireVisualization::EnvireVisualization()
-    : m_handleDirty( true ), env( NULL )
+    : m_handleDirty( true ), m_ownsEnvironment( false ), env( NULL )
 {
     ownNode = new osg::Group();
     setMainNode( ownNode );
@@ -44,6 +44,21 @@ EnvireVisualization::EnvireVisualization()
     {
 	eventListener->addVisualizer( (*it).get() );
     }
+
+    VizPluginRubyConfig(EnvireVisualization, std::string, load);
+}
+
+EnvireVisualization::~EnvireVisualization()
+{
+    if (m_ownsEnvironment)
+        delete env;
+}
+
+/** Load the environment from disk and display it */
+void EnvireVisualization::load(std::string const& path)
+{
+    updateData(envire::Environment::unserialize(path));
+    m_ownsEnvironment = true;
 }
 
 void EnvireVisualization::attachTreeWidget( QTreeWidget *treeWidget )
@@ -98,9 +113,15 @@ void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
 	ownNode->asGroup()->removeChild( eventListener->getNodeForItem( env->getRootNode() ) );
     }
 
+    if (env && m_ownsEnvironment)
+        delete env;
+
+    m_ownsEnvironment = false;
     env = data;
     env->addEventHandler( eventListener.get() );
     if( twl )
 	env->addEventHandler( twl.get() );
 }
+
+VizkitQtPlugin(EnvireVisualization);
 
