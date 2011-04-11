@@ -124,6 +124,12 @@ void Serialization::write(const std::string& key, const FrameNode::TransformType
     }
 }
 
+bool Serialization::hasKey(const std::string& key) const
+{
+    int node_index = impl->findNodeInMap( key );
+    return (node_index != 0);
+}
+
 bool Serialization::read(const std::string &key, std::string &value)
 {
     try

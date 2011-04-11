@@ -1080,6 +1080,8 @@ namespace envire
         }
 	bool read(const std::string &key, std::string &value);
 	bool read(const std::string &key, FrameNode::TransformType &value);
+
+        bool hasKey(std::string const& key) const;
     };
 
     template <class T> void Serialization::read(const std::string &key, T& value)
