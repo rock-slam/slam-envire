@@ -55,6 +55,13 @@ namespace envire
     protected:	
 	Grid(Serialization& so,const std::string &class_name);
 
+        /** @deprecated
+         *
+         * This is used to re-read maps that were serialized before the Grid
+         * serialization strategy changed. Do not use in new code
+         */
+        void readMap(const std::string& path);
+
     public:
 	Grid(size_t width, size_t height, double scalex, double scaley);
 	~Grid();
@@ -228,12 +235,27 @@ namespace envire
     template<class T>void Grid<T>::unserialize(Serialization& so)
     {
 	so.setClassName(getClassName());
-        int count = so.read<int>("map_count");
-        std::string base_path = getMapFileName(so.getMapPath());
-        for (int i = 0; i < count; ++i)
+
+        // The serialization strategy changed to save the band names in the
+        // scene file instead of relying on having them defined in a static
+        // array
+        //
+        // In the new strategy, the number of bands is saved in a map_count
+        // field. In the old one, that key does not exist. Discriminate, and
+        // load old maps the old way
+        if (so.hasKey("map_count"))
         {
-            std::string layer_name = so.read<std::string>(boost::lexical_cast<std::string>(i));
-            readGridData(layer_name,getFullPath(base_path,layer_name));
+            int count = so.read<int>("map_count");
+            std::string base_path = getMapFileName(so.getMapPath());
+            for (int i = 0; i < count; ++i)
+            {
+                std::string layer_name = so.read<std::string>(boost::lexical_cast<std::string>(i));
+                readGridData(layer_name,getFullPath(base_path,layer_name));
+            }
+        }
+        else
+        {
+            readMap( getMapFileName(so.getMapPath())); 
         }
     }
     template<class T>void Grid<T>::serialize(Serialization& so)
@@ -252,6 +274,15 @@ namespace envire
             }
         }
         so.write("map_count", map_index);
+    }
+
+    template<class T>void Grid<T>::readMap(const std::string& path)
+    {
+	std::cout << "loading all GridData for " << getClassName() << std::endl;
+	const std::vector<std::string> &bands_ = getBands();
+	std::vector<std::string>::const_iterator iter = bands_.begin();
+	for(;iter != bands_.end();iter++)
+	  readGridData(*iter,getFullPath(path,*iter));
     }
 
     template<class T>Grid<T>* Grid<T>::clone() const
