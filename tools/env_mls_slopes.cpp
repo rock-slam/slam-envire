@@ -1,6 +1,3 @@
-#include <Eigen/Geometry>
-#include "icp.hpp"
-
 #include "envire/Core.hpp"
 #include "envire/maps/Grid.hpp"
 #include "envire/maps/MLSGrid.hpp"
