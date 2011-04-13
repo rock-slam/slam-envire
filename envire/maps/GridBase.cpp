@@ -4,6 +4,9 @@ using namespace envire;
 
 const std::string GridBase::className = "envire::GridBase";
 
+GridBase::GridBase()
+    : width(0), height(0), scalex(0), scaley(0) {}
+
 GridBase::GridBase(size_t width, size_t height, double scalex, double scaley) :
     width(width), height(height), scalex(scalex), scaley(scaley)
 {
@@ -14,7 +17,7 @@ GridBase::~GridBase()
 }
 
 GridBase::GridBase(Serialization& so)
-    : Map<2>( so )
+    : Map<2>( so ), width(0), height(0), scalex(0), scaley(0)
 {
     unserialize(so);
 }

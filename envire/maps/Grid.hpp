@@ -50,7 +50,6 @@ namespace envire
     private:
 	const static std::vector<std::string> &bands;
         std::map<std::string, T> nodata;
-	Grid(){};
 
     protected:	
 	Grid(Serialization& so,const std::string &class_name);
@@ -63,6 +62,7 @@ namespace envire
         void readMap(const std::string& path);
 
     public:
+	Grid() {}
 	Grid(size_t width, size_t height, double scalex, double scaley);
 	~Grid();
 	Grid(Serialization& so);
@@ -378,7 +378,7 @@ namespace envire
 	GDALClose( (GDALDatasetH) poDstDS );
     }
       
-    template<class T>void Grid<T>::readGridData(const std::vector<std::string> &keys,const std::string& path)
+    template<class T>void Grid<T>::readGridData(const std::vector<std::string> &keys,const std::string& path, int base_band)
     {
       std::cout << "reading file "<< path << std::endl;
       GDALDataset  *poDataset;
@@ -387,14 +387,27 @@ namespace envire
       if( poDataset == NULL )
 	  throw std::runtime_error("can not open file " + path);
       
-      width =  poDataset->GetRasterXSize();
-      height =  poDataset->GetRasterYSize();  
+      double file_width =  poDataset->GetRasterXSize();
+      double file_height =  poDataset->GetRasterYSize();  
+      if (width != 0 && file_width != width)
+          throw std::runtime_error("file width and map width differ");
+      if (height != 0 && file_height != height)
+          throw std::runtime_error("file height and map height differ");
+      width  = file_width;
+      height = file_height;
       
-      //calc scaling
-      double adfGeoTransform[6];
-      poDataset->GetGeoTransform(adfGeoTransform);  
-      scalex = sqrt(adfGeoTransform[1]*adfGeoTransform[1]+adfGeoTransform[4]*adfGeoTransform[4]);
-      scaley = sqrt(adfGeoTransform[2]*adfGeoTransform[2]+adfGeoTransform[5]*adfGeoTransform[5]);
+      // If the map does not yet have a scale, allow reading it from file
+      //
+      // It is made optional as sometime one wants to load existing bitmap
+      // data that is not georeferenced in a map that is. It might get more
+      // strict in the future if it becomes too fragile
+      if (getScaleX() == 0 || getScaleY() == 0)
+      {
+          double adfGeoTransform[6];
+          poDataset->GetGeoTransform(adfGeoTransform);  
+          scalex = sqrt(adfGeoTransform[1]*adfGeoTransform[1]+adfGeoTransform[4]*adfGeoTransform[4]);
+          scaley = sqrt(adfGeoTransform[2]*adfGeoTransform[2]+adfGeoTransform[5]*adfGeoTransform[5]);
+      }
 
       GDALRasterBand  *poBand;
       if((unsigned int )poDataset->GetRasterCount() != keys.size())
