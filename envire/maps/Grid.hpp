@@ -162,14 +162,14 @@ namespace envire
         //converts the grid to base/samples/frame/Frame 
         void convertToFrame(const std::string &key,base::samples::frame::Frame &frame);
 
-      protected:
 	//saves the GridData with a specific key to a GTiff 
 	void writeGridData(const std::string &key,const std::string& path);
         void writeGridData(const std::vector<std::string> &keys,const std::string& path);
 	
 	//reads the GridData with a specific key 
-	void readGridData(const std::string &key,const std::string& path);
-	void readGridData(const std::vector<std::string> &keys,const std::string& path);
+	void readGridData(const std::string &key,const std::string& path,int base_band = 1);
+	void readGridData(const std::vector<std::string> &keys,const std::string& path,int base_band = 1);
+
         void copyBandFrom(GridBase const& _source, std::string const& source_band, std::string const& _target_band = "")
         {
             Grid<T> const& source = dynamic_cast< Grid<T> const& >(_source);
@@ -426,7 +426,7 @@ namespace envire
       }
 
       GDALRasterBand  *poBand;
-      if((unsigned int )poDataset->GetRasterCount() != keys.size())
+      if((unsigned int )(poDataset->GetRasterCount()-base_band+1) < keys.size())
       {
 	std::stringstream strstr;
 	strstr << "Can not read file: " << path << ". File has " << poDataset->GetRasterCount() 
@@ -436,13 +436,13 @@ namespace envire
       
       //loaded all bands 
       std::vector<std::string>::const_iterator iter = keys.begin();
-      for(int i=1;iter != keys.end(); iter++,i++)
+      for(int i=0;iter != keys.end(); iter++,i++)
       {
-	poBand = poDataset->GetRasterBand(i);
+	poBand = poDataset->GetRasterBand(base_band + i);
 	if(!poBand)
 	{
 	  std::stringstream strstr;
-	  strstr << "Can not read file: " << path << ". Raster band " << i 
+	  strstr << "Can not read file: " << path << ". Raster band " << base_band+i 
 		 << " could not be opened.";
 	  throw std::runtime_error(strstr.str());
 	}
@@ -460,11 +460,11 @@ namespace envire
       GDALClose(poDataset);
     }
     
-    template<class T>void Grid<T>::readGridData(const std::string &key,const std::string& path)
+    template<class T>void Grid<T>::readGridData(const std::string &key,const std::string& path, int base_band)
     {
 	std::vector<std::string> string_vector;
 	string_vector.push_back(key);
-	readGridData(string_vector,path);
+	readGridData(string_vector,path,base_band);
     }
 
     //returns the gird indices if the coordinates are on the grid
