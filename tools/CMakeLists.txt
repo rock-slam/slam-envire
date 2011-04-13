@@ -7,6 +7,9 @@ target_link_libraries(env_dem envire)
 add_executable(env_mls env_mls.cpp)
 target_link_libraries(env_mls envire)
 
+add_executable(env_update env_update.cpp)
+target_link_libraries(env_update envire)
+
 add_executable(env_simplify env_simplify.cpp)
 target_link_libraries(env_simplify icp envire)
 
