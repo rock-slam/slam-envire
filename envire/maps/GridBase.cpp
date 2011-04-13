@@ -1,4 +1,5 @@
 #include "GridBase.hpp"
+#include "Grid.hpp"
 
 using namespace envire;
 
@@ -119,3 +120,56 @@ GridBase::Extents GridBase::getExtents() const
     // TODO provide proper extents
     return Extents( Eigen::Vector2d( width * scalex, height * scaley ) ); 
 }
+
+template<typename T>
+static GridBase::Ptr readGridFromGdalHelper(std::string const& path, std::string const& band_name, int band)
+{
+    typename envire::Grid<T>::Ptr result = new Grid<T>();
+    result->readGridData(band_name, path, band);
+    return result;
+}
+
+GridBase::Ptr GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
+{
+    GDALDataset  *poDataset;
+    GDALAllRegister();
+    poDataset = (GDALDataset *) GDALOpen(path.c_str(), GA_ReadOnly );
+    if( poDataset == NULL )
+        throw std::runtime_error("can not open file " + path);
+
+    GDALRasterBand  *poBand;
+    if(poDataset->GetRasterCount() < band)
+    {
+        std::stringstream strstr;
+        strstr << "file " << path << " has " << poDataset->GetRasterCount() 
+            << " raster bands but the band " << band << " is required";
+        throw std::runtime_error(strstr.str());
+    }
+
+    poBand = poDataset->GetRasterBand(band);
+    switch(poBand->GetRasterDataType())
+    {
+    case  GDT_Byte:
+        return readGridFromGdalHelper<uint8_t>(path, band_name, band);
+    case GDT_Int16:
+        return readGridFromGdalHelper<int16_t>(path, band_name, band);
+    case GDT_UInt16:
+        return readGridFromGdalHelper<uint16_t>(path, band_name, band);
+    case GDT_Int32:
+        return readGridFromGdalHelper<int32_t>(path, band_name, band);
+    case GDT_UInt32:
+        return readGridFromGdalHelper<uint32_t>(path, band_name, band);
+    case GDT_Float32:
+        return readGridFromGdalHelper<float>(path, band_name, band);
+    case GDT_Float64:
+        return readGridFromGdalHelper<double>(path, band_name, band);
+    default:
+        throw std::runtime_error("enview::Grid<T>: GDT type is not supported.");  
+    }
+}
+
+void GridBase::copyBandFrom(GridBase const& source, std::string const& source_band, std::string const& _target_band)
+{
+    throw std::runtime_error("copyBandFrom is not implemented for this type of grid");
+}
+

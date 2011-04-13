@@ -62,6 +62,8 @@ namespace envire
         void readMap(const std::string& path);
 
     public:
+        typedef boost::intrusive_ptr< Grid<T> > Ptr;
+
 	Grid() {}
 	Grid(size_t width, size_t height, double scalex, double scaley);
 	~Grid();
@@ -168,6 +170,20 @@ namespace envire
 	//reads the GridData with a specific key 
 	void readGridData(const std::string &key,const std::string& path);
 	void readGridData(const std::vector<std::string> &keys,const std::string& path);
+        void copyBandFrom(GridBase const& _source, std::string const& source_band, std::string const& _target_band = "")
+        {
+            Grid<T> const& source = dynamic_cast< Grid<T> const& >(_source);
+            std::string target_band = _target_band;
+            if (_target_band.empty())
+                target_band = source_band;
+
+            getGridData(target_band) = source.getGridData(source_band);
+            std::pair<T, bool> no_data = source.getNoData(source_band);
+            if (no_data.second)
+                setNoData(target_band, no_data.first);
+        }
+
+      protected:
 	
 	//this function is called after a band is safed to the file
 	//overwrite this function if you want to add specific meta data

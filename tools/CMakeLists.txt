@@ -10,6 +10,9 @@ target_link_libraries(env_mls envire)
 add_executable(env_update env_update.cpp)
 target_link_libraries(env_update envire)
 
+add_executable(env_add_grid env_add_grid.cpp)
+target_link_libraries(env_add_grid envire)
+
 add_executable(env_simplify env_simplify.cpp)
 target_link_libraries(env_simplify icp envire)
 
