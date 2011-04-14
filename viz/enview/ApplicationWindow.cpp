@@ -149,7 +149,7 @@ void ApplicationWindow::saveEnvironment()
 
 void ApplicationWindow::saveAsEnvironment()
 {
-    QString fileName = QFileDialog::getExistingDirectory(this, tr("Load Environment"),
+    QString fileName = QFileDialog::getExistingDirectory(this, tr("Save Environment"),
             ".",
 	    QFileDialog::ShowDirsOnly);
 
