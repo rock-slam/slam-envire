@@ -187,10 +187,6 @@ namespace envire
 	//overwrite this function if you want to add specific meta data
 	virtual void preCallWriteBand(std::string key,GDALRasterBand  *poBand){};
 	
-	//this function is called after a band is loaded
-	//overwrite this function if you want to load specific meta data
-	virtual void preCallReadBand(std::string key,GDALRasterBand  *poBand){};
-	
 	//returns the path of the GTiff image
 	std::string getFullPath(const std::string &path,const std::string &key)
 	{return path+"_"+key+".tiff";};
@@ -453,7 +449,6 @@ namespace envire
         if (has_nodata)
             setNoData(*iter, nodata);
 	poBand->RasterIO(GF_Read,0,0,width,height,data.data(),width,height,poBand->GetRasterDataType(),0,0);
-	preCallReadBand(*iter,poBand);
       }
       GDALClose(poDataset);
     }
