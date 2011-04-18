@@ -131,8 +131,6 @@ namespace envire
 	Grid* clone() const;
 	void set( EnvironmentItem* other );
 
-	bool toGrid( double x, double y, size_t& m, size_t& n ) const;
-
         T getFromRaster(std::string const& band, size_t x, size_t y) const
         {
             return getGridData(band)[y][x];
@@ -467,22 +465,6 @@ namespace envire
 	readGridData(string_vector,path,base_band);
     }
 
-    //returns the gird indices if the coordinates are on the grid
-    template<class T>bool Grid<T>::toGrid( double x, double y, size_t& m, size_t& n ) const
-    {
-	int am = floor(x/scalex);
-	int an = floor(y/scaley);
-	if( 0 <= am && am < static_cast<int>(width) && 0 <= an && an < static_cast<int>(height) )
-	{
-	    m = am;
-	    n = an;
-	    return true;
-	}
-	else {
-	    return false;
-	}
-    }
-        
     template<class T> GDALDataType Grid<T>::getGDALDataTypeOfArray()
     {
       if(typeid(T) == typeid(unsigned char))
