@@ -19,13 +19,11 @@ void Pairs::add( const Eigen::Vector3d& a, const Eigen::Vector3d& b, double dist
 
 double Pairs::trim( size_t n_po )
 {
-    if( n_po < pairs.size() )
-    {
-	// sort the pairs by distance
-	std::sort( pairs.begin(), pairs.end() );
+    // sort the pairs by distance
+    std::sort( pairs.begin(), pairs.end() );
 
+    if( n_po < pairs.size() )
 	pairs.resize( n_po );
-    }
 
     if( pairs.size() > 0 )
     {
