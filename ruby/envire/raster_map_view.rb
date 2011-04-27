@@ -28,7 +28,8 @@ module RasterMapView
 
     def viewToMap(x, y)
         y = map.ysize - y
-        map.apply_geo_transform(x, y)
+        result_x, result_y = map.apply_geo_transform(x, y)
+        return Eigen::Vector3.new(result_x, result_y)
     end
 
     def update
