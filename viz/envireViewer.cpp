@@ -6,8 +6,8 @@
 #include <QLayout>
 #include <QHBoxLayout>
 
-#include <viz/TreeViewListener.hpp>
-#include <viz/EnvireVisualization.hpp>
+#include "TreeViewListener.hpp"
+#include "EnvireVisualization.hpp"
 
 int main(int argc, char** argv)
 {

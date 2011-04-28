@@ -1,15 +1,15 @@
-find_package(Boost REQUIRED)
-include_directories(${BOOST_INCLUDE_DIR})
+rock_testsuite(test_core unit/core.cpp
+    DEPS envire
+    DEPS_CMAKE GDAL)
 
-add_executable(test_core unit/core.cpp)
-target_link_libraries(test_core envire)
+rock_testsuite(test_icp unit/icp.cpp
+    DEPS envire icp
+    DEPS_CMAKE GDAL)
 
-add_executable(test_icp unit/icp.cpp)
-target_link_libraries(test_icp icp envire)
+rock_testsuite(test_mls unit/mls.cpp
+    DEPS envire
+    DEPS_CMAKE GDAL)
 
-add_executable(test_mls unit/mls.cpp)
-target_link_libraries(test_mls envire)
-
-IF( VIZKIT_FOUND )
+if( vizkit_FOUND )
     add_subdirectory(viz)
-ENDIF( VIZKIT_FOUND )
+endif( vizkit_FOUND )

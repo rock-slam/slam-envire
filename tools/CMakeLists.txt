@@ -1,34 +1,38 @@
-add_executable(env_icp env_icp.cpp)
-target_link_libraries(env_icp icp envire)
+rock_executable(env_icp env_icp.cpp
+    DEPS envire
+    DEPS_CMAKE Eigen2 GDAL)
 
-add_executable(env_dem env_dem.cpp)
-target_link_libraries(env_dem envire)
+rock_executable(env_dem env_dem.cpp
+    DEPS envire)
 
-add_executable(env_mls env_mls.cpp)
-target_link_libraries(env_mls envire)
+rock_executable(env_mls env_mls.cpp
+    DEPS envire)
 
-add_executable(env_update env_update.cpp)
-target_link_libraries(env_update envire)
+rock_executable(env_update env_update.cpp
+    DEPS envire)
 
-add_executable(env_add_grid env_add_grid.cpp)
-target_link_libraries(env_add_grid envire)
+rock_executable(env_add_grid env_add_grid.cpp
+    DEPS envire)
 
-add_executable(env_simplify env_simplify.cpp)
-target_link_libraries(env_simplify icp envire)
+rock_executable(env_simplify env_simplify.cpp
+    DEPS envire)
 
 if( TAUCS_FOUND )
-add_executable(env_surface env_surface.cpp)
+rock_executable(env_surface env_surface.cpp)
 target_link_libraries(env_surface icp envire)
 endif( TAUCS_FOUND )
 
-add_executable(dem_helper dem_helper.cpp)
-target_link_libraries(dem_helper icp envire)
+rock_executable(dem_helper dem_helper.cpp
+    DEPS envire)
 
-add_executable(env_info env_info.cpp)
-target_link_libraries(env_info icp envire)
+rock_executable(env_info env_info.cpp
+    DEPS envire)
 
-add_executable(env_graphviz env_graphviz.cpp)
-target_link_libraries(env_graphviz icp envire)
+rock_executable(env_graphviz env_graphviz.cpp
+    DEPS envire)
 
-add_executable(env_mls_slopes env_mls_slopes.cpp)
-target_link_libraries(env_mls_slopes envire)
+rock_executable(env_mls_traversability env_mls_traversability.cpp
+    DEPS envire)
+
+rock_executable(env_mls_slopes env_mls_slopes.cpp
+    DEPS envire)

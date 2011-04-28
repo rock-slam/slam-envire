@@ -12,7 +12,7 @@ int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
     {
-	std::cout << "usage: env_mls_slope input output [mls_id]" << std::endl;
+	std::cout << "usage: env_mls_slope input [mls_id]" << std::endl;
         std::cout << "  generates an maximum slope map based on MLS data" << std::endl;
         std::cout << "  the generated map will have the same width, height and cell size than the MLS" << std::endl;
         std::cout << std::endl;
@@ -25,13 +25,13 @@ int main( int argc, char* argv[] )
     env->updateOperators();
 
     boost::intrusive_ptr<MLSGrid> mls;
-    if (argc == 4)
+    if (argc == 3)
     {
         // An explicit map ID was given
-        mls = env->getItem<MLSGrid>(boost::lexical_cast<int>(argv[3]));
+        mls = env->getItem<MLSGrid>(boost::lexical_cast<int>(argv[2]));
         if (!mls)
         {
-            std::cerr << "the specified environment has no MLS with an ID of " << argv[3] << std::endl;
+            std::cerr << "the specified environment has no MLS with an ID of " << argv[2] << std::endl;
             exit(1);
         }
     }
@@ -53,10 +53,6 @@ int main( int argc, char* argv[] )
     op->addOutput(grid.get());
     op->updateAll();
 
-    // detach the resulting pointcloud from the existing environment, and place
-    // into a newly created one.
-    Environment env2;
-    grid->cloneTo(env2);
-    env2.serialize(argv[2]);
+    env->serialize(argv[1]);
 } 
 

@@ -18,22 +18,25 @@ static void updateGradient(MLSGrid const& mls,
         int other_index, int x, int y,
         MLSGrid::const_iterator this_cell)
 {
-    MLSGrid::const_iterator neighbour = 
+    MLSGrid::const_iterator neighbour_cell = 
         std::max_element( mls.beginCell(x,y), mls.endCell() );
 
-    if( neighbour != mls.endCell() )
+    if( neighbour_cell != mls.endCell() )
     {
-        double mean0  = this_cell->mean;
-        double stdev0 = this_cell->stdev;
-        double mean1  = neighbour->mean;
-        double stdev1 = neighbour->stdev;
+        double stdev[4] = { this_cell->stdev, this_cell->stdev, neighbour_cell->stdev, neighbour_cell->stdev };
+        double z[4] = { this_cell->mean, this_cell->mean, neighbour_cell->mean, neighbour_cell->mean };
+        if (!this_cell->horizontal)
+            z[1] -= this_cell->height;
+        if (!neighbour_cell->horizontal)
+            z[3] -= neighbour_cell->height;
 
-        double g[4];
-        g[0] = fabs(mean1 + stdev1 - mean0);
-        g[1] = fabs(mean1 + stdev1 - mean0 - stdev0);
-        g[2] = fabs(mean1 - mean0 - stdev0);
-        g[3] = fabs(mean1 - mean0);
-        double step = *std::max_element(g, g + 4);
+        // Get the minimum and maximum elements
+        double* min_z_it = std::min_element(z, z + 4);
+        double* max_z_it = std::max_element(z, z + 4);
+        double min_z = *min_z_it - stdev[min_z_it - z];
+        double max_z = *max_z_it + stdev[max_z_it - z];
+
+        double step = max_z - min_z;
         double gradient = step / scale;
 
         diffs[this_y][this_x][this_index] = step;

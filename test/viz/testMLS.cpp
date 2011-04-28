@@ -6,10 +6,10 @@
 #include <vizkit/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
 
-#include "Core.hpp"
-#include "maps/MultiLevelSurfaceGrid.hpp"
-#include "maps/Pointcloud.hpp"
-#include "operators/MLSProjection.hpp"
+#include "envire/Core.hpp"
+#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/Pointcloud.hpp"
+#include "envire/operators/MLSProjection.hpp"
 
 using namespace envire;
 

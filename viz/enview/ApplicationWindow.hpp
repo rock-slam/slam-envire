@@ -4,7 +4,7 @@
 #include "ui_MainWindow.h"
 
 #include <Eigen/Core>
-#include <viz/EnvireVisualization.hpp>
+#include "../EnvireVisualization.hpp"
 
 namespace envire 
 {

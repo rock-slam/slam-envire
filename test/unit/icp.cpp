@@ -1,5 +1,5 @@
 #include <Eigen/Geometry>
-#include "icp.hpp"
+#include "icp/icp.hpp"
 
 #include "envire/Core.hpp"
 #include "envire/maps/TriMesh.hpp"

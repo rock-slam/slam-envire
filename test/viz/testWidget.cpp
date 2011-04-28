@@ -7,9 +7,9 @@
 #include <vizkit/QVizkitWidget.hpp>
 #include <vizkit/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
-#include "maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MultiLevelSurfaceGrid.hpp"
 
-#include "Core.hpp"
+#include "envire/Core.hpp"
 #include "Uncertainty.hpp"
 
 using namespace envire;

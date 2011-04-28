@@ -1,17 +1,13 @@
-add_executable(testWidget testWidget.cpp)
-target_link_libraries(testWidget 
-    envire-viz
-    ${VIZKIT_LIBRARIES}
-    )
+include_directories(BEFORE ${PROJECT_SOURCE_DIR}/viz)
 
-add_executable(testUncertainty testUncertainty.cpp)
-target_link_libraries(testUncertainty 
-    envire-viz
-    ${VIZKIT_LIBRARIES}
-    )
+rock_testsuite(testWidget testWidget.cpp
+    DEPS envire-viz
+    DEPS_PKGCONFIG vizkit)
 
-add_executable(testMLS testMLS.cpp)
-target_link_libraries(testMLS 
-    envire-viz
-    ${VIZKIT_LIBRARIES}
-    )
+rock_testsuite(testUncertainty testUncertainty.cpp
+    DEPS envire-viz
+    DEPS_PKGCONFIG vizkit)
+
+rock_testsuite(testMLS testMLS.cpp
+    DEPS envire-viz
+    DEPS_PKGCONFIG vizkit)
