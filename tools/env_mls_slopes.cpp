@@ -10,7 +10,7 @@ using namespace std;
      
 int main( int argc, char* argv[] )
 {
-    if( argc < 3 ) 
+    if( argc < 2 ) 
     {
 	std::cout << "usage: env_mls_slope input [mls_id]" << std::endl;
         std::cout << "  generates an maximum slope map based on MLS data" << std::endl;

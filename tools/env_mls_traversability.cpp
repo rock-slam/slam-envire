@@ -10,9 +10,9 @@ using namespace std;
      
 int main( int argc, char* argv[] )
 {
-    if( argc < 2 || argc > 7)
+    if( argc < 2 || argc > 8)
     {
-	std::cout << "usage: env_mls_traversability input mass force_threshold max_speed [class_count [ground_clearance]]" << std::endl;
+	std::cout << "usage: env_mls_traversability input mass force_threshold max_speed [class_count [min_width [ground_clearance]]]" << std::endl;
         std::cout << "  generates a classified map of traversabilities based on the given map (a single map must contain all the necessary bands)" << std::endl;
         std::cout << "  the generated map will have the same width, height and cell size than the source map" << std::endl;
         std::cout << std::endl;
@@ -47,11 +47,11 @@ int main( int argc, char* argv[] )
 
     double min_width = 0.5;
     if (argc > 6)
-        min_width = boost::lexical_cast<int>(argv[6]);
+        min_width = boost::lexical_cast<double>(argv[6]);
 
     double ground_clearance = 0;
     if (argc > 7)
-        ground_clearance = boost::lexical_cast<int>(argv[7]);
+        ground_clearance = boost::lexical_cast<double>(argv[7]);
 
     // Create the convertion operator and run it
     envire::MLSSimpleTraversability *op = new MLSSimpleTraversability(
@@ -66,8 +66,6 @@ int main( int argc, char* argv[] )
     op->setOutput(output.get(), "traversability_class");
     op->updateAll();
 
-    // detach the resulting pointcloud from the existing environment, and place
-    // into a newly created one.
     env->serialize(argv[1]);
 } 
 
