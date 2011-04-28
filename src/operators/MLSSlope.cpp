@@ -23,18 +23,18 @@ static void updateGradient(MLSGrid const& mls,
 
     if( neighbour_cell != mls.endCell() )
     {
-        double stdev[4] = { this_cell->stdev, this_cell->stdev, neighbour_cell->stdev, neighbour_cell->stdev };
-        double z[4] = { this_cell->mean, this_cell->mean, neighbour_cell->mean, neighbour_cell->mean };
-        if (!this_cell->horizontal)
-            z[1] -= this_cell->height;
-        if (!neighbour_cell->horizontal)
-            z[3] -= neighbour_cell->height;
+        double z0 = this_cell->mean;
+        double stdev0 = this_cell->stdev;
+        double z1 = neighbour_cell->mean;
+        double stdev1 = neighbour_cell->stdev;
+        if (z0 > z1)
+        {
+            std::swap(z0, z1);
+            std::swap(stdev0, stdev1);
+        }
 
-        // Get the minimum and maximum elements
-        double* min_z_it = std::min_element(z, z + 4);
-        double* max_z_it = std::max_element(z, z + 4);
-        double min_z = *min_z_it - stdev[min_z_it - z];
-        double max_z = *max_z_it + stdev[max_z_it - z];
+        double min_z = z0 - stdev0;
+        double max_z = z1 + stdev1;
 
         double step = max_z - min_z;
         double gradient = step / scale;
