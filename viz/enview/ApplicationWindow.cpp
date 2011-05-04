@@ -5,7 +5,7 @@
 #include <envire/maps/TriMesh.hpp>
 #include <envire/maps/Pointcloud.hpp>
 #include <envire/operators/ScanMeshing.hpp>
-#include <yaml-cpp/yaml.h>
+#include <yaml.h>
 
 #include <osg/PositionAttitudeTransform>
 #include <osg/LightModel>
