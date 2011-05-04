@@ -1,9 +1,8 @@
-project(envire)
-set(PROJECT_VERSION 1.0)
 cmake_minimum_required(VERSION 2.6)
+include($ENV{ROCK_CMAKE_MACROS}/Rock.cmake)
+rock_init(envire 1.0)
 
 # TODO move all of the cmake to the new macros
-include(Rock)
 include(cmake/CommonSetup.cmake)
 
 #### Find required dependencies #################################################
