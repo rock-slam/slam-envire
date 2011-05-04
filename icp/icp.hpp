@@ -23,6 +23,7 @@
 #include <boost/function.hpp>
 
 #include <utility>
+#include <boost/concept_check.hpp>
 
 namespace envire {
 namespace icp {
@@ -210,11 +211,17 @@ class FindPairsKDTree
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+    double number_points; 
+    
     void addModel( _Adapter& model )
     {
 	model.reset();
-	while( model.hasNext() )
+	number_points = 0; 
+	while( model.hasNext() ){
+	    number_points ++;
 	    kdtree.insert( model.next() );
+	}
+	
     }
     
     void findPairs( _Adapter& model, Pairs& pairs, double d_box )
@@ -228,7 +235,7 @@ public:
 		pairs.add((found.first)->point, node.point, found.second);
 	}
     }
-
+   
     void clear()
     {
 	kdtree.clear();
@@ -308,13 +315,23 @@ class Histogram
 { 
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    static const double BIN_WIDTH = 0.05; 
-    static const double MAX_BIN = 6; 
+    Histogram(double _number_bins, double _area) {  number_bins = _number_bins; area = _area; }
+    double area; 
+    double number_bins;
+    int number_of_poins_enviroment; 
+    double mean_distance_nearest_neightboar_environment; 
     bool reject; 
-    std::vector<double> getHistogram();
+    void setEnvironmentParameters(int number_of_poins_enviroment, double mean_distance_nearest_neightboar_environment)
+    {
+	this->number_of_poins_enviroment = number_of_poins_enviroment; 
+	this->mean_distance_nearest_neightboar_environment = mean_distance_nearest_neightboar_environment;  
+    }
+    std::vector<double> getHistogram() { return histogram; } 
+    std::vector<double> getHistogramLimits() { return histogram_limits; } 
     void calculateHistogram(std::vector<double> pairs_distance);
   private:
     std::vector<double> histogram; 
+    std::vector<double> histogram_limits; 
   
 }; 
 
@@ -335,6 +352,7 @@ class Trimmed {
 	
 	std::vector<double> pairs_distance;
 	std::vector<double> histogram;
+	std::vector<double> histogram_limits;
 	
 	const static double gamma = 2.0;
 
@@ -410,6 +428,7 @@ public:
      */
     void addToModel( _Adapter model )
     {
+	
 	findPairs.addModel( model );
     }
     
@@ -424,6 +443,7 @@ public:
     size_t getPairs() { return minResult.pairs; }
      std::vector<double> getPairsDistance() { return minResult.pairs_distance; }
      std::vector<double> getHistogram() { return minResult.histogram; }
+     std::vector<double> getHistogramLimits() { return minResult.histogram_limits; }
 
 private:
     /** performs a single alignment of the measurement to the model.
@@ -441,7 +461,7 @@ private:
 
 	Result result;
 	Pairs pairs;
-	Histogram histogram; 
+	
 	result.C_global2globalnew = Eigen::Transform3d::Identity();
 
 	result.iter = 0;
@@ -484,13 +504,24 @@ private:
 // 	    << std::endl;
  	
  	std::vector<double> pairs_distance; 
+	//for normalization 
+	//In theory the mean distance to nearest neighbor in an infinitly large random distribution is 
+	// re = 1 / (2 * sqrt ( density ) and the sandart deviation  0.26136 / sqrt ( N * density ) 
+	// where N number of points 
+	//so density can be given by 
+	double mean = 0.1; 
+	double density = pow( 1/(2*0.1), 2 ); 
+	//so the standart deviation is 
+	//double sigma = 0.26136 / sqrt( density);
+	double sigma = 0.26136; 
 	for(size_t i=0;i<pairs.size();i++) {
-	    pairs_distance.push_back(pairs.pairs[i].distance); 
+	    pairs_distance.push_back((pairs.pairs[i].distance - mean)/sigma); 
 	}
-	
+	Histogram histogram( 8, 4*sigma); 
 	histogram.calculateHistogram(pairs_distance);
 	
 	result.histogram = histogram.getHistogram(); 
+	result.histogram_limits = histogram.getHistogramLimits(); 
 	result.pairs_distance = pairs_distance; 
 
 	return result;
