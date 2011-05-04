@@ -188,7 +188,7 @@ Environment* Serialization::unserialize(const std::string &path_str)
     if( !fs::is_regular( scene ) )
     {
 	std::cerr << "failed to open " << scene << std::endl;
-	throw std::runtime_error("Could not open file");
+	throw std::runtime_error("envire: could not open " + scene.string());
     }
 
     impl->sceneDir = path;
@@ -213,7 +213,7 @@ bool SerializationImpl::writeToFile( Environment *env, const std::string &path )
     yaml_emitter_initialize(&emitter);
     FILE *output = fopen(path.c_str(), "wb");
     if( !output )
-	throw runtime_error("could not open file for writing");
+	throw runtime_error("envire: could not open " + path + " for writing");
 
     yaml_emitter_set_output_file(&emitter, output);
 
