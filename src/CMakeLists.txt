@@ -40,7 +40,15 @@ rock_library(envire
     tools/GraphViz.cpp
     ${ADDITIONAL_SOURCES}
     HEADERS Core.hpp
-    maps/GridBase.hpp
+    DEPS_PKGCONFIG ply base-types base-lib
+    DEPS_CMAKE LibYAML GDAL Eigen2)
+
+install(FILES core/EventHandler.hpp
+    core/Event.hpp
+    core/EventSource.hpp
+    DESTINATION include/envire/core)
+
+install(FILES maps/GridBase.hpp
     maps/Grid.hpp
     maps/Grids.hpp
     maps/LaserScan.hpp
@@ -49,7 +57,9 @@ rock_library(envire
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
     maps/TriMesh.hpp
-    operators/MergeMLS.hpp
+    DESTINATION include/envire/maps)
+
+install(FILES operators/MergeMLS.hpp
     operators/MergePointcloud.hpp
     operators/MLSProjection.hpp
     operators/MLSSimpleTraversability.hpp
@@ -58,12 +68,13 @@ rock_library(envire
     operators/ScanMeshing.hpp
     operators/SimplifyPointcloud.hpp
     operators/SurfaceReconstruction.hpp
-    tools/GraphViz.hpp
+    DESTINATION include/envire/operators)
+
+install(FILES tools/GraphViz.hpp
     tools/GridAccess.hpp
     tools/Numeric.hpp
     tools/PlyFile.hpp
-    DEPS_PKGCONFIG ply base-types base-lib
-    DEPS_CMAKE LibYAML GDAL Eigen2)
+    DESTINATION include/envire/tools)
 
 target_link_libraries(envire 
     ${CGAL_LIBRARIES}
