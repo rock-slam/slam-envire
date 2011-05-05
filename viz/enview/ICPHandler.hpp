@@ -4,7 +4,7 @@
 #include <QObject>
 #include "ui_MainWindow.h"
 #include <envire/Core.hpp>
-#include <envire/icp.hpp>
+#include "icp/icp.hpp"
 
 #include <boost/function.hpp>
 
