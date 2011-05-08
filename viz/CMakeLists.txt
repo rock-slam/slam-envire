@@ -1,3 +1,5 @@
+rock_export_includedir(${PROJECT_SOURCE_DIR}/viz vizkit)
+
 # compile shared library
 rock_vizkit_plugin(envire-viz
     ElevationGridVisualization.cpp
@@ -17,7 +19,9 @@ rock_vizkit_plugin(envire-viz
     Uncertainty.cpp
     MOC ItemManipulator.hpp TreeViewListener.hpp 
     DEPS envire
-    DEPS_CMAKE GDAL)
+    DEPS_CMAKE GDAL
+    HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp
+    EnvironmentItemVisualizer.hpp Uncertainty.hpp)
 target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
 
 rock_executable(envireViewer envireViewer.cpp

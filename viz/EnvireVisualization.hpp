@@ -6,8 +6,8 @@
 #include <envire/Core.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
-#include "EnvireEventListener.hpp"
-#include "TreeViewListener.hpp"
+#include <vizkit/EnvireEventListener.hpp>
+#include <vizkit/TreeViewListener.hpp>
 
 class QTreeWidget;
 

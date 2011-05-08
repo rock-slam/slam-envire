@@ -5,7 +5,7 @@
 #include <map>
 #include <envire/Core.hpp>
 #include <envire/core/EventHandler.hpp>
-#include "EnvironmentItemVisualizer.hpp"
+#include <vizkit/EnvironmentItemVisualizer.hpp>
 #include <osg/Group>
 
 #include <boost/function.hpp>
