@@ -341,13 +341,13 @@ class Trimmed {
     struct Result
     {
 	Result()
-	  : C_global2globalnew( Eigen::Transform3d::Identity() ), 
-	    iter(0), 
+	  : iter(0), 
 	    pairs(0), 
 	    mse(0), 
 	    mse_diff(0), 
 	    d_box(0), 
-	    overlap(0) 
+	    overlap(0),
+            C_global2globalnew( Eigen::Transform3d::Identity() )
 	{}
 	
 	std::vector<double> pairs_distance;
