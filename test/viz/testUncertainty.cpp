@@ -12,7 +12,7 @@
 #include "envire/operators/MLSProjection.hpp"
 
 #include "envire/Core.hpp"
-#include "Uncertainty.hpp"
+#include <vizkit/Uncertainty.hpp>
 
 using namespace envire;
 

@@ -10,7 +10,7 @@
 #include "envire/maps/MultiLevelSurfaceGrid.hpp"
 
 #include "envire/Core.hpp"
-#include "Uncertainty.hpp"
+#include <vizkit/Uncertainty.hpp>
 
 using namespace envire;
 

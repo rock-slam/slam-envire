@@ -16,12 +16,11 @@ rock_vizkit_plugin(envire-viz
     TriMeshVisualization.cpp
     TreeViewListener.cpp
     ItemManipulator.cpp
-    Uncertainty.cpp
     MOC ItemManipulator.hpp TreeViewListener.hpp 
     DEPS envire
     DEPS_CMAKE GDAL
     HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp
-    EnvironmentItemVisualizer.hpp Uncertainty.hpp)
+    EnvironmentItemVisualizer.hpp)
 target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
 
 rock_executable(envireViewer envireViewer.cpp
