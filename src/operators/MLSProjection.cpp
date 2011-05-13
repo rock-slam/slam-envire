@@ -75,7 +75,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	}
     }
 
-    Eigen::Transform3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
+    Eigen::Affine3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
     typedef MultiLevelSurfaceGrid::Position position;
     std::set<position> &cells = t_grid->getIndex()->cells;

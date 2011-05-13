@@ -7,4 +7,4 @@ Name: envire
 Description: Library for the Environment Representation
 Version: @PROJECT_VERSION@
 Libs: -L${libdir} -lenvire -licp
-Cflags: -I${includedir} @GDAL_CFLAGS@ -I@EIGEN2_INCLUDE_DIR@
+Cflags: -I${includedir} @GDAL_CFLAGS@ -I@EIGEN3_INCLUDE_DIR@

@@ -7,7 +7,7 @@
 #include <vizkit/QVizkitWidget.hpp>
 #include <vizkit/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
-#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MLSGrid.hpp"
 
 #include "envire/Core.hpp"
 #include <vizkit/Uncertainty.hpp>
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( mlsviz_test )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
     env->attachItem( mls );
 
-    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
 
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE( mlsviz_test )
 	    }
 	}
 
-	fm->setTransform( Eigen::Transform3d( Eigen::AngleAxisd( r/50.0, Eigen::Vector3d::UnitZ() ) * Eigen::Translation3d( -5, -5, 0 )  ) );
+	fm->setTransform( Eigen::Affine3d( Eigen::AngleAxisd( r/50.0, Eigen::Vector3d::UnitZ() ) * Eigen::Translation3d( -5, -5, 0 )  ) );
 	mls->itemModified();
 
 	usleep(1000);

@@ -12,7 +12,7 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( FrameNode )
 
 FrameNode::FrameNode()
-    : frame( Transform( Eigen::Transform3d::Identity()) )
+    : frame( Transform( Eigen::Affine3d::Identity()) )
 {
 }
 
@@ -25,7 +25,7 @@ FrameNode::FrameNode(Serialization &so)
     : EnvironmentItem( so )
 {
     so.setClassName(className);
-    Eigen::Transform3d t;
+    Eigen::Affine3d t;
     so.read("transform", t );
     frame.setTransform( t );
 }

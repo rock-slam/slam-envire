@@ -1,16 +1,14 @@
 #include "icp.hpp"
 #include <Eigen/LU> 
+#include <Eigen/Eigenvalues> 
 #include <math.h> 
 #include <boost/concept_check.hpp>
 
-USING_PART_OF_NAMESPACE_EIGEN
-
 using namespace envire::icp;
+using namespace Eigen;
 
 
-
-
-void Pairs::add( const Eigen::Vector3d& a, const Eigen::Vector3d& b, double dist )
+void Pairs::add( const Vector3d& a, const Vector3d& b, double dist )
 {
     pair pair;
     pair.index = pairs.size();
@@ -41,7 +39,7 @@ double Pairs::trim( size_t n_po )
     }
 }
 
-Eigen::Transform3d Pairs::getTransform()
+Affine3d Pairs::getTransform()
 {
     if( size() < MIN_PAIRS )
 	throw std::runtime_error("not enough pairs to get transform");
@@ -55,8 +53,8 @@ Eigen::Transform3d Pairs::getTransform()
 
     for(size_t i=0;i<pairs.size();i++) {
 	const size_t idx = pairs[i].index;
-	Eigen::Vector3d &pv( p[idx] );
-	Eigen::Vector3d &xv( x[idx] );
+	Vector3d &pv( p[idx] );
+	Vector3d &xv( x[idx] );
 
 	const double d = pairs[i].distance;
 	mu_d += d*d;
@@ -82,20 +80,20 @@ Eigen::Transform3d Pairs::getTransform()
 	 delta, A - Matrix3d::Identity() * sigma_px.trace();
 
     // do an eigenvalue decomposition of Q
-    Eigen::Quaterniond q_R;
-    Eigen::EigenSolver<Matrix4d> eigenSolver(q_px);
+    Quaterniond q_R;
+    EigenSolver<Matrix4d> eigenSolver(q_px);
     double max_eig = eigenSolver.eigenvalues().real().maxCoeff();
     for(int i=0;i<eigenSolver.eigenvalues().rows();i++) {
 	if(eigenSolver.eigenvalues()(i) == max_eig) {
 	    Vector4d max_eigv = eigenSolver.eigenvectors().col(i).real();
-	    q_R = Eigen::Quaterniond( max_eigv(0), max_eigv(1), max_eigv(2), max_eigv(3) );
+	    q_R = Quaterniond( max_eigv(0), max_eigv(1), max_eigv(2), max_eigv(3) );
 	    break;
 	}
     }
 
     // resulting transformation in global frame
-    Eigen::Vector3d q_T = mu_x - q_R * mu_p;
-    Eigen::Transform3d t( Eigen::Translation3d( q_T ) * q_R );
+    Vector3d q_T = mu_x - q_R * mu_p;
+    Affine3d t( Translation3d( q_T ) * q_R );
 
     mse = mu_d;
     

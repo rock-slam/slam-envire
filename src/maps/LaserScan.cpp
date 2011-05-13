@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include <stdexcept>
+#include <iostream>
 
 using namespace envire;
 using namespace std;

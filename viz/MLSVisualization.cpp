@@ -4,7 +4,7 @@
 #include <osg/Point>
 #include <osg/Geometry>
 #include <envire/Core.hpp>
-#include <envire/maps/MultiLevelSurfaceGrid.hpp>
+#include <envire/maps/MLSGrid.hpp>
 #include <osg/Drawable>
 #include <osg/ShapeDrawable>
 #include <osg/LineWidth>

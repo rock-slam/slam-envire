@@ -2,9 +2,10 @@
 #include "envire/maps/TriMesh.hpp"
 #include "boost/scoped_ptr.hpp"
 
+#include <iostream>
+
 using namespace envire;
 using namespace std;
-
      
 int main( int argc, char* argv[] )
 {

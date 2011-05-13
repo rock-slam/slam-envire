@@ -7,7 +7,7 @@
 #include "EnvireVisualization.hpp"
 
 #include "envire/Core.hpp"
-#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MLSGrid.hpp"
 #include "envire/maps/Pointcloud.hpp"
 #include "envire/operators/MLSProjection.hpp"
 
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
     env->attachItem( mls );
 
-    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
     for( int i=0; i<100; i++ )
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
 	mls2->itemModified();
 	std::pair<double, double> res = mls->matchHeight( *mls2 );
 	std::cout << "diff : " << res.first << " var: " << res.second << std::endl;
-	fm2->setTransform( Eigen::Transform3d( Eigen::Translation3d( 0, 0, -res.first ) ) );
+	fm2->setTransform( Eigen::Affine3d( Eigen::Translation3d( 0, 0, -res.first ) ) );
 
 	usleep( 1000*1000 );
     }

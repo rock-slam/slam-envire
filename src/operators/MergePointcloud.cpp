@@ -7,6 +7,7 @@
 
 #include "MergePointcloud.hpp"
 #include <Eigen/LU>
+#include <iostream>
 
 namespace envire {
 

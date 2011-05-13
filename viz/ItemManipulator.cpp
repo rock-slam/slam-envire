@@ -12,6 +12,8 @@
 #include <osgManipulator/TrackballDragger>
 #include "FrameNodeManipulator.hpp"
 
+#include <iostream>
+
 vizkit::ItemManipulator::ItemManipulator()
 {
     activeItem = 0;

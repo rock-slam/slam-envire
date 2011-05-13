@@ -7,7 +7,7 @@
 #include <vizkit/QVizkitWidget.hpp>
 #include <vizkit/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
-#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MLSGrid.hpp"
 #include "envire/maps/Pointcloud.hpp"
 #include "envire/operators/MLSProjection.hpp"
 
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
 	double r = i/5000.0;
 	PointWithUncertainty p(
 		Eigen::Vector3d( 0.0, 0, 0 ),
-		Eigen::Vector3d( 0.01, 0.01, 0.01 ).cwise().square().asDiagonal() );
+		Eigen::Vector3d( 0.01, 0.01, 0.01 ).array().square().matrix().asDiagonal() );
 	
 	Eigen::Matrix<double,6,6> lt1; 
 	lt1 <<
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
 	    0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 
 	TransformWithUncertainty t1(
-		Eigen::Transform3d(Eigen::Translation3d(Eigen::Vector3d(r,0,0))),
-		lt1.cwise().square() );
+		Eigen::Affine3d(Eigen::Translation3d(Eigen::Vector3d(r,0,0))),
+		lt1.array().square().matrix() );
 
 	Eigen::Matrix<double,6,6> lt2; 
 	lt2 <<
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
 	    0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
 
 	TransformWithUncertainty t2(
-		Eigen::Transform3d(Eigen::Transform3d::Identity()),
-		lt2.cwise().square() );
+		Eigen::Affine3d(Eigen::Affine3d::Identity()),
+		lt2.array().square().matrix() );
 
 	PointWithUncertainty pp = t2 * t1 * p;
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
     env->attachItem( mls );
 
-    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
 
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
     env->attachItem( mls );
 
-    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
 
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 	vars.push_back( 0 );
     }
 
-    FrameNode *pcfm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    FrameNode *pcfm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
     env->getRootNode()->addChild( pcfm );
     pc->setFrameNode( pcfm );
 
@@ -194,9 +194,9 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 	//c << 0, M_PI/8.0, 0, 0, 0, 0;
 	c << 0, 0, 0, 0, 0, 0.2;
 	pcfm->setTransform( TransformWithUncertainty( 
-		    //Eigen::Transform3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
-		    Eigen::Transform3d( Eigen::Translation3d( 0, 0, r+0.05 ) ),
-		   c.cwise().square().asDiagonal() ) );
+		    //Eigen::Affine3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
+		    Eigen::Affine3d( Eigen::Translation3d( 0, 0, r+0.05 ) ),
+		   c.array().square().matrix().asDiagonal() ) );
 	proj->updateAll();
 
 	TransformWithUncertainty fm2g = env->relativeTransformWithUncertainty( pcfm, env->getRootNode() );

@@ -45,7 +45,7 @@ public:
     /** will return the transform that has to be applied to B, so that the MSE
      * between the invididual pairs of A and B is minimized.
      */
-    Eigen::Transform3d getTransform();
+    Eigen::Affine3d getTransform();
 
     double getMeanSquareError() const;
 
@@ -117,7 +117,7 @@ public:
 	C_local2globalnew = C_local2global;
     }
 
-    void setOffsetTransform( const Eigen::Transform3d& C_global2globalnew )
+    void setOffsetTransform( const Eigen::Affine3d& C_global2globalnew )
     {
 	C_local2globalnew = C_global2globalnew * C_local2global;
     }
@@ -144,7 +144,7 @@ public:
 	return vertices->size() * density;
     }
 
-    void applyTransform(const Eigen::Transform3d& t)
+    void applyTransform(const Eigen::Affine3d& t)
     {
 	envire::FrameNode* fn = model->getFrameNode();
 	fn->setTransform( envire::FrameNode::TransformType( fn->getTransform()*(C_local2global.inverse(Eigen::Isometry) * t * C_local2global ) ) );
@@ -152,7 +152,7 @@ public:
 
 protected:
     envire::Pointcloud* model;
-    Eigen::Transform3d C_local2global, C_local2globalnew;
+    Eigen::Affine3d C_local2global, C_local2globalnew;
 
     double index;
     const std::vector<Eigen::Vector3d> *vertices;
@@ -325,7 +325,7 @@ class Trimmed {
 	    mse_diff(0), 
 	    d_box(0), 
 	    overlap(0),
-            C_global2globalnew( Eigen::Transform3d::Identity() )
+            C_global2globalnew( Eigen::Affine3d::Identity() )
 	{}
 	
 	std::vector<double> pairs_distance;
@@ -333,13 +333,13 @@ class Trimmed {
 	
 	const static double gamma = 2.0;
 
+	Eigen::Affine3d C_global2globalnew;
 	size_t iter;
 	size_t pairs;
 	double mse;
 	double mse_diff;
 	double d_box;
 	double overlap;
-	Eigen::Transform3d C_global2globalnew;
 
 	double optFunc() const { return mse/pow(overlap, 1.0+gamma); }
 	bool operator< (const Result& other) const { return optFunc() < other.optFunc(); }
@@ -438,7 +438,7 @@ private:
 	Result result;
 	Pairs pairs;
 	
-	result.C_global2globalnew = Eigen::Transform3d::Identity();
+	result.C_global2globalnew = Eigen::Affine3d::Identity();
 
 	result.iter = 0;
 	result.overlap = overlap;
@@ -457,7 +457,7 @@ private:
 	    if( result.pairs < Pairs::MIN_PAIRS )
 		return result;
 
-	    Eigen::Transform3d C_globalprev2globalnew = pairs.getTransform();
+	    Eigen::Affine3d C_globalprev2globalnew = pairs.getTransform();
 	    result.C_global2globalnew = C_globalprev2globalnew * result.C_global2globalnew;
 	    measurement.setOffsetTransform( result.C_global2globalnew );
 
