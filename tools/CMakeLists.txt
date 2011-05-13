@@ -1,6 +1,6 @@
 rock_executable(env_icp env_icp.cpp
     DEPS envire
-    DEPS_CMAKE Eigen2 GDAL)
+    DEPS_CMAKE GDAL)
 
 rock_executable(env_dem env_dem.cpp
     DEPS envire)

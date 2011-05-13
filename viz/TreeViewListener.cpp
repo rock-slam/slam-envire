@@ -2,6 +2,7 @@
 #include "ItemManipulator.hpp"
 
 #include <string>
+#include <iostream>
 #include <boost/lexical_cast.hpp>
 
 namespace vizkit {

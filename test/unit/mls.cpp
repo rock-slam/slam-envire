@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE( mlsprojection_test )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
     env->attachItem( mls );
 
-    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( mlsprojection_test )
 	vars.push_back( 0 );
     }
 
-    FrameNode *pcfm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    FrameNode *pcfm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
     env->getRootNode()->addChild( pcfm );
     pc->setFrameNode( pcfm );
 
@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE( mlsprojection_test )
 	//c << 0, M_PI/8.0, 0, 0, 0, 0;
 	c << 0, r*0.1, 0, 0, 0, 0;
 	pcfm->setTransform( TransformWithUncertainty( 
-		    Eigen::Transform3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
-		   c.cwise().square().asDiagonal() ) );
+		    Eigen::Affine3d( Eigen::Translation3d( 0, r+0.05, 0 ) ),
+		   c.array().square().matrix().asDiagonal() ) );
 	proj->updateAll();
     }
 }
@@ -113,11 +113,11 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
 	}
     }
 
-    FrameNode *fm = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 0 ) ) );
+    FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls1->setFrameNode( fm );
 
-    FrameNode *fm2 = new FrameNode( Eigen::Transform3d( Eigen::Translation3d( -5, -5, 1 ) ) );
+    FrameNode *fm2 = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 1 ) ) );
     env->getRootNode()->addChild( fm2 );
     mls2->setFrameNode( fm2 );
 

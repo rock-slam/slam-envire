@@ -2,6 +2,8 @@
 #include <envire/maps/GridBase.hpp>
 #include <boost/scoped_ptr.hpp>
 
+#include <iostream>
+
 using namespace envire;
 
 void usage()

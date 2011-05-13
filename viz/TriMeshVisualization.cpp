@@ -7,6 +7,7 @@
 #include <osg/Drawable>
 #include <osg/ShapeDrawable>
 
+#include <iostream>
 
 osg::Group* TriMeshVisualization::getNodeForItem(envire::EnvironmentItem* item) const
 {

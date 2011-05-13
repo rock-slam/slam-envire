@@ -68,10 +68,10 @@ BOOST_AUTO_TEST_CASE( TreeTest )
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
     fn1->setTransform( 
-	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
+	    Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
     fn2 = new FrameNode();
     fn2->setTransform( 
-	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
+	    Eigen::Affine3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
 
     //attach 3 node to root
@@ -109,13 +109,13 @@ BOOST_AUTO_TEST_CASE( environment )
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
     fn1->setTransform( 
-	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
+	    Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
     fn2 = new FrameNode();
     fn2->setTransform( 
-	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
+	    Eigen::Affine3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
     fn3->setTransform( 
-	    Eigen::Transform3d(Eigen::Translation3d(0.0, 1.0, 0.0)));
+	    Eigen::Affine3d(Eigen::Translation3d(0.0, 1.0, 0.0)));
     
     // attach explicitely
     env->attachItem( fn1 );
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE( environment )
 
     FrameNode::TransformType rt2 = env->relativeTransform(fn2, fn3);
     BOOST_CHECK( rt2.matrix().isApprox( 
-		fn3->getTransform().inverse() * fn1->getTransform() * fn2->getTransform(),
+		(fn3->getTransform().inverse() * fn1->getTransform() * fn2->getTransform()).matrix(),
 		1e-10 ) );
     
     // now do the same for layers
@@ -194,10 +194,10 @@ BOOST_AUTO_TEST_CASE( serialization )
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
     fn1->setTransform( 
-	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
+	    Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
     fn2 = new FrameNode();
     fn2->setTransform( 
-	    Eigen::Transform3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
+	    Eigen::Affine3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
     fn3 = new FrameNode();
     
     // attach explicitely
@@ -253,10 +253,10 @@ BOOST_AUTO_TEST_CASE( grid_access )
 
     FrameNode *fn1 = new FrameNode();
     fn1->setTransform( 
-	    Eigen::Transform3d(Eigen::Translation3d( 0.0, 0.0, 0.0 )) );
+	    Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.0 )) );
     FrameNode *fn2 = new FrameNode();
     fn2->setTransform( 
-	    Eigen::Transform3d(Eigen::Translation3d( 5.0, 0.0, 0.0 )) );
+	    Eigen::Affine3d(Eigen::Translation3d( 5.0, 0.0, 0.0 )) );
 
     env->addChild( env->getRootNode(), fn1 );
     env->addChild( env->getRootNode(), fn2 );
@@ -337,9 +337,9 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
     // create some child framenodes
     FrameNode *fn1, *fn2, *fn3;
     fn1 = new FrameNode();
-    Eigen::Transform3d t1(Eigen::Translation3d( 0.0, 0.0, 0.5 ));
-    Eigen::Transform3d t2(Eigen::Translation3d( 0.0, 0.0, 1.5 ));
-    Eigen::Transform3d t3(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 ));
+    Eigen::Affine3d t1(Eigen::Translation3d( 0.0, 0.0, 0.5 ));
+    Eigen::Affine3d t2(Eigen::Translation3d( 0.0, 0.0, 1.5 ));
+    Eigen::Affine3d t3(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 ));
 
     fn1->setTransform( t1 );
     fn2 = new FrameNode();

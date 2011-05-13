@@ -348,7 +348,7 @@ namespace envire
 		  getEnvironment()->getRootNode() );
 
 	  //calc GeoTransform	
-	  Eigen::Matrix4d m = (t * Eigen::Scaling3d(scalex, scaley,0)).matrix();
+	  Eigen::Matrix4d m = (t * Eigen::DiagonalMatrix<double,3>(scalex, scaley,0)).matrix();
 	  double adfGeoTransform[6] = { m(0,3), m(0,0), m(0,1), m(1,3), m(1,0), m(1,1) };
 	  
 	  OGRSpatialReference oSRS;

@@ -2,6 +2,8 @@
 #include "envire/Core.hpp"
 #include "boost/scoped_ptr.hpp"
 
+#include <iostream>
+
 using namespace envire;
 
 int main( int argc, char* argv[] )

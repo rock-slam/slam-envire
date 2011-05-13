@@ -54,7 +54,7 @@ bool MLSMap::getPatch( const Point& p, SurfacePatch& patch, double sigma_thresho
 	MultiLevelSurfaceGrid::Ptr grid( *it );
 	Transform C_m2g = env->relativeTransform( getFrameNode(), grid->getFrameNode() );
 	MultiLevelSurfaceGrid::Position pos;
-	if( grid->toGrid((C_m2g * p).start<2>(), pos) )
+	if( grid->toGrid((C_m2g * p).head<2>(), pos) )
 	{
 	    // offset the z-coordinate which is given in map to grid 
 	    MultiLevelSurfaceGrid::SurfacePatch probe( patch );

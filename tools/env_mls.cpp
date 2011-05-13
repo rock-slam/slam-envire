@@ -3,7 +3,7 @@
 
 #include "envire/Core.hpp"
 #include "envire/maps/TriMesh.hpp"
-#include "envire/maps/MultiLevelSurfaceGrid.hpp"
+#include "envire/maps/MLSGrid.hpp"
 #include "envire/operators/MLSProjection.hpp"
 
 #include "boost/scoped_ptr.hpp"
@@ -64,7 +64,7 @@ int main( int argc, char* argv[] )
 
 	// rotate the extents to the grid frame, and extend the local grid 
 	// whith the extents corner
-	Eigen::Transform3d pc2grid = env->relativeTransform( pc->getFrameNode(), fm1 );
+	Eigen::Affine3d pc2grid = env->relativeTransform( pc->getFrameNode(), fm1 );
 	envire::Pointcloud::Extents pc_extents = pc->getExtents();
 	std::vector<Eigen::Vector3d> corners;
 	// go through all the permutations to get the corners

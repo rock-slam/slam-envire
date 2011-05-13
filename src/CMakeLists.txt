@@ -42,7 +42,7 @@ rock_library(envire
     ${ADDITIONAL_SOURCES}
     HEADERS Core.hpp
     DEPS_PKGCONFIG ply base-types base-lib
-    DEPS_CMAKE LibYAML GDAL Eigen2)
+    DEPS_CMAKE LibYAML GDAL)
 
 install(FILES core/EventHandler.hpp
     core/Event.hpp

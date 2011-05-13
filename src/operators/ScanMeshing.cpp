@@ -1,5 +1,6 @@
 #include "ScanMeshing.hpp"
 #include <stdexcept>
+#include <iostream>
 
 using namespace envire;
 using namespace std;

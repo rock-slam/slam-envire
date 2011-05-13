@@ -176,6 +176,6 @@ TransformWithUncertainty TransformWithUncertainty::inverse( Eigen::TransformTrai
 	drx_by_dr( q.inverse(), t ), q.toRotationMatrix().transpose();
 
     return TransformWithUncertainty(
-	    Eigen::Transform3d( getTransform().inverse( traits ) ),
+	    Eigen::Affine3d( getTransform().inverse( traits ) ),
 	    J*getCovariance()*J.transpose() );
 }

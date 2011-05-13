@@ -258,7 +258,7 @@ namespace envire
 	Covariance cov;
     };
 
-    typedef Eigen::Transform3d Transform;
+    typedef Eigen::Affine3d Transform;
 
     class TransformWithUncertainty
     {

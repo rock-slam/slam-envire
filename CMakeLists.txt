@@ -4,6 +4,7 @@ rock_init(envire 1.0)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+rock_find_cmake(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
 
 rock_add_source_dir(icp icp)

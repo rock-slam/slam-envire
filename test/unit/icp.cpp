@@ -95,7 +95,7 @@ struct ICPTest
 	box
     };
 
-    void setTestEnvironment( test_case tc, const Eigen::Transform3d& a_trans, const Eigen::Transform3d& b_trans )
+    void setTestEnvironment( test_case tc, const Eigen::Affine3d& a_trans, const Eigen::Affine3d& b_trans )
     {
 	FrameNode *fm1 = new FrameNode();
 	FrameNode *fm2 = new FrameNode();
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE( icp_test1 )
 {
     ICPTest test;
     test.setTestEnvironment( ICPTest::sine, 
-	    Eigen::Transform3d( Eigen::Transform3d::Identity() ),
+	    Eigen::Affine3d( Eigen::Affine3d::Identity() ),
 	    Eigen::Translation3d( 0.0,0,0 )
 	    * Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitX()) );
 
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE( icp_test2 )
 {
     ICPTest test;
     test.setTestEnvironment( ICPTest::sine, 
-	    Eigen::Transform3d( Eigen::Transform3d::Identity() ),
+	    Eigen::Affine3d( Eigen::Affine3d::Identity() ),
 	    Eigen::Translation3d( 0,0,5.0 )
 	    * Eigen::AngleAxisd( 0.1, Eigen::Vector3d::UnitX()) );
 

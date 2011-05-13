@@ -10,6 +10,8 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+#include <iostream>
+
 using namespace std;
 using namespace envire;
 
@@ -570,7 +572,7 @@ TransformWithUncertainty getTransform( const FrameNode* fn ) { return fn->getTra
 template <class T>
 std::pair<T, const FrameNode*> relativeFrameNodeRoot( const FrameNode* from )
 {
-    T C_fg(envire::Transform(Eigen::Transform3d::Identity()));
+    T C_fg(envire::Transform(Eigen::Affine3d::Identity()));
 
     const FrameNode *t = from;
     while(!t->isRoot())
