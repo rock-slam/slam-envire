@@ -101,13 +101,14 @@ void vizkit::ItemManipulator::unhideSelectedItems()
 void vizkit::ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
 {
     envire::EnvironmentItem* item = tvl->getItemForWidget(widgetItem);
-    if(dynamic_cast<envire::FrameNode *>(item)) 
+    envire::FrameNode* frameNode = dynamic_cast<envire::FrameNode *>(item);
+    if(frameNode) 
     {
         widgetItem->setCheckState(0,Qt::Unchecked);
         vizkit::EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(item);
         if (viz) 
         {
-            osg::Group *osgGroup = eel->getNodeForItem(item);
+            osg::Group *osgGroup = eel->getParentNodeForItem(item);
             viz->hideNode(item, osgGroup);
         }
     }
@@ -119,13 +120,14 @@ void vizkit::ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
 void vizkit::ItemManipulator::unhideItem(QTreeWidgetItem* widgetItem)
 {
     envire::EnvironmentItem* item = tvl->getItemForWidget(widgetItem);
-    if(dynamic_cast<envire::FrameNode *>(item)) 
+    envire::FrameNode* frameNode = dynamic_cast<envire::FrameNode *>(item);
+    if(frameNode) 
     {
         widgetItem->setCheckState(0,Qt::Checked);
         vizkit::EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(item);
         if (viz) 
         {
-            osg::Group *osgGroup = eel->getNodeForItem(item);
+            osg::Group *osgGroup = eel->getParentNodeForItem(item);
             viz->unHideNode(item, osgGroup);
         }
     }

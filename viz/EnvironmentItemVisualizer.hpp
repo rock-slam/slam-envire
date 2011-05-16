@@ -1,6 +1,9 @@
 #ifndef EVIRONMENTITEMVIZALIZER_H
 #define EVIRONMENTITEMVIZALIZER_H
 
+#define INVISIBLE_MASK 0x0
+#define VISIBLE_MASK 0xffffffff
+
 namespace osg {
     class Group;
 }

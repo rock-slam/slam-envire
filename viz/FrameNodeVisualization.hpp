@@ -2,9 +2,6 @@
 #define FRAMENODEVISUALIZATION_H
 #include "EnvironmentItemVisualizer.hpp"
 
-#define INVISIBLE_MASK 0x0
-#define VISIBLE_MASK 0xffffffff
-
 namespace vizkit {
 
 class FrameNodeVisualization: public vizkit::EnvironmentItemVisualizer
