@@ -106,12 +106,15 @@ void MLSGrid::unserialize(Serialization& so)
 
     cells.resize( boost::extents[width][height] );
     try { readMap( getMapFileName(so.getMapPath()) + ".mls" ); }
-    catch(std::exception& original_error)
+    catch(...)
     {
         // Try with MultiLevelSurfaceGrid (backward compatibility)
-        try { readMap(getMapFileName(so.getMapPath(), "MultiLevelSurfaceGrid") + ".mls"); }
-        catch(...)
-        { throw original_error; }
+        try {
+	    readMap(getMapFileName(so.getMapPath(), "envire::MultiLevelSurfaceGrid") + ".mls");
+	    return;
+	}
+        catch(...) { throw; }
+	throw;
     }
 }
 
@@ -151,6 +154,8 @@ void MLSGrid::writeMap(const std::string& path)
 void MLSGrid::readMap(const std::string& path)
 {
     std::ifstream is(path.c_str());
+    if( !is.is_open() )
+	throw std::runtime_error("could not open file " + path);
     
     char c[32];
     is.getline(c, 20);
