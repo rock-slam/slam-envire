@@ -40,6 +40,15 @@ namespace envire {
 	    return data;
 	};
 
+	void clear()
+	{
+	    vertices.clear();
+	    if( hasData( VERTEX_COLOR ) ) getVertexData<Eigen::Vector3d>( VERTEX_COLOR ).clear();
+	    if( hasData( VERTEX_NORMAL ) ) getVertexData<Eigen::Vector3d>( VERTEX_NORMAL ).clear();
+	    if( hasData( VERTEX_ATTRIBUTES ) ) getVertexData<attr_flag>( VERTEX_ATTRIBUTES ).clear();
+	    if( hasData( VERTEX_VARIANCE ) ) getVertexData<double>( VERTEX_VARIANCE ).clear();
+	};
+
 	Pointcloud();
 	~Pointcloud();
 
