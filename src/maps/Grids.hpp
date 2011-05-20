@@ -32,6 +32,21 @@ namespace envire
       ~ConfidenceGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
+
+  class DistanceGrid : public Grid<float>
+  {
+      ENVIRONMENT_ITEM( DistanceGrid )
+  public: 
+      static const std::string DISTANCE;
+      static const std::string CONFIDENCE;
+  private:
+      const static std::vector<std::string> &bands;
+  public:
+      DistanceGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 )
+	  : Grid<float>::Grid(width,height,scalex,scaley,offsetx,offsety){};
+      DistanceGrid(Serialization& so):Grid<float>(so,className){unserialize(so);};
+      virtual const std::vector<std::string>& getBands() const {return bands;};
+  };
   
   class ElevationGrid : public Grid<double>
   {

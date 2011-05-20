@@ -34,6 +34,21 @@ static const std::vector<std::string> &initConfidenceBands()
 }
 const std::vector<std::string> &ConfidenceGrid::bands = initConfidenceBands();
 
+ENVIRONMENT_ITEM_DEF( DistanceGrid )
+const std::string DistanceGrid::DISTANCE = "distance";
+const std::string DistanceGrid::CONFIDENCE = "confidence";
+static const std::vector<std::string> &initDistanceBands()
+{
+  static std::vector<std::string> bands;
+  if(bands.empty())
+  {
+    bands.push_back(DistanceGrid::DISTANCE);
+    bands.push_back(DistanceGrid::CONFIDENCE);
+  }
+  return bands;
+}
+const std::vector<std::string> &DistanceGrid::bands = initDistanceBands();
+
 ENVIRONMENT_ITEM_DEF( ElevationGrid )
 const std::string ElevationGrid::ELEVATION = "elevation_max"; // this will reference the max band
 const std::string ElevationGrid::ELEVATION_MIN = "elevation_min";
