@@ -8,8 +8,8 @@ const std::string GridBase::className = "envire::GridBase";
 GridBase::GridBase()
     : width(0), height(0), scalex(0), scaley(0) {}
 
-GridBase::GridBase(size_t width, size_t height, double scalex, double scaley) :
-    width(width), height(height), scalex(scalex), scaley(scaley)
+GridBase::GridBase(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety) :
+    width(width), height(height), scalex(scalex), scaley(scaley), offsetx(offsetx), offsety(offsety)
 {
 }
 
@@ -32,6 +32,8 @@ void GridBase::serialize(Serialization& so)
     so.write("height", height );
     so.write("scalex", scalex );
     so.write("scaley", scaley );
+    so.write("offsetx", offsetx );
+    so.write("offsety", offsety );
 }
 
 void GridBase::unserialize(Serialization& so)
@@ -41,7 +43,8 @@ void GridBase::unserialize(Serialization& so)
     so.read("height", height );
     so.read("scalex", scalex );
     so.read("scaley", scaley );
-
+    so.read("offsetx", offsetx );
+    so.read("offsety", offsety );
 }
 
 bool GridBase::toGrid( Eigen::Vector3d const& point, size_t& m, size_t& n, FrameNode const* frame) const
@@ -59,8 +62,8 @@ bool GridBase::toGrid( Eigen::Vector3d const& point, size_t& m, size_t& n, Frame
 
 bool GridBase::toGrid( double x, double y, size_t& m, size_t& n) const
 {
-    size_t am = floor(x/scalex);
-    size_t an = floor(y/scaley);
+    size_t am = floor((x+offsetx)/scalex);
+    size_t an = floor((y+offsety)/scaley);
     if( 0 <= am && am < width && 0 <= an && an < height )
     {
 	m = am;
@@ -88,8 +91,8 @@ Eigen::Vector3d GridBase::fromGrid(size_t m, size_t n, FrameNode const* frame) c
 
 void GridBase::fromGrid( size_t m, size_t n, double& x, double& y) const
 {
-    x = (m+0.5) * scalex;
-    y = (n+0.5) * scaley;
+    x = (m+0.5) * scalex - offsetx;
+    y = (n+0.5) * scaley - offsety;
 }
 
 bool GridBase::toGrid( const Point2D& point, Position& pos) const

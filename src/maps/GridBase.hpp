@@ -33,12 +33,13 @@ namespace envire
     protected:
 	size_t width, height;
 	double scalex, scaley;	
+	double offsetx, offsety;
 
     public:
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
         GridBase();
-	GridBase(size_t width, size_t height, double scalex, double scaley);
+	GridBase(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 );
 	~GridBase();
 	GridBase(Serialization& so);
 	void serialize(Serialization& so);

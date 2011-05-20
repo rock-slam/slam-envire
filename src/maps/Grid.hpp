@@ -65,7 +65,7 @@ namespace envire
         typedef boost::intrusive_ptr< Grid<T> > Ptr;
 
 	Grid() {}
-	Grid(size_t width, size_t height, double scalex, double scaley);
+	Grid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0);
 	~Grid();
 	Grid(Serialization& so);
 	void serialize(Serialization& so);
@@ -211,8 +211,8 @@ namespace envire
     template <class T> const std::vector<std::string> & Grid<T>::bands = initbands<T>();
  
     
-    template<class T>Grid<T>::Grid(size_t width, size_t height, double scalex, double scaley) :
-	GridBase( width, height, scalex, scaley )
+    template<class T>Grid<T>::Grid(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety ) :
+	GridBase( width, height, scalex, scaley, offsetx, offsety )
     {
       static bool initialized = false;
       if(!initialized)
