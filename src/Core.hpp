@@ -549,6 +549,7 @@ namespace envire
 	    */
 	};
 
+	void removeData(const std::string& type);
     };
 
 

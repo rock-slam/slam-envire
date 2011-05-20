@@ -124,6 +124,10 @@ bool Layer::hasData(const std::string& type) const
     return data_map.count(type);
 }
 
+void Layer::removeData(const std::string& type)
+{
+    data_map.erase( type );
+}
 
 const std::string CartesianMap::className = "envire::CartesianMap";
 
