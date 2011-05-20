@@ -35,6 +35,7 @@ rock_library(envire
     operators/SimplifyPointcloud.cpp
     operators/MLSSlope.cpp
     operators/MLSSimpleTraversability.cpp
+    operators/DistanceGridToPointcloud.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
@@ -64,6 +65,7 @@ install(FILES operators/MergeMLS.hpp
     operators/MLSProjection.hpp
     operators/MLSSimpleTraversability.hpp
     operators/MLSSlope.hpp
+    operators/DistanceGridToPointcloud.hpp
     operators/Projection.hpp
     operators/ScanMeshing.hpp
     operators/SimplifyPointcloud.hpp
