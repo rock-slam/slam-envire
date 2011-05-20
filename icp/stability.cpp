@@ -55,7 +55,7 @@ void Clustering::calcMean( )
     
     for(unsigned int i = 0; i < points.size(); i++) 
     {
-	std::cout << points.at(i).translation().transpose() << " - " <<  Matrix3d( points.at(i).rotation()).eulerAngles(2,1,0)[0] * 180 / M_PI<<  endl; 
+	//std::cout << points.at(i).translation().transpose() << " - " <<  Matrix3d( points.at(i).rotation()).eulerAngles(2,1,0)[0] * 180 / M_PI<<  endl; 
 	position_mean = position_mean + points.at(i).translation(); 
 	yaw_mean = yaw_mean + Matrix3d( points.at(i).rotation()).eulerAngles(2,1,0)[0]; 
 	
@@ -69,35 +69,64 @@ void Clustering::calcMean( )
 
 }
 
-
-void Clustering::removeOutliners( Eigen::Vector4d spread )
+void Clustering::calcSpread(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation, double percentage_sigma, double min_distance, double min_angle, double max_distance, double max_angle)
 {
+    //calculating the square of the covariance 
+    Eigen::LLT<Eigen::Matrix3d> llt;
+    llt.compute(cov_position);
+    Matrix3d sigma_points = llt.matrixL();
+    llt.compute(cov_orientation);
+    Matrix3d sigma_points_ori = llt.matrixL();    
+
+    spread = Vector4d(sigma_points.col(0).norm(), sigma_points.col(1).norm(), sigma_points.col(2).norm(), sigma_points_ori.col(2).norm() );
+
+    spread = percentage_sigma * spread;
     
-    while( points.size() > 0 )
+    for(int i = 0; i < 3; i++) 
+    {
+	if ( spread(i) < min_distance )
+	    spread(i) = min_distance; 
+	else if ( spread(i) > max_distance ) 
+	    spread(i) = max_distance; 
+    }
+    
+    if ( spread(3) < min_angle )
+	spread(3) = min_angle; 
+    else if ( spread(3) > max_angle ) 
+	spread(3) = max_angle; 
+ 
+}
+
+void Clustering::removeOutliners( int clustering_min_points )
+{
+    outliners.clear();
+    cout << "spread " << spread.segment<3>(0).transpose() << " " <<spread(3) * 180 / M_PI<< endl; 
+    while( points.size() >= clustering_min_points )
     {
 	calcMean( ); 
+	
 	//verify if all points are within the clustering distance limits 
 	int at_max_diff= -1;
 	
 	Eigen::Vector4d diference; 
 	Eigen::Vector4d max_diference; 
 	
+	max_diference.setZero(); 
 	
 	for(unsigned int i = 0; i < points.size(); i++) 
 	{
 	    diference.segment<3>(0) = ( mean.translation() - points.at(i).translation() ).cwise().abs(); 
 	    diference(3) = fabs( Matrix3d( points.at(i).rotation() ).eulerAngles(2,1,0)[0] - Matrix3d( mean.rotation() ).eulerAngles(2,1,0)[0] ); 
-	    
 	    for(int i = 0; i < 4; i++) 
 		if ( diference(i) > spread(i) ) 
-	    {
-		if ( diference.norm() > max_diference.norm() )
 		{
-		    at_max_diff = i; 
-		    max_diference = diference;
-		    break; 
+		    if ( diference.norm() > max_diference.norm() )
+		    {
+			at_max_diff = i; 
+			max_diference = diference;
+			break; 
+		    }
 		}
-	    }
    	}
 	
 	if ( at_max_diff!=-1 ) 
@@ -108,11 +137,11 @@ void Clustering::removeOutliners( Eigen::Vector4d spread )
 	    
 	}else 
 	{
+	    cout << "No point removed "<< endl; 
 	    return; 
 	}
     }
     
-    cout << " Icp.Task.cpp Error on removing Outliners..all points removed " << endl; 
     return; 
 
 }
@@ -148,16 +177,19 @@ Eigen::Transform3d Sampling::getZeroSample()
     
 }
 
-Eigen::Transform3d Sampling::getUniformSample()
+Eigen::Transform3d Sampling::getUniformSample( )
 {
-    double delta_yaw = (*generator) () * sqrt( cov_or(2,2) ); 
-    double delta_x = (*generator) () * sqrt( cov_pos(0,0) ); 
-    double delta_y = (*generator) () * sqrt( cov_pos(1,1) ); 
-    double delta_z = (*generator) () * sqrt( cov_pos(2,2) ); 
+
+    Eigen::Vector3d translation; 
+    for( int col = 0; col < 3; col ++) 
+    {
+	translation = translation + (*generator)()* sigmaPointsPosition.col(col);
+    }
+    double delta_yaw = (*generator) () * sigmaPointsOrientation.col(2).norm();
     Eigen::Transform3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
-    offset.translation() = Eigen::Vector3d( delta_x, delta_y, delta_z);
+    offset.translation() = translation; 
     
-    //cout << offset.translation().transpose() << " yaw " << delta_yaw * 180 / M_PI << endl; 
+    cout << offset.translation().transpose() << " yaw " << delta_yaw * 180 / M_PI << endl; 
 
     return offset;
     
@@ -178,21 +210,38 @@ Eigen::Transform3d  Sampling::getSigmaSample()
     
 }
 
-void  Sampling::calcSigmaSamples()
+void  Sampling::calcSigmaPoints(Eigen::Matrix3d cov_pos, Eigen::Matrix3d cov_or, double min_distance, double min_angle)
 {
-    
-    sigma_samples.clear();
     
     //calculating the square of the covariance 
     Eigen::LLT<Eigen::Matrix3d> llt;
     llt.compute(cov_pos);
+    sigmaPointsPosition = llt.matrixL();    
+
+    llt.compute(cov_or);
+    sigmaPointsOrientation = llt.matrixL();    
+
+    for(int column = 0; column < 3; column++) 
+    {
+	if( sigmaPointsPosition.col(column).norm() < min_distance ) 
+		sigmaPointsPosition.col(column) = (Eigen::Matrix3d::Identity() * min_distance).col(column) ;
+	if( sigmaPointsOrientation.col(column).norm() < min_angle ) 
+		sigmaPointsOrientation.col(column) = (Eigen::Matrix3d::Identity() * min_angle).col(column) ; 
+    }
     
-    //the sigma points 
+}
+
+void  Sampling::calcSigmaSamples()
+{
+    
+    sigma_samples.clear();
+
+    //the null sigma points 
     Eigen::Transform3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
     offset.translation() = Eigen::Vector3d::Zero(); 
     sigma_samples.push_back(offset);
-    Matrix3d cov_root = llt.matrixL();
- 
+
+    
     for(int i=0; i < 2; i++) 
     {
 	int sign; 
@@ -204,12 +253,12 @@ void  Sampling::calcSigmaSamples()
 	for(int column = 0; column < 3; column++) 
 	{
 	    Eigen::Transform3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
-	    offset.translation() = Eigen::Vector3d( sign * cov_root.col(column) );
+	    offset.translation() = Eigen::Vector3d( sign * sigmaPointsPosition.col(column) );
 	    sigma_samples.push_back(offset);
 
 	}
 	
-	Eigen::Transform3d offset( Eigen::AngleAxisd( sign * sqrt( cov_or(2,2) ), Eigen::Vector3d::UnitZ() ) );
+	Eigen::Transform3d offset( Eigen::AngleAxisd( sign * sigmaPointsOrientation.col(2).norm(), Eigen::Vector3d::UnitZ() ) );
 	offset.translation() = Eigen::Vector3d::Zero();
 	sigma_samples.push_back(offset);
 	

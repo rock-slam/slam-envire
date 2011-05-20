@@ -25,14 +25,16 @@ class Clustering
     public: 
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	
-	Clustering( std::vector<Eigen::Transform3d> _points){ 
-	    points = _points; mean = Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ); outliners.clear(); translation_covariance.setZero(); rotational_covariance.setZero(); }
+	Clustering(){ 
+	     translation_covariance.setZero(); rotational_covariance.setZero(); }
 	
 	/**
 	 * The spread is how far can your points be from your mean before it is considered an outliner 
 	 * Implemented in 4d, x, y, z, yaw 
+	 * The spread is considered a % of the 1 sigma distribution 
+	 * It is considered within a Maximal and Minimal size defined 
 	 */ 
-	void removeOutliners( Eigen::Vector4d spread);
+	void removeOutliners( int clustering_min_points );
 	/** 
 	* Calculates variance of a number of samples 
 	* Variance in Translation 
@@ -43,6 +45,13 @@ class Clustering
 	* Calculates the mean of a number of points 
 	*/ 
 	void calcMean(); 
+	/** 
+	 * Calculates the spread for the outliner removal 
+	 */ 
+	void calcSpread(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation, double percentage_sigma, double min_distance, double min_angle, double max_distance, double max_angle); 
+	
+	void setSamples(  std::vector<Eigen::Transform3d> _points ) 
+	    {points = _points;}
 	
 	Eigen::Matrix3d getTranslationCovariance() { return translation_covariance; }
 	Eigen::Matrix3d getRotationCovariance() { return rotational_covariance; }
@@ -58,6 +67,8 @@ class Clustering
 	Eigen::Transform3d mean; 
 	Eigen::Matrix3d translation_covariance; 
 	Eigen::Matrix3d rotational_covariance; 
+	Eigen::Vector4d spread; 
+	
 	
 	
 
@@ -77,14 +88,14 @@ class Sampling
 	* Gets the offset for the 1 sigma search 
 	* which means, sampling points at 1 sigma of the estimated position
 	* */ 
-	void setModeSigmaSampling(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation) 
-	    { cov_pos = cov_position; cov_or = cov_orientation; sampling_type = 1;  last_sigma_sample = 0; calcSigmaSamples(); }
+	void setModeSigmaSampling(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation, double min_distance, double min_angle) 
+	    { sampling_type = 1;  last_sigma_sample = 0; calcSigmaPoints(cov_position,cov_orientation,min_distance,min_angle); calcSigmaSamples(); }
 	/** 
 	* Sets the offset for a uniform generated sample 
 	* The search space is min * 1 sigma to max * 1 sigma ( min, max parameters of the uniforma sample generator
 	* */ 
-	void setModeUniformSampling(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation,  boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > *_generator)
-	    { cov_pos = cov_position; cov_or = cov_orientation; sampling_type = 2;  generator = _generator; }
+	void setModeUniformSampling(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation,  boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > *_generator, double min_distance, double min_angle)
+	    { sampling_type = 2;  generator = _generator; calcSigmaPoints(cov_position,cov_orientation,min_distance,min_angle); }
 	/**
 	 * returns a sample offset based on the sampling mode choosen 
 	 */
@@ -97,8 +108,6 @@ class Sampling
 	 * 2 - uniform sampling 
 	 */
 	int sampling_type; 
-	Eigen::Matrix3d cov_pos;
-	Eigen::Matrix3d cov_or; 
 	boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > *generator; 
 	/**
 	 * indicates the last sigma sample returned 
@@ -110,6 +119,9 @@ class Sampling
 	Eigen::Transform3d getSigmaSample(); 
 	Eigen::Transform3d getZeroSample(); 
 	void calcSigmaSamples(); 
+	void calcSigmaPoints(Eigen::Matrix3d cov_pos, Eigen::Matrix3d cov_or, double min_distance, double min_angle);
+	Eigen::Matrix3d sigmaPointsPosition; 
+	Eigen::Matrix3d sigmaPointsOrientation; 
 	
 }; 
 
