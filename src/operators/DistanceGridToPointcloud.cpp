@@ -3,6 +3,8 @@
 #include <envire/maps/Grids.hpp>
 #include <envire/maps/Pointcloud.hpp>
 
+#include <boost/math/special_functions/fpclassify.hpp>
+
 using namespace envire;
 
 ENVIRONMENT_ITEM_DEF( DistanceGridToPointcloud )
@@ -33,19 +35,24 @@ bool DistanceGridToPointcloud::updateAll()
     {
 	for(size_t y=0; y<distanceGrid.getHeight(); y++)
 	{
-	    // construct (p_x,p_y,1.0) vector
-	    Eigen::Vector3d r;
-	    r << distanceGrid.fromGrid( Position( x, y ) ), 1.0;
+	    // only process vector if distance value is not NaN or inf
+	    const float d = distance[y][x];
+	    if( boost::math::isnormal( d ) ) 
+	    {
+		// construct (p_x,p_y,1.0) vector
+		Eigen::Vector3d r;
+		r << distanceGrid.fromGrid( Position( x, y ) ), 1.0;
 
-	    // scale the vector
-	    r *= distance[y][x];
+		// scale the vector
+		r *= d;
 
-	    // only transform to target if needed
-	    if( needsTransform )
-		r = t * r;
+		// only transform to target if needed
+		if( needsTransform )
+		    r = t * r;
 
-	    // add point to target pointcloud
-	    pointcloud.vertices.push_back( r );
+		// add point to target pointcloud
+		pointcloud.vertices.push_back( r );
+	    }
 	}
     }
 
