@@ -179,11 +179,13 @@ Eigen::Transform3d Sampling::getZeroSample()
 
 Eigen::Transform3d Sampling::getUniformSample( )
 {
-
+    
     Eigen::Vector3d translation; 
+    translation.setZero(); 
     for( int col = 0; col < 3; col ++) 
     {
 	translation = translation + (*generator)()* sigmaPointsPosition.col(col);
+	
     }
     double delta_yaw = (*generator) () * sigmaPointsOrientation.col(2).norm();
     Eigen::Transform3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
@@ -223,6 +225,7 @@ void  Sampling::calcSigmaPoints(Eigen::Matrix3d cov_pos, Eigen::Matrix3d cov_or,
 
     for(int column = 0; column < 3; column++) 
     {
+	
 	if( sigmaPointsPosition.col(column).norm() < min_distance ) 
 		sigmaPointsPosition.col(column) = (Eigen::Matrix3d::Identity() * min_distance).col(column) ;
 	if( sigmaPointsOrientation.col(column).norm() < min_angle ) 
