@@ -62,8 +62,8 @@ bool GridBase::toGrid( Eigen::Vector3d const& point, size_t& m, size_t& n, Frame
 
 bool GridBase::toGrid( double x, double y, size_t& m, size_t& n) const
 {
-    size_t am = floor((x+offsetx)/scalex);
-    size_t an = floor((y+offsety)/scaley);
+    size_t am = floor((x-offsetx)/scalex);
+    size_t an = floor((y-offsety)/scaley);
     if( 0 <= am && am < width && 0 <= an && an < height )
     {
 	m = am;
@@ -91,8 +91,8 @@ Eigen::Vector3d GridBase::fromGrid(size_t m, size_t n, FrameNode const* frame) c
 
 void GridBase::fromGrid( size_t m, size_t n, double& x, double& y) const
 {
-    x = (m+0.5) * scalex - offsetx;
-    y = (n+0.5) * scaley - offsety;
+    x = (m+0.5) * scalex + offsetx;
+    y = (n+0.5) * scaley + offsety;
 }
 
 bool GridBase::toGrid( const Point2D& point, Position& pos) const
