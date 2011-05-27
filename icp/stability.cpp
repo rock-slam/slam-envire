@@ -190,6 +190,9 @@ Eigen::Transform3d Sampling::getUniformSample( )
 	translation = translation + (*generator)()* sigmaPointsPosition.col(col);
 	
     }
+    //removing z axis samplign 
+    translation[2] = 0; 
+    
     double delta_yaw = (*generator) () * sigmaPointsOrientation.col(2).norm();
     Eigen::Transform3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
     offset.translation() = translation; 
