@@ -1,7 +1,9 @@
 #include "stability.hpp"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+
 #include <Eigen/SVD>
+//#include <Eigen/Cholesky>
 #include <Eigen/Dense>
 
 USING_PART_OF_NAMESPACE_EIGEN
@@ -28,8 +30,8 @@ void Clustering::calcVariance( )
     variance_postion = variance_postion / points.size();
     variance_yaw = variance_yaw / points.size(); 
     
-    cout << " variance " << endl; 
-    cout << variance_postion.transpose() << " - " << variance_yaw * 180 / M_PI << endl; 
+    //cout << " variance " << endl; 
+    //cout << variance_postion.transpose() << " - " << variance_yaw * 180 / M_PI << endl; 
     
     translation_covariance = Eigen::Matrix3d::Zero() ;
 
@@ -63,7 +65,7 @@ void Clustering::calcMean( )
     
     position_mean = position_mean /  points.size(); 
     yaw_mean = yaw_mean /  points.size(); 
-    std::cout <<points.size() <<" mean " << position_mean.transpose() << " - " <<  yaw_mean * 180 / M_PI <<  endl; 
+    //std::cout <<points.size() <<" mean " << position_mean.transpose() << " - " <<  yaw_mean * 180 / M_PI <<  endl; 
     mean = Eigen::AngleAxisd( yaw_mean, Eigen::Vector3d::UnitZ() ); 
     mean.translation() = position_mean;
 
@@ -100,7 +102,7 @@ void Clustering::calcSpread(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_or
 void Clustering::removeOutliners( int clustering_min_points )
 {
     outliners.clear();
-    cout << "spread " << spread.segment<3>(0).transpose() << " " <<spread(3) * 180 / M_PI<< endl; 
+    //cout << "spread " << spread.segment<3>(0).transpose() << " " <<spread(3) * 180 / M_PI<< endl; 
     while( points.size() >= clustering_min_points )
     {
 	calcMean( ); 
@@ -117,8 +119,8 @@ void Clustering::removeOutliners( int clustering_min_points )
 	{
 	    diference.segment<3>(0) = ( mean.translation() - points.at(i).translation() ).cwise().abs(); 
 	    diference(3) = fabs( Matrix3d( points.at(i).rotation() ).eulerAngles(2,1,0)[0] - Matrix3d( mean.rotation() ).eulerAngles(2,1,0)[0] ); 
-	    for(int i = 0; i < 4; i++) 
-		if ( diference(i) > spread(i) ) 
+	    for(int j = 0; j < 4; j++) 
+		if ( diference(j) > spread(j) ) 
 		{
 		    if ( diference.norm() > max_diference.norm() )
 		    {
@@ -131,13 +133,14 @@ void Clustering::removeOutliners( int clustering_min_points )
 	
 	if ( at_max_diff!=-1 ) 
 	{
-	    cout << "Removing " << points.at( at_max_diff).translation().transpose()<< endl; 
+	    //cout << "Removing " << at_max_diff << " " << points.size()<< endl; 
+	    //cout << "Removing " << points.at( at_max_diff).translation().transpose()<< endl; 
 	    outliners.push_back(points.at(  at_max_diff));
 	    points.erase( points.begin() + at_max_diff); 
 	    
 	}else 
 	{
-	    cout << "No point removed "<< endl; 
+	    //cout << "No point removed "<< endl; 
 	    return; 
 	}
     }
@@ -191,7 +194,7 @@ Eigen::Transform3d Sampling::getUniformSample( )
     Eigen::Transform3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
     offset.translation() = translation; 
     
-    cout << offset.translation().transpose() << " yaw " << delta_yaw * 180 / M_PI << endl; 
+    //cout << offset.translation().transpose() << " yaw " << delta_yaw * 180 / M_PI << endl; 
 
     return offset;
     
