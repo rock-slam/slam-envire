@@ -6,7 +6,7 @@
 //#include <Eigen/Cholesky>
 #include <Eigen/Dense>
 
-USING_PART_OF_NAMESPACE_EIGEN
+#include <iostream>
 
 using namespace std; 
 using namespace Eigen; 
@@ -43,7 +43,7 @@ void Clustering::calcVariance(  )
     
     for(unsigned int i = 0; i < points.size(); i++) 
     {
-	variance_postion = variance_postion + (mean.translation() - points.at(i).translation()).cwise().square(); 
+	variance_postion = variance_postion + (mean.translation() - points.at(i).translation()).array().square().matrix(); 
 	variance_yaw = variance_yaw + pow(  Matrix3d( mean.rotation() ).eulerAngles(2,1,0)[0]  -  Matrix3d( points.at(0).rotation()).eulerAngles(2,1,0)[0], 2 );
     }
 
@@ -173,11 +173,11 @@ bool Clustering::removeOutliers(  )
  * *****************************SAMPLING****************************
  */
 
-Eigen::Transform3d Sampling::getSigmaOffset()
+Eigen::Affine3d Sampling::getSigmaOffset()
 {
     return getSigmaSample(); 
 }
-Eigen::Transform3d Sampling::getUniformOffset()
+Eigen::Affine3d Sampling::getUniformOffset()
 {
     return getUniformSample(); 
 }
@@ -191,7 +191,7 @@ void Sampling::defSearchRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov
     sigmaPointsOrientation = sigma_points.calcSigmaPoints(cov_orientation, conf.region_sample_orientation);
 }
 
-Eigen::Transform3d Sampling::getUniformSample( )
+Eigen::Affine3d Sampling::getUniformSample( )
 {
     Eigen::Vector3d translation; 
     translation.setZero(); 
@@ -206,7 +206,7 @@ Eigen::Transform3d Sampling::getUniformSample( )
     
     double delta_yaw = getRandomValue(-1,1)  * sigmaPointsOrientation.col(2).norm();
     
-    Eigen::Transform3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
+    Eigen::Affine3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
     offset.translation() = translation; 
     
     //cout << offset.translation().transpose() << " yaw " << delta_yaw * 180 / M_PI << endl; 
@@ -215,7 +215,7 @@ Eigen::Transform3d Sampling::getUniformSample( )
     
 }
 
-Eigen::Transform3d  Sampling::getSigmaSample()
+Eigen::Affine3d  Sampling::getSigmaSample()
 {
     if( last_sigma_sample == 0 ) 
 	calcSigmaSamples(); 
@@ -223,8 +223,8 @@ Eigen::Transform3d  Sampling::getSigmaSample()
     if( last_sigma_sample == sigma_samples.size() ) 
     {
 	cout << " Icp.Stability.cpp Error: All sigma samples already collected " << endl; 
-	return Eigen::Transform3d( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
-    }	
+	return Eigen::Affine3d( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
+    }
 	
     last_sigma_sample++; 
     return sigma_samples.at(last_sigma_sample-1); 
@@ -238,7 +238,7 @@ void  Sampling::calcSigmaSamples()
     sigma_samples.clear();
 
     //the null sigma points 
-    Eigen::Transform3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
+    Eigen::Affine3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
     offset.translation() = Eigen::Vector3d::Zero(); 
     sigma_samples.push_back(offset);
 
@@ -254,13 +254,13 @@ void  Sampling::calcSigmaSamples()
 	//Changed to column == 2 to ignore the z axis sampling 
 	for(int column = 0; column < 2; column++) 
 	{
-	    Eigen::Transform3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
+	    Eigen::Affine3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
 	    offset.translation() = Eigen::Vector3d( sign * sigmaPointsPosition.col(column) );
 	    sigma_samples.push_back(offset);
 
 	}
 	
-	Eigen::Transform3d offset( Eigen::AngleAxisd( sign * sigmaPointsOrientation.col(2).norm(), Eigen::Vector3d::UnitZ() ) );
+	Eigen::Affine3d offset( Eigen::AngleAxisd( sign * sigmaPointsOrientation.col(2).norm(), Eigen::Vector3d::UnitZ() ) );
 	offset.translation() = Eigen::Vector3d::Zero();
 	sigma_samples.push_back(offset);
 	
