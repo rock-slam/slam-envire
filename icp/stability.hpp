@@ -79,14 +79,14 @@ class Clustering
 	
 	Eigen::Matrix3d getTranslationCovariance() { return translation_covariance; }
 	Eigen::Matrix3d getRotationCovariance() { return rotational_covariance; }
-	Eigen::Transform3d getMean() { return mean; } 
-	std::vector<Eigen::Transform3d> getPoints() { return points; } 
+	Eigen::Affine3d getMean() { return mean; } 
+	std::vector<Eigen::Affine3d> getPoints() { return points; } 
 	unsigned int getSizePoints() { return points.size(); }
 	
     private: 
 	ClusteringConfiguration conf; 
 	std::vector<Eigen::Transform3d> points;
-	Eigen::Transform3d mean; 
+	Eigen::Affine3d mean; 
 	Eigen::Matrix3d translation_covariance; 
 	Eigen::Matrix3d rotational_covariance; 
 	Eigen::Matrix3d variance_limit_pos;  
@@ -134,8 +134,8 @@ class Sampling
 	/**
 	 * returns a sample offset based on the sampling mode choosen 
 	 */
-	Eigen::Transform3d getUniformOffset(); 
-	Eigen::Transform3d getSigmaOffset(); 
+	Eigen::Affine3d getUniformOffset(); 
+	Eigen::Affine3d getSigmaOffset(); 
 	
 	Eigen::Matrix3d getSigmaPointsOfSamplingRegionTranslation(){ return sigmaPointsPosition;}
 	Eigen::Matrix3d getSigmaPointsOfSamplingRegionRotation(){return sigmaPointsOrientation;} 
@@ -155,11 +155,11 @@ class Sampling
 	 * indicates the last sigma sample returned 
 	 */ 
 	unsigned int last_sigma_sample; 
-	std::vector<Eigen::Transform3d> sigma_samples;
+	std::vector<Eigen::Affine3d> sigma_samples;
 	
-	Eigen::Transform3d getUniformSample(); 
-	Eigen::Transform3d getSigmaSample(); 
-	Eigen::Transform3d getZeroSample(); 
+	Eigen::Affine3d getUniformSample(); 
+	Eigen::Affine3d getSigmaSample(); 
+	Eigen::Affine3d getZeroSample(); 
 	void calcSigmaSamples(); 
 	void calcSigmaPoints(Eigen::Matrix3d cov_pos, Eigen::Matrix3d cov_or, double min_distance, double min_angle);
 	Eigen::Matrix3d sigmaPointsPosition; 
