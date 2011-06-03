@@ -14,6 +14,7 @@ ScanMeshing::ScanMeshing()
 
 void ScanMeshing::setDefaultConfiguration()
 {
+    maxEdgeAngle = 85.0/180.0*M_PI;
     maxEdgeLength = 0.5; 
     remissionScaleFactor = 10000; 
     remissionMarkerThreshold = 16000;
@@ -141,10 +142,24 @@ bool ScanMeshing::updateAll()
 
 	bool has_rem = (line.ranges.size() == line.remissions.size());
 
+	float prev_edgeAngle = M_PI*0.5;
         for(size_t point_num=0;point_num<line.ranges.size();point_num++) {
-            // TODO check what actually is a valid range
-            if( line.ranges[point_num] > (minRange*1000.0) ) {
-                float range = line.ranges[point_num] / 1000.0;
+	    // check distance derivative over angle to filter ghost
+	    // readings on edges
+	    float range = line.ranges[point_num] / 1000.0;
+	    float edgeAngle = M_PI*0.5;
+	    if( point_num < (line.ranges.size() - 1) )
+	    {
+		float next_range = line.ranges[point_num+1] / 1000.0;
+		float c = sqrt( pow(range,2) + pow(next_range,2) - 2*range*next_range*cos( 2*scan.delta_psi ) );
+		edgeAngle = acos( (pow(range,2) - pow(next_range,2) + pow(c,2) ) / ( 2*range*c ) );
+	    }
+	    bool pass = fabs(edgeAngle-M_PI*0.5) < maxEdgeAngle &&
+		fabs(prev_edgeAngle-M_PI*0.5) < maxEdgeAngle;
+	    prev_edgeAngle = edgeAngle;
+
+            if( range > minRange && pass ) 
+	    {
                 float xx = std::cos( psi ) * range;
 
                 Eigen::Vector3d point( 
