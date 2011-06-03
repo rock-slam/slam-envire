@@ -11,6 +11,7 @@ namespace envire
     {
 	ENVIRONMENT_ITEM( ScanMeshing )
 
+	double maxEdgeAngle;
 	double maxEdgeLength;
 	double remissionScaleFactor;
 	long remissionMarkerThreshold;
