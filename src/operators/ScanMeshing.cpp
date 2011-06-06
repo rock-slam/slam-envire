@@ -291,6 +291,10 @@ bool ScanMeshing::updateAll()
 
     env->itemModified( meshPtr );
 
+    // remove color if size is not the same
+    if( colors.size() != points.size() )
+	meshPtr->removeData( TriMesh::VERTEX_COLOR );
+
     return true;
 }
 
