@@ -141,6 +141,7 @@ void PlyFile::warning_callback(const std::string& filename, std::size_t line_num
 void PlyFile::error_callback(const std::string& filename, std::size_t line_number, const std::string& message)
 {
     std::cerr << filename << ":" << line_number << ": " << "error: " << message << std::endl;
+    throw std::runtime_error("could not parse ply file " + filename_ );
 }
 
 void PlyFile::magic_callback()
@@ -216,7 +217,7 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
 
     // see if we can upcast to a trimesh
     TriMesh* trimesh = dynamic_cast<TriMesh*>(pointcloud);
-    if( trimesh )
+    if( trimesh && !trimesh->faces.empty() )
     {
 	data << "element face " << trimesh->faces.size() << "\n";
 	data << "property list uchar int vertex_index\n";
@@ -236,6 +237,8 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
     if( pointcloud->hasData( Pointcloud::VERTEX_NORMAL ) )
     {
 	std::vector<Eigen::Vector3d> &normals( pointcloud->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
+	if( normals.size() != pointcloud->vertices.size() )
+	    throw std::runtime_error("number of normals don't match number of vertices.");
 	for(size_t i=0;i<normals.size();i++)
 	{
 	    Eigen::Vector3d &normal( normals[i] );
@@ -248,6 +251,9 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
     if( pointcloud->hasData( Pointcloud::VERTEX_COLOR ) )
     {
 	std::vector<Eigen::Vector3d> &colors( pointcloud->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_COLOR ) );
+	if( colors.size() != pointcloud->vertices.size() )
+	    throw std::runtime_error("number of colors don't match number of vertices.");
+
 	for(size_t i=0;i<colors.size();i++)
 	{
 	    unsigned char r = colors[i].x()*255; 
