@@ -26,6 +26,7 @@ bool DistanceGridToPointcloud::updateAll()
     // in order recover the pointcloud, we need to reverse the projection
 
     DistanceGrid::ArrayType const& distance = distanceGrid.getGridData( DistanceGrid::DISTANCE );
+    std::vector<double>& uncertainty(pointcloud.getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
 
     // clear target
     pointcloud.clear();
@@ -52,6 +53,9 @@ bool DistanceGridToPointcloud::updateAll()
 
 		// add point to target pointcloud
 		pointcloud.vertices.push_back( r );
+
+		// add uncertainty
+		uncertainty.push_back( d * uncertaintyFactor );
 	    }
 	}
     }
