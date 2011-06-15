@@ -43,13 +43,25 @@ public:
     virtual void itemModified(EnvironmentItem *item);
 };
 
+class EventFilter
+{
+public:
+    virtual bool filter( envire::Event const& ) = 0;
+};
+
 /** Convenience class, that performs the dispatching of particular event
  * types into callback methods.
  */
 class EventListener : public EventHandler, public EventDispatcher
 {
 public:
+    EventListener();
     void handle( const Event& message );
+
+    void setFilter( EventFilter *filter ) { this->filter = filter; }
+
+protected:
+    EventFilter *filter;
 };
 
 class EventQueue : public EventHandler

@@ -14,9 +14,17 @@ void EventDispatcher::setRootNode(FrameNode *root) {}
 void EventDispatcher::removeRootNode(FrameNode *root) {}
 void EventDispatcher::itemModified(EnvironmentItem *item) {}
 
+EventListener::EventListener()
+    : filter(NULL) {}
+
 void EventListener::handle( const Event& event )
 {
-    dispatch( event.type, event.operation, event.a.get(), event.b.get(), this );
+    bool res = true;
+    if( filter )
+	res = filter->filter( event );
+
+    if( res )
+	dispatch( event.type, event.operation, event.a.get(), event.b.get(), this );
 }
 
 void EventDispatcher::dispatch( Event::Type type, Event::Operation operation, EnvironmentItem* a, EnvironmentItem* b, EventDispatcher* disp )
