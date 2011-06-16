@@ -1,4 +1,5 @@
 #ifndef __STABILITY_H__
+#ifndef __STABILITY_H__
 #define __STABILITY_H_
 
 #define EIGEN_USE_NEW_STDVECTOR
