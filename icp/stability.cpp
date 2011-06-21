@@ -13,7 +13,27 @@ using namespace Eigen;
 using namespace envire::icp;
 
 
-void Clustering::calcVariance( )
+bool Clustering::cluster(  std::vector<Eigen::Transform3d> points ) 
+{
+    this->points = points;
+    
+    if( points.size() < conf.min_number_of_points )
+	return false;
+    
+    if( conf.remove_outliners ) 
+    {
+	return removeOutliners( );
+    }
+    else
+    {
+	calcMean();
+	calcVariance();
+	return true; 
+    }
+    
+    
+}
+void Clustering::calcVariance(  )
 {
 
     //find the variance, variables considered independant 
@@ -71,81 +91,75 @@ void Clustering::calcMean( )
 
 }
 
-void Clustering::calcSpread(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation, double percentage_sigma, double min_distance, double min_angle, double max_distance, double max_angle)
+void Clustering::defOutlinerRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation)
 {
-    //calculating the square of the covariance 
-    Eigen::LLT<Eigen::Matrix3d> llt;
-    llt.compute(cov_position);
-    Matrix3d sigma_points = llt.matrixL();
-    llt.compute(cov_orientation);
-    Matrix3d sigma_points_ori = llt.matrixL();    
-
-    spread = Vector4d(sigma_points.col(0).norm(), sigma_points.col(1).norm(), sigma_points.col(2).norm(), sigma_points_ori.col(2).norm() );
-
-    spread = percentage_sigma * spread;
-    
-    for(int i = 0; i < 3; i++) 
+    if ( conf.remove_outliners ) 
     {
-	if ( spread(i) < min_distance )
-	    spread(i) = min_distance; 
-	else if ( spread(i) > max_distance ) 
-	    spread(i) = max_distance; 
+	SigmaPoints sigma_points; 
+	Eigen::Matrix3d sigma_points_pos = sigma_points.calcSigmaPoints(cov_position, conf.outliners_position); 
+	Eigen::Matrix3d sigma_points_ori = sigma_points.calcSigmaPoints(cov_position, conf.outliners_orientation); 
+	
+	variance_limit_ori = sigma_points_ori * sigma_points_ori; 
+	variance_limit_pos = sigma_points_pos * sigma_points_pos; 
     }
-    
-    if ( spread(3) < min_angle )
-	spread(3) = min_angle; 
-    else if ( spread(3) > max_angle ) 
-	spread(3) = max_angle; 
- 
 }
 
-void Clustering::removeOutliners( int clustering_min_points )
+bool Clustering::removeOutliners(  )
 {
-    outliners.clear();
+ 
     //cout << "spread " << spread.segment<3>(0).transpose() << " " <<spread(3) * 180 / M_PI<< endl; 
-    while( points.size() >= clustering_min_points )
+    while( points.size() >= conf.min_number_of_points )
     {
 	calcMean( ); 
+	calcVariance( );
 	
-	//verify if all points are within the clustering distance limits 
+	//verify if the variance is within the cluestering limits 
 	int at_max_diff= -1;
-	
-	Eigen::Vector4d diference; 
-	Eigen::Vector4d max_diference; 
-	
-	max_diference.setZero(); 
-	
-	for(unsigned int i = 0; i < points.size(); i++) 
+	double diference=0; 
+	double max_diference=0; 	
+	if( translation_covariance.norm() > variance_limit_pos.norm() )
 	{
-	    diference.segment<3>(0) = ( mean.translation() - points.at(i).translation() ).cwise().abs(); 
-	    diference(3) = fabs( Matrix3d( points.at(i).rotation() ).eulerAngles(2,1,0)[0] - Matrix3d( mean.rotation() ).eulerAngles(2,1,0)[0] ); 
-	    for(int j = 0; j < 4; j++) 
-		if ( diference(j) > spread(j) ) 
+	    for(unsigned int i = 0; i < points.size(); i++) 
+	    {
+		diference = fabs( mean.translation().norm() - points.at(i).translation().norm() );
+		if( diference > max_diference )
 		{
-		    if ( diference.norm() > max_diference.norm() )
-		    {
-			at_max_diff = i; 
-			max_diference = diference;
-			break; 
-		    }
+		    at_max_diff = i; 
+		    max_diference = diference;
 		}
-   	}
-	
+	    }
+
+	}
+	else if( rotational_covariance(2,2) >  variance_limit_ori(2,2) ) 
+	{
+	    for(unsigned int i = 0; i < points.size(); i++) 
+	    {
+		diference = fabs( Matrix3d( points.at(i).rotation() ).eulerAngles(2,1,0)[0] - Matrix3d( mean.rotation() ).eulerAngles(2,1,0)[0] ); 
+		if( diference > max_diference )
+		{
+		    at_max_diff = i; 
+		    max_diference = diference;
+		}
+	    }
+	    
+	}
+
 	if ( at_max_diff!=-1 ) 
 	{
 	    //cout << "Removing " << at_max_diff << " " << points.size()<< endl; 
 	    //cout << "Removing " << points.at( at_max_diff).translation().transpose()<< endl; 
-	    outliners.push_back(points.at(  at_max_diff));
+	    //outliners.push_back(points.at(  at_max_diff));
 	    points.erase( points.begin() + at_max_diff); 
 	    
 	}else 
 	{
 	    //cout << "No point removed "<< endl; 
-	    return; 
+	    return true; 
 	}
+	
     }
     
-    return; 
+    return false; 
 
 }
 
@@ -157,14 +171,13 @@ void Clustering::removeOutliners( int clustering_min_points )
 Eigen::Transform3d Sampling::getOffset()
 {
     
-    switch (sampling_type)
+    switch (conf.mode)
     {
-	case 0: 
-	    return getZeroSample(); 
-	case 1: 
+	case UNIFORM_SAMPLING: 
+	    return getUniformSample(); 
+	case SIGMA_SAMPLING: 
 	    return getSigmaSample(); 
-	case 2: 
-	    return getUniformSample();
+	
 	default: 
 	    cout << "ERROR STABILITY.CPP NO SAMPLING MODE DEFINED " << endl; 
     }    
@@ -172,12 +185,13 @@ Eigen::Transform3d Sampling::getOffset()
     
 }
 	
-Eigen::Transform3d Sampling::getZeroSample()
+ 
+void Sampling::defSearchRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation)
 {
-    
-    Eigen::Transform3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
-    return offset; 
-    
+    last_sigma_sample = 0;
+    SigmaPoints sigma_points; 
+    sigmaPointsPosition = sigma_points.calcSigmaPoints(cov_position, conf.region_sample_position);
+    sigmaPointsPosition = sigma_points.calcSigmaPoints(cov_orientation, conf.region_sample_orientation);
 }
 
 Eigen::Transform3d Sampling::getUniformSample( )
@@ -210,35 +224,13 @@ Eigen::Transform3d  Sampling::getSigmaSample()
     {
 	cout << " Icp.Stability.cpp Error: All sigma samples already collected " << endl; 
 	return Eigen::Transform3d( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
-    }
-	
+    }	
 	
     last_sigma_sample++; 
     return sigma_samples.at(last_sigma_sample-1); 
     
 }
 
-void  Sampling::calcSigmaPoints(Eigen::Matrix3d cov_pos, Eigen::Matrix3d cov_or, double min_distance, double min_angle)
-{
-    
-    //calculating the square of the covariance 
-    Eigen::LLT<Eigen::Matrix3d> llt;
-    llt.compute(cov_pos);
-    sigmaPointsPosition = llt.matrixL();    
-
-    llt.compute(cov_or);
-    sigmaPointsOrientation = llt.matrixL();    
-
-    for(int column = 0; column < 3; column++) 
-    {
-	
-	if( sigmaPointsPosition.col(column).norm() < min_distance ) 
-		sigmaPointsPosition.col(column) = (Eigen::Matrix3d::Identity() * min_distance).col(column) ;
-	if( sigmaPointsOrientation.col(column).norm() < min_angle ) 
-		sigmaPointsOrientation.col(column) = (Eigen::Matrix3d::Identity() * min_angle).col(column) ; 
-    }
-    
-}
 
 void  Sampling::calcSigmaSamples()
 {
@@ -259,7 +251,8 @@ void  Sampling::calcSigmaSamples()
 	else 
 	    sign = -1; 
 	
-	for(int column = 0; column < 3; column++) 
+	//Changed to column == 2 to ignore the z axis sampling 
+	for(int column = 0; column < 2; column++) 
 	{
 	    Eigen::Transform3d offset( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) );
 	    offset.translation() = Eigen::Vector3d( sign * sigmaPointsPosition.col(column) );
@@ -301,14 +294,26 @@ double Histogram::gethistogramSVNClassification( )
     
 }
 
-void Histogram::calculateHistogram(std::vector<double> pairs_distance)
+void Histogram::calculateHistogram( std::vector<double> pairs_distance ) 
 {
-    
-    if ( normalization ) 
+    if ( conf.normalization ) 
 	calculateNormalizedHistogram( pairs_distance ); 
+    
     //else 
 	//calculateNotNormalizedHistogram( pairs_distance ); 
 	
+
+}
+bool Histogram::reject() 
+{
+    if ( gethistogramSVNClassification( ) > conf.histogram_rejection_threshold)
+    {
+	return false;
+    }
+    else 
+    {
+	return true; 
+    }
 }
 
 void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance)
@@ -319,7 +324,7 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
     
     for(size_t i=0;i<_pairs_distance.size();i++) 
     {
-	pairs_distance.push_back( (_pairs_distance.at(i)- mean)/sigma); 
+	pairs_distance.push_back( (_pairs_distance.at(i)- conf.mean)/conf.sigma); 
     }
 
     histogram.clear();
@@ -327,7 +332,7 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
 
     int bin = 1; 
     
-    double bin_size = area / number_bins; 
+    double bin_size = conf.area / conf.number_bins; 
 
     int number_of_points = 0; 
     unsigned int i = 0; 
@@ -338,7 +343,7 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
     //Calculate the bin placement (the central point is zero, since the data is normalized 
     
     //add the lower limit for the outliner 
-    double outliner_upper_limit = (-number_bins / 2)  * bin_size;
+    double outliner_upper_limit = (-conf.number_bins / 2)  * bin_size;
     
     if (  pairs_distance.front() < outliner_upper_limit ) 
 	histogram_limits.push_back( outliner_upper_limit + pairs_distance.front() );
@@ -347,9 +352,9 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
     
     
     double bin_lower_limit = 0; 
-    for (bin = 0; bin <= number_bins; bin++) 
+    for (bin = 0; bin <= conf.number_bins; bin++) 
     {
-	bin_lower_limit = ((-number_bins / 2) + bin ) * bin_size;
+	bin_lower_limit = ((-conf.number_bins / 2) + bin ) * bin_size;
 	histogram_limits.push_back( bin_lower_limit );
 	
     }    
@@ -376,11 +381,11 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
 	  {
 		
 		bin_area =fabs(histogram_limits[bin-1] - histogram_limits[bin]); 
-		histogram.push_back( number_of_points/ ( pairs_distance.size() * area) ); 
+		histogram.push_back( number_of_points/ ( pairs_distance.size() * conf.area) ); 
 		
 		bin ++; 
 		//the +2 is for the outliners bins
-		if (bin == number_bins+2) 
+		if (bin == conf.number_bins+2) 
 		{
 		    number_of_points = pairs_distance.size() - i; 
 		    bin_area = fabs(histogram_limits[bin-1] - histogram_limits[bin]); 
@@ -399,7 +404,7 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
     bin++;
     
     //the +2 is because of the 2 outliners bins, upper and lower
-    while(bin <= (number_bins+2)) 
+    while(bin <= (conf.number_bins+2)) 
     {
       histogram.push_back(0);
       bin++;

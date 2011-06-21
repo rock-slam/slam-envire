@@ -5,5 +5,6 @@ rock_library(icp
 
 install(FILES icp.hpp
 stability.hpp
+ICPConfigurationTypes.hpp
     DESTINATION include/envire)
 
