@@ -20,9 +20,9 @@ bool Clustering::cluster(  std::vector<Eigen::Transform3d> points )
     if( points.size() < conf.min_number_of_points )
 	return false;
     
-    if( conf.remove_outliners ) 
+    if( conf.remove_outliers ) 
     {
-	return removeOutliners( );
+	return removeOutliers( );
     }
     else
     {
@@ -93,18 +93,18 @@ void Clustering::calcMean( )
 
 void Clustering::defOutlinerRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation)
 {
-    if ( conf.remove_outliners ) 
+    if ( conf.remove_outliers ) 
     {
 	SigmaPoints sigma_points; 
-	Eigen::Matrix3d sigma_points_pos = sigma_points.calcSigmaPoints(cov_position, conf.outliners_position); 
-	Eigen::Matrix3d sigma_points_ori = sigma_points.calcSigmaPoints(cov_position, conf.outliners_orientation); 
+	Eigen::Matrix3d sigma_points_pos = sigma_points.calcSigmaPoints(cov_position, conf.outliers_position); 
+	Eigen::Matrix3d sigma_points_ori = sigma_points.calcSigmaPoints(cov_position, conf.outliers_orientation); 
 	
 	variance_limit_ori = sigma_points_ori * sigma_points_ori; 
 	variance_limit_pos = sigma_points_pos * sigma_points_pos; 
     }
 }
 
-bool Clustering::removeOutliners(  )
+bool Clustering::removeOutliers(  )
 {
  
     //cout << "spread " << spread.segment<3>(0).transpose() << " " <<spread(3) * 180 / M_PI<< endl; 
@@ -148,7 +148,7 @@ bool Clustering::removeOutliners(  )
 	{
 	    //cout << "Removing " << at_max_diff << " " << points.size()<< endl; 
 	    //cout << "Removing " << points.at( at_max_diff).translation().transpose()<< endl; 
-	    //outliners.push_back(points.at(  at_max_diff));
+	    //outliers.push_back(points.at(  at_max_diff));
 	    points.erase( points.begin() + at_max_diff); 
 	    
 	}else 
@@ -384,7 +384,7 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
 		histogram.push_back( number_of_points/ ( pairs_distance.size() * conf.area) ); 
 		
 		bin ++; 
-		//the +2 is for the outliners bins
+		//the +2 is for the outliers bins
 		if (bin == conf.number_bins+2) 
 		{
 		    number_of_points = pairs_distance.size() - i; 
@@ -403,7 +403,7 @@ void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance
    
     bin++;
     
-    //the +2 is because of the 2 outliners bins, upper and lower
+    //the +2 is because of the 2 outliers bins, upper and lower
     while(bin <= (conf.number_bins+2)) 
     {
       histogram.push_back(0);

@@ -17,7 +17,7 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include "ICPConfigurationTypes.hpp"
+#include "icpConfigurationTypes.hpp"
 
 namespace envire {
 namespace icp {
@@ -101,7 +101,7 @@ class Clustering
 	 * The spread is considered a % of the 1 sigma distribution 
 	 * It is considered within a Maximal and Minimal size defined 
 	 */ 
-	bool removeOutliners( );
+	bool removeOutliers( );
 
 	
 	
@@ -158,7 +158,7 @@ class Sampling
 	
 }; 
 
-
+//TODO FIX THE CONFIGURATION 
 class Histogram 
 { 
     public:
