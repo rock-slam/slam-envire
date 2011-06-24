@@ -89,12 +89,12 @@ class ICPLocalization
 	
 	void addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading);
 	
-	
+	ICPPointCloudConfiguration conf_point_cloud;
     public: 
 
-	void loadConfiguration(ICPConfiguration conf){ this->conf = conf; }  
+	void loadIcpConfiguration(ICPConfiguration conf){ this->conf = conf; }  
 	
-	void loadEnvironment(); 
+	void loadEnvironment(ICPModelConfiguration conf); 
 	
 	/** 
 	* Copy a original point cloud offseting its original position 
@@ -111,7 +111,7 @@ class ICPLocalization
 
 	ICPInputData generatePointcloud();
 	
-	void initialize(); 
+	void initializePointCloud(ICPPointCloudConfiguration conf_point_cloud); 
 	
 	/**
 	 * Return if there are enough scans to generate a new point cloud 

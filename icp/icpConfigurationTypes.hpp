@@ -20,12 +20,12 @@ namespace icp
      */ 
     struct ICPResultCovarianceConf
     {
-	COV_MODE cov_mode;
+	COV_MODE mode;
 	base::Matrix3d cov_position; 
 	base::Matrix3d cov_orientation;
 	
 	ICPResultCovarianceConf() 
-	    : cov_mode(HARD_CODED) {}
+	    : mode(HARD_CODED) {}
     }; 
     
     /**
@@ -41,7 +41,7 @@ namespace icp
     /** 
      * Configuration on how to construct a point cloud 
      */ 
-    struct ICPConstructingPointCloudConfiguration{
+    struct ICPPointCloudConfiguration{
       	/**'minimal number of scanlines for creating a point cloud and triggerign an icp */
 	int lines_per_point_cloud;
 	/** minimum number of lines that dont overlap with the previous scan */
@@ -59,14 +59,7 @@ namespace icp
      */
     struct ICPConfiguration
     {  
-	ICPModelConfiguration model_conf; 
-	
-	ICPConstructingPointCloudConfiguration point_cloud_conf; 
-	
-	ICPResultCovarianceConf cov_conf; 
-	
-      	/**if this property set, scans will be collected, and environment written to given path when the module stops*/
-	std::string environment_debug_path; 
+
 
 	/** maximum number of iterations for the icp algorithm */
 	int max_iterations;
@@ -78,6 +71,11 @@ namespace icp
 	double min_mse_diff; 
 	/**'density of the measurement pointcloud*/
 	double measurement_density;
+	
+	ICPResultCovarianceConf cov_conf; 
+	
+      	/**if this property set, scans will be collected, and environment written to given path when the module stops*/
+	std::string environment_debug_path; 
 	
     };
 

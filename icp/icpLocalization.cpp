@@ -12,8 +12,9 @@ using namespace std;
 using namespace envire::icp;
 
 
-void ICPLocalization::initialize(){
-
+void ICPLocalization::initializePointCloud(ICPPointCloudConfiguration conf_point_cloud){
+  
+    this->conf_point_cloud = conf_point_cloud; 
     scansWithTransforms.clear();
         
     lastScanIndex = 0;
@@ -41,7 +42,7 @@ void ICPLocalization::addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform
     lat.body2World = body2World;
     lat.laser2Body = laser2Body;
     scansWithTransforms.push_back(lat);
-    while( scansWithTransforms.size() > conf.point_cloud_conf.lines_per_point_cloud )
+    while( scansWithTransforms.size() > conf_point_cloud.lines_per_point_cloud )
 	scansWithTransforms.pop_front();
     
     scanCount++;
@@ -69,8 +70,8 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen
 	double laserChange = acos(Ylaser2Body.dot(YlastLaser2Body));
 	double translation =  diference.translation().norm(); 
 	double rotation = fabs(Eigen::AngleAxisd( diference.rotation() ).angle()) ; 
-	add_laser_scan = add_laser_scan && ( rotation > conf.point_cloud_conf.min_rotation_for_new_line || translation > conf.point_cloud_conf.min_distance_travelled_for_new_line || laserChange >  conf.point_cloud_conf.min_rotation_head_for_new_line);
-	std::cout <<" add new scan " << add_laser_scan << " translation" << translation << " rotation " << rotation * 180 / M_PI << " last rot " << laserChange * 180 / M_PI; 
+	add_laser_scan = add_laser_scan && ( rotation > conf_point_cloud.min_rotation_for_new_line || translation > conf_point_cloud.min_distance_travelled_for_new_line || laserChange >  conf_point_cloud.min_rotation_head_for_new_line);
+	std::cout <<" add new scan " << add_laser_scan << " translation " << translation << " rotation " << rotation * 180 / M_PI << " last rot " << laserChange * 180 / M_PI<< std::endl; 
 	if (!add_laser_scan) 
 	    break; 
     }
@@ -86,7 +87,7 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen
 
 bool ICPLocalization::hasNewPointCloud()
 {
-    if( scanCount > conf.point_cloud_conf.lines_per_point_cloud && (scanCount - lastScanIndex) > conf.point_cloud_conf.min_line_advance )
+    if( scanCount > conf_point_cloud.lines_per_point_cloud && (scanCount - lastScanIndex) > conf_point_cloud.min_line_advance )
     { 	
 	return true;
     } 
@@ -94,21 +95,22 @@ bool ICPLocalization::hasNewPointCloud()
     return false; 
 }
 
-void ICPLocalization::loadEnvironment()
+void ICPLocalization::loadEnvironment(ICPModelConfiguration conf)
 {
-    if ( conf.model_conf.environment_path != "" ) 
+    std::cout << " Loading Environment "<<conf.environment_path << " with density " << conf.model_density << std::endl; 
+    if ( conf.environment_path != "" ) 
     {
 	// load the environment
 	envire::Serialization so;
-	boost::scoped_ptr<envire::Environment>(so.unserialize( conf.model_conf.environment_path) ).swap( env );
+	boost::scoped_ptr<envire::Environment>(so.unserialize( conf.environment_path) ).swap( env );
     }
     
     // and load all the pointcloud data into the icp model
     std::vector<envire::Pointcloud*> items = env->getItems<envire::Pointcloud>();
     for(std::vector<envire::Pointcloud*>::iterator it=items.begin();it!=items.end();it++)
     {
-	icp.addToModel( envire::icp::PointcloudAdapter( *it, conf.model_conf.model_density ) );
-	std::cout << "adding model to icp. using density " << conf.model_conf.model_density << std::endl;
+	icp.addToModel( envire::icp::PointcloudAdapter( *it, conf.model_density ) );
+	std::cout << "adding model to icp. using density " << conf.model_density << std::endl;
     }
 }
 
@@ -194,7 +196,7 @@ ICPResult ICPLocalization::doScanMatch(struct ICPInputData& inputData, bool save
 	result.to = fn->getTransform(); 
 	result.pairs_distance = icp.getPairsDistance(); 
 
-	switch(conf.cov_conf.cov_mode){ 
+	switch(conf.cov_conf.mode){ 
 	    case HARD_CODED: 
 	    {
 		result.cov_position = conf.cov_conf.cov_position; 
@@ -203,7 +205,7 @@ ICPResult ICPLocalization::doScanMatch(struct ICPInputData& inputData, bool save
 	    }
 	    case MSE_BASED: 
 	    {
-		  float avgDist = std::max( conf.model_conf.model_density, conf.measurement_density )/4.0;
+		  float avgDist = std::max( 1.0, conf.measurement_density )/4.0;
 		  float mseFactor = avgDist/sqrt(icp.getMeanSquareError());
 		  result.cov_position = Eigen::Matrix3d::Identity() * (1e-3* 2.0/ pow(mseFactor*.5,4)); 
 		  result.cov_orientation = Eigen::Matrix3d::Identity() *( 1.0 * M_PI / 180 )/ pow(mseFactor*.5,4) ; 	  
