@@ -71,7 +71,12 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen
 	double translation =  diference.translation().norm(); 
 	double rotation = fabs(Eigen::AngleAxisd( diference.rotation() ).angle()) ; 
 	add_laser_scan = add_laser_scan && ( rotation > conf_point_cloud.min_rotation_for_new_line || translation > conf_point_cloud.min_distance_travelled_for_new_line || laserChange >  conf_point_cloud.min_rotation_head_for_new_line);
-	std::cout <<" add new scan " << add_laser_scan << " translation " << translation << " rotation " << rotation * 180 / M_PI << " last rot " << laserChange * 180 / M_PI<< std::endl; 
+	
+/*	std::cout <<" add new scan " << add_laser_scan << std::endl; 
+	std::cout << "\t translation " << (translation > conf_point_cloud.min_distance_travelled_for_new_line)<< " "  << translation << " > " << conf_point_cloud.min_distance_travelled_for_new_line << std::endl;
+	std::cout << "\t rotation " << (rotation > conf_point_cloud.min_rotation_for_new_line) << " "  << rotation * 180 / M_PI << " > " << conf_point_cloud.min_rotation_for_new_line * 180 / M_PI << std::endl;
+	std::cout << "\t head " << (laserChange >  conf_point_cloud.min_rotation_head_for_new_line) << "  "<< laserChange * 180 / M_PI << " > " << conf_point_cloud.min_rotation_head_for_new_line * 180 / M_PI<< std::endl; */
+	
 	if (!add_laser_scan) 
 	    break; 
     }
@@ -166,12 +171,18 @@ ICPInputData ICPLocalization::generatePointcloudSample(ICPInputData originalData
     return newData; 
 }
 
+void ICPLocalization::removeLastSavedPointCloud()
+{
+    env->detachItem( pc );
+    env->detachItem( fn );	
+}
 ICPResult ICPLocalization::doScanMatch(struct ICPInputData& inputData, bool save)
 {
-    envire::Pointcloud *pc = inputData.pc;
+    
+    pc = inputData.pc;
     env->attachItem( pc );
     
-    envire::FrameNode *fn = new envire::FrameNode( inputData.pc2World);
+    fn = new envire::FrameNode( inputData.pc2World);
     env->attachItem( fn );
     
     env->addChild( env->getRootNode(), fn ); 

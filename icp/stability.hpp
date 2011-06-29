@@ -13,15 +13,17 @@
 
 #include <boost/concept_check.hpp>
 
+#include "boost/shared_ptr.hpp"
+#include "boost/random.hpp"
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <ctime>  
 
 #include "icpConfigurationTypes.hpp"
 
 namespace envire {
 namespace icp {
-
 
 class SigmaPoints
 {
@@ -46,7 +48,12 @@ class SigmaPoints
 		if( sigma_points.col(column).norm() > conf.max_norm ) 
 			sigma_points.col(column) = (Eigen::Matrix3d::Identity() * conf.max_norm).col(column) ; 
 	    }
-	    
+// 	    std::cout << " Matrix " << " min " << conf.min_norm << " max " <<conf.max_norm<< " n " << conf.n_sigma<<std::endl; 
+// 	    std::cout << matrix << std::endl; 
+// 	    std::cout << " LLT " << std::endl; 
+// 	    std::cout << llt.matrixL() << std::endl; 
+// 	    std::cout << " sigma" << std::endl; 
+// 	    std::cout << sigma_points << std::endl; 
 	    return sigma_points;
 	}
 };
@@ -120,10 +127,10 @@ class Sampling
 	    this->conf = conf;  
 	    if(conf.mode == UNIFORM_SAMPLING)
 	    {
-		boost::minstd_rand base_gen(1234u);
-		boost::uniform_real<> uniDblUnit(-1,1);
-		boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > generator(base_gen, uniDblUnit);
-		this->generator = &generator; 
+// 		boost::minstd_rand base_gen(1234u);
+// 		boost::uniform_real<> uniDblUnit(-1,1);
+// 		boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > generator(base_gen, uniDblUnit);
+// 		this->generator = generator; 
 	    }
 	} 
 	
@@ -140,8 +147,15 @@ class Sampling
 	
     private: 
 	
+	double getRandomValue(int min, int max)
+	{
+	    static boost::minstd_rand gen((unsigned int)std::time(NULL));
+	    boost::uniform_real<>  dist(min, max);
+	    boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > generator(gen, dist);
+	    return generator();
+	}
 	SamplingConfiguration conf; 
-	boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > *generator; 
+	static boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > generator; 
 	/**
 	 * indicates the last sigma sample returned 
 	 */ 

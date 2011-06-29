@@ -90,8 +90,14 @@ class ICPLocalization
 	void addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading);
 	
 	ICPPointCloudConfiguration conf_point_cloud;
+	
+	envire::Pointcloud *pc; 
+	
+	envire::FrameNode *fn;
     public: 
-
+  
+	void removeLastSavedPointCloud();
+	
 	void loadIcpConfiguration(ICPConfiguration conf){ this->conf = conf; }  
 	
 	void loadEnvironment(ICPModelConfiguration conf); 

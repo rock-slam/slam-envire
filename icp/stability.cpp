@@ -106,13 +106,17 @@ void Clustering::defOutlinerRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d
 
 bool Clustering::removeOutliers(  )
 {
- 
+  cout << " Variance Limit " << variance_limit_pos.norm()<< endl; 
+  cout << variance_limit_pos << endl; 
+  cout << variance_limit_ori(2,2) << endl; 
     //cout << "spread " << spread.segment<3>(0).transpose() << " " <<spread(3) * 180 / M_PI<< endl; 
     while( points.size() >= conf.min_number_of_points )
     {
 	calcMean( ); 
 	calcVariance( );
-	
+	cout << " Number of Points " << points.size() << endl; 
+	cout << translation_covariance << std::endl; 
+	cout << translation_covariance.norm() << " - " << rotational_covariance(2,2) * 180 / M_PI << endl;
 	//verify if the variance is within the cluestering limits 
 	int at_max_diff= -1;
 	double diference=0; 
@@ -163,6 +167,7 @@ bool Clustering::removeOutliers(  )
 
 }
 
+
 /**
  * ******************************************************************
  * *****************************SAMPLING****************************
@@ -191,28 +196,29 @@ void Sampling::defSearchRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov
     last_sigma_sample = 0;
     SigmaPoints sigma_points; 
     sigmaPointsPosition = sigma_points.calcSigmaPoints(cov_position, conf.region_sample_position);
-    sigmaPointsPosition = sigma_points.calcSigmaPoints(cov_orientation, conf.region_sample_orientation);
+    sigmaPointsOrientation = sigma_points.calcSigmaPoints(cov_orientation, conf.region_sample_orientation);
 }
 
 Eigen::Transform3d Sampling::getUniformSample( )
 {
-    
     Eigen::Vector3d translation; 
     translation.setZero(); 
     for( int col = 0; col < 3; col ++) 
     {
-	translation = translation + (*generator)()* sigmaPointsPosition.col(col);
+	translation = translation + getRandomValue(-1,1) * sigmaPointsPosition.col(col);
+	translation = translation + sigmaPointsPosition.col(col);
 	
     }
     //removing z axis samplign 
     translation[2] = 0; 
     
-    double delta_yaw = (*generator) () * sigmaPointsOrientation.col(2).norm();
+    double delta_yaw = getRandomValue(-1,1)  * sigmaPointsOrientation.col(2).norm();
+    
     Eigen::Transform3d offset( Eigen::AngleAxisd( delta_yaw, Eigen::Vector3d::UnitZ() ) );
     offset.translation() = translation; 
     
     //cout << offset.translation().transpose() << " yaw " << delta_yaw * 180 / M_PI << endl; 
-
+ 
     return offset;
     
 }
