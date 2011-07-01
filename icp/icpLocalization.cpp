@@ -1,7 +1,6 @@
 #include "icpLocalization.hpp"
 
 #include <envire/Core.hpp>
-#include <envire/stability.hpp>
 #include <envire/maps/TriMesh.hpp>
 #include <base/timemark.h>
 #include <boost/concept_check.hpp>
@@ -51,12 +50,16 @@ void ICPLocalization::addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform
 
 void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading)
 {
+
     if(scansWithTransforms.size() == 0) 
     {
 	addLaserScan(body2Odo,body2World,laser2Body,scan_reading); 
 	return;
     }
     
+    double max_rotation =  1.5 * conf_point_cloud.lines_per_point_cloud * conf_point_cloud.min_rotation_for_new_line;
+    double max_translation = 1.5 * conf_point_cloud.lines_per_point_cloud * conf_point_cloud.min_distance_travelled_for_new_line;
+    double max_head_movement = 1.5 * conf_point_cloud.lines_per_point_cloud * conf_point_cloud.min_rotation_head_for_new_line; 
     bool add_laser_scan = true; 
     for( uint i = 0; i < scansWithTransforms.size(); i++) 
     {
@@ -70,8 +73,17 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen
 	double laserChange = acos(Ylaser2Body.dot(YlastLaser2Body));
 	double translation =  diference.translation().norm(); 
 	double rotation = fabs(Eigen::AngleAxisd( diference.rotation() ).angle()) ; 
-	add_laser_scan = add_laser_scan && ( rotation > conf_point_cloud.min_rotation_for_new_line || translation > conf_point_cloud.min_distance_travelled_for_new_line || laserChange >  conf_point_cloud.min_rotation_head_for_new_line);
 	
+	add_laser_scan = add_laser_scan && ( rotation > conf_point_cloud.min_rotation_for_new_line || translation > conf_point_cloud.min_distance_travelled_for_new_line || laserChange >  conf_point_cloud.min_rotation_head_for_new_line);
+	 
+	//if  the distance is to big means the old laser scan is not consistent anymore. 
+	if( rotation > max_rotation|| translation > max_translation || laserChange > max_head_movement)
+	{
+	    scansWithTransforms.erase(scansWithTransforms.begin() + i); 
+	    scanCount--; 
+	    std::cout << " IcpLocalization.cpp erasing old laser scan " << std::endl; 
+	}
+
 /*	std::cout <<" add new scan " << add_laser_scan << std::endl; 
 	std::cout << "\t translation " << (translation > conf_point_cloud.min_distance_travelled_for_new_line)<< " "  << translation << " > " << conf_point_cloud.min_distance_travelled_for_new_line << std::endl;
 	std::cout << "\t rotation " << (rotation > conf_point_cloud.min_rotation_for_new_line) << " "  << rotation * 180 / M_PI << " > " << conf_point_cloud.min_rotation_for_new_line * 180 / M_PI << std::endl;

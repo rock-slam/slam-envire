@@ -225,6 +225,8 @@ Eigen::Transform3d Sampling::getUniformSample( )
 
 Eigen::Transform3d  Sampling::getSigmaSample()
 {
+    if( sigma_samples.size() == 0 ) 
+	calcSigmaSamples(); 
     
     if( last_sigma_sample == sigma_samples.size() ) 
     {
