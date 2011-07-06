@@ -112,22 +112,22 @@ bool ICPLocalization::hasNewPointCloud()
     return false; 
 }
 
-void ICPLocalization::loadEnvironment(ICPModelConfiguration conf)
+void ICPLocalization::loadEnvironment(std::string environment_path, double model_density)
 {
-    std::cout << " Loading Environment "<<conf.environment_path << " with density " << conf.model_density << std::endl; 
-    if ( conf.environment_path != "" ) 
+    std::cout << " Loading Environment "<<environment_path << " with density " << model_density << std::endl; 
+    if ( environment_path != "" ) 
     {
 	// load the environment
 	envire::Serialization so;
-	boost::scoped_ptr<envire::Environment>(so.unserialize( conf.environment_path) ).swap( env );
+	boost::scoped_ptr<envire::Environment>(so.unserialize( environment_path) ).swap( env );
     }
     
     // and load all the pointcloud data into the icp model
     std::vector<envire::Pointcloud*> items = env->getItems<envire::Pointcloud>();
     for(std::vector<envire::Pointcloud*>::iterator it=items.begin();it!=items.end();it++)
     {
-	icp.addToModel( envire::icp::PointcloudAdapter( *it, conf.model_density ) );
-	std::cout << "adding model to icp. using density " << conf.model_density << std::endl;
+	icp.addToModel( envire::icp::PointcloudAdapter( *it, model_density ) );
+	std::cout << "adding model to icp. using density " << model_density << std::endl;
     }
 }
 

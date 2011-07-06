@@ -100,7 +100,7 @@ class ICPLocalization
 	
 	void loadIcpConfiguration(ICPConfiguration conf){ this->conf = conf; }  
 	
-	void loadEnvironment(ICPModelConfiguration conf); 
+	void loadEnvironment(std::string environment_path, double model_density); 
 	
 	/** 
 	* Copy a original point cloud offseting its original position 

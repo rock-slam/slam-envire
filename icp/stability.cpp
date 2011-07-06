@@ -173,21 +173,13 @@ bool Clustering::removeOutliers(  )
  * *****************************SAMPLING****************************
  */
 
-Eigen::Transform3d Sampling::getOffset()
+Eigen::Transform3d Sampling::getSigmaOffset()
 {
-    
-    switch (conf.mode)
-    {
-	case UNIFORM_SAMPLING: 
-	    return getUniformSample(); 
-	case SIGMA_SAMPLING: 
-	    return getSigmaSample(); 
-	
-	default: 
-	    cout << "ERROR STABILITY.CPP NO SAMPLING MODE DEFINED " << endl; 
-    }    
-    return  Eigen::Transform3d( Eigen::AngleAxisd( 0, Eigen::Vector3d::UnitZ() ) ) ; 
-    
+    return getSigmaSample(); 
+}
+Eigen::Transform3d Sampling::getUniformOffset()
+{
+    return getUniformSample(); 
 }
 	
  
@@ -225,7 +217,7 @@ Eigen::Transform3d Sampling::getUniformSample( )
 
 Eigen::Transform3d  Sampling::getSigmaSample()
 {
-    if( sigma_samples.size() == 0 ) 
+    if( last_sigma_sample == 0 ) 
 	calcSigmaSamples(); 
     
     if( last_sigma_sample == sigma_samples.size() ) 
@@ -283,7 +275,7 @@ void  Sampling::calcSigmaSamples()
  */
 
 
-double Histogram::gethistogramSVNClassification( ) 
+double Histogram::calcSVMValue( ) 
 {
     
     double bin_area = 0.13068;
@@ -310,18 +302,8 @@ void Histogram::calculateHistogram( std::vector<double> pairs_distance )
     //else 
 	//calculateNotNormalizedHistogram( pairs_distance ); 
 	
+    svm_value = calcSVMValue(); 
 
-}
-bool Histogram::reject() 
-{
-    if ( gethistogramSVNClassification( ) > conf.histogram_rejection_threshold)
-    {
-	return false;
-    }
-    else 
-    {
-	return true; 
-    }
 }
 
 void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance)

@@ -125,13 +125,7 @@ class Sampling
 	Sampling( SamplingConfiguration conf ) 
 	{  
 	    this->conf = conf;  
-	    if(conf.mode == UNIFORM_SAMPLING)
-	    {
-// 		boost::minstd_rand base_gen(1234u);
-// 		boost::uniform_real<> uniDblUnit(-1,1);
-// 		boost::variate_generator<boost::minstd_rand&, boost::uniform_real<> > generator(base_gen, uniDblUnit);
-// 		this->generator = generator; 
-	    }
+
 	} 
 	
 
@@ -140,7 +134,8 @@ class Sampling
 	/**
 	 * returns a sample offset based on the sampling mode choosen 
 	 */
-	Eigen::Transform3d getOffset(); 
+	Eigen::Transform3d getUniformOffset(); 
+	Eigen::Transform3d getSigmaOffset(); 
 	
 	Eigen::Matrix3d getSigmaPointsOfSamplingRegionTranslation(){ return sigmaPointsPosition;}
 	Eigen::Matrix3d getSigmaPointsOfSamplingRegionRotation(){return sigmaPointsOrientation;} 
@@ -192,21 +187,21 @@ class Histogram
 	/**
 	* gets ths histogram classification based on a linear quernel trained data 
 	*/
-	double gethistogramSVNClassification( ); 
+	double getSVMValue( ){ return svm_value; } 
 	std::vector<double> getHistogram() { return histogram; } 
 	std::vector<double> getHistogramLimits() { return histogram_limits; } 	
-	bool reject();
+	
 	void calculateHistogram( std::vector<double> pairs_distance ) ;
 	
 	
     private:
-	 
+	double svm_value; 
 	HistogramConfiguration conf; 
 	std::vector<double> histogram; 
 	std::vector<double> histogram_limits; 
 	void calculateNormalizedHistogram(std::vector<double> _pairs_distance);
 	void calculateNotNormalizedHistogram(std::vector<double> pairs_distance);
-
+	double calcSVMValue( ); 
 // 		//for normalization 
 // 	//In theory the mean distance to nearest neighbor in an infinitly large random distribution is 
 // 	// re = 1 / (2 * sqrt ( density ) and the sandart deviation  0.26136 / sqrt ( N * density ) 

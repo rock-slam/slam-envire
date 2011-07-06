@@ -28,16 +28,7 @@ namespace icp
 	    : mode(HARD_CODED) {}
     }; 
     
-    /**
-     * Configures the model to be loaded
-     */
-    struct ICPModelConfiguration{
-      	/** Path to the model to be loaded */
-	std::string environment_path; 
-	/** The denisity of the model that should be used */ 
-	double model_density; 
-    }; 
-    
+
     /** 
      * Configuration on how to construct a point cloud 
      */ 
@@ -60,7 +51,8 @@ namespace icp
     struct ICPConfiguration
     {  
 
-
+	/** The denisity of the model that should be used */ 
+	double model_density; 
 	/** maximum number of iterations for the icp algorithm */
 	int max_iterations;
 	/**overlap between model and measurement (between [0..1])*/
@@ -110,24 +102,17 @@ namespace icp
 	
     }; 
     
-    enum SAMPLING_MODE {  
-	SIGMA_SAMPLING, 
-	UNIFORM_SAMPLING
-    }; 
+
     /**
      * Configuration class for the sampling.hpp class 
      */
     struct SamplingConfiguration{
 	
-	SAMPLING_MODE mode; 
-	
 	/** defines the limits of the sampling region in terms of position  */ 
 	SigmaPointConfiguration region_sample_position;
 	/** defines sampling region in terms of rotation  */ 
 	SigmaPointConfiguration region_sample_orientation;
-	
-	SamplingConfiguration() 
-		: mode(UNIFORM_SAMPLING) {}
+
 	
     }; 
     
@@ -136,8 +121,6 @@ namespace icp
      */ 
     //TODO FIX THE CONFIGURATION ! 
     struct HistogramConfiguration{
-	/** Threshold for hte histogram rejection */ 
-	double histogram_rejection_threshold; 
 	/** Number of bins in the histogram */ 
 	double number_bins; 
 	/** total area of the histogram */ 
