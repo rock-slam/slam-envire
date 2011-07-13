@@ -36,7 +36,7 @@ MLSMap& MLSMap::operator=(const MLSMap& other)
 	    env->removeChild( this, *it );
 	}
 
-	typedef std::vector<MultiLevelSurfaceGrid::Ptr>::iterator iterator;
+	typedef std::vector<MLSGrid::Ptr>::iterator iterator;
 	for( iterator it = grids.begin(); it != grids.end(); it++ )
 	{
 	    env->addChild( this, (*it).get() );
@@ -46,37 +46,54 @@ MLSMap& MLSMap::operator=(const MLSMap& other)
     return *this;
 }
 
-bool MLSMap::getPatch( const Point& p, SurfacePatch& patch, double sigma_threshold )
+inline bool getPatch( MLSGrid* grid, const Transform& C_m2g, const Point& p, MLSGrid::SurfacePatch& patch, double sigma_threshold )
 {
-    // go backwards in the list, and try to find the point in any of the grids
-    for( std::vector<MultiLevelSurfaceGrid::Ptr>::reverse_iterator it = grids.rbegin(); it != grids.rend(); it++ )
+    MLSGrid::Position pos;
+    if( grid->toGrid((C_m2g * p).head<2>(), pos) )
     {
-	MultiLevelSurfaceGrid::Ptr grid( *it );
-	Transform C_m2g = env->relativeTransform( getFrameNode(), grid->getFrameNode() );
-	MultiLevelSurfaceGrid::Position pos;
-	if( grid->toGrid((C_m2g * p).head<2>(), pos) )
-	{
-	    // offset the z-coordinate which is given in map to grid 
-	    MultiLevelSurfaceGrid::SurfacePatch probe( patch );
-	    probe.mean += C_m2g.translation().z();
-	    
-	    MultiLevelSurfaceGrid::SurfacePatch* res = 
-		grid->get( pos, probe, sigma_threshold );
+	// offset the z-coordinate which is given in map to grid 
+	MLSGrid::SurfacePatch probe( patch );
+	probe.mean += C_m2g.translation().z();
 
-	    if( res )
-	    {
-		patch = *res;
-		// offset the z-coordinate, so that it is expressed in terms
-		// of the map and not the grid
-		patch.mean -= C_m2g.translation().z();
-		return true;
-	    }
+	MLSGrid::SurfacePatch* res = 
+	    grid->get( pos, probe, sigma_threshold );
+
+	if( res )
+	{
+	    patch = *res;
+	    // offset the z-coordinate, so that it is expressed in terms
+	    // of the map and not the grid
+	    patch.mean -= C_m2g.translation().z();
+	    return true;
 	}
     }
     return false;
 }
 
-void MLSMap::addGrid( MultiLevelSurfaceGrid::Ptr grid )
+bool MLSMap::getPatch( const Point& p, SurfacePatch& patch, double sigma_threshold )
+{
+    // see if we can use the cache. This will reduce the amount of transform
+    // calculations
+    if( cache.grid )
+	if( ::getPatch( cache.grid, cache.trans, p, patch, sigma_threshold ) )
+	    return true;
+
+    // go backwards in the list, and try to find the point in any of the grids
+    for( std::vector<MLSGrid::Ptr>::reverse_iterator it = grids.rbegin(); it != grids.rend(); it++ )
+    {
+	MLSGrid *grid( it->get() );
+	Transform C_m2g = env->relativeTransform( getFrameNode(), grid->getFrameNode() );
+	if( ::getPatch( grid, C_m2g, p, patch, sigma_threshold ) )
+	{
+	    cache.grid = it->get();
+	    cache.trans = C_m2g;
+	    return true;
+	}
+    }
+    return false;
+}
+
+void MLSMap::addGrid( MLSGrid::Ptr grid )
 {
     env->addChild( this, grid.get() );
 
@@ -90,7 +107,7 @@ void MLSMap::createGrid( const Transform& trans )
     if( !active )
 	return;
 
-    MultiLevelSurfaceGrid* grid_clone = active->cloneShallow(); 
+    MLSGrid* grid_clone = active->cloneShallow(); 
     FrameNode* fn = new FrameNode( trans );
     env->addChild( active->getFrameNode(), fn );
     env->setFrameNode( grid_clone, fn );
@@ -106,7 +123,7 @@ MLSMap* MLSMap::cloneDeep()
     {
 	// create a copy of the currently active map
 	// and reference the others
-	MultiLevelSurfaceGrid* active_clone = active->clone();
+	MLSGrid* active_clone = active->clone();
 	res->grids.back() = active_clone;
 	res->active = active_clone;
 
@@ -114,7 +131,7 @@ MLSMap* MLSMap::cloneDeep()
 	
 	env->attachItem( res );
 
-	typedef std::vector<MultiLevelSurfaceGrid::Ptr>::iterator iterator;
+	typedef std::vector<MLSGrid::Ptr>::iterator iterator;
 	for( iterator it = res->grids.begin(); it != res->grids.end(); it++ )
 	{
 	    env->addChild( res, (*it).get() );
