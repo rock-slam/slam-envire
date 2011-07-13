@@ -56,6 +56,16 @@ public:
     // also add a framenode per grid
     std::vector<MLSGrid::Ptr> grids;
     MLSGrid::Ptr active;
+
+protected:
+    struct Cache
+    {
+	Cache() : grid( NULL ) {}
+	MLSGrid* grid;
+	Transform trans;
+    };
+
+    Cache cache;
 };
 
 }
