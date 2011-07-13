@@ -75,7 +75,7 @@ class Clustering
 	 */ 
 	void defOutlinerRegion(Eigen::Matrix3d cov_position, Eigen::Matrix3d cov_orientation); 
 	
-	bool cluster(  std::vector<Eigen::Transform3d> points ); 
+	bool cluster(  std::vector<Eigen::Affine3d> points ); 
 	
 	Eigen::Matrix3d getTranslationCovariance() { return translation_covariance; }
 	Eigen::Matrix3d getRotationCovariance() { return rotational_covariance; }
@@ -85,7 +85,7 @@ class Clustering
 	
     private: 
 	ClusteringConfiguration conf; 
-	std::vector<Eigen::Transform3d> points;
+	std::vector<Eigen::Affine3d> points;
 	Eigen::Affine3d mean; 
 	Eigen::Matrix3d translation_covariance; 
 	Eigen::Matrix3d rotational_covariance; 

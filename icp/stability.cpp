@@ -13,7 +13,7 @@ using namespace Eigen;
 using namespace envire::icp;
 
 
-bool Clustering::cluster(  std::vector<Eigen::Transform3d> points ) 
+bool Clustering::cluster(  std::vector<Eigen::Affine3d> points ) 
 {
     this->points = points;
     

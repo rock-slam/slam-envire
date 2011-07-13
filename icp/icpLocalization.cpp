@@ -5,11 +5,10 @@
 #include <base/timemark.h>
 #include <boost/concept_check.hpp>
 #include <boost/scoped_ptr.hpp>
-USING_PART_OF_NAMESPACE_EIGEN
 
 using namespace std; 
 using namespace envire::icp;
-
+using namespace Eigen;
 
 void ICPLocalization::initializePointCloud(ICPPointCloudConfiguration conf_point_cloud){
   
@@ -33,7 +32,7 @@ void ICPLocalization::saveEnvironment()
     }
 }
 
-void ICPLocalization::addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading)
+void ICPLocalization::addLaserScan(Eigen::Affine3d body2Odo, Eigen::Affine3d body2World, Eigen::Affine3d laser2Body, const ::base::samples::LaserScan &scan_reading)
 {
     LaserAndTransform lat;
     lat.scan = scan_reading;
@@ -48,7 +47,7 @@ void ICPLocalization::addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform
   
 }
 
-void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading)
+void ICPLocalization::addScanLineToPointCloud(Eigen::Affine3d body2Odo, Eigen::Affine3d body2World, Eigen::Affine3d laser2Body, const ::base::samples::LaserScan &scan_reading)
 {
 
     if(scansWithTransforms.size() == 0) 
@@ -63,7 +62,7 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen
     bool add_laser_scan = true; 
     for( uint i = 0; i < scansWithTransforms.size(); i++) 
     {
-	Eigen::Transform3d diference( body2Odo.inverse() * scansWithTransforms.at(i).body2Odo );
+	Eigen::Affine3d diference( body2Odo.inverse() * scansWithTransforms.at(i).body2Odo );
 
 	Vector3d Ylaser2Body = laser2Body * Vector3d::UnitY() - laser2Body.translation();
 	Ylaser2Body.normalize();
@@ -136,7 +135,7 @@ ICPInputData ICPLocalization::generatePointcloud()
     base::Time startTime = base::Time::now();
     envire::Pointcloud *pc = new envire::Pointcloud();
 
-    Eigen::Transform3d odo2World;
+    Eigen::Affine3d odo2World;
     base::Time pointCloudTime; 
     base::Time lastLSTime; 
 
@@ -150,8 +149,8 @@ ICPInputData ICPLocalization::generatePointcloud()
 	for(std::deque<LaserAndTransform >::const_iterator it = scansWithTransforms.begin(); it != scansWithTransforms.end(); it++) {
 	    // transform in vector is body2Odo
 	    //(odo2World * it->transform) == body2World
-	    const Eigen::Transform3d laser2World( (odo2World * it->body2Odo)  * it->laser2Body );
-	    const Eigen::Transform3d laser2CurBody( curBody2World.inverse() * laser2World );
+	    const Eigen::Affine3d laser2World( (odo2World * it->body2Odo)  * it->laser2Body );
+	    const Eigen::Affine3d laser2CurBody( curBody2World.inverse() * laser2World );
 
 	    std::vector<Eigen::Vector3d> line = it->scan.convertScanToPointCloud( laser2CurBody ); 
 	    std::copy( line.begin(), line.end(), std::back_inserter( pc->vertices ) );
@@ -171,7 +170,7 @@ ICPInputData ICPLocalization::generatePointcloud()
     return newData;
 }
 
-ICPInputData ICPLocalization::generatePointcloudSample(ICPInputData originalData, Eigen::Transform3d offset)
+ICPInputData ICPLocalization::generatePointcloudSample(ICPInputData originalData, Eigen::Affine3d offset)
 {
     ICPInputData newData;
 

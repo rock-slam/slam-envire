@@ -32,7 +32,7 @@ class ICPInputData {
       base::Time pointCloudTime;
       envire::Pointcloud* pc;
       envire::FrameNode* fn;
-      Eigen::Transform3d pc2World;
+      Eigen::Affine3d pc2World;
 
 };
 
@@ -44,8 +44,8 @@ struct ICPResult {
     int pairs;
     double mse; 
     
-    Eigen::Transform3d from; 
-    Eigen::Transform3d to; 
+    Eigen::Affine3d from; 
+    Eigen::Affine3d to; 
     std::vector<double> pairs_distance; 
     
     Eigen::Matrix3d cov_position;
@@ -56,9 +56,9 @@ struct ICPResult {
 class LaserAndTransform {
     public:  
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	Eigen::Transform3d body2Odo;
-	Eigen::Transform3d body2World;
-	Eigen::Transform3d laser2Body;
+	Eigen::Affine3d body2Odo;
+	Eigen::Affine3d body2World;
+	Eigen::Affine3d laser2Body;
 	base::samples::LaserScan scan;
 };
 
@@ -70,11 +70,11 @@ class ICPLocalization
 
 	base::Time lastICPTime; 
 	
-	Eigen::Transform3d lastBody2Odo;
+	Eigen::Affine3d lastBody2Odo;
 	
-	Eigen::Transform3d lastLaser2Body;
+	Eigen::Affine3d lastLaser2Body;
 	
-	Eigen::Transform3d curBody2World;
+	Eigen::Affine3d curBody2World;
 	
 	boost::scoped_ptr<envire::Environment> env;
 
@@ -87,7 +87,7 @@ class ICPLocalization
 		 
 	std::deque<LaserAndTransform, Eigen::aligned_allocator<LaserAndTransform> > scansWithTransforms;
 	
-	void addLaserScan(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading);
+	void addLaserScan(Eigen::Affine3d body2Odo, Eigen::Affine3d body2World, Eigen::Affine3d laser2Body, const ::base::samples::LaserScan &scan_reading);
 	
 	ICPPointCloudConfiguration conf_point_cloud;
 	
@@ -105,13 +105,13 @@ class ICPLocalization
 	/** 
 	* Copy a original point cloud offseting its original position 
 	*/ 
-	ICPInputData generatePointcloudSample(ICPInputData originalData, Eigen::Transform3d offset);
+	ICPInputData generatePointcloudSample(ICPInputData originalData, Eigen::Affine3d offset);
 	/** 
 	* Realizes an icp on a given point cloud 
 	*/ 
 	ICPResult doScanMatch(struct ICPInputData& inputData, bool save);
 	
-	void addScanLineToPointCloud(Eigen::Transform3d body2Odo, Eigen::Transform3d body2World, Eigen::Transform3d laser2Body, const ::base::samples::LaserScan &scan_reading); 
+	void addScanLineToPointCloud(Eigen::Affine3d body2Odo, Eigen::Affine3d body2World, Eigen::Affine3d laser2Body, const ::base::samples::LaserScan &scan_reading); 
 	
 	void saveEnvironment(); 
 
