@@ -37,6 +37,8 @@ public:
      */
     envire::EnvironmentItem* getSelectedItem() { return twl ? twl->selected : NULL; }
 
+    void setFilter( envire::EventFilter *filter ) { eventListener->setFilter( filter ); }
+
 protected:
     virtual void operatorIntern( osg::Node* node, osg::NodeVisitor* nv );
     virtual void updateDataIntern( envire::Environment* const& data );
