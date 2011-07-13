@@ -38,7 +38,7 @@ bool DistanceGridToPointcloud::updateAll()
 	{
 	    // only process vector if distance value is not NaN or inf
 	    const float d = distance[y][x];
-	    if( boost::math::isnormal( d ) ) 
+	    if( boost::math::isnormal( d ) && d < maxDistance ) 
 	    {
 		// construct (p_x,p_y,1.0) vector
 		Eigen::Vector3d r;

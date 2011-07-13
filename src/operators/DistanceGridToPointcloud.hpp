@@ -10,16 +10,18 @@ namespace envire
 	ENVIRONMENT_ITEM( DistanceGridToPointcloud )
 	
     public:
-	DistanceGridToPointcloud() : uncertaintyFactor(0.1) {};
+	DistanceGridToPointcloud() : uncertaintyFactor(0.1), maxDistance(10.0) {};
 	DistanceGridToPointcloud( Serialization& so ) : Operator( so ) {}
 	void serialize( Serialization& so ) { Operator::serialize( so ); }
 
 	bool updateAll();
 
-	double setUncertaintyFactor( double f ) { uncertaintyFactor = f; }
+	void setUncertaintyFactor( double f ) { uncertaintyFactor = f; }
+	void setMaxDistance( double m ) { maxDistance = m; }
 
     private:
 	double uncertaintyFactor;
+	double maxDistance;
     };
 }
 
