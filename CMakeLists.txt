@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 2.6)
 include($ENV{ROCK_CMAKE_MACROS}/Rock.cmake)
+
+
 rock_init(envire 1.0)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS filesystem thread)
+
+# To make sure envire links to the default system libraries 
+# such as CGAL does, setting BOOST_ROOT here 
+set(BOOST_ROOT "/usr/")
+find_package(Boost REQUIRED COMPONENTS filesystem thread system)
 
 rock_add_source_dir(icp icp)
 rock_standard_layout()
