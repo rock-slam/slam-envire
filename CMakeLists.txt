@@ -4,6 +4,8 @@ include($ENV{ROCK_CMAKE_MACROS}/Rock.cmake)
 
 rock_init(envire 1.0)
 
+option( USE_CGAL "Switch on CGAL related functionality" OFF )
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)

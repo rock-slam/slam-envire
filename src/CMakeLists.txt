@@ -1,11 +1,13 @@
 include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
-if (NOT CGAL_FOUND)
-    message(FATAL_ERROR "cannot find CGAL")
-endif()
+if (USE_CGAL AND CGAL_FOUND)
+    list(APPEND ADDITIONAL_SOURCES 
+	operators/SimplifyPointcloud.cpp
+	operators/Projection.cpp)
 
-if( TAUCS_FOUND )
-    list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
-endif( TAUCS_FOUND )
+    if( TAUCS_FOUND )
+	list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
+    endif( TAUCS_FOUND )
+endif()
 
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -27,12 +29,10 @@ rock_library(envire
     maps/LaserScan.cpp
     maps/MLSGrid.cpp
     maps/MLSMap.cpp
-    operators/Projection.cpp
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
     operators/ScanMeshing.cpp
-    operators/SimplifyPointcloud.cpp
     operators/MLSSlope.cpp
     operators/MLSSimpleTraversability.cpp
     operators/DistanceGridToPointcloud.cpp
