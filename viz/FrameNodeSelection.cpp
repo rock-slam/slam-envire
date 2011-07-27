@@ -11,7 +11,7 @@ FrameNodeSelection::FrameNodeSelection(envire::FrameNode *fn) :frameNode(fn)
 
 bool FrameNodeSelection::receive(const osgManipulator::MotionCommand& command)
 {
-#if OSG_VERSION_LESS_THAN(3,0,0)
+#if OPENSCENEGRAPH_MAJOR_VERSION < 3
     switch (command.getStage())
     {
         case osgManipulator::MotionCommand::START:
