@@ -182,7 +182,7 @@ class Histogram
 	 * the histogram is normalized so if the oultiners are considered this will impact the distribution
 	 */
 	Histogram(HistogramConfiguration conf) 
-	    {  this->conf = conf; calculateBinLimits(conf.n_sigma, conf.number_bins); }
+	    {  this->conf = conf;  }
 
 	/**
 	* gets ths histogram classification based on a linear quernel trained data 
@@ -199,8 +199,8 @@ class Histogram
 	HistogramConfiguration conf; 
 	std::vector<double> histogram; 
 	std::vector<double> histogram_limits; 
-	void calculateBinLimits( int n_sigma, int number_bins ); 
-	void calculateStandartGaussianHistogram(std::vector<double> _pairs_distance); 
+	void calculateNormalizedHistogram(std::vector<double> _pairs_distance);
+	void calculateNotNormalizedHistogram(std::vector<double> pairs_distance);
 	double calcSVMValue( ); 
 // 		//for normalization 
 // 	//In theory the mean distance to nearest neighbor in an infinitly large random distribution is 

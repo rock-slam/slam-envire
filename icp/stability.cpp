@@ -198,7 +198,7 @@ Eigen::Affine3d Sampling::getUniformSample( )
     for( int col = 0; col < 3; col ++) 
     {
 	translation = translation + getRandomValue(-1,1) * sigmaPointsPosition.col(col);
-
+	translation = translation + sigmaPointsPosition.col(col);
 	
     }
     //removing z axis samplign 
@@ -284,8 +284,8 @@ double Histogram::calcSVMValue( )
 	    + 0.901085498402 * histogram.at(4)
 	    + 1.7194718866 * histogram.at(5)
 	    + -5.12025789975 * histogram.at(6)
-/*	    + -5.57942365201 * histogram.at(7)
-	    + -3.69004685039 * histogram.at(8)*/
+	    + -5.57942365201 * histogram.at(7)
+	    + -3.69004685039 * histogram.at(8)
 	    + -2.61875927499 * bin_area
 	    + -6.33104159879;
 
@@ -296,81 +296,109 @@ double Histogram::calcSVMValue( )
 
 void Histogram::calculateHistogram( std::vector<double> pairs_distance ) 
 {
-    std::vector<double> pairs_distance_normalized; 
-    pairs_distance_normalized.clear(); 
+    if ( conf.normalization ) 
+	calculateNormalizedHistogram( pairs_distance ); 
     
-    for(size_t i=0;i<pairs_distance.size();i++) 
-    {
-	pairs_distance_normalized.push_back( (pairs_distance.at(i) - conf.mean)/conf.sigma); 
-// 	std::cout << pairs_distance_normalized.at(i) << " " ; 
-    }
-//     std::cout << std::endl; 
-    calculateStandartGaussianHistogram(pairs_distance_normalized);
-//     for( size_t i =0; i < histogram.size(); i++) 
-//       std::cout << histogram.at(i) << " " ; 
-//      std::cout << std::endl; 
+    //else 
+	//calculateNotNormalizedHistogram( pairs_distance ); 
+	
     svm_value = calcSVMValue(); 
 
 }
 
-void Histogram::calculateBinLimits( int n_sigma, int number_bins )
+void Histogram::calculateNormalizedHistogram(std::vector<double> _pairs_distance)
 {
+    
+    std::vector<double> pairs_distance; 
+    pairs_distance.clear(); 
+    
+    for(size_t i=0;i<_pairs_distance.size();i++) 
+    {
+	pairs_distance.push_back( (_pairs_distance.at(i)- conf.mean)/conf.sigma); 
+    }
 
-    histogram_limits.clear();
-    
-    //in a standart gaussian sigma = 1 
-    double total_bin_area = n_sigma * 2; 
-    double bin_area = total_bin_area / number_bins; 
-    
-    double lower_limit = -n_sigma; 
-    
-    for( int bin =0; bin <= number_bins; bin ++ )
-	histogram_limits.push_back( lower_limit + bin_area*bin );
-    
-//     for( int bin =0; bin <= number_bins; bin ++ )
-// 	std::cout << histogram_limits.at( bin ) << " "; 
-//     std::cout << std::endl; 
-}
+    histogram.clear();
+    histogram_limits.clear(); 
 
-void Histogram::calculateStandartGaussianHistogram(std::vector<double> pairs_distance)
-{
-    histogram.clear();	
+    int bin = 1; 
+    
+    double bin_size = conf.area / conf.number_bins; 
 
-    uint i = 0; 
     int number_of_points = 0; 
-    int total_point = 0; 
-    uint bin = 0; 
-    uint number_bins = histogram_limits.size() - 1; 
+    unsigned int i = 0; 
+
+    //outlier will be stores at the first and last bin, so the total number of bins if bin_size + 2, so those bins will have variable size 
+    //the frequency inside a bin is given by number of points inside a bin / ( total points * width of bin ) 
+
+    //Calculate the bin placement (the central point is zero, since the data is normalized 
     
-    while (i < pairs_distance.size() && bin < number_bins) 
-    {	  
-	  if(  pairs_distance.at(i) < histogram_limits[0] ) 
-	     i++; 
-	  else if ( pairs_distance.at(i) > histogram_limits[bin] && pairs_distance.at(i) < histogram_limits[bin+1]) 
+    //add the lower limit for the outliner 
+    double outliner_upper_limit = (-conf.number_bins / 2)  * bin_size;
+    
+    if (  pairs_distance.front() < outliner_upper_limit ) 
+	histogram_limits.push_back( outliner_upper_limit + pairs_distance.front() );
+    else 
+	histogram_limits.push_back( outliner_upper_limit - bin_size );
+    
+    
+    double bin_lower_limit = 0; 
+    for (bin = 0; bin <= conf.number_bins; bin++) 
+    {
+	bin_lower_limit = ((-conf.number_bins / 2) + bin ) * bin_size;
+	histogram_limits.push_back( bin_lower_limit );
+	
+    }    
+    
+    //add the upper limit for the outliner 
+    if ( pairs_distance.back() > bin_lower_limit) 
+	histogram_limits.push_back( bin_lower_limit + pairs_distance.back() );
+    else 
+	histogram_limits.push_back( bin_lower_limit + bin_size );
+    
+    
+    double bin_area = 0;
+    //fill the bins 
+    bin = 1; 
+    while (i < pairs_distance.size()) 
+    {
+	  
+	  if ( pairs_distance.at(i) < histogram_limits[bin]) 
 	  {
 		number_of_points ++; 
 		i++; 
 	  }
 	  else 
 	  {
-		total_point = total_point + number_of_points; 
-		histogram.push_back( number_of_points); 
+		
+		bin_area =fabs(histogram_limits[bin-1] - histogram_limits[bin]); 
+		histogram.push_back( number_of_points/ ( pairs_distance.size() * conf.area) ); 
+		
 		bin ++; 
+		//the +2 is for the outliers bins
+		if (bin == conf.number_bins+2) 
+		{
+		    number_of_points = pairs_distance.size() - i; 
+		    bin_area = fabs(histogram_limits[bin-1] - histogram_limits[bin]); 
+		    histogram.push_back( number_of_points / (pairs_distance.size() * bin_area) );
+		    return; 
+		}
+		  
 		number_of_points = 0; 
 	  }
     }
-    while(bin < number_bins) 
-    {
-	histogram.push_back(0);
-	bin++;
-    }
-    
-    //normalize 
-    double bin_area = fabs(histogram_limits.at(1) -  histogram_limits.at(0));
-    
-    for(uint j = 0; j < histogram.size(); j++) 
-	histogram.at(j) = histogram.at(j) / (bin_area * total_point); 
-    
-    
-}
 
+    bin_area = fabs(histogram_limits[bin-1] - histogram_limits[bin]); 
+    histogram.push_back( number_of_points/ ( pairs_distance.size() * bin_area) ); 
+    
+   
+    bin++;
+    
+    //the +2 is because of the 2 outliers bins, upper and lower
+    while(bin <= (conf.number_bins+2)) 
+    {
+      histogram.push_back(0);
+      bin++;
+      
+    }
+
+}

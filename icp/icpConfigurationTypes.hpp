@@ -123,8 +123,12 @@ namespace icp
     struct HistogramConfiguration{
 	/** Number of bins in the histogram */ 
 	double number_bins; 
-	/** Number of sigmas of the standart normal distribution histogram  */
-	int n_sigma; 
+	/** total area of the histogram */ 
+	double area;
+	/** if the histogram should be normalized */
+	bool normalization; 
+	/** if 2 extra bins should be added for the outliners*/ 
+	bool outliners;
 	/** mean of the normalization */ 
 	double mean; 
 	/** sigma for the normalization */ 
