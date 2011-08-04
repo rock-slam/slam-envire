@@ -1,5 +1,5 @@
 
-#include <vizkit/QVizkitWidget.hpp>
+#include <vizkit/Vizkit3DWidget.hpp>
 #include <QApplication>
 #include <QMainWindow>
 #include <QDockWidget>
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     a.addDockWidget(Qt::LeftDockWidgetArea, qdw);
     
     //create vizkit widget
-    vizkit::QVizkitWidget *widget = new vizkit::QVizkitWidget();
+    vizkit::Vizkit3DWidget *widget = new vizkit::Vizkit3DWidget();
     
     //set envire as central dock widget
     a.setCentralWidget(widget);

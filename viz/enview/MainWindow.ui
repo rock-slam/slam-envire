@@ -28,14 +28,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-	<widget class="vizkit::QVizkitWidget" name="vizkitWidget" native="true">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-	</widget>
+     <widget class="vizkit::Vizkit3DWidget" name="vizkitWidget"/>
     </item>
    </layout>
   </widget>
@@ -45,7 +38,7 @@
      <x>0</x>
      <y>0</y>
      <width>1180</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuMain">
@@ -159,7 +152,6 @@
           <property name="fieldGrowthPolicy">
            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
           </property>
-
           <item row="0" column="0">
            <widget class="QLabel" name="label2">
             <property name="text">
@@ -170,7 +162,6 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="iterationsLineEdit"/>
           </item>
-
           <item row="1" column="0">
            <widget class="QLabel" name="label3">
             <property name="text">
@@ -181,7 +172,6 @@
           <item row="1" column="1">
            <widget class="QLineEdit" name="minMSELineEdit"/>
           </item>
-
           <item row="2" column="0">
            <widget class="QLabel" name="label4">
             <property name="text">
@@ -192,7 +182,6 @@
           <item row="2" column="1">
            <widget class="QLineEdit" name="minMSEDiffLineEdit"/>
           </item>
-
           <item row="3" column="0">
            <widget class="QLabel" name="label5">
             <property name="text">
@@ -203,7 +192,6 @@
           <item row="3" column="1">
            <widget class="QLineEdit" name="densityLineEdit"/>
           </item>
-
           <item row="4" column="0">
            <widget class="QLabel" name="label6">
             <property name="text">
@@ -214,7 +202,6 @@
           <item row="4" column="1">
            <widget class="QLineEdit" name="overlapLineEdit"/>
           </item>
-
          </layout>
         </item>
        </layout>
@@ -274,10 +261,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>vizkit::QVizkitWidget</class>
+   <class>vizkit::Vizkit3DWidget</class>
    <extends>QWidget</extends>
-   <header>vizkit/QVizkitWidget.hpp</header>
-   <container>1</container>
+   <header>vizkit/Vizkit3DWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

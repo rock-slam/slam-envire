@@ -2,7 +2,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include <vizkit/QVizkitWidget.hpp>
+#include <vizkit/Vizkit3DWidget.hpp>
 #include <vizkit/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
 
@@ -15,7 +15,7 @@ using namespace envire;
 
 BOOST_AUTO_TEST_CASE( mlsmatch_test ) 
 {
-    QtThreadedWidget<vizkit::QVizkitWidget> app;
+    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     vizkit::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addDataHandler( &envViz );

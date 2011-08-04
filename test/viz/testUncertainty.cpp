@@ -4,7 +4,7 @@
 #include <Eigen/Geometry>
 #include <boost/scoped_ptr.hpp>
 
-#include <vizkit/QVizkitWidget.hpp>
+#include <vizkit/Vizkit3DWidget.hpp>
 #include <vizkit/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
 #include "envire/maps/MLSGrid.hpp"
@@ -49,7 +49,7 @@ private:
 
 BOOST_AUTO_TEST_CASE( uncertainty_test ) 
 {
-    QtThreadedWidget<vizkit::QVizkitWidget> app;
+    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     vizkit::UncertaintyVisualization viz;
     app.start();
     app.getWidget()->addDataHandler( &viz );
@@ -107,7 +107,7 @@ std::ostream& operator<<( std::ostream &os, const envire::TransformWithUncertain
 
 BOOST_AUTO_TEST_CASE( mlsmerge_test ) 
 {
-    QtThreadedWidget<vizkit::QVizkitWidget> app;
+    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     vizkit::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addDataHandler( &envViz );
@@ -148,7 +148,7 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
 BOOST_AUTO_TEST_CASE( uncertaintymls_test ) 
 {
     const size_t uncertainty_points = 10;
-    QtThreadedWidget<vizkit::QVizkitWidget> app;
+    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     vizkit::EnvireVisualization envViz;
     vizkit::UncertaintyVisualization viz[uncertainty_points];
     app.start();
