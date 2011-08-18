@@ -2,6 +2,7 @@
 #define __ENVIRE_GRIDS_HPP__
 
 #include <envire/maps/Grid.hpp>
+#include <base/samples/distance_image.h>
 
 namespace envire
 {  
@@ -42,10 +43,14 @@ namespace envire
   private:
       const static std::vector<std::string> &bands;
   public:
+      DistanceGrid( const base::samples::DistanceImage& dimage )
+	  : Grid<float>::Grid(dimage.width,dimage.height,dimage.scale_x,dimage.scale_y,dimage.center_x,dimage.center_y) {}
       DistanceGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 )
-	  : Grid<float>::Grid(width,height,scalex,scaley,offsetx,offsety){};
-      DistanceGrid(Serialization& so):Grid<float>(so,className){unserialize(so);};
-      virtual const std::vector<std::string>& getBands() const {return bands;};
+	  : Grid<float>::Grid(width,height,scalex,scaley,offsetx,offsety) {}
+      DistanceGrid(Serialization& so):Grid<float>(so,className) {unserialize(so);}
+      virtual const std::vector<std::string>& getBands() const {return bands;}
+
+      void copyFromDistanceImage( const base::samples::DistanceImage& dimage );
   };
   
   class ElevationGrid : public Grid<double>

@@ -48,6 +48,20 @@ static const std::vector<std::string> &initDistanceBands()
   return bands;
 }
 const std::vector<std::string> &DistanceGrid::bands = initDistanceBands();
+void DistanceGrid::copyFromDistanceImage( const base::samples::DistanceImage& dimage )
+{
+    envire::DistanceGrid::ArrayType& distance = 
+	getGridData( envire::DistanceGrid::DISTANCE );
+
+    // copy the content not very performant but should do for now.
+    for( size_t x = 0; x<width; x++ )
+    {
+	for( size_t y = 0; y<height; y++ )
+	{
+	    distance[y][x] = dimage.data[y*width+x];
+	}
+    }
+}
 
 ENVIRONMENT_ITEM_DEF( ElevationGrid )
 const std::string ElevationGrid::ELEVATION = "elevation_max"; // this will reference the max band
