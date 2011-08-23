@@ -19,7 +19,7 @@ rock_vizkit_plugin(envire-viz
     MOC ItemManipulator.hpp TreeViewListener.hpp 
     DEPS envire
     DEPS_CMAKE GDAL
-    HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp
+    HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp
     EnvironmentItemVisualizer.hpp)
 target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
 

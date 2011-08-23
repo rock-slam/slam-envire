@@ -6,7 +6,7 @@
 
 #include <vizkit/Vizkit3DWidget.hpp>
 #include <vizkit/QtThreadedWidget.hpp>
-#include "EnvireVisualization.hpp"
+#include "EnvireWidget.hpp"
 #include "envire/maps/MLSGrid.hpp"
 
 #include "envire/Core.hpp"
@@ -16,21 +16,17 @@ using namespace envire;
 
 BOOST_AUTO_TEST_CASE( mlsviz_test ) 
 {
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::EnvireVisualization envViz;
-    app.start();
-    app.getWidget()->addDataHandler( &envViz );
-
     // set up test environment
-    boost::scoped_ptr<Environment> env( new Environment() );
+    QtThreadedWidget<vizkit::EnvireWidget> app;
+    app.start();
+    Environment* env = app.getWidget()->getEnvironment();
+
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
     env->attachItem( mls );
 
     FrameNode *fm = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( -5, -5, 0 ) ) );
     env->getRootNode()->addChild( fm );
     mls->setFrameNode( fm );
-
-    envViz.updateData( env.get() );
 
     for(int i=0;i<5000 && app.isRunning();i++)
     {
