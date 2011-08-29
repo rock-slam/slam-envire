@@ -239,6 +239,11 @@ namespace envire
 	static void addClass( const std::string& className, Factory f );
     };
 
+    /** 
+     * Represents a point with associated uncertainty.
+     *
+     * The uncertainty is represented as a 3x3 covariance matrix.
+     */
     class PointWithUncertainty
     {
     public:
@@ -258,8 +263,25 @@ namespace envire
 	Covariance cov;
     };
 
+    /** 
+     * Class which is used to represent a 3D Transform.
+     *
+     * The transformation is represented as a 4x4 homogenous matrix. Both
+     * rotation and translation in 3D are represented.
+     */
     typedef Eigen::Affine3d Transform;
 
+    /** 
+     * Class which represents a 3D Transform with associated uncertainty information.
+     *
+     * The uncertainty is represented as a 6x6 matrix, which is the covariance
+     * matrix of the [r t] representation of the error. Here r is the rotational
+     * part expressed as a scaled axis of rotation, and t the translational
+     * component.
+     *
+     * The uncertainty information is optional. The hasUncertainty() method can
+     * be used to see if uncertainty information is associated with the class.
+     */
     class TransformWithUncertainty
     {
     public:
@@ -294,6 +316,11 @@ namespace envire
      *
      * The transformation C^P_C associated with this object will transform from 
      * this FrameNodes Frame into the parent Frame.
+     *
+     * A FrameNode holds a TransformWithUncertainty object representing the
+     * transformation from child to parent node. This transformation may have
+     * uncertainty associated with it, but doesn't have to. In the latter case,
+     * a fast path for calculation of transformation chains can be used.
      */
     class FrameNode : public EnvironmentItem
     {
