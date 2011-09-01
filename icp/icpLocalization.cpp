@@ -76,12 +76,12 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Affine3d body2Odo, Eigen::A
 	add_laser_scan = add_laser_scan && ( rotation > conf_point_cloud.min_rotation_for_new_line || translation > conf_point_cloud.min_distance_travelled_for_new_line || laserChange >  conf_point_cloud.min_rotation_head_for_new_line);
 	 
 	//if  the distance is to big means the old laser scan is not consistent anymore. 
-	if( rotation > max_rotation|| translation > max_translation || laserChange > max_head_movement)
-	{
-	    scansWithTransforms.erase(scansWithTransforms.begin() + i); 
-	    scanCount--; 
-	    std::cout << " IcpLocalization.cpp erasing old laser scan " << std::endl; 
-	}
+// 	if( rotation > max_rotation|| translation > max_translation || laserChange > max_head_movement)
+// 	{
+// 	    scansWithTransforms.erase(scansWithTransforms.begin() + i); 
+// 	    scanCount--; 
+// 	    std::cout << " IcpLocalization.cpp erasing old laser scan " << std::endl; 
+// 	}
 
 /*	std::cout <<" add new scan " << add_laser_scan << std::endl; 
 	std::cout << "\t translation " << (translation > conf_point_cloud.min_distance_travelled_for_new_line)<< " "  << translation << " > " << conf_point_cloud.min_distance_travelled_for_new_line << std::endl;
