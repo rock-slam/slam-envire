@@ -16,6 +16,11 @@ FrameNode::FrameNode()
 {
 }
 
+FrameNode::FrameNode(const TransformWithUncertainty& t)
+    : frame( t )
+{
+}
+
 FrameNode::FrameNode(const TransformType& t)
     : frame( t )
 {

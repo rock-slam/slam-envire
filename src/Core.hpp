@@ -336,6 +336,7 @@ namespace envire
         /** default constructor */
         FrameNode();
         FrameNode(const TransformType &t);
+        FrameNode(const TransformWithUncertainty &t);
         FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
