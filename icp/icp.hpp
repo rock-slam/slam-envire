@@ -144,10 +144,20 @@ public:
 	return vertices->size() * density;
     }
 
-    void applyTransform(const Eigen::Affine3d& t)
+    void applyTransform(const Eigen::Affine3d& C_global2globalnew)
     {
 	envire::FrameNode* fn = model->getFrameNode();
-	fn->setTransform( envire::FrameNode::TransformType( fn->getTransform()*(C_local2global.inverse(Eigen::Isometry) * t * C_local2global ) ) );
+	Eigen::Affine3d C_localnew2global = fn->getTransform()  
+	    * C_local2global.inverse(Eigen::Isometry) * C_global2globalnew * C_local2global;
+	
+	// need to make sure the rotation is still isometric to prevent
+	// numeric run-off, since there were a lot of transformations
+	// in the process
+	Eigen::Matrix3d rot = C_localnew2global.rotation();
+	C_localnew2global.linear() = rot;
+
+	fn->setTransform( 
+		envire::FrameNode::TransformType( C_localnew2global ) );
     }
 
 protected:
