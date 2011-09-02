@@ -20,7 +20,7 @@ bool DistanceGridToPointcloud::updateAll()
 
     // get relative transform from grid frame to pointcloud frame
     Transform t = distanceGrid.getFrameNode()->relativeTransform( pointcloud.getFrameNode() );
-    bool needsTransform = t.isApprox( Transform( Transform::Identity() ) );
+    bool needsTransform = !t.isApprox( Transform( Transform::Identity() ) );
 
     // the distance grid is a projection of the original pointcloud.
     // in order recover the pointcloud, we need to reverse the projection
