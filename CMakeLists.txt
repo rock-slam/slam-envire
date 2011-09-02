@@ -17,5 +17,5 @@ find_package(Boost REQUIRED COMPONENTS filesystem thread system)
 
 rock_add_source_dir(icp icp)
 rock_standard_layout()
-
+add_subdirectory(tools)
 
