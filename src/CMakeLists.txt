@@ -26,6 +26,7 @@ rock_library(envire
     maps/GridBase.cpp
     maps/Grids.cpp
     maps/Pointcloud.cpp
+    maps/Featurecloud.cpp
     maps/LaserScan.cpp
     maps/MLSGrid.cpp
     maps/MLSMap.cpp
@@ -45,6 +46,7 @@ rock_library(envire
     DEPS_CMAKE LibYAML GDAL)
 
 install(FILES core/EventHandler.hpp
+    core/Features.hpp
     core/Event.hpp
     core/EventSource.hpp
     DESTINATION include/envire/core)
@@ -57,6 +59,7 @@ install(FILES maps/GridBase.hpp
     maps/MLSMap.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
+    maps/Featurecloud.hpp
     maps/TriMesh.hpp
     DESTINATION include/envire/maps)
 
