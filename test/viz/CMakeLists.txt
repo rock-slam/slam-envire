@@ -11,3 +11,7 @@ rock_testsuite(testUncertainty testUncertainty.cpp
 rock_testsuite(testMLS testMLS.cpp
     DEPS envire-viz
     DEPS_PKGCONFIG vizkit)
+
+rock_testsuite(testFeatures testFeatures.cpp
+    DEPS envire-viz
+    DEPS_PKGCONFIG vizkit)

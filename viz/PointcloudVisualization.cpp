@@ -5,6 +5,7 @@
 #include <osg/Geometry>
 #include <envire/Core.hpp>
 #include <envire/maps/Pointcloud.hpp>
+#include <envire/maps/Featurecloud.hpp>
 #include <osg/Drawable>
 #include <osg/ShapeDrawable>
 
@@ -34,7 +35,7 @@ osg::Group* PointcloudVisualization::getNodeForItem(envire::EnvironmentItem* ite
 
 bool PointcloudVisualization::handlesItem(envire::EnvironmentItem* item) const
 {
-    return dynamic_cast<envire::Pointcloud *>(item);
+    return dynamic_cast<envire::Pointcloud *>(item) || dynamic_cast<envire::Featurecloud *>(item);
 }
 
 void PointcloudVisualization::highlightNode(envire::EnvironmentItem* item, osg::Group* group) const
@@ -116,6 +117,47 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 	}
 
 	//attach vertivces to geometry
+	ngeom->setVertexArray(nvertices);
+
+	osg::ref_ptr<osg::DrawArrays> ndrawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINES, 0, nvertices->size() );
+	ngeom->addPrimitiveSet(ndrawArrays.get());
+
+	geode->addDrawable(ngeom.get());    
+    }
+
+    // additional visualisation for features
+    envire::Featurecloud *featurecloud = dynamic_cast<envire::Featurecloud *>(item);
+    if( featurecloud )
+    {
+	osg::ref_ptr<osg::Geometry> ngeom = new osg::Geometry;
+	osg::ref_ptr<osg::Vec4Array> ncolor = new osg::Vec4Array;
+	ncolor->push_back(normalColor);
+	ngeom->setColorArray(ncolor.get());
+	ngeom->setColorBinding( osg::Geometry::BIND_OVERALL );
+
+	osg::ref_ptr<osg::Vec3Array> nvertices = new osg::Vec3Array;
+
+	for(size_t n=0;n<featurecloud->keypoints.size();n++) {
+	    // asume the origin as the origin of the original acquisition
+	    envire::KeyPoint &keypoint( featurecloud->keypoints[n] );
+	    Eigen::Vector3d point( pointcloud->vertices[n] );
+	    Eigen::Vector3d nview( -pointcloud->vertices[n].normalized() );
+
+	    const size_t circle_segments = 20;
+	    Eigen::Vector3d s = nview.cross( Eigen::Vector3d::UnitX() ).normalized() * keypoint.size;
+	    Eigen::AngleAxisd rot( M_PI*2.0/circle_segments, nview.normalized() );
+	    for( size_t i=0; i<circle_segments; i++ )
+	    {
+		nvertices->push_back(osg::Vec3(point.x()+s.x(),point.y()+s.y(),point.z()+s.z()));
+		s = rot * s;
+		nvertices->push_back(osg::Vec3(point.x()+s.x(),point.y()+s.y(),point.z()+s.z()));
+	    }
+
+	    Eigen::Vector3d normal( nview * normalScaling );
+	    nvertices->push_back(osg::Vec3(point.x(),point.y(), point.z()));
+	    nvertices->push_back(osg::Vec3(point.x()+normal.x(),point.y()+normal.y(), point.z()+normal.z()));
+	}
+
 	ngeom->setVertexArray(nvertices);
 
 	osg::ref_ptr<osg::DrawArrays> ndrawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINES, 0, nvertices->size() );
