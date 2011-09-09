@@ -8,6 +8,7 @@
 #include <envire/maps/Featurecloud.hpp>
 #include <osg/Drawable>
 #include <osg/ShapeDrawable>
+#include <osg/LineWidth>
 
 PointcloudVisualization::PointcloudVisualization()
     : vertexColor(osg::Vec4(0.1,0.9,0.1,.5)), 
@@ -71,7 +72,8 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
     // TODO this is a big hack!
     // cycle through colors
     const unsigned long col = reinterpret_cast<unsigned long>(item);
-    color->push_back( osg::Vec4( ((col*88734)%256)/255.0, ((col*398482)%256)/255.0, ((col*36784787)%256)/255.0, 1.0 ) );
+    osg::Vec4 pointColor = osg::Vec4( ((col*88734)%256)/255.0, ((col*398482)%256)/255.0, ((col*36784787)%256)/255.0, 1.0 ); 
+    color->push_back( pointColor );
 
     //color->push_back(vertexColor);
 
@@ -131,7 +133,7 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
     {
 	osg::ref_ptr<osg::Geometry> ngeom = new osg::Geometry;
 	osg::ref_ptr<osg::Vec4Array> ncolor = new osg::Vec4Array;
-	ncolor->push_back(normalColor);
+	ncolor->push_back(pointColor);
 	ngeom->setColorArray(ncolor.get());
 	ngeom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
@@ -143,7 +145,7 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 	    Eigen::Vector3d point( pointcloud->vertices[n] );
 	    Eigen::Vector3d nview( -pointcloud->vertices[n].normalized() );
 
-	    const size_t circle_segments = 20;
+	    const size_t circle_segments = 12 + keypoint.size * 12;
 	    Eigen::Vector3d s = nview.cross( Eigen::Vector3d::UnitX() ).normalized() * keypoint.size;
 	    Eigen::AngleAxisd rot( M_PI*2.0/circle_segments, nview.normalized() );
 	    for( size_t i=0; i<circle_segments; i++ )
@@ -162,6 +164,7 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 
 	osg::ref_ptr<osg::DrawArrays> ndrawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINES, 0, nvertices->size() );
 	ngeom->addPrimitiveSet(ndrawArrays.get());
+	ngeom->getOrCreateStateSet()->setAttribute( new osg::LineWidth( 2.0 ), osg::StateAttribute::ON );
 
 	geode->addDrawable(ngeom.get());    
     }
