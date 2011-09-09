@@ -21,7 +21,6 @@ Layer::Layer(Serialization& so) :
 {
     so.setClassName(className);
 
-    so.read( "name", name );
     so.read( "immutable", immutable );
 }
 
@@ -30,7 +29,6 @@ void Layer::serialize(Serialization& so)
     EnvironmentItem::serialize(so);
     so.setClassName(className);
 
-    so.write( "name", name );
     so.write( "immutable", immutable );
 }
 
@@ -47,11 +45,6 @@ void Layer::addChild( Layer* child )
 std::list<Layer*> Layer::getParents()
 {
     return env->getParents(this);
-}
-
-std::string Layer::getName() const
-{
-    return name;
 }
 
 bool Layer::isImmutable() const
@@ -113,8 +106,6 @@ const std::string Layer::getMapFileName(const std::string& path, const std::stri
     fs::path scenePath(path); 
 
     std::string fileName = className + "_" + boost::lexical_cast<std::string>(getUniqueId());
-    if( !getName().empty() )
-	fileName += getName();
 
     return (scenePath / fileName).string();
 }

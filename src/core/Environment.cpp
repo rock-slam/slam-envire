@@ -66,12 +66,14 @@ EnvironmentItem::EnvironmentItem(Serialization &so)
 {
     so.setClassName(className);
     so.read( "id", unique_id );
+    so.read( "label", label );
 }
 
 void EnvironmentItem::serialize(Serialization &so)
 {
     so.setClassName(className);
     so.write( "id", unique_id );
+    so.write( "label", label );
 }
 
 void EnvironmentItem::itemModified()

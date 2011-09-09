@@ -150,6 +150,10 @@ namespace envire
 	/** each environment item must have a unique id.
 	 */
 	long unique_id;
+
+	/** non-unique label which can be used for any purpose
+	 */
+	std::string label;
 	
 	/** store pointer to environment to allow convenience methods
 	 * referencing the environment object the item is attached to.
@@ -204,6 +208,14 @@ namespace envire
 	/** will detach the item from the current environment
 	 */
 	EnvironmentItem::Ptr detach();
+
+	/** get the non-unique label attached to this item
+	 */
+	std::string getLabel() const { return label; }
+
+	/** set the non-unique label attached to this item
+	 */
+	void setLabel( const std::string& label ) { this->label = label; }
     };
 
     void intrusive_ptr_add_ref( EnvironmentItem* item );
@@ -411,11 +423,6 @@ namespace envire
     class Layer : public EnvironmentItem
     {
     protected:
-        /** the name of the layer. This is a non-unique identifier which can 
-	 * be used for easy identification of the layer
-	 */ 
-        std::string name;
-
         /** @todo explain immutability for layer */
         bool immutable;
 
@@ -437,10 +444,6 @@ namespace envire
 	void serialize(Serialization& so);
 
 	virtual const std::string& getClassName() const {return className;};
-
-	/** @return a string identifier that can be used for debugging purposes
-         */
-        std::string getName() const;
 
         /** @return True if this layer cannot be changed by any means */
         bool isImmutable() const;
