@@ -52,6 +52,8 @@ namespace envire {
 	Pointcloud();
 	~Pointcloud();
 
+	void copyFrom( Pointcloud* source, bool transform = true );
+
 	Pointcloud(Serialization& so, bool handleMap = true);
 	void serialize(Serialization& so);
 	void serialize(Serialization& so, bool handleMap = true);

@@ -24,7 +24,15 @@ void Featurecloud::serialize(Serialization& so)
 void Featurecloud::clear() 
 {
     Pointcloud::clear();
+
     keypoints.clear();
     descriptors.clear();
 }
 
+void Featurecloud::copyFrom( Featurecloud* source, bool transform )
+{
+    Pointcloud::copyFrom( source, transform );
+
+    keypoints = source->keypoints;
+    descriptors = source->descriptors;
+}

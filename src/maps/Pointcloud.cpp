@@ -107,6 +107,26 @@ Pointcloud* Pointcloud::importCsv(const std::string& path, FrameNode* fm)
     return pc;
 }
 
+void Pointcloud::copyFrom( Pointcloud* source, bool transform )
+{
+    // TODO only copies the vertices for now
+    clear();
+
+    // get relative transform 
+    Transform t = source->getFrameNode()->relativeTransform( getFrameNode() );
+    bool needsTransform = !t.isApprox( Transform( Transform::Identity() ) );
+
+    if( !transform || !needsTransform )
+    {
+	vertices = source->vertices;
+    }
+    else
+    {
+	for( std::vector<Eigen::Vector3d>::iterator it = source->vertices.begin(); it != source->vertices.end(); it ++ )
+	    vertices.push_back( t * *it );
+    }
+}
+
 Pointcloud::Extents Pointcloud::getExtents() const
 {
     //TODO: Implement some sort of caching

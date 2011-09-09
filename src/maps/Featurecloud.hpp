@@ -22,6 +22,11 @@ namespace envire
 	std::vector<KeyPoint> keypoints;
 	std::vector<Descriptor> descriptors;
 
+	/** copy the content of the source feature cloud
+	 * and transform to new frame if necessary
+	 */
+	void copyFrom( Featurecloud* source, bool transform = true );
+
 	void clear();
     };
 }
