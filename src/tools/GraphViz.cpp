@@ -22,7 +22,9 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	    classname = classname.substr( classname.rfind("::") + 2 );
 
 	os << "g" << item->getUniqueId() << " ";
-	std::string name = (boost::format("%s[%i]") % classname % item->getUniqueId()).str();
+	std::string name = (boost::format("%s [%i]") % classname % item->getUniqueId()).str();
+	if( !item->getLabel().empty() )
+	    name = item->getLabel() + "\\n" + name;
 
 	if( dynamic_cast<FrameNode*>(item) )
 	{
