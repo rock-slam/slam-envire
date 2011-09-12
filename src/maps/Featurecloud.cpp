@@ -4,11 +4,12 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( Featurecloud )
 
 Featurecloud::Featurecloud()
+    : descriptorSize(0)
 {
 }
 
 Featurecloud::Featurecloud(Serialization& so)
-    : Pointcloud(so)
+    : Pointcloud(so), descriptorSize(0)
 {
     // TODO read map file
 }
@@ -33,6 +34,8 @@ void Featurecloud::copyFrom( Featurecloud* source, bool transform )
 {
     Pointcloud::copyFrom( source, transform );
 
+    descriptorType = source->descriptorType;
+    descriptorSize = source->descriptorSize;
     keypoints = source->keypoints;
     descriptors = source->descriptors;
 }

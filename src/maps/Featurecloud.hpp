@@ -12,7 +12,6 @@ namespace envire
 	ENVIRONMENT_ITEM( Featurecloud )
 
 	typedef float Scalar;
-	typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1, Eigen::DontAlign> Descriptor;
 
     public:
 	Featurecloud();
@@ -20,7 +19,12 @@ namespace envire
 	void serialize(Serialization& so);
 
 	std::vector<KeyPoint> keypoints;
-	std::vector<Descriptor> descriptors;
+	std::vector<Scalar> descriptors;
+
+	DESCRIPTOR descriptorType; 
+	int descriptorSize;
+
+	size_t size() const { return vertices.size(); }
 
 	/** copy the content of the source feature cloud
 	 * and transform to new frame if necessary
