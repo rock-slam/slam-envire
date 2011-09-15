@@ -91,20 +91,12 @@ Affine3d Pairs::getTransform()
 	}
     }
 
-    // resulting transformation in global frame
+    // resulting transformation that will align p to x, if applied to p 
     Vector3d q_T = mu_x - q_R * mu_p;
     Affine3d t( Translation3d( q_T ) * q_R );
 
     mse = mu_d;
     
-//     if ( mse < 0.005 ) 
-//     {   
-// 	std::cout << " MSE " <<  mse<< std::endl; 
-// 	for(size_t i=0;i<10;i++) {
-// 	    std::cout << pairs[i].distance; 
-// 	}
-// 	std::cout <<   std::endl; 
-//     }
     return t;
 }
 
