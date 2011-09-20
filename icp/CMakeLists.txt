@@ -8,6 +8,7 @@ pkg_check_modules(DFKI_TYPES REQUIRED "base-types")
 include_directories(${DFKI_TYPES_INCLUDE_DIRS})
 
 install(FILES icp.hpp
+ransac.hpp
 stability.hpp
 icpConfigurationTypes.hpp
 icpLocalization.hpp

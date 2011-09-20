@@ -1,5 +1,6 @@
 #include <Eigen/Geometry>
 #include "icp/icp.hpp"
+#include "icp/ransac.hpp"
 
 #include "envire/Core.hpp"
 #include "envire/maps/TriMesh.hpp"
@@ -160,3 +161,44 @@ BOOST_AUTO_TEST_CASE( icp_test2 )
     Serialization so;
     so.serialize( test.env.get(), "/tmp/test" );
 } 
+
+using namespace envire::ransac;
+
+BOOST_AUTO_TEST_CASE( ransac_test )
+{
+    std::cout << "RANSAC test" << std::endl;
+
+    std::vector<Eigen::Vector3d> x, p;
+    Eigen::Affine3d model = Eigen::Translation3d( 0, 0, 0.5 ) * 
+	Eigen::AngleAxisd( M_PI/8.0, Eigen::Vector3d::UnitX() );
+
+    const double outlierProb = 0.5;
+
+    size_t outliers = 0;
+    for( int i = 0; i < 50; i++ )
+    {
+	Eigen::Vector3d v1 = Eigen::Vector3d::Random() * 10.0;
+	Eigen::Vector3d v2 = model * v1;
+
+	if( rand() % 100 < (outlierProb * 100) )
+	{
+	    outliers++;
+	    v2 += Eigen::Vector3d::Random() * 10.0;
+	}
+
+	x.push_back( v1 );
+	p.push_back( v2 );
+    }
+    std::cout << "outliers: " << outliers << std::endl;
+
+    Eigen::Affine3d best_model;
+    vector_size_t best_inliers;
+    const double DIST_THRESHOLD = 0.2;
+
+    //ModelSearch search;
+    FitTransform fit( x, p );
+    ransacSingleModel( fit, 3, DIST_THRESHOLD, best_model, best_inliers, 1000 );
+
+    std::cout << best_inliers.size() << std::endl;
+
+}
