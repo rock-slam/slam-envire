@@ -200,5 +200,4 @@ BOOST_AUTO_TEST_CASE( ransac_test )
     ransacSingleModel( fit, 3, DIST_THRESHOLD, best_model, best_inliers, 1000 );
 
     std::cout << best_inliers.size() << std::endl;
-
 }

@@ -16,8 +16,10 @@ struct FitTransform
     typedef double Real;
 
     const std::vector<Eigen::Vector3d>& x, p;
-    FitTransform( const std::vector<Eigen::Vector3d>& x, const std::vector<Eigen::Vector3d>& p )
-	: x( x ), p( p ) 
+    double errorThreshold;
+
+    FitTransform( const std::vector<Eigen::Vector3d>& x, const std::vector<Eigen::Vector3d>& p, double errorThreshold = 0.1 )
+	: x( x ), p( p ), errorThreshold( errorThreshold ) 
     {
 	assert( x.size() == p.size() );
     }
@@ -48,11 +50,10 @@ struct FitTransform
 	Eigen::Affine3d m = pairs.getTransform();
 
 	// test if the model is valid 
-	const double threshold = 0.1;
 	for( size_t i = 0; i < useIndices.size(); i++ )
 	{
 	    double dist = testSample( useIndices[i], m ); 
-	    if( dist > threshold )
+	    if( dist > errorThreshold )
 	    {
 		return false;
 	    }
