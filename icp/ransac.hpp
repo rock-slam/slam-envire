@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_RANSAC_HPP__
 #define __ENVIRE_RANSAC_HPP__
 
-#include <envire/icp.hpp>
+#include "icp.hpp"
 
 namespace envire
 {
