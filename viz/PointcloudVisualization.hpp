@@ -21,12 +21,14 @@ class PointcloudVisualization : public vizkit::EnvironmentItemVisualizer
 	 */
 	bool setDefaultColor( const osg::Vec4& color );
 	bool setShowNormals( bool showNormals );
+	bool setShowFeatures( bool showFeatures );
 
     protected:
 	osg::Vec4 vertexColor;
 	osg::Vec4 normalColor;
 	double normalScaling;
 	bool showNormals;
+	bool showFeatures;
 
 };
 

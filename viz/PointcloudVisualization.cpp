@@ -14,7 +14,8 @@ PointcloudVisualization::PointcloudVisualization()
     : vertexColor(osg::Vec4(0.1,0.9,0.1,.5)), 
       normalColor(osg::Vec4(0.9,0.1,0.1,.5)), 
       normalScaling(0.2),
-      showNormals(false)
+      showNormals(false),
+      showFeatures(false)
 {
 }
 
@@ -129,7 +130,7 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 
     // additional visualisation for features
     envire::Featurecloud *featurecloud = dynamic_cast<envire::Featurecloud *>(item);
-    if( featurecloud )
+    if( featurecloud && showFeatures )
     {
 	osg::ref_ptr<osg::Geometry> ngeom = new osg::Geometry;
 	osg::ref_ptr<osg::Vec4Array> ncolor = new osg::Vec4Array;
