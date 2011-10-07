@@ -16,6 +16,7 @@
 #include <stdexcept>
 
 #include <envire/core/EventSource.hpp>
+#include <base/samples/rigid_body_state.h>
 
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
 const std::string& _classname::className = "envire::" #_classname; \
@@ -262,6 +263,7 @@ namespace envire
 	typedef Eigen::Matrix<double,3,3> Covariance;
 
     public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	PointWithUncertainty();
 	PointWithUncertainty( const Point& point, const Covariance& cov );
 
@@ -300,13 +302,19 @@ namespace envire
 	typedef Eigen::Matrix<double,6,6> Covariance;
 
     public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	TransformWithUncertainty();
+	explicit TransformWithUncertainty( const base::samples::RigidBodyState& rbs );
 	explicit TransformWithUncertainty( const Transform& trans );
 	TransformWithUncertainty( const Transform& trans, const Covariance& cov );
+
+	static TransformWithUncertainty Identity();
 
 	TransformWithUncertainty operator*( const TransformWithUncertainty& trans ) const;
 	PointWithUncertainty operator*( const PointWithUncertainty& point ) const;
 	TransformWithUncertainty inverse( Eigen::TransformTraits traits = Eigen::Isometry ) const;
+
+	TransformWithUncertainty& operator=( const base::samples::RigidBodyState& rbs );
 
 	const Covariance& getCovariance() const { return cov; }
 	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }

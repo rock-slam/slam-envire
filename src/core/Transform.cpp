@@ -11,8 +11,17 @@ PointWithUncertainty::PointWithUncertainty( const Point& point, const Covariance
 TransformWithUncertainty::TransformWithUncertainty() {}
 TransformWithUncertainty::TransformWithUncertainty( const Transform& trans )
     : trans( trans ), cov( Covariance::Zero() ), uncertain(false) {}
+TransformWithUncertainty::TransformWithUncertainty( const base::samples::RigidBodyState& rbs )
+{
+    operator=( rbs );
+}
 TransformWithUncertainty::TransformWithUncertainty( const Transform& trans, const Covariance& cov )
     : trans( trans ), cov( cov ), uncertain(true) {}
+
+TransformWithUncertainty TransformWithUncertainty::Identity() 
+{
+    return TransformWithUncertainty( Transform::Identity() );
+}
 
 // The uncertainty transformations are implemented according to: 
 // Pennec X, Thirion JP. A framework for uncertainty and validation of 3-D
@@ -137,18 +146,32 @@ TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWit
 	q2( t2.getTransform().linear() );
     Eigen::Quaterniond q( q2 * q1 );
 
+    // initialize resulting covariance
+    Eigen::Matrix<double,6,6> cov = Eigen::Matrix<double,6,6>::Zero();
+
     // calculate the Jacobians (this is what all the above functions are for)
-    Eigen::Matrix<double,6,6> J1, J2;
-    J1 << dr2r1_by_r1(q, q1, q2), Eigen::Matrix3d::Zero(),
-       Eigen::Matrix3d::Zero(), t2.getTransform().linear();
+    // and add to the resulting covariance
+    if( t1.hasUncertainty() )
+    {
+	Eigen::Matrix<double,6,6> J1;
+	J1 << dr2r1_by_r1(q, q1, q2), Eigen::Matrix3d::Zero(),
+	   Eigen::Matrix3d::Zero(), t2.getTransform().linear();
 
-    J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
-       drx_by_dr(q, t1.getTransform().translation()), t2.getTransform().linear();
+	cov += J1*t1.getCovariance()*J1.transpose();
+    }
 
-    // and calculate the resulting uncertainty transform
+    if( t2.hasUncertainty() )
+    {
+	Eigen::Matrix<double,6,6> J2;
+	J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
+	   drx_by_dr(q, t1.getTransform().translation()), t2.getTransform().linear();
+
+	cov += J2*t2.getCovariance()*J2.transpose();
+    }
+
+    // and return the resulting uncertainty transform
     return TransformWithUncertainty( 
-	    t2.getTransform() * t1.getTransform(),
-	    J1*t1.getCovariance()*J1.transpose() + J2*t2.getCovariance()*J2.transpose() );
+	    t2.getTransform() * t1.getTransform(), cov );
 }
 
 PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncertainty& point ) const
@@ -178,4 +201,18 @@ TransformWithUncertainty TransformWithUncertainty::inverse( Eigen::TransformTrai
     return TransformWithUncertainty(
 	    Eigen::Affine3d( getTransform().inverse( traits ) ),
 	    J*getCovariance()*J.transpose() );
+}
+
+TransformWithUncertainty& TransformWithUncertainty::operator=( const base::samples::RigidBodyState& rbs )
+{
+    // extract the transform
+    trans = rbs;
+
+    // and the covariance
+    cov << rbs.cov_orientation, Eigen::Matrix3d::Zero(),
+	Eigen::Matrix3d::Zero(), rbs.cov_position;
+
+    uncertain = true;
+
+    return *this;
 }
