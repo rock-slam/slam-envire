@@ -315,6 +315,7 @@ namespace envire
 	TransformWithUncertainty inverse( Eigen::TransformTraits traits = Eigen::Isometry ) const;
 
 	TransformWithUncertainty& operator=( const base::samples::RigidBodyState& rbs );
+	void copyToRigidBodyState( base::samples::RigidBodyState& rbs ) const;
 
 	const Covariance& getCovariance() const { return cov; }
 	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }

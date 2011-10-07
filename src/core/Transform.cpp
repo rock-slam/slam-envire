@@ -216,3 +216,13 @@ TransformWithUncertainty& TransformWithUncertainty::operator=( const base::sampl
 
     return *this;
 }
+
+void TransformWithUncertainty::copyToRigidBodyState( base::samples::RigidBodyState& rbs ) const
+{
+    base::Pose pose( getTransform() );
+    rbs.position = pose.position;
+    rbs.orientation = pose.orientation;
+    rbs.cov_orientation = getCovariance().topLeftCorner<3,3>();
+    rbs.cov_position = getCovariance().bottomRightCorner<3,3>();
+}
+
