@@ -40,7 +40,7 @@ void ICPLocalization::addLaserScan(Eigen::Affine3d body2Odo, Eigen::Affine3d bod
     lat.body2World = body2World;
     lat.laser2Body = laser2Body;
     scansWithTransforms.push_back(lat);
-    while( scansWithTransforms.size() > conf_point_cloud.lines_per_point_cloud )
+    while( scansWithTransforms.size() > static_cast<unsigned long>(conf_point_cloud.lines_per_point_cloud) )
 	scansWithTransforms.pop_front();
     
     scanCount++;
@@ -56,9 +56,11 @@ void ICPLocalization::addScanLineToPointCloud(Eigen::Affine3d body2Odo, Eigen::A
 	return;
     }
     
+    /*
     double max_rotation =  1.5 * conf_point_cloud.lines_per_point_cloud * conf_point_cloud.min_rotation_for_new_line;
     double max_translation = 1.5 * conf_point_cloud.lines_per_point_cloud * conf_point_cloud.min_distance_travelled_for_new_line;
     double max_head_movement = 1.5 * conf_point_cloud.lines_per_point_cloud * conf_point_cloud.min_rotation_head_for_new_line; 
+    */
     bool add_laser_scan = true; 
     for( uint i = 0; i < scansWithTransforms.size(); i++) 
     {
