@@ -198,7 +198,6 @@ Eigen::Affine3d Sampling::getUniformSample( )
     for( int col = 0; col < 3; col ++) 
     {
 	translation = translation + getRandomValue(-1,1) * sigmaPointsPosition.col(col);
-	translation = translation + sigmaPointsPosition.col(col);
 	
     }
     //removing z axis samplign 
