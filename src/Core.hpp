@@ -314,11 +314,16 @@ namespace envire
 	 * The result is another transform with result = this * trans
 	 */
 	TransformWithUncertainty composition( const TransformWithUncertainty& trans ) const;
+
 	/** performs an inverse composition of two transformations.
 	 * The result is such that result * trans = this. Note that this is different from
 	 * calling result = this * inv(trans), in the way the uncertainties are handled.
 	 */
 	TransformWithUncertainty compositionInv( const TransformWithUncertainty& trans ) const;
+
+	/** Same as compositionInv, just that the trans * result = this.
+	 */
+	TransformWithUncertainty preCompositionInv( const TransformWithUncertainty& t2 ) const;
 
 	/** alias for the composition of two transforms
 	 */

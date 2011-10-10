@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE( test_relative_uncertainty )
 	0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 
 	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
 	0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
-	0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 
-	0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 
-	0.0, 0.0, 0.0, 0.0, 0.0, 3.0;
+	0.0, 0.0, 0.0, -3.0, 0.0, 0.0, 
+	0.0, 0.0, 0.0, 0.0, -2.0, 0.0, 
+	0.0, 0.0, 0.0, 0.0, 0.0, -1.0;
 
     TransformWithUncertainty t1(
 	    Eigen::Affine3d(Eigen::Translation3d(Eigen::Vector3d(1,0,0)) * Eigen::AngleAxisd( M_PI/2.0, Eigen::Vector3d::UnitX()) ),
@@ -47,12 +47,30 @@ BOOST_AUTO_TEST_CASE( test_relative_uncertainty )
 
     // and recover the second transform
     TransformWithUncertainty t2r = tr.compositionInv( t1 );
+    TransformWithUncertainty t1r = tr.preCompositionInv( t2 );
 
-    std::cout << "transforms: " << std::endl;
-    std::cout << t2.getTransform().matrix() << std::endl;
-    std::cout << t2r.getTransform().matrix() << std::endl;
+    const double sigma = 1e-12;
 
-    std::cout << "covariances: " << std::endl;
-    std::cout << t2.getCovariance() << std::endl;
-    std::cout << t2r.getCovariance() << std::endl;
+    BOOST_CHECK( t2.getTransform().matrix().isApprox( t2r.getTransform().matrix(), sigma ) );
+    BOOST_CHECK( t2.getCovariance().isApprox( t2r.getCovariance(), sigma ) );
+
+    BOOST_CHECK( t1.getTransform().matrix().isApprox( t1r.getTransform().matrix(), sigma ) );
+    BOOST_CHECK( t1.getCovariance().isApprox( t1r.getCovariance(), sigma ) );
+
+//    std::cout << "t2 transforms: " << std::endl;
+//    std::cout << t2.getTransform().matrix() << std::endl;
+//    std::cout << t2r.getTransform().matrix() << std::endl;
+//
+//    std::cout << "t2 covariances: " << std::endl;
+//    std::cout << t2.getCovariance() << std::endl;
+//    std::cout << t2r.getCovariance() << std::endl;
+//
+//    std::cout << "t1 transforms: " << std::endl;
+//    std::cout << t1.getTransform().matrix() << std::endl;
+//    std::cout << t1r.getTransform().matrix() << std::endl;
+//
+//    std::cout << "t1 covariances: " << std::endl;
+//    std::cout << t1.getCovariance() << std::endl;
+//    std::cout << t1r.getCovariance() << std::endl;
+    
 }
