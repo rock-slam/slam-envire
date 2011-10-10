@@ -594,7 +594,7 @@ T relativeTransform(const FrameNode* from, const FrameNode* to)
     if( fg.second != tg.second )
 	throw std::runtime_error("relativeTransform: FrameNodes don't have a common root.");
 
-    return T( tg.first.inverse(Eigen::Isometry) * fg.first );
+    return T( tg.first.inverse() * fg.first );
 }
 
 FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)

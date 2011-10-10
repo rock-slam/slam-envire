@@ -310,9 +310,21 @@ namespace envire
 
 	static TransformWithUncertainty Identity();
 
+	/** performs a composition of this transform with the transform given.
+	 * The result is another transform with result = this * trans
+	 */
+	TransformWithUncertainty composition( const TransformWithUncertainty& trans ) const;
+	/** performs an inverse composition of two transformations.
+	 * The result is such that result * trans = this. Note that this is different from
+	 * calling result = this * inv(trans), in the way the uncertainties are handled.
+	 */
+	TransformWithUncertainty compositionInv( const TransformWithUncertainty& trans ) const;
+
+	/** alias for the composition of two transforms
+	 */
 	TransformWithUncertainty operator*( const TransformWithUncertainty& trans ) const;
 	PointWithUncertainty operator*( const PointWithUncertainty& point ) const;
-	TransformWithUncertainty inverse( Eigen::TransformTraits traits = Eigen::Isometry ) const;
+	TransformWithUncertainty inverse() const;
 
 	TransformWithUncertainty& operator=( const base::samples::RigidBodyState& rbs );
 	void copyToRigidBodyState( base::samples::RigidBodyState& rbs ) const;

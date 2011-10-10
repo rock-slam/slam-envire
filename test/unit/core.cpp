@@ -370,11 +370,5 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
     env->removeEventHandler( &ep );
 }
 
-BOOST_AUTO_TEST_CASE( test_rigid_body_state ) 
-{
-    base::samples::RigidBodyState rbs;
-    TransformWithUncertainty t( rbs );
-}
-
 // EOF
 //

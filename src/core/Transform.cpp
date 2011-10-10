@@ -133,6 +133,45 @@ Eigen::Matrix<double,3,3> drx_by_dr( const Eigen::Quaterniond& q, const Eigen::V
 		+ 2.0*beta*Eigen::Matrix3d::Identity()) );
 }
 
+TransformWithUncertainty TransformWithUncertainty::composition( const TransformWithUncertainty& t1 ) const
+{
+    return this->operator*( t1 );
+}
+
+TransformWithUncertainty TransformWithUncertainty::compositionInv( const TransformWithUncertainty& t1 ) const
+{
+    const TransformWithUncertainty &tf(*this);
+    // short path if there is no uncertainty 
+    if( !t1.hasUncertainty() && !tf.hasUncertainty() )
+	return TransformWithUncertainty( tf.getTransform() * t1.getTransform().inverse( Eigen::Isometry ) );
+
+    // convert the rotations of the respective transforms into quaternions
+    // in order to inverse the covariances, we need to get both the t1 and t2 transformations
+    // based on the composition tf = t2 * t1
+    Eigen::Matrix3d r2 = tf.getTransform().linear() * t1.getTransform().linear().transpose();
+    Eigen::Quaterniond 
+	q1( t1.getTransform().linear() ),
+	q2( r2 );
+    Eigen::Quaterniond q( q2 * q1 );
+
+    // initialize resulting covariance
+    Eigen::Matrix<double,6,6> cov = Eigen::Matrix<double,6,6>::Zero();
+
+    Eigen::Matrix<double,6,6> J1;
+    J1 << dr2r1_by_r1(q, q1, q2), Eigen::Matrix3d::Zero(),
+       Eigen::Matrix3d::Zero(), r2;
+
+    Eigen::Matrix<double,6,6> J2;
+    J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
+       drx_by_dr(q, t1.getTransform().translation()), r2;
+
+    cov = J2.inverse() * ( tf.getCovariance() - J1 * t1.getCovariance() * J1.transpose() ) * J2.transpose().inverse();
+
+    // and return the resulting uncertainty transform
+    return TransformWithUncertainty( 
+	    tf.getTransform() * t1.getTransform().inverse(), cov );
+}
+
 TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWithUncertainty& t1 ) const
 {
     const TransformWithUncertainty &t2(*this);
@@ -186,11 +225,11 @@ PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncerta
 	    J*getCovariance()*J.transpose() + R*point.getCovariance()*R.transpose() );
 }
 
-TransformWithUncertainty TransformWithUncertainty::inverse( Eigen::TransformTraits traits ) const
+TransformWithUncertainty TransformWithUncertainty::inverse() const
 {
     // short path if there is no uncertainty 
     if( !hasUncertainty() )
-	return TransformWithUncertainty( Transform( getTransform().inverse( traits ) ) );
+	return TransformWithUncertainty( Transform( getTransform().inverse( Eigen::Isometry ) ) );
 
     Eigen::Quaterniond q( getTransform().linear() );
     Eigen::Vector3d t( getTransform().translation() );
@@ -199,7 +238,7 @@ TransformWithUncertainty TransformWithUncertainty::inverse( Eigen::TransformTrai
 	drx_by_dr( q.inverse(), t ), q.toRotationMatrix().transpose();
 
     return TransformWithUncertainty(
-	    Eigen::Affine3d( getTransform().inverse( traits ) ),
+	    Eigen::Affine3d( getTransform().inverse( Eigen::Isometry ) ),
 	    J*getCovariance()*J.transpose() );
 }
 
