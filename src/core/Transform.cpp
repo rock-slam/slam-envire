@@ -88,7 +88,7 @@ Eigen::Matrix<double,3,4> dr_by_dq( const Eigen::Quaterniond& q )
 Eigen::Matrix<double,4,4> dq2q1_by_dq1( const Eigen::Quaterniond& q2 )
 {
     Eigen::Matrix<double,4,4> res;
-    res << 0, q2.vec().transpose(),
+    res << 0, -q2.vec().transpose(),
 	q2.vec(), skew_symmetric( q2.vec() );
     return Eigen::Matrix<double,4,4>::Identity() * q2.w() + res;
 }
@@ -96,7 +96,7 @@ Eigen::Matrix<double,4,4> dq2q1_by_dq1( const Eigen::Quaterniond& q2 )
 Eigen::Matrix<double,4,4> dq2q1_by_dq2( const Eigen::Quaterniond& q1 )
 {
     Eigen::Matrix<double,4,4> res;
-    res << 0, q1.vec().transpose(),
+    res << 0, -q1.vec().transpose(),
 	q1.vec(), -skew_symmetric( q1.vec() );
     return Eigen::Matrix<double,4,4>::Identity() * q1.w() + res;
 }
@@ -164,7 +164,7 @@ TransformWithUncertainty TransformWithUncertainty::compositionInv( const Transfo
 
     Eigen::Matrix<double,6,6> J2;
     J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
-       drx_by_dr(q, t1.getTransform().translation()), t2.linear();
+       drx_by_dr(q2, t1.getTransform().translation()), Eigen::Matrix3d::Identity();
 
     cov = J2.inverse() * ( tf.getCovariance() - J1 * t1.getCovariance() * J1.transpose() ) * J2.transpose().inverse();
 
@@ -199,7 +199,7 @@ TransformWithUncertainty TransformWithUncertainty::preCompositionInv( const Tran
 
     Eigen::Matrix<double,6,6> J2;
     J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
-       drx_by_dr(q, t1.translation()), t2.getTransform().linear();
+       drx_by_dr(q2, t1.getTransform().translation()), Eigen::Matrix3d::Identity();
 
     cov = J1.inverse() * ( tf.getCovariance() - J2 * t2.getCovariance() * J2.transpose() ) * J1.transpose().inverse();
 
@@ -240,7 +240,7 @@ TransformWithUncertainty TransformWithUncertainty::operator*( const TransformWit
     {
 	Eigen::Matrix<double,6,6> J2;
 	J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
-	   drx_by_dr(q, t1.getTransform().translation()), t2.getTransform().linear();
+	   drx_by_dr(q2, t1.getTransform().translation()), Eigen::Matrix3d::Identity();
 
 	cov += J2*t2.getCovariance()*J2.transpose();
     }
