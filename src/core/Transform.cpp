@@ -199,7 +199,7 @@ TransformWithUncertainty TransformWithUncertainty::preCompositionInv( const Tran
 
     Eigen::Matrix<double,6,6> J2;
     J2 << dr2r1_by_r2(q, q1, q2), Eigen::Matrix3d::Zero(),
-       drx_by_dr(q2, t1.getTransform().translation()), Eigen::Matrix3d::Identity();
+       drx_by_dr(q2, t1.translation()), Eigen::Matrix3d::Identity();
 
     cov = J1.inverse() * ( tf.getCovariance() - J2 * t2.getCovariance() * J2.transpose() ) * J1.transpose().inverse();
 
