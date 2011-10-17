@@ -95,6 +95,39 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
     }
 }
 
+BOOST_AUTO_TEST_CASE( uncertainty_test2 ) 
+{
+    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    vizkit::UncertaintyVisualization viz;
+    app.start();
+    app.getWidget()->addDataHandler( &viz );
+
+    TransformWithUncertainty t;
+    for(int i=0;i<50000 && app.isRunning();i++)
+    {
+	double r = i/5000.0;
+
+	Eigen::Matrix<double,6,6> lt1; 
+	lt1 <<
+	    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+	    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+	    0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 
+	    0.0, 0.0, 0.0, 0.002, 0.0, 0.0, 
+	    0.0, 0.0, 0.0, 0.0, 0.002, 0.0, 
+	    0.0, 0.0, 0.0, 0.0, 0.0, 0.001;
+
+	TransformWithUncertainty t1(
+		Eigen::Affine3d(Eigen::Translation3d(Eigen::Vector3d(0,0.001,0)) * Eigen::AngleAxisd( 0.0001, Eigen::Vector3d::UnitZ() )),
+		lt1.array().square().matrix() );
+
+	t = t1 * t;
+
+	viz.updateData( t * PointWithUncertainty( Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero() ) );
+
+	usleep(1000);
+    }
+}
+
 std::ostream& operator<<( std::ostream &os, const envire::TransformWithUncertainty& t )
 {
     os << "transform:" << std::endl;
