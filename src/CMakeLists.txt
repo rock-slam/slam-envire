@@ -81,8 +81,13 @@ install(FILES tools/GraphViz.hpp
     tools/PlyFile.hpp
     DESTINATION include/envire/tools)
 
-target_link_libraries(envire 
-    ${CGAL_LIBRARIES}
-    ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_THREAD_LIBRARY})
-
+if (USE_CGAL AND CGAL_FOUND)
+    target_link_libraries(envire 
+	${CGAL_LIBRARIES}
+	${Boost_FILESYSTEM_LIBRARY}
+	${Boost_THREAD_LIBRARY})
+else() 
+    target_link_libraries(envire 
+	${Boost_FILESYSTEM_LIBRARY}
+	${Boost_THREAD_LIBRARY})
+endif()
