@@ -265,16 +265,20 @@ namespace envire
     public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	PointWithUncertainty();
+	PointWithUncertainty( const Point& point );
 	PointWithUncertainty( const Point& point, const Covariance& cov );
 
 	const Covariance& getCovariance() const { return cov; }
-	void setCovariance( const Covariance& cov ) { this->cov = cov; }
+	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }
 	const Point& getPoint() const { return point; }
 	void setPoint( const Point& point ) { this->point = point; }
+
+	bool hasUncertainty() const { return uncertain; }
 
     protected:
 	Point point;
 	Covariance cov;
+	bool uncertain;
     };
 
     /** 

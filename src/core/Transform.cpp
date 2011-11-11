@@ -5,8 +5,10 @@
 using namespace envire;
 
 PointWithUncertainty::PointWithUncertainty() {}
+PointWithUncertainty::PointWithUncertainty( const Point& point ) 
+    : point( point ), uncertain(false) {}
 PointWithUncertainty::PointWithUncertainty( const Point& point, const Covariance& cov ) 
-    : point( point ), cov( cov ) {}
+    : point( point ), cov( cov ), uncertain(true) {}
 
 TransformWithUncertainty::TransformWithUncertainty() {}
 TransformWithUncertainty::TransformWithUncertainty( const Transform& trans )
@@ -256,10 +258,14 @@ PointWithUncertainty TransformWithUncertainty::operator*( const PointWithUncerta
     Eigen::Quaterniond q( R );
     Eigen::Matrix<double,3,6> J;
     J << drx_by_dr( q, point.getPoint() ), Eigen::Matrix3d::Identity();
+
+    Eigen::Matrix<double,3,3> cov = J*getCovariance()*J.transpose();
+    if( point.hasUncertainty() )
+	cov += R*point.getCovariance()*R.transpose();
     
     return PointWithUncertainty( 
 	    getTransform() * point.getPoint(),
-	    J*getCovariance()*J.transpose() + R*point.getCovariance()*R.transpose() );
+	    cov );
 }
 
 TransformWithUncertainty TransformWithUncertainty::inverse() const
