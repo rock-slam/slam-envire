@@ -15,7 +15,8 @@ PointcloudVisualization::PointcloudVisualization()
       normalColor(osg::Vec4(0.9,0.1,0.1,.5)), 
       normalScaling(0.2),
       showNormals(false),
-      showFeatures(false)
+      showFeatures(false),
+      colorCycling(false)
 {
 }
 
@@ -70,13 +71,18 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 
-    // TODO this is a big hack!
-    // cycle through colors
-    const unsigned long col = reinterpret_cast<unsigned long>(item);
-    osg::Vec4 pointColor = osg::Vec4( ((col*88734)%256)/255.0, ((col*398482)%256)/255.0, ((col*36784787)%256)/255.0, 1.0 ); 
+    osg::Vec4 pointColor = vertexColor;
+    if( colorCycling )
+    {
+	// TODO this is a big hack!
+	// cycle through colors
+	const unsigned long col = reinterpret_cast<unsigned long>(item);
+	pointColor = osg::Vec4( ((col*88734)%256)/255.0, ((col*398482)%256)/255.0, ((col*36784787)%256)/255.0, 1.0 ); 
+    }
+    if( pointcloud->vertices.size() < 10 )
+	pointColor = osg::Vec4(0.9, 0.1, 0.1, 1.0 ); 
+	
     color->push_back( pointColor );
-
-    //color->push_back(vertexColor);
 
     geom->setColorArray(color.get());
     geom->setColorBinding( osg::Geometry::BIND_OVERALL );

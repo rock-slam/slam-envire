@@ -29,6 +29,7 @@ class PointcloudVisualization : public vizkit::EnvironmentItemVisualizer
 	double normalScaling;
 	bool showNormals;
 	bool showFeatures;
+	bool colorCycling;
 
 };
 
