@@ -13,9 +13,10 @@
 
 namespace envire {
     class MergePointcloud: public Operator {
-    public:
-	static const std::string className;
 
+	ENVIRONMENT_ITEM( MergePointcloud )
+
+    public:
 	MergePointcloud();
 	MergePointcloud(Serialization& so);
 	virtual ~MergePointcloud();

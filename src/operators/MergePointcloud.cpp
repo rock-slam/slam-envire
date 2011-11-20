@@ -9,9 +9,10 @@
 #include <Eigen/LU>
 #include <iostream>
 
+
 namespace envire {
 
-const std::string MergePointcloud::className = "envire::MergePointcloud";
+ENVIRONMENT_ITEM_DEF( MergePointcloud )
 
 MergePointcloud::MergePointcloud() {
     // TODO Auto-generated constructor stub
