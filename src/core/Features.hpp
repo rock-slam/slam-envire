@@ -9,6 +9,7 @@ namespace envire
 enum DESCRIPTOR
 {
     DESCRIPTOR_SURF = 1,
+    DESCRIPTOR_PSURF = 2,
 };
 
 struct KeyPoint
