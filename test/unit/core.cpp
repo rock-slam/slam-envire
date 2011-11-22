@@ -185,37 +185,6 @@ BOOST_AUTO_TEST_CASE( environment )
     BOOST_CHECK( contains(env->getOutputs(o1),l3) );
 }
 
-BOOST_AUTO_TEST_CASE( serialization )
-{
-    Serialization so;
-    boost::scoped_ptr<Environment> env( new Environment() );
-
-    // create some child framenodes
-    FrameNode *fn1, *fn2, *fn3;
-    fn1 = new FrameNode();
-    fn1->setTransform( 
-	    Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
-    fn2 = new FrameNode();
-    fn2->setTransform( 
-	    Eigen::Affine3d(Eigen::Quaterniond(0.0, 1.0, 0.0, 0.0 )));
-    fn3 = new FrameNode();
-    
-    // attach explicitely
-    env->attachItem( fn1 );
-    env->addChild( env->getRootNode(), fn1 );
-    env->addChild( fn1, fn2 );
-    env->addChild( env->getRootNode(), fn3 );
-
-    // TODO get cmake to somehow add an absolute path here
-    std::string path("build/test");
-    so.serialize(env.get(), path);
-
-    // now try to parse the thing again
-    boost::scoped_ptr<Environment> env2(so.unserialize( "build/test" ));
-
-    // TODO check that the structure is the same
-}
-
 BOOST_AUTO_TEST_CASE( functional ) 
 {
     boost::scoped_ptr<Environment> env( new Environment() );

@@ -31,19 +31,7 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     MultiLevelSurfaceGrid::iterator it2 = mls->beginCell(2,1);
     BOOST_CHECK_EQUAL( it2->mean, 3.0 );
     it2++;
-
-    Serialization so;
-    so.serialize(env.get(), "build/test");
-
-    boost::scoped_ptr<Environment> env2(so.unserialize( "build/test" ));
-    MultiLevelSurfaceGrid *mls2 = env2->getItems<MultiLevelSurfaceGrid>().front();
-
-    MultiLevelSurfaceGrid::iterator it3 = mls2->beginCell(0,0);
-    BOOST_CHECK_EQUAL( it3->mean, 2.0 );
-    it3++;
-    BOOST_CHECK_EQUAL( (*it3).mean, 1.0 );
-    ++it3;
-    BOOST_CHECK_EQUAL( it3, mls->endCell() );
+    BOOST_CHECK_EQUAL( it2, mls->endCell() );
 }
 
 BOOST_AUTO_TEST_CASE( mlsprojection_test ) 
