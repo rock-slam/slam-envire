@@ -443,6 +443,11 @@ namespace envire
 	 */
 	std::list<CartesianMap*> getMaps(); 
 
+	/** 
+	 * @return the children of this framenode
+	 */
+	std::list<FrameNode*> getChildren();
+
     protected:
 	TransformWithUncertainty frame;
     };

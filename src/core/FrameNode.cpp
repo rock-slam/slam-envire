@@ -113,3 +113,8 @@ std::list<CartesianMap*> FrameNode::getMaps()
 {
     return env->getMaps( this );
 }
+
+std::list<FrameNode*> FrameNode::getChildren()
+{
+    return env->getChildren( this );
+}
