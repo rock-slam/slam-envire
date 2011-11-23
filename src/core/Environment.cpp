@@ -220,10 +220,34 @@ void findMapItem(const T& map, boost::function<void (typename T::key_type, typen
     }
 }
 
-EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item)
+EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item, bool deep)
 {
     assert( item );
     assert( items.count( item->getUniqueId() ) );
+
+    if( deep )
+    {
+	// remove all associated objects first
+	{
+	    // for a framenode remove the children and the maps
+	    FrameNode* fn = dynamic_cast<FrameNode*>( item );
+	    if( fn )
+	    {
+		std::list<FrameNode*> children = fn->getChildren();
+		for( std::list<FrameNode*>::iterator it = children.begin(); it != children.end(); it++ )
+		    detachItem( *it, deep );
+
+		std::list<CartesianMap*> maps = fn->getMaps();
+		for( std::list<CartesianMap*>::iterator it = maps.begin(); it != maps.end(); it++ )
+		    detachItem( *it, deep );
+	    }
+	}
+
+	// TODO do the same for parent child relationsships in maps.
+	// also, we might want to have the option to remove single frameNodes
+	// when detaching maps, or operators when all inputs/outputs have been
+	// removed
+    }
 
     // check if there are still some references to this object left
     // effectively we need to go through all the maps, and find a reference to

@@ -832,8 +832,12 @@ namespace envire
 	/** detaches an object from the environment. After this, the object is no longer owned by
 	 * by the environment. All links to this object from other objects in the environment are
 	 * removed.
+	 *
+	 * If the deep param is left to false, this may lead to orphans, since
+	 * a FrameNode may end up without a parent. Setting deep to true will
+	 * remove all child nodes, as well as associated maps.
 	 */
-	EnvironmentItem::Ptr detachItem(EnvironmentItem* item);
+	EnvironmentItem::Ptr detachItem(EnvironmentItem* item, bool deep = false );
 	
 	/**
 	* This method will be called by any EnvironmentItem, which was
