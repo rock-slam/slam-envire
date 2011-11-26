@@ -6,7 +6,7 @@ using namespace envire;
 const std::string GridBase::className = "envire::GridBase";
 
 GridBase::GridBase()
-    : width(0), height(0), scalex(0), scaley(0) {}
+    : width(0), height(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
 
 GridBase::GridBase(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety) :
     width(width), height(height), scalex(scalex), scaley(scaley), offsetx(offsetx), offsety(offsety)
@@ -18,7 +18,7 @@ GridBase::~GridBase()
 }
 
 GridBase::GridBase(Serialization& so)
-    : Map<2>( so ), width(0), height(0), scalex(0), scaley(0)
+    : Map<2>( so ), width(0), height(0), scalex(0), scaley(0), offsetx(0), offsety(0)
 {
     unserialize(so);
 }
