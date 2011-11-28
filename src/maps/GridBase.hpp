@@ -87,6 +87,9 @@ namespace envire
 	double getScaleX() const { return scalex; };
 	double getScaleY() const { return scaley; };
 
+	double getOffsetX() const { return offsetx; };
+	double getOffsetY() const { return offsety; };
+
 	Point2D getCenterPoint() const { return Point2D( width * scalex, height * scaley ) * 0.5; };
 
 	Extents getExtents() const;

@@ -65,8 +65,8 @@ namespace vizkit
 	    osg::Image::USE_NEW_DELETE, //osg::Image::NO_DELETE // AllocationMode mode (shallow copy)
 	    1);
     
-    loadImageAsRectangle(geode,image,0,0,
-			image_width*image_rgb24->getScaleX(),
-			image_height*image_rgb24->getScaleY());
+    loadImageAsRectangle(geode,image,image_rgb24->getOffsetX(),image_rgb24->getOffsetY(),
+			image_width*image_rgb24->getScaleX() + image_rgb24->getOffsetX(),
+			image_height*image_rgb24->getScaleY() + image_rgb24->getOffsetY());
   }   
 }
