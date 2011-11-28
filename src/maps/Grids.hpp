@@ -112,7 +112,8 @@ namespace envire
     private:
       const static std::vector<std::string> &bands;     
     public:
-      ImageRGB24(size_t width, size_t height, double scalex, double scaley):Grid<unsigned char>::Grid(width,height,scalex,scaley){};
+      ImageRGB24(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 ) 
+	  : Grid<unsigned char>::Grid(width,height,scalex,scaley,offsetx,offsety){};
       ImageRGB24(Serialization& so):Grid<unsigned char>(so,className){unserialize(so);};
       ~ImageRGB24(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
@@ -130,6 +131,28 @@ namespace envire
 	std::cout << "loading all GridData for " << getClassName() << std::endl;
 	readGridData(bands,getFullPath(path,""));
       };
+
+      void copyFromFrame( const base::samples::frame::Frame& frame )
+      {
+	  // only support RGB frames for now
+	  assert( frame.getFrameMode() == base::samples::frame::MODE_RGB );
+
+	  unsigned char* r = getGridData( R ).data();
+	  unsigned char* g = getGridData( G ).data();
+	  unsigned char* b = getGridData( B ).data();
+
+	  // copy the data
+	  const unsigned char* start = frame.getImageConstPtr();
+	  const unsigned char* end = frame.getImageConstPtr() + frame.getNumberOfBytes();
+	  while( start < end )
+	  {
+	      *(r++) = *(start++);
+	      *(g++) = *(start++);
+	      *(b++) = *(start++);
+	  }
+
+	  itemModified();
+      }
   };
   
   template<class T1, class T2>
