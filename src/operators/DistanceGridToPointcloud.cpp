@@ -11,11 +11,33 @@ ENVIRONMENT_ITEM_DEF( DistanceGridToPointcloud )
 
 bool DistanceGridToPointcloud::updateAll()
 {
-    // this implementation can handle only one input at the moment
-    if( env->getInputs(this).size() != 1 || env->getOutputs(this).size() != 1 )
-        throw std::runtime_error("DistanceGridToPointcloud needs to have exactly 1 input and 1 output for now.");
+    //if( env->getInputs(this).size() != 1 || env->getOutputs(this).size() != 1 )
+    //    throw std::runtime_error("DistanceGridToPointcloud needs to have exactly 1 input and 1 output for now.");
+    //
+    //DistanceGrid const& distanceGrid = *env->getInput<DistanceGrid*>(this);
+    //Pointcloud& pointcloud = *env->getOutput< Pointcloud* >(this);
+
+    // get the inputs, we need a distance grid, and we can have an optional ImageGrid
+    std::list<Layer*> inputs = env->getInputs(this);
+    ImageRGB24 *image = NULL;
+    ImageRGB24::ArrayType *ir = NULL, *ig = NULL, *ib = NULL;
     
-    DistanceGrid const& distanceGrid = *env->getInput<DistanceGrid*>(this);
+    DistanceGrid* dist = NULL;
+    for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
+    {
+	if( dynamic_cast<ImageRGB24*>( *it ) )
+	{
+	    image = dynamic_cast<ImageRGB24*>( *it );
+	    ir = &image->getGridData( ImageRGB24::R );
+	    ig = &image->getGridData( ImageRGB24::G );
+	    ib = &image->getGridData( ImageRGB24::B );
+	}
+
+	if( dynamic_cast<DistanceGrid*>( *it ) )
+	    dist = dynamic_cast<DistanceGrid*>( *it );
+    }
+
+    DistanceGrid const& distanceGrid = *dist;
     Pointcloud& pointcloud = *env->getOutput< Pointcloud* >(this);
 
     // get relative transform from grid frame to pointcloud frame
@@ -27,6 +49,9 @@ bool DistanceGridToPointcloud::updateAll()
 
     DistanceGrid::ArrayType const& distance = distanceGrid.getGridData( DistanceGrid::DISTANCE );
     std::vector<double>& uncertainty(pointcloud.getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+    std::vector<Eigen::Vector3d> *color = NULL;
+    if( image )
+	color = &pointcloud.getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR);
 
     // clear target
     pointcloud.clear();
@@ -56,6 +81,15 @@ bool DistanceGridToPointcloud::updateAll()
 
 		// add uncertainty
 		uncertainty.push_back( d * uncertaintyFactor );
+
+		// add texture color information if image is there
+		if( image )
+		{
+		    // get color value from image
+		    const double f = 1.0/255.0;
+		    Eigen::Vector3d c( (*ir)[y][x] * f, (*ig)[y][x] * f, (*ib)[y][x] * f );
+		    color->push_back( c );
+		}
 	    }
 	}
     }
