@@ -257,6 +257,9 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     const double xs = mls->getScaleX();
     const double ys = mls->getScaleY();
 
+    const double xo = mls->getOffsetX();
+    const double yo = mls->getOffsetY();
+
     osg::ref_ptr<osg::Vec3Array> var_vertices = new osg::Vec3Array;
 
     //std::cerr << "grid size: " << mls->getWidth() << " x " << mls->getHeight() << std::endl;
@@ -268,8 +271,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	    for( envire::MultiLevelSurfaceGrid::const_iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
 	    {
 		const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-		double xp = (x+0.5) * xs;
-		double yp = (y+0.5) * ys; 
+		double xp = (x+0.5) * xs + xo;
+		double yp = (y+0.5) * ys + yo; 
 
 		if( p.horizontal == true )
 		{
