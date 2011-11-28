@@ -71,6 +71,7 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 
+    // get a color value
     osg::Vec4 pointColor = vertexColor;
     if( colorCycling )
     {
@@ -79,20 +80,32 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 	const unsigned long col = reinterpret_cast<unsigned long>(item);
 	pointColor = osg::Vec4( ((col*88734)%256)/255.0, ((col*398482)%256)/255.0, ((col*36784787)%256)/255.0, 1.0 ); 
     }
-    if( pointcloud->vertices.size() < 10 )
-	pointColor = osg::Vec4(0.9, 0.1, 0.1, 1.0 ); 
-	
-    color->push_back( pointColor );
 
-    geom->setColorArray(color.get());
-    geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+    // create color
+    if( pointcloud->hasData(envire::Pointcloud::VERTEX_COLOR) )
+    {
+	std::vector<Eigen::Vector3d> &pc_color(pointcloud->getVertexData<Eigen::Vector3d>(envire::Pointcloud::VERTEX_COLOR));
+	for(std::vector<Eigen::Vector3d>::const_iterator it = pc_color.begin(); it != pc_color.end(); it++) {
+	    color->push_back(osg::Vec4(it->x(),it->y(), it->z(), 1.0));
+	}
+
+	geom->setColorArray(color.get());
+	geom->setColorBinding( osg::Geometry::BIND_PER_VERTEX );
+    }
+    else
+    {
+	color->push_back( pointColor );
+
+	geom->setColorArray(color.get());
+	geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+    }
     
+    // create vertices
     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
     
     for(std::vector<Eigen::Vector3d>::const_iterator it = pointcloud->vertices.begin(); it != pointcloud->vertices.end(); it++) {
 	vertices->push_back(osg::Vec3(it->x(),it->y(), it->z()));
     }
-
     
     //attach vertivces to geometry
     geom->setVertexArray(vertices);
