@@ -11,8 +11,8 @@ ENVIRONMENT_ITEM_DEF( MLSGrid )
  */
 static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
-MLSGrid::MLSGrid(size_t width, size_t height, double scalex, double scaley)
-    : GridBase( width, height, scalex, scaley ), cells( boost::extents[width][height] ), 
+MLSGrid::MLSGrid(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety)
+    : GridBase( width, height, scalex, scaley, offsetx, offsety ), cells( boost::extents[width][height] ), 
      gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), mem_pool( sizeof( SurfacePatchItem ) )
 {
 }
