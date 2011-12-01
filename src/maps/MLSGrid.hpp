@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <set>
 
+#include <base/eigen.h>
+
 namespace envire
 {  
     /** Representation of a multi-level surface grid
@@ -129,6 +131,7 @@ namespace envire
 	    bool horizontal;
 
 	    size_t update_idx;
+	    base::Vector3d color;
 	};
 
     protected:

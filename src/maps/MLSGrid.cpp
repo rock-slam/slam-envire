@@ -390,6 +390,7 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	    }
 	}
 	p.update_idx = o.update_idx;
+	p.color = (p.color + o.color)/2.0;
 	return true;
     }
     return false;
