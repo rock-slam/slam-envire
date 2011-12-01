@@ -58,6 +58,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
     std::vector<Eigen::Vector3d>& points(pc->vertices);
     std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+    std::vector<Eigen::Vector3d>& color(pc->getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR));
     assert(points.size() == uncertainty.size());
 
     for(size_t i=0;i<points.size();i++)
@@ -71,7 +72,9 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	if( t_grid->toGrid( mean.x(), mean.y(), m, n ) )
 	{
 	    const double stdev = sqrt(p_var);
-	    t_grid->updateCell(m, n, mean.z(), stdev);
+	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
+	    patch.color = color[i];
+	    t_grid->updateCell(m, n, patch);
 	}
     }
 
@@ -116,6 +119,7 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 
     std::vector<Eigen::Vector3d>& points(pc->vertices);
     std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+    std::vector<Eigen::Vector3d>& color(pc->getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR));
     assert(points.size() == uncertainty.size());
 
     for(size_t i=0;i<points.size();i++)
@@ -125,11 +129,13 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 
 	const Eigen::Vector3d &mean( p );
 
-	size_t x, y;
-	if( grid->toGrid( mean.x(), mean.y(), x, y ) )
+	size_t m, n;
+	if( grid->toGrid( mean.x(), mean.y(), m, n ) )
 	{
 	    const double stdev = sqrt(p_var);
-	    grid->updateCell(x, y, mean.z(), stdev);
+	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
+	    patch.color = color[i];
+	    grid->updateCell(m, n, patch);
 	}
     }
 }
