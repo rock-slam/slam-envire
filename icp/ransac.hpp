@@ -63,12 +63,36 @@ struct FitTransform
 	return true;
     }
 
-    double testSample( size_t index, const Eigen::Affine3d& model ) const
+    virtual double testSample( size_t index, const Eigen::Affine3d& model ) const
     {
 	const Eigen::Vector3d& v1 = x[index];
 	const Eigen::Vector3d& v2 = model * p[index];
 
 	const double dist = (v2-v1).norm(); 
+	return dist;
+    }
+};
+
+struct FitTransformUncertain : public FitTransform
+{
+    const std::vector<float>& x_e, p_e;
+
+    FitTransformUncertain( const std::vector<Eigen::Vector3d>& x, const std::vector<Eigen::Vector3d>& p, 
+	    const std::vector<float>& x_e, const std::vector<float>& p_e, double errorThreshold = 0.1 )
+	: FitTransform( x, p, errorThreshold ), x_e( x_e ), p_e( p_e )
+    {
+    }
+
+    virtual double testSample( size_t index, const Eigen::Affine3d& model ) const
+    {
+	const Eigen::Vector3d& v1 = x[index];
+	const Eigen::Vector3d& v2 = model * p[index];
+
+	const float e1 = x_e[index];
+	const float e2 = p_e[index];
+
+	// TODO this is a very crude normalization for the error
+	const double dist = (v2-v1).norm() / sqrt(pow(e1,2) + pow(e2,2)); 
 	return dist;
     }
 };
