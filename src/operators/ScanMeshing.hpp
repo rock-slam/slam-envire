@@ -24,6 +24,7 @@ namespace envire
 
 	ScanMeshing(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	void addInput( LaserScan* scan ); 
 	void addOutput( TriMesh* mesh ); 

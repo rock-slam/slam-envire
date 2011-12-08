@@ -17,6 +17,7 @@ namespace envire {
 
 	Projection(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	void addInput( Pointcloud* mesh ); 
 	void addOutput( ElevationGrid* grid ); 

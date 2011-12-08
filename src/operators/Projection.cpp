@@ -20,9 +20,9 @@ Projection::Projection()
 }
 
 Projection::Projection(Serialization& so)
-    : Operator(so)
 {
     so.setClassName(className);
+    unserialize(so);
 }
 
 void Projection::serialize(Serialization& so)
@@ -31,6 +31,10 @@ void Projection::serialize(Serialization& so)
     so.setClassName(className);
 }
 
+void Projection::unserialize(Serialization& so)
+{
+    Operator::unserialize(so);
+}
 
 void Projection::addInput( Pointcloud* mesh ) 
 {

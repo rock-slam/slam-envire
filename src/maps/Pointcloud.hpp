@@ -57,6 +57,7 @@ namespace envire {
 	Pointcloud(Serialization& so, bool handleMap = true);
 	void serialize(Serialization& so);
 	void serialize(Serialization& so, bool handleMap = true);
+    void unserialize(Serialization& so, bool handleMap = true);
 
 	bool writeText(const std::string& path);
 	bool readText(const std::string& path);

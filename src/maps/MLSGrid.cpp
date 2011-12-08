@@ -83,7 +83,7 @@ envire::MLSGrid* MLSGrid::cloneShallow() const
 }
 
 MLSGrid::MLSGrid(Serialization& so)
-    : GridBase(so), mem_pool( sizeof( SurfacePatchItem ) )
+    : mem_pool( sizeof( SurfacePatchItem ) )
 {
     unserialize(so);
 }
@@ -103,6 +103,7 @@ void MLSGrid::serialize(Serialization& so)
 void MLSGrid::unserialize(Serialization& so)
 {
     so.setClassName( getClassName() );
+    GridBase::unserialize(so);
 
     cells.resize( boost::extents[width][height] );
     try { readMap( getMapFileName(so.getMapPath()) + ".mls" ); }

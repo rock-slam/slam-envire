@@ -34,6 +34,7 @@ namespace envire {
 
 	TriMesh(Serialization& so);
 	void serialize(Serialization& so);
+    void unserialize(Serialization& so);
 
 	void calcVertexNormals( void );
     };

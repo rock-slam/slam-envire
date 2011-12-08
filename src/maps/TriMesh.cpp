@@ -12,10 +12,9 @@ TriMesh::TriMesh()
 }
 
 TriMesh::TriMesh(Serialization& so)
-    : Pointcloud(so, false)
 {
     so.setClassName(className);
-    readPly( getMapFileName(so.getMapPath()) + ".ply" );
+    unserialize(so);
 }
 
 void TriMesh::serialize(Serialization& so)
@@ -24,6 +23,13 @@ void TriMesh::serialize(Serialization& so)
     so.setClassName(className);
 
     writePly( getMapFileName(so.getMapPath()) + ".ply" );
+}
+
+void TriMesh::unserialize(Serialization& so)
+{
+    Pointcloud::unserialize(so, false);
+    
+    readPly( getMapFileName(so.getMapPath()) + ".ply" );
 }
 
 void TriMesh::calcVertexNormals()

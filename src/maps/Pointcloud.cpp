@@ -22,15 +22,9 @@ Pointcloud::~Pointcloud()
 }
 
 Pointcloud::Pointcloud(Serialization& so, bool handleMap)
-    : Map<3>(so)
 {
     so.setClassName(className);
-
-    if(handleMap)
-    {
-	if( !readPly( getMapFileName(so.getMapPath()) + ".ply" ) )
-	    readText( getMapFileName(so.getMapPath()) + ".txt" );
-    }
+    unserialize(so, handleMap);
 }
 
 void Pointcloud::serialize(Serialization& so)
@@ -45,6 +39,17 @@ void Pointcloud::serialize(Serialization& so, bool handleMap)
 
     if(handleMap)
 	writePly( getMapFileName(so.getMapPath()) + ".ply" );
+}
+
+void Pointcloud::unserialize(Serialization& so, bool handleMap)
+{
+    CartesianMap::unserialize(so);
+
+    if(handleMap)
+    {
+    if( !readPly( getMapFileName(so.getMapPath()) + ".ply" ) )
+        readText( getMapFileName(so.getMapPath()) + ".txt" );
+    }
 }
 
 bool Pointcloud::writePly(const std::string& path)

@@ -22,9 +22,9 @@ SurfaceReconstruction::SurfaceReconstruction()
 }
 
 SurfaceReconstruction::SurfaceReconstruction(Serialization& so)
-    : Operator(so)
 {
     so.setClassName(className);
+    unserialize(so);
 }
 
 void SurfaceReconstruction::serialize(Serialization& so)
@@ -33,6 +33,10 @@ void SurfaceReconstruction::serialize(Serialization& so)
     so.setClassName(className);
 }
 
+void SurfaceReconstruction::unserialize(Serialization& so)
+{
+    Operator::unserialize(so);
+}
 
 void SurfaceReconstruction::addInput( Pointcloud* mesh ) 
 {

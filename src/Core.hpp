@@ -187,6 +187,8 @@ namespace envire
 	virtual ~EnvironmentItem();
 
 	virtual void serialize(Serialization &so);
+        
+        virtual void unserialize(Serialization &so);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -382,6 +384,7 @@ namespace envire
         FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
+        virtual void unserialize(Serialization &so);
 
         /** Returns true if this frame is the root frame (i.e. has no parent) */
         bool isRoot() const;
@@ -477,6 +480,7 @@ namespace envire
 
 	Layer(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	virtual const std::string& getClassName() const {return className;};
 

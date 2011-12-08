@@ -22,6 +22,7 @@ namespace envire {
 	virtual ~MergePointcloud();
 
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
     public:
 	void addInput(Pointcloud* pc);

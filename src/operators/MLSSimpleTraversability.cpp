@@ -26,7 +26,6 @@ MLSSimpleTraversability::MLSSimpleTraversability(
 }
 
 MLSSimpleTraversability::MLSSimpleTraversability(envire::Serialization& so)
-    : envire::Operator(so)
 {
     unserialize(so);
 }
@@ -55,6 +54,8 @@ void MLSSimpleTraversability::serialize(envire::Serialization& so)
 
 void MLSSimpleTraversability::unserialize(envire::Serialization& so)
 {
+    Operator::unserialize(so);
+    
     for (int i = 0; i < INPUT_COUNT; ++i)
     {
         std::string input_key = "input" + boost::lexical_cast<std::string>(i);

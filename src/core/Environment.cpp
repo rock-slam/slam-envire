@@ -65,8 +65,7 @@ EnvironmentItem::EnvironmentItem(Serialization &so)
     : ref_count(0)
 {
     so.setClassName(className);
-    so.read( "id", unique_id );
-    so.read( "label", label );
+    unserialize(so);
 }
 
 void EnvironmentItem::serialize(Serialization &so)
@@ -76,6 +75,11 @@ void EnvironmentItem::serialize(Serialization &so)
     so.write( "label", label );
 }
 
+void EnvironmentItem::unserialize(Serialization &so)
+{
+    so.read( "id", unique_id );
+    so.read( "label", label );
+}
 void EnvironmentItem::itemModified()
 {
     if( isAttached() )

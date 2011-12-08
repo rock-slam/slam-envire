@@ -16,12 +16,10 @@ Layer::Layer() :
 {
 }
 
-Layer::Layer(Serialization& so) : 
-    EnvironmentItem(so)
+Layer::Layer(Serialization& so)
 {
     so.setClassName(className);
-
-    so.read( "immutable", immutable );
+    unserialize(so);
 }
 
 void Layer::serialize(Serialization& so)
@@ -30,6 +28,13 @@ void Layer::serialize(Serialization& so)
     so.setClassName(className);
 
     so.write( "immutable", immutable );
+}
+
+void Layer::unserialize(Serialization& so)
+{
+    EnvironmentItem::unserialize(so);
+
+    so.read( "immutable", immutable );
 }
 
 Layer::~Layer()
