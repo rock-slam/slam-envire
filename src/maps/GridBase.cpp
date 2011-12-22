@@ -27,7 +27,6 @@ void GridBase::serialize(Serialization& so)
 {
     CartesianMap::serialize(so);
 
-    so.setClassName( className );
     so.write("width", width );
     so.write("height", height );
     so.write("scalex", scalex );
@@ -38,7 +37,6 @@ void GridBase::serialize(Serialization& so)
 
 void GridBase::unserialize(Serialization& so)
 {
-    so.setClassName(className);
     CartesianMap::unserialize(so);
     
     so.read("width", width );

@@ -13,14 +13,12 @@ TriMesh::TriMesh()
 
 TriMesh::TriMesh(Serialization& so)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
 void TriMesh::serialize(Serialization& so)
 {
     Pointcloud::serialize(so, false);
-    so.setClassName(className);
 
     writePly( getMapFileName(so.getMapPath()) + ".ply" );
 }

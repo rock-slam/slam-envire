@@ -23,7 +23,6 @@ Pointcloud::~Pointcloud()
 
 Pointcloud::Pointcloud(Serialization& so, bool handleMap)
 {
-    so.setClassName(className);
     unserialize(so, handleMap);
 }
 
@@ -35,7 +34,6 @@ void Pointcloud::serialize(Serialization& so)
 void Pointcloud::serialize(Serialization& so, bool handleMap)
 {
     CartesianMap::serialize(so);
-    so.setClassName(className);
 
     if(handleMap)
 	writePly( getMapFileName(so.getMapPath()) + ".ply" );

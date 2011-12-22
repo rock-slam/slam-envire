@@ -13,14 +13,12 @@ MLSProjection::MLSProjection()
 
 MLSProjection::MLSProjection(Serialization& so)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
 void MLSProjection::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
 }
 
 void MLSProjection::unserialize(Serialization& so)

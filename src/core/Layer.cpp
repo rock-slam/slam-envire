@@ -18,14 +18,12 @@ Layer::Layer() :
 
 Layer::Layer(Serialization& so)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
 void Layer::serialize(Serialization& so)
 {
     EnvironmentItem::serialize(so);
-    so.setClassName(className);
 
     so.write( "immutable", immutable );
 }

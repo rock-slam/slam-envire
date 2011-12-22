@@ -19,7 +19,6 @@ LaserScan::LaserScan()
 LaserScan::LaserScan(Serialization& so) :
     Map<3>(so)
 {
-    so.setClassName(className);
     readScan( getMapFileName(so.getMapPath()) );
 }
 
@@ -27,7 +26,6 @@ void LaserScan::serialize(Serialization& so)
 {
     CartesianMap::serialize(so);
 
-    so.setClassName(className);
     writeScan( getMapFileName(so.getMapPath()) );
 }
 

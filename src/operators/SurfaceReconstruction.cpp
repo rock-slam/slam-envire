@@ -23,14 +23,12 @@ SurfaceReconstruction::SurfaceReconstruction()
 
 SurfaceReconstruction::SurfaceReconstruction(Serialization& so)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
 void SurfaceReconstruction::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
 }
 
 void SurfaceReconstruction::unserialize(Serialization& so)

@@ -21,14 +21,12 @@ Projection::Projection()
 
 Projection::Projection(Serialization& so)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
 void Projection::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
 }
 
 void Projection::unserialize(Serialization& so)

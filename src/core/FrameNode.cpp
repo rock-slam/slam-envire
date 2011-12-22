@@ -28,7 +28,6 @@ FrameNode::FrameNode(const TransformType& t)
 
 FrameNode::FrameNode(Serialization &so)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
@@ -36,7 +35,6 @@ void FrameNode::serialize(Serialization &so)
 {
     EnvironmentItem::serialize( so );
 
-    so.setClassName(className);
     so.write("transform", frame.getTransform() );
 }
 

@@ -25,15 +25,12 @@ void ScanMeshing::setDefaultConfiguration()
 ScanMeshing::ScanMeshing(Serialization& so)
 {
     setDefaultConfiguration();
-
-    so.setClassName(className);
     unserialize(so);
 }
 
 void ScanMeshing::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
     so.write("maxEdgeLength", maxEdgeLength ); 
     so.write("remissionScaleFactor", maxEdgeLength ); 
     so.write("minRange", minRange ); 

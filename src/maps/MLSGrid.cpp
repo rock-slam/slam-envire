@@ -95,14 +95,12 @@ MLSGrid::~MLSGrid()
 void MLSGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
-    so.setClassName( getClassName() );
 
     writeMap( getMapFileName(so.getMapPath()) + ".mls" );
 }
 
 void MLSGrid::unserialize(Serialization& so)
 {
-    so.setClassName( getClassName() );
     GridBase::unserialize(so);
 
     cells.resize( boost::extents[width][height] );

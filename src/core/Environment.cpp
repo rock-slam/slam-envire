@@ -9,6 +9,8 @@
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <iostream>
 
@@ -64,13 +66,11 @@ Environment* EnvironmentItem::getEnvironment() const
 EnvironmentItem::EnvironmentItem(Serialization &so)
     : ref_count(0)
 {
-    so.setClassName(className);
     unserialize(so);
 }
 
 void EnvironmentItem::serialize(Serialization &so)
 {
-    so.setClassName(className);
     so.write( "id", unique_id );
     so.write( "label", label );
 }
@@ -80,6 +80,7 @@ void EnvironmentItem::unserialize(Serialization &so)
     so.read( "id", unique_id );
     so.read( "label", label );
 }
+
 void EnvironmentItem::itemModified()
 {
     if( isAttached() )

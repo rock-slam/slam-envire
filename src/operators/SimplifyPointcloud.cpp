@@ -29,14 +29,12 @@ SimplifyPointcloud::SimplifyPointcloud()
 SimplifyPointcloud::SimplifyPointcloud(Serialization& so)
 {
     initDefaults();
-    so.setClassName(className);
     unserialize(so);
 }
 
 void SimplifyPointcloud::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
 }
 
 void SimplifyPointcloud::unserialize(Serialization& so)

@@ -244,8 +244,6 @@ namespace envire
     }
     template<class T>void Grid<T>::unserialize(Serialization& so)
     {
-	so.setClassName(getClassName());
-
         // The serialization strategy changed to save the band names in the
         // scene file instead of relying on having them defined in a static
         // array
@@ -271,7 +269,6 @@ namespace envire
     template<class T>void Grid<T>::serialize(Serialization& so)
     {
 	CartesianMap::serialize(so);
-	so.setClassName(getClassName());
         std::string base_path = getMapFileName(so.getMapPath());
         int map_index = 0;
         for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)

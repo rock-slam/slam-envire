@@ -19,7 +19,6 @@ MergePointcloud::MergePointcloud() {
 
 }
 
-    so.setClassName(className);
 MergePointcloud::MergePointcloud(Serialization& so)
 {
     unserialize(so);
@@ -32,7 +31,6 @@ MergePointcloud::~MergePointcloud() {
 
 void MergePointcloud::serialize(Serialization& so){
     Operator::serialize(so);
-    so.setClassName(className);
 }
 
 void MergePointcloud::unserialize(Serialization& so)
