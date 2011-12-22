@@ -119,6 +119,59 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_serialization )
     BOOST_CHECK_EQUAL( it2, mls2->endCell() );
 }
 
+BOOST_AUTO_TEST_CASE( framenode_binitem_serialization ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    FrameNode *fn = new FrameNode();
+    fn->setTransform( Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
+    env->attachItem( fn );
+    
+    BinarySerialization serialization;
+    EnvireBinaryItem bin_item;
+    
+    serialization.serializeBinaryItem(fn, bin_item);
+    
+    EnvironmentItem *new_item = serialization.unserializeBinaryItem(bin_item);
+    BOOST_CHECK_EQUAL(new_item->getClassName(), fn->getClassName());
+    BOOST_CHECK_EQUAL(new_item->getUniqueId(), fn->getUniqueId());
+    
+    FrameNode *fn_new = dynamic_cast<FrameNode*>(new_item);
+    
+    BOOST_CHECK_EQUAL(fn->getTransform().matrix().rows() * fn->getTransform().matrix().cols(), fn_new->getTransform().matrix().cwiseEqual(fn->getTransform().matrix()).count());
+}
 
+BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_binitem_serialization ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
+    env->attachItem( mls );
+
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
+    
+    BinarySerialization serialization;
+    EnvireBinaryItem bin_item;
+    
+    serialization.serializeBinaryItem(mls, bin_item);
+    
+    EnvironmentItem *new_item = serialization.unserializeBinaryItem(bin_item);
+    BOOST_CHECK_EQUAL(new_item->getClassName(), mls->getClassName());
+    
+    MultiLevelSurfaceGrid* mls2 = dynamic_cast<MultiLevelSurfaceGrid*>(new_item);
+    
+    MultiLevelSurfaceGrid::iterator it = mls2->beginCell(0,0);
+    BOOST_CHECK_EQUAL( it->mean, 2.0 );
+    it++;
+    BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
+    it++;
+    BOOST_CHECK_EQUAL( it, mls2->endCell() );
+    
+    MultiLevelSurfaceGrid::iterator it2 = mls2->beginCell(2,1);
+    BOOST_CHECK_EQUAL( it2->mean, 3.0 );
+    it2++;
+    BOOST_CHECK_EQUAL( it2, mls2->endCell() );
+    
+}
 
 BOOST_AUTO_TEST_SUITE_END()
