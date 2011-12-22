@@ -20,8 +20,7 @@ int main( int argc, char* argv[] )
 	exit(0);
     }
 
-    Serialization so;
-    boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
+    boost::scoped_ptr<Environment> env(Environment::unserialize( argv[1] ));
     
     env->updateOperators();
 

@@ -207,8 +207,7 @@ BOOST_AUTO_TEST_CASE( functional )
 
     mop->updateAll();
 
-    Serialization so;
-    so.serialize(env.get(), "build/test");
+    env->serialize("build/test");
 }
 
 BOOST_AUTO_TEST_CASE( grid_access ) 

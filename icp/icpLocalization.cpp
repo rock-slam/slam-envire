@@ -24,8 +24,7 @@ void ICPLocalization::saveEnvironment()
     // write environment, if path is given
     if( !conf.environment_debug_path.empty() )
     {
-	envire::Serialization so;
-	so.serialize(env.get(), conf.environment_debug_path );
+	env->serialize( conf.environment_debug_path );
     }else
     {
 	std::cout << "WARNING: IcpLocalization.cpp No path for saving the environment given" << std::endl; ; 
@@ -119,8 +118,7 @@ void ICPLocalization::loadEnvironment(std::string environment_path, double model
     if ( environment_path != "" ) 
     {
 	// load the environment
-	envire::Serialization so;
-	boost::scoped_ptr<envire::Environment>(so.unserialize( environment_path) ).swap( env );
+	boost::scoped_ptr<envire::Environment>(envire::Environment::unserialize( environment_path) ).swap( env );
     }
     
     // and load all the pointcloud data into the icp model

@@ -18,8 +18,7 @@ int main( int argc, char* argv[] )
 	std::cout << "usage: env_mls input output [resolution] [variance] [gap_size] [patch_thickness]" << std::endl;
 	exit(0);
     }
-    Serialization so;
-    boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
+    boost::scoped_ptr<Environment> env(Environment::unserialize( argv[1] ));
     
     env->updateOperators();
 
@@ -113,5 +112,5 @@ int main( int argc, char* argv[] )
     env2->setFrameNode( grid, fm1 );
 
     std::string path(argv[2]);
-    so.serialize(env2.get(), path);
+    env2->serialize(path);
 } 

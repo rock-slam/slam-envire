@@ -31,7 +31,6 @@ BOOST_FIXTURE_TEST_SUITE(SerializationTest, SerializationPath)
 
 BOOST_AUTO_TEST_CASE( environment_serialization )
 {
-    Serialization so;
     boost::scoped_ptr<Environment> env( new Environment() );
 
     // create some child framenodes
@@ -51,10 +50,10 @@ BOOST_AUTO_TEST_CASE( environment_serialization )
     env->addChild( env->getRootNode(), fn3 );
 
     std::string path(serialization_test_path);
-    so.serialize(env.get(), path);
+    env->serialize(path);
 
     // now try to parse the thing again
-    boost::scoped_ptr<Environment> env2(so.unserialize(path));
+    boost::scoped_ptr<Environment> env2(Environment::unserialize(path));
     
     std::list<FrameNode*> root_childs = env2->getChildren(env2->getRootNode());
     std::list<FrameNode*> fn1_childs;
@@ -102,10 +101,9 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_serialization )
 
     mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
 
-    Serialization so;
-    so.serialize(env.get(), serialization_test_path);
+    env->serialize(serialization_test_path);
 
-    boost::scoped_ptr<Environment> env2(so.unserialize(serialization_test_path));
+    boost::scoped_ptr<Environment> env2(Environment::unserialize(serialization_test_path));
     MultiLevelSurfaceGrid *mls2 = env2->getItems<MultiLevelSurfaceGrid>().front();
 
     MultiLevelSurfaceGrid::iterator it = mls2->beginCell(0,0);

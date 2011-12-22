@@ -158,8 +158,7 @@ BOOST_AUTO_TEST_CASE( icp_test2 )
     double alpha = 0.4, beta = 1.0, eps = 0.05;
     icp.align( envire::icp::PointcloudEdgeAndNormalAdapter( test.mesh2, 1.0 ), 10, 1e-4, 1e-5, alpha, beta, eps );
 
-    Serialization so;
-    so.serialize( test.env.get(), "/tmp/test" );
+    test.env.get()->serialize( "/tmp/test" );
 } 
 
 using namespace envire::ransac;
