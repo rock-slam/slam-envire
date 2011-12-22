@@ -20,14 +20,14 @@ void TriMesh::serialize(Serialization& so)
 {
     Pointcloud::serialize(so, false);
 
-    writePly( getMapFileName(so.getMapPath()) + ".ply" );
+    writePly( getMapFileName() + ".ply" , so.getBinaryOutputStream(getMapFileName() + ".ply"));
 }
 
 void TriMesh::unserialize(Serialization& so)
 {
     Pointcloud::unserialize(so, false);
     
-    readPly( getMapFileName(so.getMapPath()) + ".ply" );
+    readPly( getMapFileName() + ".ply", so.getBinaryInputStream(getMapFileName() + ".ply") );
 }
 
 void TriMesh::calcVertexNormals()

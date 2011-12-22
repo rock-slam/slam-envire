@@ -17,6 +17,7 @@ namespace envire
 	Featurecloud();
 	Featurecloud(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	std::vector<KeyPoint> keypoints;
 	std::vector<Scalar> descriptors;
