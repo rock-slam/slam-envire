@@ -637,13 +637,29 @@ TransformWithUncertainty Environment::relativeTransformWithUncertainty(const Fra
 
 void Environment::serialize(std::string const& path)
 {
-    Serialization serializer;
-    serializer.serialize(this, path);
+    FileSerialization serialization;
+    boost::filesystem::path sceneDir( path ); 
+    boost::filesystem::path scene( sceneDir / serialization.STRUCTURE_FILE );
+
+    boost::filesystem::create_directory( path );
+
+    serialization.setSceneDir(sceneDir.string());
+    serialization.writeToFile( this, scene.string() );
 }
 
 Environment* Environment::unserialize(std::string const& path)
 {
-    Serialization serializer;
-    return serializer.unserialize(path);
+    FileSerialization serialization;
+    boost::filesystem::path sceneDir( path ); 
+    boost::filesystem::path scene( sceneDir / serialization.STRUCTURE_FILE );
+
+    if( !boost::filesystem::is_regular( scene ) )
+    {
+        std::cerr << "failed to open " << scene << std::endl;
+        throw std::runtime_error("envire: could not open " + scene.string());
+    }
+
+    serialization.setSceneDir(sceneDir.string());
+    return serialization.readFromFile( scene.string() );
 }
 
