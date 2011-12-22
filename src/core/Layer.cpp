@@ -99,16 +99,21 @@ void Layer::updateFromOperator()
         getGenerator()->updateAll();
 }
 
-const std::string Layer::getMapFileName(const std::string& path) const 
+const std::string Layer::getMapFileName() const 
 {
-    return getMapFileName(path, getClassName());
+    return getMapFileName(getClassName());
+}
+
+const std::string Layer::getMapFileName(const std::string& className) const 
+{
+    return className + "_" + boost::lexical_cast<std::string>(getUniqueId());
 }
 
 const std::string Layer::getMapFileName(const std::string& path, const std::string& className) const 
 {
     fs::path scenePath(path); 
 
-    std::string fileName = className + "_" + boost::lexical_cast<std::string>(getUniqueId());
+    std::string fileName = getMapFileName(className);
 
     return (scenePath / fileName).string();
 }
