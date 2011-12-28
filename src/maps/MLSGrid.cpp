@@ -252,6 +252,7 @@ MLSGrid::iterator MLSGrid::erase( iterator position )
 	p->next->pthis = p->pthis; 
 
     cellcount--;
+    mem_pool.free( p );
 
     return res; 
 }
