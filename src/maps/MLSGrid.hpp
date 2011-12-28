@@ -135,6 +135,9 @@ namespace envire
 	};
 
     protected:
+	/** For each of the grid cells, there is a list of items.
+	 * These items are organised as a double linked list
+	 */
 	struct SurfacePatchItem : public SurfacePatch
 	{
 	    typedef SurfacePatchItem Item;
@@ -281,9 +284,23 @@ namespace envire
     public:
 	std::pair<double, double> matchHeight( const MLSGrid& other );
 
+	/** mark a cell of the grid as being used. Adds it to the index if
+	 * available and updates the extents of the grid.
+	 */
 	void addCell( const Position& pos );
+
+	/** after this function, an index is associated with the grid,
+	 * which stores which grid cells are being used.
+	 */
 	void initIndex();
+
+	/** returns a pointer to the index. The pointer is only valid
+	 * if the index has been initialized through initIndex()
+	 */
 	Index* getIndex() { return index.get(); }
+
+	/** return the extents of the grid.
+	 */
 	Extents getExtents() { return extents; }
 
     protected:
@@ -295,6 +312,7 @@ namespace envire
 	double thickness;
 	size_t cellcount;
 
+	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;
 	Extents extents;
 	boost::pool<> mem_pool;
