@@ -276,10 +276,16 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 		if( p.horizontal == true )
 		{
-		    osg::Vec4 col( p.color.x(), p.color.y(), p.color.z(), 1.0 );
+		    osg::Vec4 col;
+		    if( mls->getHasCellColor() )
+			col = osg::Vec4( p.color.x(), p.color.y(), p.color.z(), 1.0 );
+		    else if( cycleHeightColor )
+			col = hslToRgb( p.mean - std::floor(p.mean), 1.0, 0.6 );
+		    else
+			col = horizontalCellColor;
+		    
 		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), 
 			    col,
-			    //cycleHeightColor ? hslToRgb( p.mean - std::floor(p.mean), 1.0, 0.6 ) : horizontalCellColor,
 			    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
 		    hor++;
 		}

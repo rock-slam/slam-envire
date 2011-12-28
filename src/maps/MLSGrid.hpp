@@ -281,6 +281,9 @@ namespace envire
 	size_t getCellCount() const { return cellcount; }
 	bool empty() const { return cellcount == 0; }
 
+	void setHasCellColor( bool use ) { hasCellColor_ = use; }
+	bool getHasCellColor() const { return hasCellColor_; }
+
     public:
 	std::pair<double, double> matchHeight( const MLSGrid& other );
 
@@ -311,6 +314,7 @@ namespace envire
 	double gapSize;
 	double thickness;
 	size_t cellcount;
+	bool hasCellColor_;
 
 	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;

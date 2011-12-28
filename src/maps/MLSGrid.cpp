@@ -13,7 +13,7 @@ static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
 MLSGrid::MLSGrid(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety)
     : GridBase( width, height, scalex, scaley, offsetx, offsety ), cells( boost::extents[width][height] ), 
-     gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), mem_pool( sizeof( SurfacePatchItem ) )
+     gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 ), hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
 {
 }
 
@@ -34,7 +34,7 @@ void MLSGrid::clear()
 
 MLSGrid::MLSGrid(const MLSGrid& other)
     : GridBase( other ), cells( boost::extents[other.width][other.height] ),
-     gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount ), mem_pool( sizeof( SurfacePatchItem ) )
+     gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount ), hasCellColor_( other.hasCellColor_), mem_pool( sizeof( SurfacePatchItem ) )
 {
     for(size_t m=0;m<width;m++)
     {
@@ -97,12 +97,19 @@ void MLSGrid::serialize(Serialization& so)
     GridBase::serialize(so);
     so.setClassName( getClassName() );
 
+    so.write( "hasCellColor", hasCellColor_ );
+
     writeMap( getMapFileName(so.getMapPath()) + ".mls" );
 }
 
 void MLSGrid::unserialize(Serialization& so)
 {
     so.setClassName( getClassName() );
+    
+    if( so.hasKey( "hasCellColor" ) )
+	so.read( "hasCellColor", hasCellColor_ );
+    else
+	hasCellColor_ = false;
 
     cells.resize( boost::extents[width][height] );
     try { readMap( getMapFileName(so.getMapPath()) + ".mls" ); }
@@ -118,6 +125,46 @@ void MLSGrid::unserialize(Serialization& so)
     }
 }
 
+// memory structure of version 1.0
+struct SurfacePatchStore10
+{
+    double mean;
+    double stdev;
+    double height;
+    bool horizontal;
+    size_t update_idx;
+
+    size_t m, n;
+
+    MLSGrid::SurfacePatch toSurfacePatch()
+    {
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal );
+	p.update_idx = update_idx;
+	return p;
+    }
+};
+
+// memory structure of version 1.1
+struct SurfacePatchStore11
+{
+    double mean;
+    double stdev;
+    double height;
+    bool horizontal;
+    size_t update_idx;
+    base::Vector3d color;
+
+    size_t m, n;
+
+    MLSGrid::SurfacePatch toSurfacePatch()
+    {
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal );
+	p.update_idx = update_idx;
+	p.color = color;
+	return p;
+    }
+};
+
 struct SurfacePatchStore : MLSGrid::SurfacePatch
 {
     SurfacePatchStore() {};
@@ -132,7 +179,7 @@ void MLSGrid::writeMap(const std::string& path)
 {
     std::ofstream os(path.c_str());
     os << "mls" << std::endl;
-    os << "1.0" << std::endl;
+    os << "1.1" << std::endl;
     os << sizeof( SurfacePatchStore ) << std::endl;
     os << "bin" << std::endl;
 
@@ -163,21 +210,41 @@ void MLSGrid::readMap(const std::string& path)
 	throw std::runtime_error("bad magic " + std::string(c));
 
     is.getline(c, 20);
-    if( boost::lexical_cast<float>(std::string(c)) > 1.0 )
-	throw std::runtime_error("version not supported " + std::string(c) );
+    std::string version = std::string(c);
+    if( version != "1.0" && version != "1.1" )
+	throw std::runtime_error("version not supported " + version );
 
     is.getline(c, 20);
-    if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore ) )
-	throw std::runtime_error("binary size mismatch");
+    if( version == "1.0" )
+    {
+	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore10 ) )
+	    throw std::runtime_error("binary size mismatch");
+    }
+    else if( version == "1.1" )
+    {
+	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore11 ) )
+	    throw std::runtime_error("binary size mismatch");
+    }
 
     is.getline(c, 20);
     if( std::string(c) != "bin" )
 	throw std::runtime_error("missing bin identifier" + std::string(c));
 
-    SurfacePatchStore d;
-    while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore ) ) )
+    if( version == "1.0" )
     {
-	insertTail( d.m, d.n, d );
+	SurfacePatchStore10 d;
+	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore10 ) ) )
+	{
+	    insertTail( d.m, d.n, d.toSurfacePatch() );
+	}
+    }
+    else if( version == "1.1" )
+    {
+	SurfacePatchStore11 d;
+	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore11 ) ) )
+	{
+	    insertTail( d.m, d.n, d.toSurfacePatch() );
+	}
     }
 
     is.close();
