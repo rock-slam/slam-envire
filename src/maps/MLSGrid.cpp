@@ -30,6 +30,7 @@ void MLSGrid::clear()
     cellcount = 0;
     if(index) index->reset();
     extents = Extents();
+    hasCellColor_ = false;
 }
 
 MLSGrid::MLSGrid(const MLSGrid& other)
@@ -458,7 +459,10 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	    }
 	}
 	p.update_idx = o.update_idx;
-	p.color = (p.color + o.color)/2.0;
+
+	if( hasCellColor_ )
+	    p.color = (p.color + o.color)/2.0;
+
 	return true;
     }
     return false;
