@@ -56,6 +56,7 @@ namespace envire {
             
 	    bool readScan( const std::string& file );
 	    bool writeScan( const std::string& file ); 
+            void clear();
 
 	    const std::string getMapFileName(const std::string& path) const;
 

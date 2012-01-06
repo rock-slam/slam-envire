@@ -31,6 +31,11 @@ void LaserScan::serialize(Serialization& so)
     writeScan( getMapFileName(so.getMapPath()) );
 }
 
+void LaserScan::clear()
+{
+    lines.clear();
+}
+
 void LaserScan::addScanLine( double tilt_angle, const base::samples::LaserScan& scan )
 {
     if( lines.empty() )
