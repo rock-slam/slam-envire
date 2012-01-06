@@ -84,6 +84,7 @@ install(FILES tools/GraphViz.hpp
 if (USE_CGAL AND CGAL_FOUND)
     target_link_libraries(envire 
 	${CGAL_LIBRARIES}
+        ${GMP_LIBRARIES}
 	${Boost_FILESYSTEM_LIBRARY}
 	${Boost_THREAD_LIBRARY})
 else() 
