@@ -48,8 +48,9 @@ void MergePointcloud::addOutput(Pointcloud* globalpc){
 bool MergePointcloud::updateAll(){
     Pointcloud* targetcloud = dynamic_cast<envire::Pointcloud*>(*env->getOutputs(this).begin());
     assert( targetcloud );
-    targetcloud->vertices.clear();
+    targetcloud->clear();
 
+    std::vector<double>& target_uncertainty(targetcloud->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
     std::list<Layer*> inputs = env->getInputs(this);
 
     // check for additional data 
@@ -74,6 +75,9 @@ bool MergePointcloud::updateAll(){
 	{
 	    targetcloud->vertices.push_back(trans * *p);
 	}
+
+        std::vector<double>& uncertainty(cloud->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
+        std::copy(uncertainty.begin(),uncertainty.end(), std::back_inserter(target_uncertainty));
 
 	if( hasNormal )
 	{
