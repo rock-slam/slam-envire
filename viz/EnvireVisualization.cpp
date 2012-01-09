@@ -123,5 +123,31 @@ void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
 	env->addEventHandler( twl.get() );
 }
 
+void EnvireVisualization::setPCLVisualizerEnabled(bool value)
+{
+
+}
+
+void EnvireVisualization::setMLSViusalizerEnabled(bool value)
+{
+
+}
+void EnvireVisualization::setMLSViusalizerCellColorEnabled(bool value)
+{
+
+}
+bool EnvireVisualization::isPCLVisualizerEnabled()
+{
+    return true;
+}
+bool EnvireVisualization::isMLSVisualizerEnabled()
+{
+    return true;
+}
+bool EnvireVisualization::isMLSVisualizerCellColorEnabled()
+{
+    return true;
+}
+
 VizkitQtPlugin(EnvireVisualization);
 
