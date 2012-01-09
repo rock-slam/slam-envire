@@ -847,6 +847,10 @@ namespace envire
 	**/
 	void itemModified(EnvironmentItem* item);
 	
+        /** marks all items of the environment as modified
+	 */
+        void modified();
+	
 	EnvironmentItem::Ptr getItem(int uniqueId) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);

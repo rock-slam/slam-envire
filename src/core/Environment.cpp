@@ -306,6 +306,12 @@ void Environment::itemModified(EnvironmentItem* item)
     handle( Event( Event::ITEM, Event::UPDATE, item ) );
 }
 
+void Environment::modified()
+{
+    for(itemListType::iterator it=items.begin();it != items.end(); ++it )
+        itemModified(it->second.get());
+}
+
 void Environment::addChild(FrameNode* parent, FrameNode* child)
 {
     if( !child->isAttached() )
