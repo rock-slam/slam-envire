@@ -2,6 +2,7 @@
 #define ENVIREEVENTLISTENER_H
 
 #include <vector>
+#include <typeinfo>
 #include <map>
 #include <envire/Core.hpp>
 #include <envire/core/EventHandler.hpp>
@@ -10,6 +11,8 @@
 
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
+
+#include <iostream>
 
 namespace vizkit 
 {
@@ -67,9 +70,24 @@ class EnvireEventListener : public envire::EventListener
     public:
 	EnvireEventListener(nodeCallback add, nodeCallback remove);
 
-	void addVisualizer(EnvironmentItemVisualizer *viz);
+	///adds a visulizer to the EnvireEventListener 
+        //throws an error if a visualizer of the same type was already added 
+        void addVisualizer(EnvironmentItemVisualizer *viz);
+
+        ///returns a pointer to the first visualizer of type T
+        ///if no visualizer of type T was added to the EventListener NULL is returned instead
+        template<typename T> 
+            T* getVisualizer()
+            {
+                std::vector<EnvironmentItemVisualizer*>::iterator iter = visualizers.begin();
+                for(;iter != visualizers.end();++iter)
+                    if(typeid(*(*iter)) == typeid(T))
+                        return dynamic_cast<T*>(*iter);
+                return NULL;
+            }
+
 	void removeVisualizer(EnvironmentItemVisualizer *viz);
-	
+
 	/**
 	 * returns the osg node that visualizes the environmentItem
 	 */
@@ -79,6 +97,7 @@ class EnvireEventListener : public envire::EventListener
 	osg::Group *getParentNodeForItem(envire::EnvironmentItem* item);
 	
 	EnvironmentItemVisualizer *getVisualizerForItem(envire::EnvironmentItem* item);
+
 	
 	virtual void childAdded( envire::FrameNode* parent, envire::FrameNode* child );    
 	virtual void childRemoved( envire::FrameNode* parent, envire::FrameNode* child );

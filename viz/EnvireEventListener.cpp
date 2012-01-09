@@ -146,10 +146,6 @@ void EnvireEventListener::removeRootNode(envire::FrameNode* root)
 	osgRemoveNode( environmentToNode[root] );
 }
 
-void EnvireEventListener::addVisualizer ( EnvironmentItemVisualizer* viz )
-{
-    visualizers.push_back(viz);
-}
 
 void EnvireEventListener::removeVisualizer ( EnvironmentItemVisualizer* viz )
 {
@@ -222,6 +218,10 @@ EnvironmentItemVisualizer* EnvireEventListener::getVisualizerForItem(envire::Env
     return 0;
 }
 
+void EnvireEventListener::addVisualizer(EnvironmentItemVisualizer *viz)
+{
+    visualizers.push_back(viz);
+}
 
 void EnvireEventListener::itemAttached ( envire::EnvironmentItem* item )
 {
