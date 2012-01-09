@@ -125,24 +125,43 @@ void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
 
 void EnvireVisualization::setPCLVisualizerEnabled(bool value)
 {
+    PointcloudVisualization *pcl_visualizer = eventListener->getVisualizer<PointcloudVisualization>();
+    if(pcl_visualizer == NULL)
+        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type PointcloudVisualization.");
+    pcl_visualizer->setEnabled(value);
 
+    //redraw everything
+    env->modified();
+}
+bool EnvireVisualization::isPCLVisualizerEnabled()
+{
+    PointcloudVisualization *pcl_visualizer = eventListener->getVisualizer<PointcloudVisualization>();
+    if(pcl_visualizer == NULL)
+        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type PointcloudVisualization.");
+    return pcl_visualizer->isEnabled();
 }
 
 void EnvireVisualization::setMLSViusalizerEnabled(bool value)
 {
+    MLSVisualization *mls_visualizer = eventListener->getVisualizer<MLSVisualization>();
+    if(mls_visualizer == NULL)
+        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type MLSVisualization.");
+    mls_visualizer->setEnabled(value);
 
-}
-void EnvireVisualization::setMLSViusalizerCellColorEnabled(bool value)
-{
-
-}
-bool EnvireVisualization::isPCLVisualizerEnabled()
-{
-    return true;
+    //redraw everything
+    env->modified();
 }
 bool EnvireVisualization::isMLSVisualizerEnabled()
 {
-    return true;
+    MLSVisualization *mls_visualizer = eventListener->getVisualizer<MLSVisualization>();
+    if(mls_visualizer == NULL)
+        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type MLSVisualization.");
+    return mls_visualizer->isEnabled();
+}
+
+void EnvireVisualization::setMLSViusalizerCellColorEnabled(bool value)
+{
+
 }
 bool EnvireVisualization::isMLSVisualizerCellColorEnabled()
 {

@@ -238,6 +238,9 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     //remove old drawables
     while(geode->removeDrawables(0));
 
+    if(!isEnabled())
+        return;
+
     envire::MultiLevelSurfaceGrid *mls = dynamic_cast<envire::MultiLevelSurfaceGrid *>(item);
     assert(mls);
 

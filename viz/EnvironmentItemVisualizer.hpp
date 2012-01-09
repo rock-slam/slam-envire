@@ -18,6 +18,8 @@ namespace vizkit {
 class EnvironmentItemVisualizer 
 {
     public:
+        EnvironmentItemVisualizer():enabled(true){};
+
 	virtual bool handlesItem(envire::EnvironmentItem *item) const = 0;
 	virtual osg::Group *getNodeForItem(envire::EnvironmentItem *item) const = 0;
 	virtual void updateNode(envire::EnvironmentItem *item, osg::Group *group) const = 0; 
@@ -28,6 +30,12 @@ class EnvironmentItemVisualizer
 	virtual void unHighlightNode(envire::EnvironmentItem *item, osg::Group *group) const = 0;
         virtual void hideNode(envire::EnvironmentItem *item, osg::Group *group) const {};//= 0;
         virtual void unHideNode(envire::EnvironmentItem *item, osg::Group *group) const {};//= 0;
+
+        bool isEnabled()const{return enabled;};
+        void setEnabled(bool value){enabled = value;};
+
+    private:
+        bool enabled;
 };
 
 }

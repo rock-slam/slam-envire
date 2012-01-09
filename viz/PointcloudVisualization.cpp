@@ -64,6 +64,9 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
     osg::ref_ptr<osg::Geode> geode = group->getChild(0)->asGeode();
     //remove old drawables
     while(geode->removeDrawables(0));
+
+    if(!isEnabled())
+        return;
     
     envire::Pointcloud *pointcloud = dynamic_cast<envire::Pointcloud *>(item);
     assert(pointcloud);
