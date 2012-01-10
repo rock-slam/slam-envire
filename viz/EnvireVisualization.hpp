@@ -17,10 +17,6 @@ namespace vizkit
 class EnvireVisualization : public VizPluginAdapter<envire::Environment*>
 {
     Q_OBJECT
-    Q_PROPERTY(bool pcl_visualizer READ isPCLVisualizerEnabled WRITE setPCLVisualizerEnabled USER true)
-    Q_PROPERTY(bool mls_visualizer READ isMLSVisualizerEnabled WRITE setMLSViusalizerEnabled USER true)
-    Q_PROPERTY(bool mls_visualizer_cell_color READ isMLSVisualizerCellColorEnabled WRITE setMLSViusalizerCellColorEnabled USER true)
-
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -44,14 +40,6 @@ public:
     envire::EnvironmentItem* getSelectedItem() { return twl ? twl->selected : NULL; }
 
     void setFilter( envire::EventFilter *filter ) { eventListener->setFilter( filter ); }
-
-    bool isPCLVisualizerEnabled();
-    bool isMLSVisualizerEnabled();
-    bool isMLSVisualizerCellColorEnabled();
-
-    void setPCLVisualizerEnabled(bool value);
-    void setMLSViusalizerEnabled(bool value);
-    void setMLSViusalizerCellColorEnabled(bool value);
 
 protected:
     virtual void operatorIntern( osg::Node* node, osg::NodeVisitor* nv );

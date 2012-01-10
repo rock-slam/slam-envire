@@ -95,6 +95,11 @@ void EnvireNode::apply()
     }
 }
 
+EnvironmentItemVisualizer* EnvireNode::getVisualizer()
+{
+    return viz;
+}
+
 void EnvireEventListener::apply()
 {
     boost::mutex::scoped_lock lock(mu);
@@ -150,6 +155,8 @@ void EnvireEventListener::removeRootNode(envire::FrameNode* root)
 void EnvireEventListener::removeVisualizer ( EnvironmentItemVisualizer* viz )
 {
     std::vector<EnvironmentItemVisualizer *>::iterator item = std::find(visualizers.begin(), visualizers.end(), viz);
+    if(item != visualizers.end())
+        (*item)->setEventListener(NULL);
     
     visualizers.erase(item);
     
@@ -218,9 +225,19 @@ EnvironmentItemVisualizer* EnvireEventListener::getVisualizerForItem(envire::Env
     return 0;
 }
 
+void  EnvireEventListener::updateItemsHandledBy(EnvironmentItemVisualizer *visualizer)
+{
+    boost::mutex::scoped_lock lock(mu);
+    typedef std::map<envire::EnvironmentItem*, osg::ref_ptr<EnvireNode> > mapType;
+    for( mapType::iterator it=environmentToNode.begin(); it!=environmentToNode.end(); it++ )
+	if(it->second->getVisualizer() == visualizer)
+            it->second->update();
+}
+
 void EnvireEventListener::addVisualizer(EnvironmentItemVisualizer *viz)
 {
     visualizers.push_back(viz);
+    viz->setEventListener(this);
 }
 
 void EnvireEventListener::itemAttached ( envire::EnvironmentItem* item )

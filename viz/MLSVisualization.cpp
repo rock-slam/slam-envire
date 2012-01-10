@@ -38,19 +38,19 @@ osg::Vec4 hslToRgb(float h, float s, float l)
 	float p = 2.0 * l - q;
 	r = hue2rgb(p, q, h + 1.0/3.0);
 	g = hue2rgb(p, q, h);
-	b = hue2rgb(p, q, h - 1.0/3.0);
+
     }
 
     return osg::Vec4( r, g, b, 1.0 );
 }
 
 MLSVisualization::MLSVisualization()
-    : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
+ : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
-    showUncertainty(false),
-    estimateNormals(true),
-    cycleHeightColor(true)
+    show_uncertainty(false),
+    estimate_normals(true),
+    color_mode(HEIGHT)
 {
 }
 
@@ -256,6 +256,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
     osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
+
+    osg::Vec3 normal = osg::Vec3(0,0,1.0);
     
     const double xs = mls->getScaleX();
     const double ys = mls->getScaleY();
@@ -280,16 +282,24 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		if( p.horizontal == true )
 		{
 		    osg::Vec4 col;
-		    if( mls->getHasCellColor() )
+		    if( mls->getHasCellColor() && color_mode == CELL)
+                    {
 			col = osg::Vec4( p.color.x(), p.color.y(), p.color.z(), 1.0 );
-		    else if( cycleHeightColor )
-			col = hslToRgb( p.mean - std::floor(p.mean), 1.0, 0.6 );
+                    }
+		    if( color_mode == HEIGHT)
+                    {
+	          	col = hslToRgb(std::fmod(4.0*(p.mean - std::floor(p.mean)),1.0), 1.0, 0.6 );
+                    }
 		    else
+                    {
 			col = horizontalCellColor;
-		    
+                    }
+		    if(estimate_normals)
+                        normal = estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ); 
+                    
 		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), 
 			    col,
-			    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
+			    normal);
 		    hor++;
 		}
 		else
@@ -297,7 +307,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), verticalCellColor, osg::Vec3(0, 0, 1.0) );
 		}
 
-		if( showUncertainty )
+		if( show_uncertainty )
 		{
 		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
 		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
@@ -319,7 +329,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
     geode->addDrawable(geom.get());    
 
-    if( showUncertainty )
+    if( show_uncertainty )
     {
 	osg::ref_ptr<osg::Geometry> var_geom = new osg::Geometry;
 	var_geom->setVertexArray( var_vertices );
@@ -334,3 +344,37 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	geode->addDrawable( var_geom.get() );
     }
 }
+
+void MLSVisualization::showUncertainty(bool value)
+{
+    show_uncertainty = value;
+    updateVisualizedItems();
+}
+
+bool MLSVisualization::isUncertaintyEnabled()
+{
+    return show_uncertainty;
+}
+
+void MLSVisualization::estimateNormals(bool value)
+{
+    estimate_normals = value;
+    updateVisualizedItems();
+}
+
+bool MLSVisualization::isEstimateNormalsEnabled()
+{
+    return estimate_normals;
+}
+
+void MLSVisualization::setColorMode(colorModeType value)
+{
+    color_mode = value;
+    updateVisualizedItems();
+}
+
+MLSVisualization::colorModeType MLSVisualization::getColorMode()
+{
+    return color_mode;
+}
+

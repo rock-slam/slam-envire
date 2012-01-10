@@ -20,8 +20,11 @@ class PointcloudVisualization : public vizkit::EnvironmentItemVisualizer
 	 * @todo make this changeable per item
 	 */
 	bool setDefaultColor( const osg::Vec4& color );
-	bool setShowNormals( bool showNormals );
-	bool setShowFeatures( bool showFeatures );
+	void setShowNormals( bool showNormals ){this->showNormals = showNormals;updateVisualizedItems();};
+	void setShowFeatures( bool showFeatures ){this->showFeatures = showFeatures;updateVisualizedItems();};
+
+        bool isNormalsEnabled(){return showNormals;};
+        bool isFeaturesEnabled(){return showFeatures;};
 
     protected:
 	osg::Vec4 vertexColor;

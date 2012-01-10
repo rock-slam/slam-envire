@@ -11,14 +11,16 @@ namespace osg {
 
 namespace envire {
     class EnvironmentItem;
+    class Environment;
 }
 
 namespace vizkit {
+class EnvireEventListener;
     
 class EnvironmentItemVisualizer 
 {
     public:
-        EnvironmentItemVisualizer():enabled(true){};
+        EnvironmentItemVisualizer():enabled(true),event_listener(0){};
 
 	virtual bool handlesItem(envire::EnvironmentItem *item) const = 0;
 	virtual osg::Group *getNodeForItem(envire::EnvironmentItem *item) const = 0;
@@ -32,10 +34,14 @@ class EnvironmentItemVisualizer
         virtual void unHideNode(envire::EnvironmentItem *item, osg::Group *group) const {};//= 0;
 
         bool isEnabled()const{return enabled;};
-        void setEnabled(bool value){enabled = value;};
+        void setEnabled(bool value){enabled = value;updateVisualizedItems();};
+
+        void updateVisualizedItems();
+        void setEventListener(EnvireEventListener *listener);
 
     private:
         bool enabled;
+        EnvireEventListener* event_listener;
 };
 
 }

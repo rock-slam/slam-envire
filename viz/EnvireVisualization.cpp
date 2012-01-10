@@ -4,9 +4,9 @@
 #include "LaserScanVisualization.hpp"
 #include "FrameNodeVisualization.hpp"
 #include "TriMeshVisualization.hpp"
-#include "PointcloudVisualization.hpp"
+#include "QPointcloudVisualization.hpp"
 #include "ElevationGridVisualization.hpp"
-#include "MLSVisualization.hpp"
+#include "QMLSVisualization.hpp"
 #include "ImageRGB24Visualization.hpp"
 
 #include "ItemManipulator.hpp"
@@ -29,14 +29,14 @@ EnvireVisualization::EnvireVisualization()
 	    new EnvireEventListener( 
 		boost::bind( &osg::Group::addChild, ownNode->asGroup(), _1 ),
 		boost::bind( &osg::Group::removeChild, ownNode->asGroup(), _1 ) ) );
-
+    
     // create and register visualizers
     visualizers.push_back( boost::shared_ptr<LaserScanVisualization>(new LaserScanVisualization() ) );
     visualizers.push_back( boost::shared_ptr<FrameNodeVisualization>(new FrameNodeVisualization() ) );
     visualizers.push_back( boost::shared_ptr<TriMeshVisualization>(new TriMeshVisualization() ) );
-    visualizers.push_back( boost::shared_ptr<PointcloudVisualization>(new PointcloudVisualization() ) );
+    visualizers.push_back( boost::shared_ptr<PointcloudVisualization>(new QPointcloudVisualization(this) ) );
     visualizers.push_back( boost::shared_ptr<ElevationGridVisualization>(new ElevationGridVisualization() ) );
-    visualizers.push_back( boost::shared_ptr<MLSVisualization>(new MLSVisualization() ) );
+    visualizers.push_back( boost::shared_ptr<MLSVisualization>(new QMLSVisualization(this)));
     visualizers.push_back( boost::shared_ptr<ImageRGB24Visualization>(new ImageRGB24Visualization() ) );
 
     // attach visualizers
@@ -44,8 +44,6 @@ EnvireVisualization::EnvireVisualization()
     {
 	eventListener->addVisualizer( (*it).get() );
     }
-
-    VizPluginRubyConfig(EnvireVisualization, std::string, load);
 }
 
 EnvireVisualization::~EnvireVisualization()
@@ -121,51 +119,6 @@ void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
     env->addEventHandler( eventListener.get() );
     if( twl )
 	env->addEventHandler( twl.get() );
-}
-
-void EnvireVisualization::setPCLVisualizerEnabled(bool value)
-{
-    PointcloudVisualization *pcl_visualizer = eventListener->getVisualizer<PointcloudVisualization>();
-    if(pcl_visualizer == NULL)
-        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type PointcloudVisualization.");
-    pcl_visualizer->setEnabled(value);
-
-    //redraw everything
-    env->modified();
-}
-bool EnvireVisualization::isPCLVisualizerEnabled()
-{
-    PointcloudVisualization *pcl_visualizer = eventListener->getVisualizer<PointcloudVisualization>();
-    if(pcl_visualizer == NULL)
-        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type PointcloudVisualization.");
-    return pcl_visualizer->isEnabled();
-}
-
-void EnvireVisualization::setMLSViusalizerEnabled(bool value)
-{
-    MLSVisualization *mls_visualizer = eventListener->getVisualizer<MLSVisualization>();
-    if(mls_visualizer == NULL)
-        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type MLSVisualization.");
-    mls_visualizer->setEnabled(value);
-
-    //redraw everything
-    env->modified();
-}
-bool EnvireVisualization::isMLSVisualizerEnabled()
-{
-    MLSVisualization *mls_visualizer = eventListener->getVisualizer<MLSVisualization>();
-    if(mls_visualizer == NULL)
-        throw std::runtime_error("EnvireVisualization: Cannot find a Visualizer of type MLSVisualization.");
-    return mls_visualizer->isEnabled();
-}
-
-void EnvireVisualization::setMLSViusalizerCellColorEnabled(bool value)
-{
-
-}
-bool EnvireVisualization::isMLSVisualizerCellColorEnabled()
-{
-    return true;
 }
 
 VizkitQtPlugin(EnvireVisualization);

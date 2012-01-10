@@ -58,6 +58,7 @@ public:
     void update();
     bool isDirty();
     void apply();
+    EnvironmentItemVisualizer* getVisualizer();
     osg::Group *getFront();
     osg::Group *getBack();
     
@@ -97,7 +98,7 @@ class EnvireEventListener : public envire::EventListener
 	osg::Group *getParentNodeForItem(envire::EnvironmentItem* item);
 	
 	EnvironmentItemVisualizer *getVisualizerForItem(envire::EnvironmentItem* item);
-
+        void updateItemsHandledBy(EnvironmentItemVisualizer *visulizer);
 	
 	virtual void childAdded( envire::FrameNode* parent, envire::FrameNode* child );    
 	virtual void childRemoved( envire::FrameNode* parent, envire::FrameNode* child );
