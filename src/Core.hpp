@@ -14,6 +14,7 @@
 #include <boost/intrusive_ptr.hpp>
 #include <vector>
 #include <stdexcept>
+#include <typeinfo>
 
 #include <envire/core/EventSource.hpp>
 #include <base/samples/rigid_body_state.h>
@@ -846,6 +847,19 @@ namespace envire
 	* method.
 	**/
 	void itemModified(EnvironmentItem* item);
+
+	/**
+	* Calling this method will invoke itemModified on all  
+	* items of type or base type T
+	**/
+        template<typename T>
+	    void itemsModified()
+            {
+                std::vector<T* > list = getItems<T>();
+                typename std::vector<T* >::iterator it = list.begin();
+                for(; it != list.end(); ++it)
+                    itemModified(*it);
+            }
 	
         /** marks all items of the environment as modified
 	 */
