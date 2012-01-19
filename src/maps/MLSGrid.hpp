@@ -3,6 +3,7 @@
 
 #include <envire/maps/GridBase.hpp>
 #include <boost/multi_array.hpp>
+#include <envire/core/Serialization.hpp>
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/pool/pool.hpp>

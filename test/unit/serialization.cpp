@@ -3,6 +3,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include "envire/Core.hpp"
+#include "envire/core/Serialization.hpp"
 
 #include "envire/maps/MLSGrid.hpp"
 #include "envire/maps/Grids.hpp"
@@ -128,11 +129,11 @@ BOOST_AUTO_TEST_CASE( framenode_binitem_serialization )
     env->attachItem( fn );
     
     BinarySerialization serialization;
-    EnvireBinaryItem bin_item;
+    EnvireBinaryEvent bin_item;
     
-    serialization.serializeBinaryItem(fn, bin_item);
+    serialization.serializeBinaryEvent(fn, bin_item);
     
-    EnvironmentItem *new_item = serialization.unserializeBinaryItem(bin_item);
+    EnvironmentItem *new_item = serialization.unserializeBinaryEvent(bin_item);
     BOOST_CHECK_EQUAL(new_item->getClassName(), fn->getClassName());
     BOOST_CHECK_EQUAL(new_item->getUniqueId(), fn->getUniqueId());
     
@@ -152,11 +153,11 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_binitem_serialization )
     mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
     
     BinarySerialization serialization;
-    EnvireBinaryItem bin_item;
+    EnvireBinaryEvent bin_item;
     
-    serialization.serializeBinaryItem(mls, bin_item);
+    serialization.serializeBinaryEvent(mls, bin_item);
     
-    EnvironmentItem *new_item = serialization.unserializeBinaryItem(bin_item);
+    EnvironmentItem *new_item = serialization.unserializeBinaryEvent(bin_item);
     BOOST_CHECK_EQUAL(new_item->getClassName(), mls->getClassName());
     
     MultiLevelSurfaceGrid* mls2 = dynamic_cast<MultiLevelSurfaceGrid*>(new_item);
@@ -225,10 +226,10 @@ BOOST_AUTO_TEST_CASE( DistanceGrid_serialization )
         
     // test binary serialization    
     BinarySerialization serialization;
-    EnvireBinaryItem bin_item;
-    serialization.serializeBinaryItem(dg, bin_item);
+    EnvireBinaryEvent bin_item;
+    serialization.serializeBinaryEvent(dg, bin_item);
     
-    EnvironmentItem* new_item = serialization.unserializeBinaryItem(bin_item);
+    EnvironmentItem* new_item = serialization.unserializeBinaryEvent(bin_item);
     DistanceGrid* dg3 = dynamic_cast<DistanceGrid*>(new_item);
     BOOST_CHECK(dg3);
     

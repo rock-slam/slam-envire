@@ -2,6 +2,7 @@
 #define __ENVIRE_GRID_HPP__
 
 #include <envire/Core.hpp>
+#include <envire/core/Serialization.hpp>
 #include <base/samples/frame.h>
 #include <envire/maps/GridBase.hpp>
 

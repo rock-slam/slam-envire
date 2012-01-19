@@ -2,6 +2,7 @@
 #define __ENVIRE_FEATURECLOUD_HPP__
 
 #include <envire/Core.hpp>
+#include <envire/core/Serialization.hpp>
 #include <envire/maps/Pointcloud.hpp>
 #include <envire/core/Features.hpp>
 

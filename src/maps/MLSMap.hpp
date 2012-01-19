@@ -2,6 +2,7 @@
 #define __ENVIRE_MAPS_MLSMAP_HPP__
 
 #include <envire/maps/MLSGrid.hpp>
+#include <envire/core/Serialization.hpp>
 
 namespace envire
 {

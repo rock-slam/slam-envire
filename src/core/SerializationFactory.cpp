@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "core/Serialization.hpp"
 
 #include "maps/LaserScan.hpp"
 #include "maps/TriMesh.hpp"
