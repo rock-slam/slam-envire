@@ -1195,12 +1195,6 @@ namespace envire
          * @return an ostream for a given filename
          */
         virtual std::ostream& getBinaryOutputStream(const std::string &filename) = 0;
-        
-        /**
-         * @deprecated for backward compatibility
-         * @return the serialization path
-         */
-        virtual const std::string getMapPath() const;
     };
     
     template <class T> void Serialization::read(const std::string &key, T& value)

@@ -227,11 +227,6 @@ bool Serialization::read(const std::string& key, FrameNode::TransformType &value
     return true;
 }
 
-const std::string Serialization::getMapPath() const
-{
-    return "";
-}
-
 
 //// FileSerialization ////
 
@@ -399,15 +394,18 @@ bool FileSerialization::writeToFile( Environment *env, const std::string &path )
     fclose( output );
     
     // close and delete ofstreams
-    for(std::vector<std::ofstream*>::iterator it = ofstreams.begin(); it != ofstreams.end(); it++)
+    if(ofstreams.size() > 0)
     {
-        if((*it)->is_open())
+        for(std::vector<std::ofstream*>::iterator it = ofstreams.begin(); it != ofstreams.end(); it++)
         {
-            (*it)->close();
+            if((*it)->is_open())
+            {
+                (*it)->close();
+            }
+            delete *it;
         }
-        delete *it;
+        ofstreams.clear();
     }
-    ofstreams.clear();
     
     return result;
 }
@@ -543,15 +541,18 @@ Environment* FileSerialization::readFromFile( const std::string& path )
     fclose(input);
     
     // close and delete ifstreams
-    for(std::vector<std::ifstream*>::iterator it = ifstreams.begin(); it != ifstreams.end(); it++)
+    if(ifstreams.size() > 0)
     {
-        if((*it)->is_open())
+        for(std::vector<std::ifstream*>::iterator it = ifstreams.begin(); it != ifstreams.end(); it++)
         {
-            (*it)->close();
+            if((*it)->is_open())
+            {
+                (*it)->close();
+            }
+            delete *it;
         }
-        delete *it;
+        ifstreams.clear();
     }
-    ifstreams.clear();
 
     return env;
 }
