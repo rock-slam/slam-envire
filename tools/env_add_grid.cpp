@@ -55,6 +55,7 @@ int main(int argc, char* argv[])
         envire::FrameNode::Ptr frame = env->getItem<envire::FrameNode>(frame_id);
         env->attachItem(input.get());
         input->setFrameNode(frame.get());
+        map_id = input->getUniqueId();
     }
     else
     {
@@ -63,5 +64,7 @@ int main(int argc, char* argv[])
     }
 
     env->serialize(env_path);
+    std::cout << std::endl << map_id << std::endl;
+    return 0;
 }
 
