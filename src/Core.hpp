@@ -1090,11 +1090,27 @@ namespace envire
          */
 	FrameNode::TransformType relativeTransform(const FrameNode* from, const FrameNode* to);
 
+        /** 
+	 * @overload
+         *
+         * Returns the relative transformation between the frames of two
+         * cartesian maps
+         */
+	FrameNode::TransformType relativeTransform(const CartesianMap* from, const CartesianMap* to);
+
 	/** @return a new transform object, that specifies the transformation
 	 * from the @param from frame to the @param to frame, and will take care of
 	 * uncertainty (linearised) on the way.
 	 */
 	TransformWithUncertainty relativeTransformWithUncertainty(const FrameNode* from, const FrameNode* to);
+
+        /** 
+	 * @overload
+         *
+         * Returns the relative transformation, including uncertainty, between
+         * the frames of two cartesian maps, 
+         */
+	TransformWithUncertainty relativeTransformWithUncertainty(const CartesianMap* from, const CartesianMap* to);
     };
 
     /* Generic implementation for registering new types in the serialization

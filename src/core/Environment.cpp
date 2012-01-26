@@ -626,9 +626,19 @@ FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, c
     return ::relativeTransform<FrameNode::TransformType>( from, to );
 }
 
+FrameNode::TransformType Environment::relativeTransform(const CartesianMap* from, const CartesianMap* to)
+{
+    return relativeTransform( from->getFrameNode(), to->getFrameNode() );
+}
+
 TransformWithUncertainty Environment::relativeTransformWithUncertainty(const FrameNode* from, const FrameNode* to)
 {
     return ::relativeTransform<TransformWithUncertainty>( from, to );
+}
+
+TransformWithUncertainty Environment::relativeTransformWithUncertainty(const CartesianMap* from, const CartesianMap* to)
+{
+    return relativeTransformWithUncertainty( from->getFrameNode(), to->getFrameNode() );
 }
 
 void Environment::serialize(std::string const& path)
