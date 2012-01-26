@@ -37,6 +37,7 @@ rock_library(envire
     operators/MLSSlope.cpp
     operators/MLSSimpleTraversability.cpp
     operators/DistanceGridToPointcloud.cpp
+    operators/GridFloatToMLS.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp

@@ -16,6 +16,8 @@ rock_executable(env_create_grid env_create_grid.cpp
     DEPS envire)
 rock_executable(env_add_grid env_add_grid.cpp
     DEPS envire)
+rock_executable(env_grid_to_mls env_grid_to_mls.cpp
+    DEPS envire)
 
 if( USE_CGAL )
     rock_executable(env_dem env_dem.cpp
