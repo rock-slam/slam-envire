@@ -6,7 +6,7 @@
 
 using namespace envire;
 
-void usage()
+void usage(int exit_code = 0)
 {
     std::cerr << "usage: env_add_grid <env_path> <grid_file> <band_name> -frame <frame_id>\n"
         << "       env_add_grid <env_path> <grid_file> <band_name> -map <map_id>\n"
@@ -20,13 +20,13 @@ void usage()
         << "\n"
         << "  files with multiple bands are not supported yet\n"
         << std::endl;
-    exit(0);
+    exit(exit_code);
 }
 
 int main(int argc, char* argv[])
 {
     if (argc < 4 || argc > 6 )
-        usage();
+        usage(1);
 
     std::string env_path(argv[1]);
     std::string grid_file(argv[2]);
