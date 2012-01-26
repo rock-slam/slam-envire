@@ -722,8 +722,23 @@ namespace envire
     public:
 	static const std::string className;
 
-	Operator();
-	Operator(Serialization& so);
+        /** Constructs a new operator
+         *
+         * @arg inputArity if nonzero, this is the number of inputs that this
+         *                 operator requires
+         * @arg outputArity if nonzero, this is the number of outputs that this
+         *                  operator requires
+         */
+	Operator(int inputArity = 0, int outputArity = 0);
+
+        /** Constructs an operator out of serialized data
+         *
+         * @arg inputArity if nonzero, this is the number of inputs that this
+         *                 operator requires
+         * @arg outputArity if nonzero, this is the number of outputs that this
+         *                  operator requires
+         */
+	Operator(Serialization& so, int inputArity = 0, int outputArity = 0);
 
         /** Update the output layer(s) according to the defined operation.
          */
@@ -733,6 +748,13 @@ namespace envire
          * this, in which case it will return false
          */
         virtual bool addInput(Layer* layer);
+
+        /** Removes all existing inputs to this operator, and replaces them by
+         * \c layer
+         *
+         * This is usually used for operators that accept only one input
+         */
+        bool setInput(Layer* layer);
 
         /** Removes an input from this operator. 
 	 */ 
@@ -746,6 +768,13 @@ namespace envire
          * this, in which case it will return false
          */
         virtual bool addOutput(Layer* layer);
+
+        /** Removes all existing inputs to this operator, and replaces them by
+         * \c layer
+         *
+         * This is usually used for operators that accept only one output
+         */
+        bool setOutput(Layer* layer);
 
         /** Removes an output from this operator.          
 	 */
@@ -781,6 +810,10 @@ namespace envire
          */
         template<typename LayerT>
         LayerT getInput();
+
+    private:
+        int inputArity;
+        int outputArity;
     };
 
     /** The environment class manages EnvironmentItem objects and has ownership
