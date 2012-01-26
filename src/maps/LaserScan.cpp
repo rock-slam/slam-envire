@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <base/logging.h>
 
 using namespace envire;
 using namespace std;
@@ -48,11 +49,11 @@ void LaserScan::addScanLine( double tilt_angle, const base::samples::LaserScan& 
     {
 	// check scanline properties
 	if( origin_psi != scan.start_angle )
-	    std::cerr << "[envire] WARNING: laser start angle mismatch" << std::endl;
+        { LOG_WARN_S << "laser start angle mismatch"; }
 	if( delta_psi != scan.angular_resolution )
-	    std::cerr << "[envire] WARNING: laser angular resolution mismatch" << std::endl;
+        { LOG_WARN_S << "laser angular resolution mismatch"; }
 	if( static_cast<unsigned int>(points_per_line) != scan.ranges.size() )
-	    std::cerr << "[envire] WARNING: laser points per line mismatch" << std::endl; 
+        { LOG_WARN_S << "laser points per line mismatch"; }
     }
 
     // copy the scanline
@@ -161,20 +162,14 @@ bool LaserScan::parseScan( std::istream& is, FrameNode::TransformType& transform
 
         if( key == "remission" ) {
 	    if( lines.size() == 0 )
-	    {
-		std::cerr << "remission line without prior line statement." << std::endl;
-		return false;
-	    }
+		throw std::runtime_error("remission line without prior line statement.");
 
             scanline_t& scanline(lines.back());
 	    float dphi;
             iline >> dphi;
 
 	    if( dphi != scanline.delta_phi )
-	    {
-		std::cerr << "remission line does not have the same delta_phi value as prior line statement." << std::endl;
-		return false;
-	    }
+		throw std::runtime_error("remission line does not have the same delta_phi value as prior line statement.");
 
             while( !iline.eof() ) {
                 float rem;

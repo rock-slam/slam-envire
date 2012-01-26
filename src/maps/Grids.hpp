@@ -121,14 +121,12 @@ namespace envire
       //save all bands in one file
       virtual void writeMap(const std::string& path)
       {
-	std::cout << "saving all GridData for " << getClassName() << std::endl;
 	writeGridData(bands,getFullPath(path,""));
       };
 	
       //read all bands from one file
       virtual void readMap(const std::string& path)
       {
-	std::cout << "loading all GridData for " << getClassName() << std::endl;
 	readGridData(bands,getFullPath(path,""));
       };
 

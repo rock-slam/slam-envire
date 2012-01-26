@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <base/logging.h>
 
 namespace envire 
 {
@@ -274,7 +275,7 @@ namespace envire
             }
             else
             {
-                std::cerr << "can't unserialize: missing key 'map_count' in yaml data." << std::endl;
+                throw std::runtime_error("can't unserialize " + className + ": missing key 'map_count' in yaml data.");
             }
         }
     }
@@ -302,7 +303,7 @@ namespace envire
 
     template<class T>void Grid<T>::readMap(const std::string& path)
     {
-	std::cout << "loading all GridData for " << getClassName() << std::endl;
+	LOG_DEBUG_S << "loading all GridData for " << getClassName();
 	const std::vector<std::string> &bands_ = getBands();
 	std::vector<std::string>::const_iterator iter = bands_.begin();
 	for(;iter != bands_.end();iter++)
@@ -352,7 +353,8 @@ namespace envire
    
     template<class T> void Grid<T>::writeGridData(const std::vector<std::string> &keys,const std::string& path)
     {
-	std::cout << "writing file "<< path << std::endl;
+	LOG_DEBUG_S << "writing file "<< path;
+
         GDALAllRegister();
 	const char *pszFormat = "GTiff";
 	GDALDriver *poDriver;
@@ -389,7 +391,7 @@ namespace envire
 	}
 	else
 	{
-	  std::cout << className << " has no environment!!!" << std::endl;
+	  LOG_DEBUG_S << className << " has no environment!!!";
 	}
 
 	GDALRasterBand *poBand;
@@ -416,7 +418,7 @@ namespace envire
       
     template<class T>void Grid<T>::readGridData(const std::vector<std::string> &keys,const std::string& path, int base_band)
     {
-      std::cout << "reading file "<< path << std::endl;
+      LOG_DEBUG_S << "reading file "<< path;
       GDALDataset  *poDataset;
       GDALAllRegister();
       poDataset = (GDALDataset *) GDALOpen(path.c_str(), GA_ReadOnly );
