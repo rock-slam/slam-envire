@@ -23,7 +23,6 @@ void GridFloatToMLS::unserialize(Serialization& so)
 void GridFloatToMLS::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
     so.write("band_name", band);
 }
 
