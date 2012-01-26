@@ -27,18 +27,20 @@ SimplifyPointcloud::SimplifyPointcloud()
 }
 
 SimplifyPointcloud::SimplifyPointcloud(Serialization& so)
-    : Operator(so)
 {
     initDefaults();
-    so.setClassName(className);
+    unserialize(so);
 }
 
 void SimplifyPointcloud::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
 }
 
+void SimplifyPointcloud::unserialize(Serialization& so)
+{
+    Operator::unserialize(so);
+}
 
 void SimplifyPointcloud::addInput( Pointcloud* mesh ) 
 {

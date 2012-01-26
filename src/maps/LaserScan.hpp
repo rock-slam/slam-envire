@@ -43,7 +43,7 @@ namespace envire {
             std::vector<scanline_t> lines;
 
 	private:
-	    bool parseScan( const std::string& file, envire::FrameNode::TransformType& transform );
+	    bool parseScan( std::istream& is, envire::FrameNode::TransformType& transform );
 
         public:
 	    void addScanLine( double tilt_angle, const base::samples::LaserScan& scan );
@@ -53,11 +53,12 @@ namespace envire {
             
             LaserScan(Serialization& so);
 	    void serialize(Serialization& so);
+            void unserialize(Serialization& so);
             
-	    bool readScan( const std::string& file );
-	    bool writeScan( const std::string& file ); 
+	    bool readScan( std::istream& is );
+	    bool writeScan( std::ostream& os ); 
 
-	    const std::string getMapFileName(const std::string& path) const;
+	    const std::string getMapFileName() const;
 
 	    static LaserScan* importScanFile( const std::string& file, FrameNode* frame );
 

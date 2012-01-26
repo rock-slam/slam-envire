@@ -84,7 +84,7 @@ envire::MLSGrid* MLSGrid::cloneShallow() const
 }
 
 MLSGrid::MLSGrid(Serialization& so)
-    : GridBase(so), mem_pool( sizeof( SurfacePatchItem ) )
+    : mem_pool( sizeof( SurfacePatchItem ) )
 {
     unserialize(so);
 }
@@ -96,29 +96,27 @@ MLSGrid::~MLSGrid()
 void MLSGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
-    so.setClassName( getClassName() );
 
     so.write( "hasCellColor", hasCellColor_ );
-
-    writeMap( getMapFileName(so.getMapPath()) + ".mls" );
+    writeMap( so.getBinaryOutputStream(getMapFileName() + ".mls") );
 }
 
 void MLSGrid::unserialize(Serialization& so)
 {
-    so.setClassName( getClassName() );
-    
+    GridBase::unserialize(so);
+
     if( so.hasKey( "hasCellColor" ) )
 	so.read( "hasCellColor", hasCellColor_ );
     else
 	hasCellColor_ = false;
 
     cells.resize( boost::extents[width][height] );
-    try { readMap( getMapFileName(so.getMapPath()) + ".mls" ); }
+    try { readMap( so.getBinaryInputStream(getMapFileName() + ".mls") ); }
     catch(...)
     {
         // Try with MultiLevelSurfaceGrid (backward compatibility)
         try {
-	    readMap(getMapFileName(so.getMapPath(), "envire::MultiLevelSurfaceGrid") + ".mls");
+	    readMap( so.getBinaryInputStream(getMapFileName("envire::MultiLevelSurfaceGrid") + ".mls"));
 	    return;
 	}
         catch(...) { throw; }
@@ -176,9 +174,8 @@ struct SurfacePatchStore : MLSGrid::SurfacePatch
     size_t m, n;
 };
 
-void MLSGrid::writeMap(const std::string& path)
+void MLSGrid::writeMap(std::ostream& os)
 {
-    std::ofstream os(path.c_str());
     os << "mls" << std::endl;
     os << "1.1" << std::endl;
     os << sizeof( SurfacePatchStore ) << std::endl;
@@ -195,16 +192,10 @@ void MLSGrid::writeMap(const std::string& path)
 	    }
 	}
     }
-
-    os.close();
 }
 
-void MLSGrid::readMap(const std::string& path)
-{
-    std::ifstream is(path.c_str());
-    if( !is.is_open() )
-	throw std::runtime_error("could not open file " + path);
-    
+void MLSGrid::readMap(std::istream& is)
+{   
     char c[32];
     is.getline(c, 20);
     if( std::string(c) != "mls" )
@@ -247,8 +238,6 @@ void MLSGrid::readMap(const std::string& path)
 	    insertTail( d.m, d.n, d.toSurfacePatch() );
 	}
     }
-
-    is.close();
 }
 
 MLSGrid::iterator MLSGrid::beginCell( size_t m, size_t n )

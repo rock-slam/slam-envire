@@ -170,15 +170,8 @@ PlyFile::PlyFile( const std::string& filename )
 {
 }
 
-bool PlyFile::serialize( Pointcloud *pointcloud )
+bool PlyFile::serialize( Pointcloud *pointcloud, std::ostream& data )
 {
-    std::ofstream data(filename_.c_str());
-    if( data.fail() )  
-    {
-	std::cerr << "Could not open file '" + filename_ + "' for writing." << std::endl;
-	return false;
-    }
-
     const std::string version = "1.0";
 
     data << "ply" << "\n";
@@ -284,15 +277,8 @@ bool PlyFile::serialize( Pointcloud *pointcloud )
     return true;
 }
 
-bool PlyFile::unserialize( Pointcloud *pointcloud )
+bool PlyFile::unserialize( Pointcloud *pointcloud , std::istream& data )
 {
-    std::ifstream data(filename_.c_str());
-    if( data.fail() )  
-    {
-	std::cerr << "Could not open file '" + filename_ + "'." << std::endl;
-	return false;
-    }
-
     pco_ = pointcloud;
     tmo_ = dynamic_cast<TriMesh*>(pointcloud);
     

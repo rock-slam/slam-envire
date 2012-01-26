@@ -5,6 +5,7 @@
 #include "envire/Core.hpp"
 
 #include "envire/maps/MLSGrid.hpp"
+#include "envire/maps/Grids.hpp"
 
 using namespace envire;
 
@@ -31,7 +32,6 @@ BOOST_FIXTURE_TEST_SUITE(SerializationTest, SerializationPath)
 
 BOOST_AUTO_TEST_CASE( environment_serialization )
 {
-    Serialization so;
     boost::scoped_ptr<Environment> env( new Environment() );
 
     // create some child framenodes
@@ -51,10 +51,10 @@ BOOST_AUTO_TEST_CASE( environment_serialization )
     env->addChild( env->getRootNode(), fn3 );
 
     std::string path(serialization_test_path);
-    so.serialize(env.get(), path);
+    env->serialize(path);
 
     // now try to parse the thing again
-    boost::scoped_ptr<Environment> env2(so.unserialize(path));
+    boost::scoped_ptr<Environment> env2(Environment::unserialize(path));
     
     std::list<FrameNode*> root_childs = env2->getChildren(env2->getRootNode());
     std::list<FrameNode*> fn1_childs;
@@ -102,10 +102,9 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_serialization )
 
     mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
 
-    Serialization so;
-    so.serialize(env.get(), serialization_test_path);
+    env->serialize(serialization_test_path);
 
-    boost::scoped_ptr<Environment> env2(so.unserialize(serialization_test_path));
+    boost::scoped_ptr<Environment> env2(Environment::unserialize(serialization_test_path));
     MultiLevelSurfaceGrid *mls2 = env2->getItems<MultiLevelSurfaceGrid>().front();
 
     MultiLevelSurfaceGrid::iterator it = mls2->beginCell(0,0);
@@ -121,6 +120,133 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_serialization )
     BOOST_CHECK_EQUAL( it2, mls2->endCell() );
 }
 
+BOOST_AUTO_TEST_CASE( framenode_binitem_serialization ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    FrameNode *fn = new FrameNode();
+    fn->setTransform( Eigen::Affine3d(Eigen::Translation3d( 0.0, 0.0, 0.5 )) );
+    env->attachItem( fn );
+    
+    BinarySerialization serialization;
+    EnvireBinaryItem bin_item;
+    
+    serialization.serializeBinaryItem(fn, bin_item);
+    
+    EnvironmentItem *new_item = serialization.unserializeBinaryItem(bin_item);
+    BOOST_CHECK_EQUAL(new_item->getClassName(), fn->getClassName());
+    BOOST_CHECK_EQUAL(new_item->getUniqueId(), fn->getUniqueId());
+    
+    FrameNode *fn_new = dynamic_cast<FrameNode*>(new_item);
+    
+    BOOST_CHECK_EQUAL(fn->getTransform().matrix().rows() * fn->getTransform().matrix().cols(), fn_new->getTransform().matrix().cwiseEqual(fn->getTransform().matrix()).count());
+}
 
+BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_binitem_serialization ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
+    env->attachItem( mls );
+
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
+    
+    BinarySerialization serialization;
+    EnvireBinaryItem bin_item;
+    
+    serialization.serializeBinaryItem(mls, bin_item);
+    
+    EnvironmentItem *new_item = serialization.unserializeBinaryItem(bin_item);
+    BOOST_CHECK_EQUAL(new_item->getClassName(), mls->getClassName());
+    
+    MultiLevelSurfaceGrid* mls2 = dynamic_cast<MultiLevelSurfaceGrid*>(new_item);
+    
+    MultiLevelSurfaceGrid::iterator it = mls2->beginCell(0,0);
+    BOOST_CHECK_EQUAL( it->mean, 2.0 );
+    it++;
+    BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
+    it++;
+    BOOST_CHECK_EQUAL( it, mls2->endCell() );
+    
+    MultiLevelSurfaceGrid::iterator it2 = mls2->beginCell(2,1);
+    BOOST_CHECK_EQUAL( it2->mean, 3.0 );
+    it2++;
+    BOOST_CHECK_EQUAL( it2, mls2->endCell() );
+    
+}
+
+BOOST_AUTO_TEST_CASE( DistanceGrid_serialization ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+    
+    base::samples::DistanceImage di;
+    di.clear();
+    di.data.resize(100, 0.0f);
+    di.time = base::Time::now();
+    di.center_x = 0.0;
+    di.center_y = 0.0;
+    di.height = 10;
+    di.width = 10;
+    di.scale_x = 0.1;
+    di.scale_y = 0.1;
+    di.data.front() = 1.0f;
+    di.data.back() = 1.0f;
+    
+    DistanceGrid *dg = new DistanceGrid(di);
+    
+    env->attachItem(dg);
+    env->setFrameNode(dg, env->getRootNode());
+    dg->copyFromDistanceImage(di);
+
+    // test file serialization
+    env->serialize(serialization_test_path);
+    
+    boost::scoped_ptr<Environment> env2(Environment::unserialize(serialization_test_path));
+    std::list<CartesianMap*> map_list = env2->getMaps(env2->getRootNode());
+    DistanceGrid* dg2 = dynamic_cast<DistanceGrid*>(map_list.front());
+    BOOST_CHECK(dg2);
+    
+    // check properties
+    BOOST_CHECK_EQUAL(dg2->getClassName(), dg->getClassName());
+    BOOST_CHECK_EQUAL(dg2->getHeight(), dg->getHeight());
+    BOOST_CHECK_EQUAL(dg2->getWidth(), dg->getWidth());
+    BOOST_CHECK_EQUAL(dg2->getGridDepth(), dg->getGridDepth());
+    BOOST_CHECK_EQUAL(dg2->getScaleX(), dg->getScaleX());
+    BOOST_CHECK_EQUAL(dg2->getScaleY(), dg->getScaleY());
+    BOOST_CHECK(dg2->hasBand(dg->DISTANCE));
+
+    // check map values
+    for(int x = 0; x < di.width; x++)
+        for(int y = 0; y < di.height; y++)
+        {
+            BOOST_CHECK_EQUAL(dg2->getFromRaster(dg2->DISTANCE,x,y), dg->getFromRaster(dg->DISTANCE,x,y));
+        }
+        
+        
+    // test binary serialization    
+    BinarySerialization serialization;
+    EnvireBinaryItem bin_item;
+    serialization.serializeBinaryItem(dg, bin_item);
+    
+    EnvironmentItem* new_item = serialization.unserializeBinaryItem(bin_item);
+    DistanceGrid* dg3 = dynamic_cast<DistanceGrid*>(new_item);
+    BOOST_CHECK(dg3);
+    
+    // check properties
+    BOOST_CHECK_EQUAL(dg3->getClassName(), dg->getClassName());
+    BOOST_CHECK_EQUAL(dg3->getHeight(), dg->getHeight());
+    BOOST_CHECK_EQUAL(dg3->getWidth(), dg->getWidth());
+    BOOST_CHECK_EQUAL(dg3->getGridDepth(), dg->getGridDepth());
+    BOOST_CHECK_EQUAL(dg3->getScaleX(), dg->getScaleX());
+    BOOST_CHECK_EQUAL(dg3->getScaleY(), dg->getScaleY());
+    BOOST_CHECK(dg3->hasBand(dg->DISTANCE));
+    
+    // check map values
+    for(int x = 0; x < di.width; x++)
+        for(int y = 0; y < di.height; y++)
+        {
+            BOOST_CHECK_EQUAL(dg3->getFromRaster(dg3->DISTANCE,x,y), dg->getFromRaster(dg->DISTANCE,x,y));
+        }
+}
 
 BOOST_AUTO_TEST_SUITE_END()

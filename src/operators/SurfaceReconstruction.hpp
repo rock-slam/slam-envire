@@ -15,6 +15,7 @@ namespace envire {
 
 	SurfaceReconstruction(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	const std::string& getClassName() const {return className;};
 

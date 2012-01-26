@@ -17,6 +17,7 @@ namespace envire {
 
 	MLSProjection(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	void addInput( Pointcloud* mesh ); 
 	void addOutput( MultiLevelSurfaceGrid* grid ); 

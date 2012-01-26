@@ -4,6 +4,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <sstream>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -12,6 +13,7 @@
 #include <boost/serialization/singleton.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/filesystem/path.hpp>
 #include <vector>
 #include <stdexcept>
 
@@ -187,6 +189,8 @@ namespace envire
 	virtual ~EnvironmentItem();
 
 	virtual void serialize(Serialization &so);
+        
+        virtual void unserialize(Serialization &so);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -382,6 +386,7 @@ namespace envire
         FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
+        virtual void unserialize(Serialization &so);
 
         /** Returns true if this frame is the root frame (i.e. has no parent) */
         bool isRoot() const;
@@ -477,6 +482,7 @@ namespace envire
 
 	Layer(Serialization& so);
 	void serialize(Serialization& so);
+        void unserialize(Serialization& so);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -536,18 +542,22 @@ namespace envire
 	 */
 	std::list<Layer*> getParents();
 
-	/** @overload
-         *
-         * Like getMapFileName, but allows to override the class name (i.e. not
-         * use the one from the map's class directly). This is meant to be used
-         * for backward compatibility, when map class names change.
+	/**
+         * @return for a given path, it will return a suggestion for a filename 
+         * to use when making this layer persistant
 	 */
 	const std::string getMapFileName( const std::string& path, const std::string& className ) const;
 
-	/** @return for a given path, it will return a suggestion for a filename 
-	 * to use when making this layer persistant
-	 */
-	const std::string getMapFileName( const std::string& path ) const;
+        /**
+         * Like getMapFileName(), but allows to override the class name (i.e. not
+         * use the one from the map's class directly). This is meant to be used
+         * for backward compatibility, when map class names change.
+         */
+	const std::string getMapFileName( const std::string& className ) const;
+        
+        /** @return a suggestion for a filename to use when making this layer persistant
+         */
+        const std::string getMapFileName() const;
 
 	/** will return true if an entry for metadata for the given key exists
 	 */
@@ -823,8 +833,7 @@ namespace envire
      */
     class Environment 
     {
-	friend class Serialization;
-	friend class SerializationImpl;
+	friend class FileSerialization;
 	friend class GraphViz;
 
 	/** we track the last id given to an item, for assigning new id's.
@@ -1168,54 +1177,199 @@ namespace envire
             SerializationFactory::addClass( className, &createItem<T> );
         }
     };
-
+    
+    /**
+     * Environment binary item, holds the data of an EnvironmentItem
+     * in binary form. This is used to serialize one single EnvironmentItem.
+     */
+    struct EnvireBinaryItem
+    {
+        long id;
+        std::string className;
+        
+        std::vector<uint8_t> yamlProperties;
+        std::vector<std::string> binaryStreamNames;
+        std::vector< std::vector<uint8_t> > binaryStreams;
+        
+        EnvireBinaryItem() {};
+        EnvireBinaryItem(const std::string &className, const long &id)
+         : id(id), className(className) {};
+    };
+    
+    class YAMLSerializationImpl;
+    
+    /**
+     * Interface Class for the Serialization.
+     * It provides interfaces to read/write yaml data and 
+     * i/ostreams for data in binary form.
+     */
     class Serialization
     {
-	friend class SerializationImpl;
-	class SerializationImpl *impl;
-
-	static const std::string STRUCTURE_FILE;
-
+    protected:
+        YAMLSerializationImpl* yamlSerialization;
     public:
-	Serialization();
-	~Serialization();
+        virtual ~Serialization() {};
+        
+        /**
+         * Writes a key and a value in the a yaml map node.
+         */
+        template <class T> void write(const std::string &key, const T& value);
+        virtual void write(const std::string &key, const std::string &value);
+        virtual void write(const std::string &key, const FrameNode::TransformType &value);
 
-	void serialize(Environment* env, const std::string &path);
-	Environment* unserialize(const std::string &path);
-
-	void setClassName(const std::string &key);
-
-	const std::string getMapPath() const;
-
-	template <class T> void write(const std::string &key, const T& value);
-	void write(const std::string &key, const std::string &value);
-	void write(const std::string &key, const FrameNode::TransformType &value);
-
-	template <class T> void read(const std::string &key, T& value);
+        /**
+         * Reads the value at the key position from a yaml map node.
+         */
+        template <class T> void read(const std::string &key, T& value);
         template <typename T> T read(const std::string& key)
         {
             T value = T();
             read(key, value);
             return value;
         }
-	bool read(const std::string &key, std::string &value);
-	bool read(const std::string &key, FrameNode::TransformType &value);
+        virtual bool read(const std::string &key, std::string &value);
+        virtual bool read(const std::string &key, FrameNode::TransformType &value);
 
-        bool hasKey(std::string const& key) const;
+        /**
+         * @return true if the key is available in the current map node
+         */
+        virtual bool hasKey(std::string const& key) const;
+        
+        /**
+         * @return an istream for a given filename
+         */
+        virtual std::istream& getBinaryInputStream(const std::string &filename) = 0;
+        
+        /**
+         * @return an ostream for a given filename
+         */
+        virtual std::ostream& getBinaryOutputStream(const std::string &filename) = 0;
     };
-
+    
     template <class T> void Serialization::read(const std::string &key, T& value)
     {
-	std::string tmp;
-	if( read( key, tmp ) )
-	    value = boost::lexical_cast<T>(tmp);
+        std::string tmp;
+        if( read( key, tmp ) )
+            value = boost::lexical_cast<T>(tmp);
     }
 
     template <class T> void Serialization::write(const std::string &key, const T& value)
     {
-	write( key, boost::lexical_cast<std::string>(value) );
+        write( key, boost::lexical_cast<std::string>(value) );
     }
-
+    
+    /**
+     * The FileSerialization writes or reads the complete Environment in 
+     * serialized form to or from a given directory.
+     * Variables of the Items will be stored in a editable yaml-file.
+     * The map representation of the items will be stored separately in
+     * binary files.
+     */
+    class FileSerialization : public Serialization
+    {
+    protected:
+        boost::filesystem::path sceneDir;
+        std::vector<std::ifstream*> ifstreams;
+        std::vector<std::ofstream*> ofstreams;
+        
+    public:
+        /* name of the yaml file */
+        static const std::string STRUCTURE_FILE;
+        
+        FileSerialization();
+        ~FileSerialization();
+        
+        /**
+         * Unserializes the Environment from a given directory.
+         * @return the environment
+         */
+        Environment* readFromFile(const std::string &path);
+        
+        /**
+         * Serializes a given Environment to the given directory.
+         * @return true on success
+         */
+        bool writeToFile( Environment* env, const std::string &path );
+        
+        /**
+         * Opens an ifstream for the given filename in the current sceneDir.
+         * The streams will be stored in a vector and closed and deleted later on in 
+         * the methods writeToFile or readFromFile.
+         * @return an istream for a given filename
+         */
+        virtual std::istream& getBinaryInputStream(const std::string &filename);
+        
+        /**
+         * Opens an ofstream for the given filename in the current sceneDir.
+         * The streams will be stored in a vector and closed and deleted later on in 
+         * the methods writeToFile or readFromFile.
+         * @return an istream for a given filename
+         */
+        virtual std::ostream& getBinaryOutputStream(const std::string &filename);
+        
+        /**
+         * Sets the path to the current serialization dir.
+         */
+        void setSceneDir(const std::string dir);
+        
+        /**
+         * @deprecated for backward compatibility
+         * @return the serialization path
+         */
+        virtual const std::string getMapPath() const;
+    };
+    
+    /**
+     * The BinarySerialization stores or extracts one EnvironmentItem 
+     * to or from an EnvireBinaryItem.
+     * The Variables will be stored in yaml form in a vector of bytes.
+     * The map representation of the items will be stored in separate 
+     * vectors of bytes.
+     */
+    class BinarySerialization : public Serialization
+    {
+    protected:
+        std::map<std::string, std::stringstream*> stringstreams;
+        
+    public:
+        BinarySerialization();
+        ~BinarySerialization();
+        
+        /**
+         * Unserializes a EnvironmentItem from a given EnvireBinaryItem.
+         * @return the EnvironmentItem
+         */
+        EnvironmentItem* unserializeBinaryItem(EnvireBinaryItem& bin_item);
+        
+        /**
+         * Serializes a given EnvironmentItem to a given EnvireBinaryItem.
+         * @return true on success
+         */
+        bool serializeBinaryItem(EnvironmentItem* item, EnvireBinaryItem& bin_item);
+        
+        /**
+         * The streams, if for the given filename in the EnvireBinaryItem 
+         * available, are stored in stringstreams and will be deleted later on 
+         * in the methods unserializeBinaryItem or serializeBinaryItem.
+         * @return an istream for a given filename
+         */
+        virtual std::istream& getBinaryInputStream(const std::string &filename);
+        
+        /**
+         * Creates a stringstream for the given filename. The streams will be stored 
+         * in a map[filename] and will be copied to the EnvireBinaryItem and deleted 
+         * later on in the methods unserializeBinaryItem or serializeBinaryItem.
+         * @return an ostream for a given filename
+         */
+        virtual std::ostream& getBinaryOutputStream(const std::string &filename);
+        
+    protected:
+        /**
+         * Deletes all entries of stringstreams.
+         */
+        void cleanUp();
+    };
+   
     template<typename LayerT>
     LayerT Operator::getInput()
     { return getEnvironment()->getInput<LayerT>(this); }

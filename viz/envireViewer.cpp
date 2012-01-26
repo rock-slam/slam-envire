@@ -23,8 +23,7 @@ int main(int argc, char** argv)
     QMainWindow a;
 
     //load environment
-    envire::Serialization so;
-    envire::Environment *env = so.unserialize( std::string(argv[1]) );
+    envire::Environment *env = envire::Environment::unserialize( std::string(argv[1]) );
 
     //create vizkit plugin for showing envire
     vizkit::EnvireVisualization *envViz = new vizkit::EnvireVisualization();    

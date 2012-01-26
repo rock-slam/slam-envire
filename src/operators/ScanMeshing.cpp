@@ -23,25 +23,26 @@ void ScanMeshing::setDefaultConfiguration()
 }
 
 ScanMeshing::ScanMeshing(Serialization& so)
-    : Operator(so)
 {
     setDefaultConfiguration();
-
-    so.setClassName(className);
-    so.read("maxEdgeLength", maxEdgeLength ); 
-    so.read("remissionScaleFactor", maxEdgeLength ); 
-    so.read("minRange", minRange ); 
+    unserialize(so);
 }
 
 void ScanMeshing::serialize(Serialization& so)
 {
     Operator::serialize(so);
-    so.setClassName(className);
     so.write("maxEdgeLength", maxEdgeLength ); 
     so.write("remissionScaleFactor", maxEdgeLength ); 
     so.write("minRange", minRange ); 
 }
 
+void ScanMeshing::unserialize(Serialization& so)
+{
+    Operator::unserialize(so);
+    so.read("maxEdgeLength", maxEdgeLength ); 
+    so.read("remissionScaleFactor", maxEdgeLength ); 
+    so.read("minRange", minRange ); 
+}
 
 void ScanMeshing::addInput( LaserScan* scan ) 
 {

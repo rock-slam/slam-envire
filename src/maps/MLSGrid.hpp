@@ -225,8 +225,8 @@ namespace envire
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
-	void writeMap(const std::string& path);
-	void readMap(const std::string& path);
+	void writeMap(std::ostream& os);
+	void readMap(std::istream& is);
 
         /** Clears the whole map */
 	void clear();

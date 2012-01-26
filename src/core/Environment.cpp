@@ -9,6 +9,8 @@
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <iostream>
 
@@ -64,16 +66,19 @@ Environment* EnvironmentItem::getEnvironment() const
 EnvironmentItem::EnvironmentItem(Serialization &so)
     : ref_count(0)
 {
-    so.setClassName(className);
-    so.read( "id", unique_id );
-    so.read( "label", label );
+    unserialize(so);
 }
 
 void EnvironmentItem::serialize(Serialization &so)
 {
-    so.setClassName(className);
     so.write( "id", unique_id );
     so.write( "label", label );
+}
+
+void EnvironmentItem::unserialize(Serialization &so)
+{
+    so.read( "id", unique_id );
+    so.read( "label", label );
 }
 
 void EnvironmentItem::itemModified()
@@ -643,13 +648,29 @@ TransformWithUncertainty Environment::relativeTransformWithUncertainty(const Car
 
 void Environment::serialize(std::string const& path)
 {
-    Serialization serializer;
-    serializer.serialize(this, path);
+    FileSerialization serialization;
+    boost::filesystem::path sceneDir( path ); 
+    boost::filesystem::path scene( sceneDir / serialization.STRUCTURE_FILE );
+
+    boost::filesystem::create_directory( path );
+
+    serialization.setSceneDir(sceneDir.string());
+    serialization.writeToFile( this, scene.string() );
 }
 
 Environment* Environment::unserialize(std::string const& path)
 {
-    Serialization serializer;
-    return serializer.unserialize(path);
+    FileSerialization serialization;
+    boost::filesystem::path sceneDir( path ); 
+    boost::filesystem::path scene( sceneDir / serialization.STRUCTURE_FILE );
+
+    if( !boost::filesystem::is_regular( scene ) )
+    {
+        std::cerr << "failed to open " << scene << std::endl;
+        throw std::runtime_error("envire: could not open " + scene.string());
+    }
+
+    serialization.setSceneDir(sceneDir.string());
+    return serialization.readFromFile( scene.string() );
 }
 

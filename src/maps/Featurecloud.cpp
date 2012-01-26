@@ -9,9 +9,9 @@ Featurecloud::Featurecloud()
 }
 
 Featurecloud::Featurecloud(Serialization& so)
-    : Pointcloud(so), descriptorSize(0)
+    : descriptorSize(0)
 {
-    // TODO read map file
+    unserialize(so);
 }
 
 void Featurecloud::serialize(Serialization& so)
@@ -21,6 +21,12 @@ void Featurecloud::serialize(Serialization& so)
     // TODO write map file
 }
 
+void Featurecloud::unserialize(Serialization& so)
+{
+    Pointcloud::unserialize(so);
+    
+    // TODO read map file
+}
 
 void Featurecloud::clear() 
 {

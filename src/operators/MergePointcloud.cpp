@@ -19,10 +19,10 @@ MergePointcloud::MergePointcloud() {
 
 }
 
-MergePointcloud::MergePointcloud(Serialization& so):Operator(so){
-    so.setClassName(className);
+MergePointcloud::MergePointcloud(Serialization& so)
+{
+    unserialize(so);
 }
-
 
 MergePointcloud::~MergePointcloud() {
     // TODO Auto-generated destructor stub
@@ -31,7 +31,11 @@ MergePointcloud::~MergePointcloud() {
 
 void MergePointcloud::serialize(Serialization& so){
     Operator::serialize(so);
-    so.setClassName(className);
+}
+
+void MergePointcloud::unserialize(Serialization& so)
+{
+    Operator::unserialize(so);
 }
 
 void MergePointcloud::addInput(Pointcloud* pc){

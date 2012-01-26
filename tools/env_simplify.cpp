@@ -25,8 +25,7 @@ int main( int argc, char* argv[] )
 	cell_size = boost::lexical_cast<double>( argv[3] );
     std::cout << "using cell size: " << cell_size << std::endl;
 
-    Serialization so;
-    boost::scoped_ptr<Environment> env(so.unserialize( argv[1] ));
+    boost::scoped_ptr<Environment> env(Environment::unserialize( argv[1] ));
     
     // update scanmeshing ops to create normals for all cases 
     std::vector<envire::ScanMeshing*> ops = env->getItems<envire::ScanMeshing>();

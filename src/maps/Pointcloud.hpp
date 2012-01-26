@@ -57,12 +57,13 @@ namespace envire {
 	Pointcloud(Serialization& so, bool handleMap = true);
 	void serialize(Serialization& so);
 	void serialize(Serialization& so, bool handleMap = true);
+        void unserialize(Serialization& so, bool handleMap = true);
 
-	bool writeText(const std::string& path);
-	bool readText(const std::string& path);
+	bool writeText(std::ostream& os);
+	bool readText(std::istream& is);
 
-	bool writePly(const std::string& path);
-	bool readPly(const std::string& path);
+	bool writePly(const std::string& filename, std::ostream& os);
+	bool readPly(const std::string& filename, std::istream& is);
 
 	Extents getExtents() const;
     };

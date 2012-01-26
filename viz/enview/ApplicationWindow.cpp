@@ -129,8 +129,7 @@ void ApplicationWindow::loadEnvironment()
 	    QFileDialog::ShowDirsOnly);
 
     if(fileName != NULL) {
-	envire::Serialization so;
-	envire::Environment *env = so.unserialize( fileName.toStdString() );
+	envire::Environment *env = envire::Environment::unserialize( fileName.toStdString() );
 
 	setEnvironment(env);
     }
@@ -141,10 +140,7 @@ void ApplicationWindow::saveEnvironment()
     if(envFileName.empty())
 	saveAsEnvironment();
 
-    envire::Serialization so;
-    so.serialize( 
-	env.get(),
-	envFileName );
+    env->serialize( envFileName );
 }
 
 void ApplicationWindow::saveAsEnvironment()

@@ -27,20 +27,24 @@ FrameNode::FrameNode(const TransformType& t)
 }
 
 FrameNode::FrameNode(Serialization &so)
-    : EnvironmentItem( so )
 {
-    so.setClassName(className);
-    Eigen::Affine3d t;
-    so.read("transform", t );
-    frame.setTransform( t );
+    unserialize(so);
 }
 
 void FrameNode::serialize(Serialization &so)
 {
     EnvironmentItem::serialize( so );
 
-    so.setClassName(className);
     so.write("transform", frame.getTransform() );
+}
+
+void FrameNode::unserialize(Serialization &so)
+{
+    EnvironmentItem::unserialize(so);
+    
+    Eigen::Affine3d t;
+    so.read("transform", t );
+    frame.setTransform( t );
 }
 
 bool FrameNode::isRoot() const

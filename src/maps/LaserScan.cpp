@@ -16,19 +16,23 @@ LaserScan::LaserScan()
 {
 }
 
-LaserScan::LaserScan(Serialization& so) :
-    Map<3>(so)
+LaserScan::LaserScan(Serialization& so)
 {
-    so.setClassName(className);
-    readScan( getMapFileName(so.getMapPath()) );
+    unserialize(so);
 }
 
 void LaserScan::serialize(Serialization& so)
 {
     CartesianMap::serialize(so);
 
-    so.setClassName(className);
-    writeScan( getMapFileName(so.getMapPath()) );
+    writeScan( so.getBinaryOutputStream(getMapFileName()) );
+}
+
+void LaserScan::unserialize(Serialization& so)
+{
+    CartesianMap::unserialize(so);
+    
+    readScan( so.getBinaryInputStream(getMapFileName()) );
 }
 
 void LaserScan::addScanLine( double tilt_angle, const base::samples::LaserScan& scan )
@@ -70,14 +74,22 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
 
     FrameNode::TransformType transform( Eigen::Matrix4d::Identity() );
 
+    std::ifstream data(file.c_str());
+    if( data.fail() )  
+    {
+        throw std::runtime_error("Could not open file '" + file + "'.");
+    }
+    
     try {
-	scan->parseScan( file, transform );
+	scan->parseScan( data, transform );
     }
     catch( ... )
     {
 	delete scan;
 	throw;
     }
+    
+    data.close();
 
     env->attachItem( scan );
     
@@ -90,21 +102,15 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
     return scan;
 }
 
-const std::string LaserScan::getMapFileName(const std::string& path) const
+const std::string LaserScan::getMapFileName() const
 {
-    return Layer::getMapFileName(path) + ".scan";
+    return Layer::getMapFileName() + ".scan";
 }
 
-bool LaserScan::parseScan( const std::string& file, FrameNode::TransformType& transform ) {
-    std::ifstream data(file.c_str());
-    if( data.fail() )  
-    {
-        throw std::runtime_error("Could not open file '" + file + "'.");
-    }
-
+bool LaserScan::parseScan( std::istream& is, FrameNode::TransformType& transform ) {
     std::string line;
-    while( !data.eof() ) {
-        getline( data, line );
+    while( !is.eof() ) {
+        getline( is, line );
         std::istringstream iline( line );
 
         std::string key;
@@ -180,55 +186,45 @@ bool LaserScan::parseScan( const std::string& file, FrameNode::TransformType& tr
         }
     }
 
-    data.close();
-
     return true;
 }
 
 
-bool LaserScan::readScan( const std::string& file ) 
+bool LaserScan::readScan( std::istream& is ) 
 {
     FrameNode::TransformType t;
-    return parseScan( file, t );
+    return parseScan( is, t );
 }
 
-bool LaserScan::writeScan( const std::string& file )
+bool LaserScan::writeScan( std::ostream& os )
 {
-    std::ofstream data(file.c_str());
-    if( data.fail() )  
-    {
-        throw std::runtime_error("Could not open file '" + file + "' for writing.");
-    }
-
-    data << "delta_psi " << delta_psi << endl;
-    data << "origin_psi " << origin_psi << endl;
-    data << "origin_phi " << origin_phi << endl;
-    data << "center_offset " 
+    os << "delta_psi " << delta_psi << endl;
+    os << "origin_psi " << origin_psi << endl;
+    os << "origin_phi " << origin_phi << endl;
+    os << "center_offset " 
 	<< center_offset.x() << " " 
 	<< center_offset.y() << " " 
 	<< center_offset.z() << endl;
 
     for( vector<scanline_t>::iterator it=lines.begin();it!=lines.end();it++)
     {
-	data << "line " << (*it).delta_phi;
+	os << "line " << (*it).delta_phi;
 	for( vector<unsigned int>::iterator pi=(*it).ranges.begin();pi!=(*it).ranges.end();pi++)
 	{
-	    data << " " << (*pi);
+	    os << " " << (*pi);
 	}
-	data << endl;
+	os << endl;
 
 	if( (*it).ranges.size() == (*it).remissions.size() )
 	{
-	    data << "remission " << (*it).delta_phi;
+	    os << "remission " << (*it).delta_phi;
 	    for( vector<unsigned int>::iterator pi=(*it).remissions.begin();pi!=(*it).remissions.end();pi++)
 	    {
-		data << " " << (*pi);
+		os << " " << (*pi);
 	    }
-	    data << endl;
+	    os << endl;
 	}
     }	
-
-    data.close();
 
     return true;
 }

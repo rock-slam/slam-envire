@@ -163,10 +163,12 @@ namespace envire
 	//saves the GridData with a specific key to a GTiff 
 	void writeGridData(const std::string &key,const std::string& path);
         void writeGridData(const std::vector<std::string> &keys,const std::string& path);
+        void writeGridData(const std::string &key, std::ostream& os);
 	
 	//reads the GridData with a specific key 
 	void readGridData(const std::string &key,const std::string& path,int base_band = 1);
 	void readGridData(const std::vector<std::string> &keys,const std::string& path,int base_band = 1);
+        void readGridData(const std::string &key, std::istream& is);
 
         void copyBandFrom(GridBase const& _source, std::string const& source_band, std::string const& _target_band = "")
         {
@@ -234,7 +236,6 @@ namespace envire
     {
     }
     template<class T>Grid<T>::Grid(Serialization& so)
-      : GridBase(so)
     {
 	unserialize(so);
     }
@@ -244,8 +245,7 @@ namespace envire
     }
     template<class T>void Grid<T>::unserialize(Serialization& so)
     {
-	so.setClassName(getClassName());
-
+        GridBase::unserialize(so);
         // The serialization strategy changed to save the band names in the
         // scene file instead of relying on having them defined in a static
         // array
@@ -253,26 +253,37 @@ namespace envire
         // In the new strategy, the number of bands is saved in a map_count
         // field. In the old one, that key does not exist. Discriminate, and
         // load old maps the old way
+        FileSerialization* fso = dynamic_cast<FileSerialization*>(&so);
         if (so.hasKey("map_count"))
         {
             int count = so.read<int>("map_count");
-            std::string base_path = getMapFileName(so.getMapPath());
             for (int i = 0; i < count; ++i)
             {
                 std::string layer_name = so.read<std::string>(boost::lexical_cast<std::string>(i));
-                readGridData(layer_name,getFullPath(base_path,layer_name));
+                if(fso)
+                    readGridData(layer_name, getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), layer_name));
+                else
+                    readGridData(layer_name, so.getBinaryInputStream(getFullPath(getMapFileName(), layer_name)));
             }
         }
         else
         {
-            readMap( getMapFileName(so.getMapPath())); 
+            if(fso)
+            {
+                readMap(fso->getMapPath()); 
+            }
+            else
+            {
+                std::cerr << "can't unserialize: missing key 'map_count' in yaml data." << std::endl;
+            }
         }
     }
     template<class T>void Grid<T>::serialize(Serialization& so)
     {
-	CartesianMap::serialize(so);
-	so.setClassName(getClassName());
-        std::string base_path = getMapFileName(so.getMapPath());
+	GridBase::serialize(so);
+        
+        FileSerialization* fso = dynamic_cast<FileSerialization*>(&so);
+        
         int map_index = 0;
         for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)
         {
@@ -280,7 +291,10 @@ namespace envire
             {
                 so.write(boost::lexical_cast<std::string>(map_index), it->first);
                 map_index++;
-                writeGridData(it->first,getFullPath(base_path,it->first));
+                if(fso)
+                    writeGridData(it->first, getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), it->first));
+                else
+                    writeGridData(it->first, so.getBinaryOutputStream(getFullPath(getMapFileName(), it->first)));
             }
         }
         so.write("map_count", map_index);
@@ -317,6 +331,18 @@ namespace envire
         frame.time = base::Time::now();
     }
 
+    template<class T>void Grid<T>::writeGridData(const std::string &key, std::ostream& os)
+    {
+        ArrayType &data = getGridData(key);
+        os.write(reinterpret_cast<const char*>(data.data()), sizeof(T) * data.num_elements());
+    }
+    
+    template<class T>void Grid<T>::readGridData(const std::string &key, std::istream& is)
+    {
+        ArrayType &data = getGridData(key);
+        is.read(reinterpret_cast<char*>(data.data()), sizeof(T) * data.num_elements());
+    }
+
     template<class T>void Grid<T>::writeGridData(const std::string &key,const std::string& path)
     {
 	std::vector<std::string> string_vector;
@@ -336,7 +362,7 @@ namespace envire
 	poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
 	if( poDriver == NULL )
 	    throw std::runtime_error("GDALDriver not found.");
-	
+        
         GDALDataType data_type = getGDALDataTypeOfArray();
 	poDstDS = poDriver->Create( path.c_str(), width, height, keys.size(), data_type, 
 		papszOptions );
