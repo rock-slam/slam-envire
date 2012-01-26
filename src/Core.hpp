@@ -19,12 +19,12 @@
 #include <base/samples/rigid_body_state.h>
 
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
-const std::string& _classname::className = "envire::" #_classname; \
+const std::string _classname::className = "envire::" #_classname; \
 static envire::SerializationPlugin<_classname> _classname ## factory;
 
 #define ENVIRONMENT_ITEM( _classname ) \
 	public:\
-	static const std::string& className; \
+	static const std::string className; \
 	const std::string& getClassName() const { return className; } \
 	void set( EnvironmentItem* other ) \
 	{\
