@@ -5,7 +5,11 @@ rock_executable(env_icp env_icp.cpp
 rock_executable(env_mls env_mls.cpp
     DEPS envire)
 
+rock_executable(env_create env_create.cpp
+    DEPS envire)
 rock_executable(env_update env_update.cpp
+    DEPS envire)
+rock_executable(env_delete_item env_delete_item.cpp
     DEPS envire)
 
 rock_executable(env_add_grid env_add_grid.cpp
