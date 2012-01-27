@@ -135,7 +135,6 @@ namespace envire
 	    return getData<ArrayType>(key);
 	};
 	
-	virtual const std::string& getClassName() const {return className;};
         /** Returns the list of bands defined on this grid
          */
 	virtual const std::vector<std::string>& getBands() const {return bands;};
@@ -166,12 +165,6 @@ namespace envire
 	    return (x >= 0) && (x < cellSizeX) && (y >= 0) && (y < cellSizeY); 
 	}
 	
-	size_t getWidth() const { return width; };
-	size_t getHeight() const { return height; };
-
-	double getScaleX() const { return scalex; };
-	double getScaleY() const { return scaley; };
-
 	unsigned int getGridDepth(){return sizeof(T);};	//returns the depth per grid element
 
         //converts the grid to base/samples/frame/Frame 
