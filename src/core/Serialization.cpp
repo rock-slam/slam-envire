@@ -259,7 +259,7 @@ std::istream& FileSerialization::getBinaryInputStream(const std::string &filenam
     std::ifstream *is = new std::ifstream(fileDir.string().c_str());
     if( !is->is_open() || is->fail() )
     {
-        throw std::runtime_error("could not open file " + filename);
+        throw NoSuchBinaryStream("could not open file " + filename);
     }
     ifstreams.push_back(is);
     return *is;
@@ -574,7 +574,7 @@ BinarySerialization::~BinarySerialization()
 std::istream& BinarySerialization::getBinaryInputStream(const std::string &filename)
 {
     if(stringstreams[filename] == 0)
-        throw std::runtime_error("there is no binary input stream called " + filename);
+        throw NoSuchBinaryStream("there is no binary input stream called " + filename);
     return *stringstreams[filename];
 }
 

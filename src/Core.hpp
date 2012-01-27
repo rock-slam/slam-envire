@@ -1234,6 +1234,17 @@ namespace envire
          * @return true if the key is available in the current map node
          */
         virtual bool hasKey(std::string const& key) const;
+
+        /**
+         * Exception thrown when getBinaryInputStream is called with stream
+         * names that do not exist
+         */
+        class NoSuchBinaryStream : public std::runtime_error
+        {
+        public:
+            NoSuchBinaryStream(std::string const& msg)
+                : std::runtime_error(msg) {}
+        };
         
         /**
          * @return an istream for a given filename
