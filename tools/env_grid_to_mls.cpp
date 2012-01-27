@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     env->attachItem(op.get());
     op->setInput(input.get(), grid_band_name);
     op->setOutput(output.get());
-    env->updateOperators();
+    op->updateAll();
     env->serialize(env_path);
     return 0;
 }
