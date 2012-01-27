@@ -18,6 +18,7 @@ MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scale
     , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
     , hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
 {
+    clear();
 }
 
 void MLSGrid::clear()
@@ -42,6 +43,7 @@ MLSGrid::MLSGrid(const MLSGrid& other)
     , gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount )
     , hasCellColor_( other.hasCellColor_), mem_pool( sizeof( SurfacePatchItem ) )
 {
+    clear();
     for(size_t xi=0;xi<cellSizeX;xi++)
     {
 	for(size_t yi=0;yi<cellSizeY;yi++)
