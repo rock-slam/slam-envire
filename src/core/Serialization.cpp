@@ -158,6 +158,14 @@ std::string YAMLSerializationImpl::getScalar( int node_index )
 
 //// Serialization ////
 
+Serialization::Serialization()
+    : yamlSerialization(new YAMLSerializationImpl) {}
+
+Serialization::~Serialization()
+{
+    delete yamlSerialization;
+}
+
 void Serialization::write(const std::string& key, const std::string& value)
 {
     yamlSerialization->addNodeToMap( key, yamlSerialization->addScalar(value) );
@@ -230,13 +238,10 @@ const std::string FileSerialization::STRUCTURE_FILE = "scene.yml";
 
 FileSerialization::FileSerialization()
 {
-    yamlSerialization = new YAMLSerializationImpl();
 }
 
 FileSerialization::~FileSerialization()
 {
-    if(yamlSerialization)
-        delete yamlSerialization;
 }
 
 const std::string FileSerialization::getMapPath() const
@@ -558,13 +563,10 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 
 BinarySerialization::BinarySerialization()
 {
-    yamlSerialization = new YAMLSerializationImpl();
 }
 
 BinarySerialization::~BinarySerialization()
 {
-    if(yamlSerialization)
-        delete yamlSerialization;
 }
 
 std::istream& BinarySerialization::getBinaryInputStream(const std::string &filename)
