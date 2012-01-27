@@ -189,3 +189,26 @@ void GridBase::copyBandFrom(GridBase const& source, std::string const& source_ba
     throw std::runtime_error("copyBandFrom is not implemented for this type of grid");
 }
 
+GridBase::Ptr GridBase::create(std::string const& type_name,
+        size_t cellSizeX, size_t cellSizeY,
+        double scale_x, double scale_y,
+        double offset_x, double offset_y)
+{
+    Serialization so;
+    so.begin();
+    so.write("class", type_name);
+    so.write("id", -1);
+    so.write("label", "");
+    so.write("immutable", false);
+    so.write("cellSizeX", cellSizeX);
+    so.write("cellSizeY", cellSizeY);
+    so.write("scalex", scale_x);
+    so.write("scaley", scale_y);
+    so.write("offsetx", offset_x);
+    so.write("offsety", offset_y);
+    so.write("map_count", 0);
+    EnvironmentItem::Ptr ptr = SerializationFactory::createObject(type_name, so);
+    so.end();
+    return boost::dynamic_pointer_cast<GridBase>(ptr);
+}
+

@@ -161,6 +161,13 @@ namespace envire
          * type }
          */
         virtual void copyBandFrom(GridBase const& source, std::string const& band_name, std::string const& target_name = "");
+
+        /** Creates a new grid of the specified type and parameters
+         */
+        static Ptr create(std::string const& type_name,
+                size_t cellSizeX, size_t cellSizeY,
+                double scalex = 1, double scaley = 1,
+                double offsetx = 0, double offsety = 0);
     };
 }
 

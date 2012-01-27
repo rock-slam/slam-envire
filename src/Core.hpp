@@ -1208,7 +1208,18 @@ namespace envire
     protected:
         YAMLSerializationImpl* yamlSerialization;
     public:
-        virtual ~Serialization() {};
+        Serialization();
+        virtual ~Serialization();
+
+        /** Prepare this serialization object to accept calls to write() and
+         * read() without a backing serialization system
+         */
+        virtual void begin();
+
+        /** Must be called after begin() when you are done with the
+         * serialization object
+         */
+        virtual void end();
         
         /**
          * Writes a key and a value in the a yaml map node.
@@ -1249,12 +1260,12 @@ namespace envire
         /**
          * @return an istream for a given filename
          */
-        virtual std::istream& getBinaryInputStream(const std::string &filename) = 0;
+        virtual std::istream& getBinaryInputStream(const std::string &filename);
         
         /**
          * @return an ostream for a given filename
          */
-        virtual std::ostream& getBinaryOutputStream(const std::string &filename) = 0;
+        virtual std::ostream& getBinaryOutputStream(const std::string &filename);
     };
     
     template <class T> bool Serialization::read(const std::string &key, T& value)

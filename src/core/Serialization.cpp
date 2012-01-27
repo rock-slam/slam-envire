@@ -186,6 +186,19 @@ void Serialization::write(const std::string& key, const FrameNode::TransformType
     }
 }
 
+void Serialization::begin()
+{
+    yaml_document_initialize(&yamlSerialization->document, NULL, NULL, NULL, 1, 1);
+    int obj_id = yaml_document_add_sequence(&yamlSerialization->document, NULL, YAML_ANY_SEQUENCE_STYLE);
+    yamlSerialization->current_node = yamlSerialization->addMapNode();
+    yamlSerialization->addToSequence( obj_id, yamlSerialization->current_node );
+}
+
+void Serialization::end()
+{
+    yaml_document_delete(&yamlSerialization->document);
+}
+
 bool Serialization::hasKey(const std::string& key) const
 {
     int node_index = yamlSerialization->findNodeInMap( key );
@@ -231,6 +244,15 @@ bool Serialization::read(const std::string& key, FrameNode::TransformType &value
     return true;
 }
 
+std::istream& Serialization::getBinaryInputStream(const std::string &filename)
+{
+    throw NoSuchBinaryStream("trying to access a binary input stream on a plain Serialization object");
+}
+
+std::ostream& Serialization::getBinaryOutputStream(const std::string &filename)
+{
+    throw NoSuchBinaryStream("trying to access a binary output stream on a plain Serialization object");
+}
 
 //// FileSerialization ////
 
