@@ -1,6 +1,7 @@
 #include <envire/Core.hpp>
 #include <envire/maps/GridBase.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include <iostream>
 
@@ -33,7 +34,9 @@ int main(int argc, char* argv[])
     std::string target_band(argv[3]);
 
     boost::scoped_ptr<envire::Environment> env(Environment::unserialize(env_path));
-    envire::GridBase::Ptr input(GridBase::readGridFromGdal(grid_file, target_band));
+    envire::GridBase::Ptr input;
+    FrameNode::TransformType transform;
+    boost::tie(input, transform) = GridBase::readGridFromGdal(grid_file, target_band);
 
     int frame_id = -1, map_id = -1;
     if (argc > 4)
@@ -47,8 +50,15 @@ int main(int argc, char* argv[])
         else if (mode == "-map")
             map_id = boost::lexical_cast<int>(argv[5]);
     }
-    else
+    else if (transform.isApprox(FrameNode::TransformType::Identity()))
         frame_id = env->getRootNode()->getUniqueId();
+    else
+    {
+        FrameNode::Ptr node = new FrameNode(transform);
+        env->attachItem(node.get());
+        env->getRootNode()->addChild(node.get());
+        frame_id = node->getUniqueId();
+    }
 
     if (frame_id != -1)
     {

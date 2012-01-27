@@ -145,7 +145,7 @@ static GridBase::Ptr readGridFromGdalHelper(std::string const& path, std::string
     return result;
 }
 
-GridBase::Ptr GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
+std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
 {
     GDALDataset  *poDataset;
     GDALAllRegister();
@@ -163,25 +163,45 @@ GridBase::Ptr GridBase::readGridFromGdal(std::string const& path, std::string co
     }
 
     poBand = poDataset->GetRasterBand(band);
+
+    double adfGeoTransform[6];
+    poDataset->GetGeoTransform(adfGeoTransform);  
+    double offsetx = adfGeoTransform[0];
+    double offsety = adfGeoTransform[3];
+    double theta = atan2(adfGeoTransform[4], adfGeoTransform[1]);
+    FrameNode::TransformType transform =
+        Eigen::Translation<double, 3>(offsetx, offsety, 0) *
+        Eigen::AngleAxisd(theta, Eigen::Vector3d::UnitZ());
+
+    GridBase::Ptr map;
     switch(poBand->GetRasterDataType())
     {
     case  GDT_Byte:
-        return readGridFromGdalHelper<uint8_t>(path, band_name, band);
+        map =  readGridFromGdalHelper<uint8_t>(path, band_name, band);
+        break;
     case GDT_Int16:
-        return readGridFromGdalHelper<int16_t>(path, band_name, band);
+        map =  readGridFromGdalHelper<int16_t>(path, band_name, band);
+        break;
     case GDT_UInt16:
-        return readGridFromGdalHelper<uint16_t>(path, band_name, band);
+        map =  readGridFromGdalHelper<uint16_t>(path, band_name, band);
+        break;
     case GDT_Int32:
-        return readGridFromGdalHelper<int32_t>(path, band_name, band);
+        map =  readGridFromGdalHelper<int32_t>(path, band_name, band);
+        break;
     case GDT_UInt32:
-        return readGridFromGdalHelper<uint32_t>(path, band_name, band);
+        map =  readGridFromGdalHelper<uint32_t>(path, band_name, band);
+        break;
     case GDT_Float32:
-        return readGridFromGdalHelper<float>(path, band_name, band);
+        map =  readGridFromGdalHelper<float>(path, band_name, band);
+        break;
     case GDT_Float64:
-        return readGridFromGdalHelper<double>(path, band_name, band);
+        map =  readGridFromGdalHelper<double>(path, band_name, band);
+        break;
     default:
         throw std::runtime_error("enview::Grid<T>: GDT type is not supported.");  
     }
+
+    return make_pair(map, transform);
 }
 
 void GridBase::copyBandFrom(GridBase const& source, std::string const& source_band, std::string const& _target_band)

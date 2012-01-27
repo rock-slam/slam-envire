@@ -151,7 +151,7 @@ namespace envire
          * @arg band_name the band name in the created Grid instance
          * @arg band the band index in the GDAL file
          */
-        static Ptr readGridFromGdal(std::string const& path, std::string const& band_name, int band = 1);
+        static std::pair<Ptr, FrameNode::TransformType> readGridFromGdal(std::string const& path, std::string const& band_name, int band = 1);
 
         /** Copies the specified band in this grid map
          *
