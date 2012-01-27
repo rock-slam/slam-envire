@@ -124,8 +124,12 @@ void MLSGrid::unserialize(Serialization& so)
 	    readMap( so.getBinaryInputStream(getMapFileName("envire::MultiLevelSurfaceGrid") + ".mls"));
 	    return;
 	}
+        catch(Serialization::NoSuchBinaryStream)
+        { 
+            // Assume that serialization is being used as a factory
+            return;
+        }
         catch(...) { throw; }
-	throw;
     }
 }
 
