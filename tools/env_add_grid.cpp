@@ -9,9 +9,9 @@ using namespace envire;
 
 void usage(int exit_code = 0)
 {
-    std::cerr << "usage: env_add_grid <env_path> <grid_file> <band_name> -frame <frame_id>\n"
+    std::cerr << "usage: env_add_grid <env_path> <grid_file> <band_name> [map_type] -frame <frame_id>\n"
         << "       env_add_grid <env_path> <grid_file> <band_name> -map <map_id>\n"
-        << "       env_add_grid <env_path> <grid_file> <band_name>\n"
+        << "       env_add_grid <env_path> <grid_file> <band_name> [map_type]\n"
         << "  adds the specified file (readable by GDAL as a raster band) to the environment\n"
         << "  and saves the result.\n"
         << "\n"
@@ -39,16 +39,29 @@ int main(int argc, char* argv[])
     boost::tie(input, transform) = GridBase::readGridFromGdal(grid_file, target_band);
 
     int frame_id = -1, map_id = -1;
+    std::string map_type;
     if (argc > 4)
     {
-        if (argc != 6)
-            usage();
-
         std::string mode = argv[4];
-        if (mode ==  "-frame")
-            frame_id = boost::lexical_cast<int>(argv[5]);
-        else if (mode == "-map")
-            map_id = boost::lexical_cast<int>(argv[5]);
+        int next_idx = 5;
+        if (mode != "-frame" && mode != "-map")
+        {
+            // assume this is a map type
+            map_type = mode;
+            next_idx++;
+        }
+
+        if (argc > next_idx)
+        {
+            if (argc != next_idx + 2)
+                usage(1);
+
+            std::string mode = argv[next_idx];
+            if (mode ==  "-frame")
+                frame_id = boost::lexical_cast<int>(argv[next_idx + 1]);
+            else if (mode == "-map")
+                map_id = boost::lexical_cast<int>(argv[next_idx + 1]);
+        }
     }
     else if (transform.isApprox(FrameNode::TransformType::Identity()))
         frame_id = env->getRootNode()->getUniqueId();
@@ -58,6 +71,27 @@ int main(int argc, char* argv[])
         env->attachItem(node.get());
         env->getRootNode()->addChild(node.get());
         frame_id = node->getUniqueId();
+    }
+
+    if (!map_type.empty())
+    {
+        if (frame_id == -1)
+        {
+            std::cerr << "both map type and -map have been specified" << std::endl;
+            usage(1);
+        }
+
+        GridBase::Ptr target = GridBase::create(map_type,
+                input->getWidth(), input->getHeight(),
+                input->getScaleX(), input->getScaleY(),
+                input->getOffsetX(), input->getOffsetY());
+        env->attachItem(target.get());
+
+        envire::FrameNode::Ptr frame = env->getItem<envire::FrameNode>(frame_id);
+        target->setFrameNode(frame.get());
+
+        frame_id = -1;
+        map_id = target->getUniqueId();
     }
 
     if (frame_id != -1)
