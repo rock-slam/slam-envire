@@ -20,15 +20,6 @@ void usage(int exit_code = 0)
         << "  if the -map option is given, the grid parameters (size, scale, offsets) are copied from it\n";
 
     std::cerr << "available grid types: ";
-    GridFactoryBase** factory = factories;
-    while (*factory && (*factory)->name != grid_type)
-    {
-        if (factory != factories)
-            std::cerr << ", ";
-        std::cerr << factory->name;
-        ++factory;
-    }
-    std::cerr << std::endl;
     exit(exit_code);
 }
 
@@ -40,22 +31,7 @@ int main(int argc, char* argv[])
     std::string env_path(argv[1]);
     std::string grid_type(argv[2]);
 
-    GridFactoryBase** factory = factories;
-    while (*factory && (*factory)->name != grid_type)
-    {
-        ++factory;
-    }
-
-    if (! *factory)
-    {
-        std::cerr << "unknown grid type " << grid_type << ". Known types are:\n";
-        for (GridFactoryBase** factory = factories; *factory; ++factory)
-            std::cerr << "  " << (*factory)->name << std::endl;
-        exit(1);
-    }
-
-    Serialization so;
-    boost::scoped_ptr<Environment> env(so.unserialize(env_path));
+    boost::scoped_ptr<Environment> env(Environment::unserialize(env_path));
 
     double scale_x = 1, scale_y = 1;
     int width, height;
@@ -136,10 +112,12 @@ int main(int argc, char* argv[])
         << "  Offset: " << offset_x << "x" << offset_y << "\n"
         << "  Frame ID: " << base_frame->getUniqueId() << std::endl;
 
-    GridBase* map = (*factory)->create(width, height, scale_x, scale_y, offset_x, offset_y);
-    env->setFrameNode(map, base_frame);
+    GridBase::Ptr grid = GridBase::create(grid_type,
+            width, height, scale_x, scale_y, offset_x, offset_y);
+    env->attachItem(grid.get());
+    env->setFrameNode(grid.get(), base_frame);
     env->serialize(env_path);
-    std::cout << std::endl << map->getUniqueId() << std::endl;
+    std::cout << std::endl << grid->getUniqueId() << std::endl;
     return 0;
 }
 
