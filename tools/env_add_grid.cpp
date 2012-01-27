@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
     }
 
     env->serialize(env_path);
-    std::cout << std::endl << map_id << std::endl;
+    std::cout << map_id << std::endl;
     return 0;
 }
 

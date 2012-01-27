@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     env->attachItem(grid.get());
     env->setFrameNode(grid.get(), base_frame);
     env->serialize(env_path);
-    std::cout << std::endl << grid->getUniqueId() << std::endl;
+    std::cout << grid->getUniqueId() << std::endl;
     return 0;
 }
 
