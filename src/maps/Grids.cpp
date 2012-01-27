@@ -57,10 +57,10 @@ void DistanceGrid::copyFromDistanceImage( const base::samples::DistanceImage& di
 	getGridData( envire::DistanceGrid::DISTANCE );
 
     // copy the content not very performant but should do for now.
-    for( size_t x = 0; x<width; x++ )
+    for( size_t y = 0; y<cellSizeY; y++ )
     {
-	for( size_t y = 0; y<height; y++ )
-	{
+        for( size_t x = 0; x<cellSizeX; x++ )
+        {
 	    distance[y][x] = dimage.data[y*cellSizeX+x];
 	}
     }
