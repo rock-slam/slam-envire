@@ -23,10 +23,7 @@ namespace envire
 {
     class YAMLSerializationImpl
     {
-    friend class FileSerialization;
-    friend class BinarySerialization;
-        
-    protected:
+    public:
         yaml_parser_t parser;
         yaml_emitter_t emitter;
         yaml_document_t document;
@@ -36,7 +33,6 @@ namespace envire
         vector<yaml_char_t*> buffers;
         
         
-    public:
         YAMLSerializationImpl();
         
         yaml_node_t* getNode(int index);
