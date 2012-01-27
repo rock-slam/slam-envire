@@ -1220,7 +1220,7 @@ namespace envire
         /**
          * Reads the value at the key position from a yaml map node.
          */
-        template <class T> void read(const std::string &key, T& value);
+        template <class T> bool read(const std::string &key, T& value);
         template <typename T> T read(const std::string& key)
         {
             T value = T();
@@ -1246,11 +1246,15 @@ namespace envire
         virtual std::ostream& getBinaryOutputStream(const std::string &filename) = 0;
     };
     
-    template <class T> void Serialization::read(const std::string &key, T& value)
+    template <class T> bool Serialization::read(const std::string &key, T& value)
     {
         std::string tmp;
         if( read( key, tmp ) )
+        {
             value = boost::lexical_cast<T>(tmp);
+            return true;
+        }
+        return false;
     }
 
     template <class T> void Serialization::write(const std::string &key, const T& value)
