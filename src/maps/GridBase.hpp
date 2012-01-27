@@ -5,6 +5,17 @@
 
 namespace envire 
 {
+    /** Base class for all maps that function as regular grids
+     *
+     * This map offers a common interface for all maps that are regular grids
+     *
+     * The create() static method can be used as a factory method for all
+     * subclasses that are registered on the serialization system
+     *
+     * A generic implementation as a template is Grid<T>, declared in Grid.hpp.
+     * Specialized implementation for common types of maps can be found in
+     * Grids.hpp (such as: ElevationMap, OccupancyGrid, ...)
+     */
     class GridBase : public Map<2> 
     {
     public:
@@ -108,14 +119,29 @@ namespace envire
          */
         size_t getCellSizeY() const { return cellSizeY; }
 
+        /** Returns the world size of a cell along the X direction
+         */
 	double getScaleX() const { return scalex; };
+        /** Returns the world size of a cell along the Y direction
+         */
 	double getScaleY() const { return scaley; };
 
+        /** Returns the X part of the position of the (0, 0) cell w.r.t. the
+         * grid's frame
+         */
 	double getOffsetX() const { return offsetx; };
+        /** Returns the Y part of the position of the (0, 0) cell w.r.t. the
+         * grid's frame
+         */
 	double getOffsetY() const { return offsety; };
 
-	Point2D getCenterPoint() const { return Point2D( width * scalex, height * scaley ) * 0.5; };
+        /** Returns the position of the center of the grid, in world
+         * coordinates, w.r.t. the position of the (0, 0) cell
+         */
+	Point2D getCenterPoint() const { return Point2D( cellSizeX * scalex, cellSizeY * scaley ) * 0.5; };
 
+        /** Returns the size of the grid, in world units
+         */
 	Extents getExtents() const;
 
         /** Read a band from a GDAL file and returns a Grid map containing the

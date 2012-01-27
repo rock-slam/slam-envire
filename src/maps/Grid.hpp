@@ -114,21 +114,30 @@ namespace envire
         std::pair<T, bool> getNoData() const
         { return getNoData(getBands().front()); }
 	
+        /** Returns the boost::multiarray that stores the data of the first band
+         */
 	ArrayType& getGridData(){return getGridData(getBands().front());};
+        /** Returns the boost::multiarray that stores the data of the first band
+         */
 	const ArrayType& getGridData() const {return getGridData(getBands().front());};
+        /** Returns the boost::multiarray that stores the data of the specified band
+         */
 	ArrayType& getGridData( const std::string& key )
 	{
 	    ArrayType& data( getData<ArrayType>(key) );
 	    data.resize( boost::extents[cellSizeY][cellSizeX] );
 	    return data;
 	};
-
+        /** Returns the boost::multiarray that stores the data of the specified band
+         */
 	const ArrayType& getGridData( const std::string& key ) const
 	{
 	    return getData<ArrayType>(key);
 	};
 	
 	virtual const std::string& getClassName() const {return className;};
+        /** Returns the list of bands defined on this grid
+         */
 	virtual const std::vector<std::string>& getBands() const {return bands;};
 	
 	Grid* clone() const;
@@ -141,6 +150,9 @@ namespace envire
             return getGridData(band)[yi][xi];
         } 
 
+        /** Returns the value of the cell in band \c band that is at the world
+         * position (x, y), given relative to the (0, 0) cell
+         */
         T get(std::string const& band, double x, double y) const
         {
             size_t raster_x, raster_y;
@@ -165,16 +177,52 @@ namespace envire
         //converts the grid to base/samples/frame/Frame 
         void convertToFrame(const std::string &key,base::samples::frame::Frame &frame);
 
-	//saves the GridData with a specific key to a GTiff 
-	void writeGridData(const std::string &key,const std::string& path);
-        void writeGridData(const std::vector<std::string> &keys,const std::string& path);
+	/** Helper method for serialization
+         *
+         * Saves the data contained in the band \c key in a GeoTiff file in the
+         * path \c path
+         */
+	void writeGridData(const std::string& band,const std::string& path);
+
+	/** Helper method for serialization
+         *
+         * Saves the data contained in the provided bands in a GeoTiff file in the
+         * path \c path
+         */
+        void writeGridData(const std::vector<std::string>& bands,const std::string& path);
+	/** Helper method for serialization
+         *
+         * Saves the data contained in the provided band in raw form in the
+         * provided stream
+         */
         void writeGridData(const std::string &key, std::ostream& os);
 	
-	//reads the GridData with a specific key 
-	void readGridData(const std::string &key,const std::string& path,int base_band = 1);
-	void readGridData(const std::vector<std::string> &keys,const std::string& path,int base_band = 1);
-        void readGridData(const std::string &key, std::istream& is);
+	/** Helper method for deserialization
+         *
+         * Reads the data contained in the provided band of the GDAL-readable
+         * file at \c path into the \c key band of this map
+         */
+	void readGridData(const std::string &band,const std::string& path,int base_band = 1);
+	/** Helper method for deserialization
+         *
+         * Reads the data contained in the bands
+         *      [base_band, base_band + bands.size[
+         * of the GDAL-readable file at \c path into the listed bands of this map
+         */
+	void readGridData(const std::vector<std::string> &bands,const std::string& path,int base_band = 1);
+	/** Helper method for deserialization
+         *
+         * Reads the data contained in the given stream into the provided band
+         * of this map
+         */
+        void readGridData(const std::string &band, std::istream& is);
 
+        /** Copy the data from the band \c source_band of \c _source into the \c
+         * _target_band of this map
+         *
+         * @throw std::bad_cast if the source grid is not of the same cell type
+         * than this grid
+         */
         void copyBandFrom(GridBase const& _source, std::string const& source_band, std::string const& _target_band = "")
         {
             Grid<T> const& source = dynamic_cast< Grid<T> const& >(_source);
