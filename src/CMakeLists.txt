@@ -11,6 +11,10 @@ endif()
 
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 
+rock_add_public_dependencies(envire
+    PLAIN Boost_SYSTEM
+    CMAKE GDAL)
+
 rock_library(envire
     core/Environment.cpp
     core/FrameNode.cpp
@@ -44,7 +48,8 @@ rock_library(envire
     ${ADDITIONAL_SOURCES}
     HEADERS Core.hpp
     DEPS_PKGCONFIG ply base-types base-lib
-    DEPS_CMAKE LibYAML GDAL)
+    DEPS_CMAKE LibYAML GDAL
+    DEPS_PLAIN Boost_FILESYSTEM Boost_THREAD)
 
 install(FILES core/EventHandler.hpp
     core/Features.hpp

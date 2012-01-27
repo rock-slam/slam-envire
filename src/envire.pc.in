@@ -7,5 +7,5 @@ Name: envire
 Description: Library for the Environment Representation
 Version: @PROJECT_VERSION@
 Requires: eigen3
-Libs: -L${libdir} -lenvire -licp
-Cflags: -I${includedir} @GDAL_CFLAGS@
+Libs: -L${libdir} -lenvire -licp @envire_PKGCONFIG_CFLAGS@
+Cflags: -I${includedir} @envire_PKGCONFIG_LIBS@

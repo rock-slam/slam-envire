@@ -1,7 +1,5 @@
 rock_executable(env_icp env_icp.cpp
-    DEPS envire
-    DEPS_CMAKE GDAL)
-
+    DEPS envire)
 rock_executable(env_mls env_mls.cpp
     DEPS envire)
 
