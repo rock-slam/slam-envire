@@ -61,7 +61,7 @@ void DistanceGrid::copyFromDistanceImage( const base::samples::DistanceImage& di
     {
 	for( size_t y = 0; y<height; y++ )
 	{
-	    distance[y][x] = dimage.data[y*width+x];
+	    distance[y][x] = dimage.data[y*cellSizeX+x];
 	}
     }
 }

@@ -10,20 +10,25 @@ namespace envire
     public:
 	static const std::string className;
 
-	struct Position 
+        /** Internal structure used to represent a position on the grid itself,
+         * as a cell index
+         */
+	struct Position
 	{
-	    size_t m;
-	    size_t n;
+            /** The cell position along the X axis */
+	    size_t x;
+            /** The cell position along the Y axis */
+	    size_t y;
 
 	    Position() {}
-	    Position( size_t m, size_t n ) : m(m), n(n) {}
+	    Position( size_t x, size_t y ) : x(x), y(y) {}
 	    bool operator<( const Position& other ) const
 	    {
-		if( m < other.m )
+		if( x < other.x )
 		    return true;
 		else
-		    if( m == other.m )
-			return n < other.n;
+		    if( x == other.x )
+			return y < other.y;
 		    else
 			return false;
 	    }
@@ -31,7 +36,7 @@ namespace envire
 	typedef Eigen::Vector2d Point2D;
 
     protected:
-	size_t width, height;
+	size_t cellSizeX, cellSizeY;
 	double scalex, scaley;	
 	double offsetx, offsety;
 
@@ -39,7 +44,9 @@ namespace envire
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
         GridBase();
-	GridBase(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 );
+	GridBase(size_t cellSizeX, size_t cellSizeY,
+                double scalex, double scaley,
+                double offsetx = 0.0, double offsety = 0.0 );
 	~GridBase();
 	GridBase(Serialization& so);
 	void serialize(Serialization& so);
@@ -52,15 +59,15 @@ namespace envire
          * is equivalent to the other forms of toGrid)
          *
          * @return { true if (x, y) is within the grid and false otherwise. If
-         * false is returned, the values of \c m and \n are not set }
+         * false is returned, the values of \c xi and \yi are not set }
          */
-	bool toGrid(Eigen::Vector3d const& point, size_t& m, size_t& n, FrameNode const* frame = 0) const;
+	bool toGrid(Eigen::Vector3d const& point, size_t& xi, size_t& yi, FrameNode const* frame = 0) const;
 
         /** Converts coordinates in the map-local frame to grid coordinates
          *
          * @return true if (x, y) is within the grid and false otherwise
          */
-	bool toGrid(double x, double y, size_t& m, size_t& n) const;
+	bool toGrid(double x, double y, size_t& xi, size_t& yi) const;
 
         /** Converts coordinates from the map-local grid coordinates to
          * the coordinates in the specified \c frame
@@ -68,12 +75,12 @@ namespace envire
          * If the frame is not specified, the map's own frame is used (i.e. it
          * is equivalent to the other forms of fromGrid)
          */
-        Eigen::Vector3d fromGrid(size_t m, size_t n, FrameNode const* frame = 0) const;
+        Eigen::Vector3d fromGrid(size_t xi, size_t yi, FrameNode const* frame = 0) const;
 
         /** Converts coordinates from the map-local grid coordinates to
          * coordinates in the map-local frame
          */
-	void fromGrid(size_t m, size_t n, double& x, double& y) const;
+	void fromGrid(size_t xi, size_t yi, double& x, double& y) const;
 
 	bool toGrid(const Point2D& point, Position& pos) const;
 	void fromGrid(const Position& pos, Point2D& point) const;
@@ -81,8 +88,25 @@ namespace envire
 
 	bool contains( const Position& pos ) const;
 
-	size_t getWidth() const { return width; };
-	size_t getHeight() const { return height; };
+        /** @deprecated
+         *
+         * Use getCellSizeX() instead
+         */
+	size_t getWidth() const { return cellSizeX; };
+
+        /** @deprecated
+         *
+         * Use getCellSizeY() instead
+         */
+	size_t getHeight() const { return cellSizeY; };
+
+        /** Returns the size of the grid, in cells, along the X direction
+         */
+        size_t getCellSizeX() const { return cellSizeX; }
+
+        /** Returns the size of the grid, in cells, along the Y direction
+         */
+        size_t getCellSizeY() const { return cellSizeY; }
 
 	double getScaleX() const { return scalex; };
 	double getScaleY() const { return scaley; };

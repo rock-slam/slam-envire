@@ -210,7 +210,7 @@ osg::Vec3 estimateNormal( MultiLevelSurfaceGrid::SurfacePatch patch, MultiLevelS
     {
 	for(int i=-1;i<2;i+=2)
 	{
-	    MultiLevelSurfaceGrid::Position p( pos.m + n*i, pos.n + (n-1)*i );
+	    MultiLevelSurfaceGrid::Position p( pos.x + n*i, pos.y + (n-1)*i );
 	    MultiLevelSurfaceGrid::SurfacePatch *res;
 	    if( grid->contains( p ) && (res = grid->get( p, patch )) )
 	    {

@@ -6,10 +6,13 @@ using namespace envire;
 const std::string GridBase::className = "envire::GridBase";
 
 GridBase::GridBase()
-    : width(0), height(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
+    : cellSizeX(0), cellSizeY(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
 
-GridBase::GridBase(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety) :
-    width(width), height(height), scalex(scalex), scaley(scaley), offsetx(offsetx), offsety(offsety)
+GridBase::GridBase(size_t cellSizeX, size_t cellSizeY,
+        double scalex, double scaley, double offsetx, double offsety)
+    : cellSizeX(cellSizeX), cellSizeY(cellSizeY)
+    , scalex(scalex), scaley(scaley)
+    , offsetx(offsetx), offsety(offsety)
 {
 }
 
@@ -18,7 +21,9 @@ GridBase::~GridBase()
 }
 
 GridBase::GridBase(Serialization& so)
-    : width(0), height(0), scalex(0), scaley(0), offsetx(0), offsety(0)
+    : cellSizeX(0), cellSizeY(0)
+    , scalex(0), scaley(0)
+    , offsetx(0), offsety(0)
 {
     unserialize(so);
 }
@@ -27,47 +32,55 @@ void GridBase::serialize(Serialization& so)
 {
     CartesianMap::serialize(so);
 
-    so.write("width", width );
-    so.write("height", height );
+    so.write("cellSizeX", cellSizeX );
+    so.write("cellSizeY", cellSizeY );
     so.write("scalex", scalex );
     so.write("scaley", scaley );
     so.write("offsetx", offsetx );
     so.write("offsety", offsety );
+
+    // For backward compatibility with older versions of envire
+    so.write("width", cellSizeX );
+    so.write("height", cellSizeY );
 }
 
 void GridBase::unserialize(Serialization& so)
 {
     CartesianMap::unserialize(so);
     
-    so.read("width", width );
-    so.read("height", height );
+    if (!so.read("cellSizeX", cellSizeX ))
+        so.read("width", cellSizeX);
+    if (!so.read("cellSizeY", cellSizeY ))
+        so.read("height", cellSizeY);
+
     so.read("scalex", scalex );
     so.read("scaley", scaley );
     so.read("offsetx", offsetx );
     so.read("offsety", offsety );
 }
 
-bool GridBase::toGrid( Eigen::Vector3d const& point, size_t& m, size_t& n, FrameNode const* frame) const
+bool GridBase::toGrid( Eigen::Vector3d const& point,
+        size_t& xi, size_t& yi, FrameNode const* frame) const
 {
     if (frame)
     {
         Eigen::Vector3d transformed = toMap(point, *frame);
-        return toGrid(transformed.x(), transformed.y(), m, n);
+        return toGrid(transformed.x(), transformed.y(), xi, yi);
     }
     else
     {
-        return toGrid(point.x(), point.y(), m, n);
+        return toGrid(point.x(), point.y(), xi, yi);
     }
 }
 
-bool GridBase::toGrid( double x, double y, size_t& m, size_t& n) const
+bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
 {
     size_t am = floor((x-offsetx)/scalex);
     size_t an = floor((y-offsety)/scaley);
-    if( 0 <= am && am < width && 0 <= an && an < height )
+    if( 0 <= am && am < cellSizeX && 0 <= an && an < cellSizeY )
     {
-	m = am;
-	n = an;
+	xi = am;
+	yi = an;
 	return true;
     }
     else {
@@ -75,10 +88,10 @@ bool GridBase::toGrid( double x, double y, size_t& m, size_t& n) const
     }
 }
 
-Eigen::Vector3d GridBase::fromGrid(size_t m, size_t n, FrameNode const* frame) const
+Eigen::Vector3d GridBase::fromGrid(size_t xi, size_t yi, FrameNode const* frame) const
 {
     double map_x, map_y;
-    fromGrid(m, n, map_x, map_y);
+    fromGrid(xi, yi, map_x, map_y);
     if (frame)
     {
         return fromMap(Eigen::Vector3d(map_x, map_y, 0), *frame);
@@ -89,39 +102,39 @@ Eigen::Vector3d GridBase::fromGrid(size_t m, size_t n, FrameNode const* frame) c
     }
 }
 
-void GridBase::fromGrid( size_t m, size_t n, double& x, double& y) const
+void GridBase::fromGrid( size_t xi, size_t yi, double& x, double& y) const
 {
-    x = (m+0.5) * scalex + offsetx;
-    y = (n+0.5) * scaley + offsety;
+    x = (xi+0.5) * scalex + offsetx;
+    y = (yi+0.5) * scaley + offsety;
 }
 
 bool GridBase::toGrid( const Point2D& point, Position& pos) const
 {
-    return toGrid( point.x(), point.y(), pos.m, pos.n);
+    return toGrid( point.x(), point.y(), pos.x, pos.y);
 }
 
 void GridBase::fromGrid( const Position& pos, Point2D& point) const
 {
-    fromGrid( pos.m, pos.n, point.x(), point.y());
+    fromGrid( pos.x, pos.y, point.x(), point.y());
 }
 
 GridBase::Point2D GridBase::fromGrid( const Position& pos) const
 {
     Point2D point;
-    fromGrid( pos.m, pos.n, point.x(), point.y());
+    fromGrid( pos.x, pos.y, point.x(), point.y());
     return point;
 }
 
 bool GridBase::contains( const Position& pos ) const
 {
-    return (pos.m >= 0 && pos.m < width 
-	    && pos.n >= 0 && pos.n < height);
+    return (pos.x >= 0 && pos.x < cellSizeX 
+	    && pos.y >= 0 && pos.y < cellSizeY);
 }
         
 GridBase::Extents GridBase::getExtents() const
 {
     // TODO provide proper extents
-    return Extents( Eigen::Vector2d( width * scalex, height * scaley ) ); 
+    return Extents( Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
 }
 
 template<typename T>

@@ -25,8 +25,8 @@ namespace envire
      * <ul>
      *   <li>a patch matching a certain (x, y, z, sigma_z) position can be
      *       returned by MLSGrid::get</li>
-     *   <li>patches registered for a certain (x, y) position can be iterated
-     *       using MLSGrid::beginCell(m, n) and
+     *   <li>patches registered for a certain (xi, yi) cell index can be iterated
+     *       using MLSGrid::beginCell(xi, yi) and
      *       MLSGrid::endCell(). Both a MLSGrid::const_iterator and
      *       MLSGrid::iterator iterators are provided for that purpose
      * </ul>
@@ -231,16 +231,17 @@ namespace envire
         /** Clears the whole map */
 	void clear();
 
-        /** Returns the iterator on the first registered patch at \c m and \c n
+        /** Returns the iterator on the first registered patch at \c xi and \c
+         * yi
          */
-	iterator beginCell( size_t m, size_t n );
+	iterator beginCell( size_t xi, size_t yi );
         /** Returns the first const iterator on the first registered patch at \c
-         * m and \c n
+         * xi and \c yi
          */
-	const_iterator beginCell( size_t m, size_t n ) const;
+	const_iterator beginCell( size_t xi, size_t yi ) const;
         /** @deprecated */
-	const_iterator beginCell_const( size_t m, size_t n ) const
-        { return beginCell(m, n); }
+	const_iterator beginCell_const( size_t xi, size_t yi ) const
+        { return beginCell(xi, yi); }
         /** Returns the past-the-end iterator for cell iteration */
 	iterator endCell();
         /** Returns the const past-the-end iterator for cell iteration */
@@ -252,11 +253,11 @@ namespace envire
         /** Inserts a new surface patch at the beginning of the patch list at
          * the given position
          */
-	void insertHead( size_t m, size_t n, const SurfacePatch& value );
+	void insertHead( size_t xi, size_t yi, const SurfacePatch& value );
         /** Inserts a new surface patch at the end of the patch list at
          * the given position
          */
-	void insertTail( size_t m, size_t n, const SurfacePatch& value );
+	void insertTail( size_t xi, size_t yi, const SurfacePatch& value );
         /** Removes the patch pointed-to by \c position */
 	iterator erase( iterator position );
 
@@ -270,8 +271,8 @@ namespace envire
 	SurfacePatch* get( const Position& position, const SurfacePatch& patch, double sigma_threshold = 3.0 );
 	/** @deprecated */
 	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
-	void updateCell( size_t m, size_t n, double mean, double stdev );
-	void updateCell( size_t m, size_t n, const SurfacePatch& patch );
+	void updateCell( size_t xi, size_t yi, double mean, double stdev );
+	void updateCell( size_t xi, size_t yi, const SurfacePatch& patch );
 
 	void setGapSize( double gapsize ) { this->gapSize = gapsize; }
 	double getGapSize() const { return gapSize; }

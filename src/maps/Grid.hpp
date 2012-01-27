@@ -37,7 +37,7 @@ namespace envire
      * so that the internal memory layout is the classical
      *
      * <code>
-     * getGridData().data()[y * width + x]
+     * getGridData().data()[y * cellSizeX + x]
      * </code>
      */
     template <typename T>
@@ -66,7 +66,9 @@ namespace envire
         typedef boost::intrusive_ptr< Grid<T> > Ptr;
 
 	Grid() {}
-	Grid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0);
+	Grid(size_t cellSizeX, size_t cellSizeY,
+                double scalex, double scaley,
+                double offsetx = 0.0, double offsety = 0.0);
 	~Grid();
 	Grid(Serialization& so);
 	void serialize(Serialization& so);
@@ -117,7 +119,7 @@ namespace envire
 	ArrayType& getGridData( const std::string& key )
 	{
 	    ArrayType& data( getData<ArrayType>(key) );
-	    data.resize( boost::extents[height][width] );
+	    data.resize( boost::extents[cellSizeY][cellSizeX] );
 	    return data;
 	};
 
@@ -132,9 +134,11 @@ namespace envire
 	Grid* clone() const;
 	void set( EnvironmentItem* other );
 
-        T getFromRaster(std::string const& band, size_t x, size_t y) const
+        /** Returns the value of the cell (xi, yi) in band \c band
+         */
+        T getFromRaster(std::string const& band, size_t xi, size_t yi) const
         {
-            return getGridData(band)[y][x];
+            return getGridData(band)[yi][xi];
         } 
 
         T get(std::string const& band, double x, double y) const
@@ -147,8 +151,8 @@ namespace envire
 
 	bool inGrid( double x, double y) const
 	{
-	    return (x >= 0) && (x < width) && (y >= 0) && (y < height); 
-	};
+	    return (x >= 0) && (x < cellSizeX) && (y >= 0) && (y < cellSizeY); 
+	}
 	
 	size_t getWidth() const { return width; };
 	size_t getHeight() const { return height; };
@@ -214,8 +218,8 @@ namespace envire
     template <class T> const std::vector<std::string> & Grid<T>::bands = initbands<T>();
  
     
-    template<class T>Grid<T>::Grid(size_t width, size_t height, double scalex, double scaley, double offsetx, double offsety ) :
-	GridBase( width, height, scalex, scaley, offsetx, offsety )
+    template<class T>Grid<T>::Grid(size_t cellSizeX, size_t cellSizeY, double scalex, double scaley, double offsetx, double offsety ) :
+	GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
     {
       static bool initialized = false;
       if(!initialized)
@@ -325,7 +329,7 @@ namespace envire
     void Grid<T>::convertToFrame(const std::string &key,base::samples::frame::Frame &frame)
     {
         ArrayType& data_ = getGridData(key);
-        frame.init(width,height,sizeof(T)*8,base::samples::frame::MODE_GRAYSCALE);
+        frame.init(cellSizeX,cellSizeY,sizeof(T)*8,base::samples::frame::MODE_GRAYSCALE);
         memcpy(frame.image.data(),data_.data(),frame.image.size());
         frame.frame_status = base::samples::frame::STATUS_VALID;
         frame.setAttribute<std::string>("key",key);
@@ -366,7 +370,8 @@ namespace envire
 	    throw std::runtime_error("GDALDriver not found.");
         
         GDALDataType data_type = getGDALDataTypeOfArray();
-	poDstDS = poDriver->Create( path.c_str(), width, height, keys.size(), data_type, 
+	poDstDS = poDriver->Create( path.c_str(), cellSizeX, cellSizeY,
+                keys.size(), data_type, 
 		papszOptions );
 
 	if(getEnvironment())
@@ -410,7 +415,7 @@ namespace envire
           std::pair<T, bool> no_data = getNoData(*iter);
           if (no_data.second)
               poBand->SetNoDataValue(no_data.first);
-	  poBand->RasterIO(GF_Write ,0,0,width,height,data.data(),width,height,poBand->GetRasterDataType(),0,0);
+	  poBand->RasterIO(GF_Write ,0,0,cellSizeX,cellSizeY,data.data(),cellSizeX,cellSizeY,poBand->GetRasterDataType(),0,0);
 	  preCallWriteBand(*iter,poBand);
 	}
 	GDALClose( (GDALDatasetH) poDstDS );
@@ -425,14 +430,14 @@ namespace envire
       if( poDataset == NULL )
 	  throw std::runtime_error("can not open file " + path);
       
-      double file_width =  poDataset->GetRasterXSize();
-      double file_height =  poDataset->GetRasterYSize();  
-      if (width != 0 && file_width != width)
-          throw std::runtime_error("file width and map width differ");
-      if (height != 0 && file_height != height)
-          throw std::runtime_error("file height and map height differ");
-      width  = file_width;
-      height = file_height;
+      double file_cellSizeX =  poDataset->GetRasterXSize();
+      double file_cellSizeY =  poDataset->GetRasterYSize();  
+      if (cellSizeX != 0 && file_cellSizeX != cellSizeX)
+          throw std::runtime_error("file and map sizes differ along the X direction");
+      if (cellSizeY != 0 && file_cellSizeY != cellSizeY)
+          throw std::runtime_error("file and map sizes differ along the Y direction");
+      cellSizeX = file_cellSizeX;
+      cellSizeY = file_cellSizeY;
       
       // If the map does not yet have a scale, allow reading it from file
       //
@@ -476,7 +481,7 @@ namespace envire
         double nodata = poBand->GetNoDataValue(&has_nodata);
         if (has_nodata)
             setNoData(*iter, nodata);
-	poBand->RasterIO(GF_Read,0,0,width,height,data.data(),width,height,poBand->GetRasterDataType(),0,0);
+	poBand->RasterIO(GF_Read,0,0,cellSizeX,cellSizeY,data.data(),cellSizeX,cellSizeY,poBand->GetRasterDataType(),0,0);
       }
       GDALClose(poDataset);
     }

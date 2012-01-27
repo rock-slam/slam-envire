@@ -77,14 +77,14 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
 	const Eigen::Vector3d &mean( p );
 
-	size_t m, n;
-	if( t_grid->toGrid( mean.x(), mean.y(), m, n ) )
+	size_t xi, yi;
+	if( t_grid->toGrid( mean.x(), mean.y(), xi, yi ) )
 	{
 	    const double stdev = sqrt(p_var);
 	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
 	    if( color )
 		patch.color = (*color)[i];
-	    t_grid->updateCell(m, n, patch);
+	    t_grid->updateCell(xi, yi, patch);
 	}
     }
 
@@ -96,14 +96,14 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     // go through all the cells that have been touched
     for(std::set<position>::iterator it = cells.begin(); it != cells.end(); it++)
     {
-	const size_t m = it->m;
-	const size_t n = it->n;
+	const size_t xi = it->x;
+	const size_t yi = it->y;
 
-	for(MultiLevelSurfaceGrid::iterator cit = t_grid->beginCell(m,n); cit != t_grid->endCell(); cit++ )
+	for(MultiLevelSurfaceGrid::iterator cit = t_grid->beginCell(xi,yi); cit != t_grid->endCell(); cit++ )
 	{
 	    // get center of cell
 	    double x, y;
-	    t_grid->fromGrid( m, n, x, y );
+	    t_grid->fromGrid( xi, yi, x, y );
 	    Eigen::Vector3d cellcenter = C_g2m * Eigen::Vector3d(x, y, cit->mean);
 
 	    // use the cells stdev for the point, this is not quite exact, but should do 
@@ -118,7 +118,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	    // we may have to call some sort of merge, since through the updated
 	    // variance we might have some patches that actually belong together.
 	    if( t_grid != grid )
-		grid->updateCell( m, n, *cit );
+		grid->updateCell( xi, yi, *cit );
 	}
     }
 }
@@ -144,14 +144,14 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 
 	const Eigen::Vector3d &mean( p );
 
-	size_t m, n;
-	if( grid->toGrid( mean.x(), mean.y(), m, n ) )
+	size_t xi, yi;
+	if( grid->toGrid( mean.x(), mean.y(), xi, yi ) )
 	{
 	    const double stdev = sqrt(p_var);
 	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
 	    if( color )
 		patch.color = (*color)[i];
-	    grid->updateCell(m, n, patch);
+	    grid->updateCell(xi, yi, patch);
 	}
     }
 }
