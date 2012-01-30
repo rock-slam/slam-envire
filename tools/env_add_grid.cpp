@@ -63,14 +63,18 @@ int main(int argc, char* argv[])
                 map_id = boost::lexical_cast<int>(argv[next_idx + 1]);
         }
     }
-    else if (transform.isApprox(FrameNode::TransformType::Identity()))
-        frame_id = env->getRootNode()->getUniqueId();
-    else
+
+    if (frame_id == -1 && map_id == -1)
     {
-        FrameNode::Ptr node = new FrameNode(transform);
-        env->attachItem(node.get());
-        env->getRootNode()->addChild(node.get());
-        frame_id = node->getUniqueId();
+        if (transform.isApprox(FrameNode::TransformType::Identity()))
+            frame_id = env->getRootNode()->getUniqueId();
+        else
+        {
+            FrameNode::Ptr node = new FrameNode(transform);
+            env->attachItem(node.get());
+            env->getRootNode()->addChild(node.get());
+            frame_id = node->getUniqueId();
+        }
     }
 
     if (!map_type.empty())
