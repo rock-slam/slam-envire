@@ -1,9 +1,6 @@
-#include "Core.hpp"
+#include "Serialization.hpp"
 
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/operations.hpp"
-#include "boost/lexical_cast.hpp"
-
+#include <boost/filesystem/operations.hpp>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -605,7 +602,7 @@ std::ostream& BinarySerialization::getBinaryOutputStream(const std::string &file
     return *ostream;
 }
 
-EnvironmentItem* BinarySerialization::unserializeBinaryItem(EnvireBinaryItem& bin_item)
+EnvironmentItem* BinarySerialization::unserializeBinaryEvent(EnvireBinaryEvent& bin_item)
 {
     // set up yaml document
     yaml_parser_initialize(&yamlSerialization->parser);
@@ -615,7 +612,7 @@ EnvironmentItem* BinarySerialization::unserializeBinaryItem(EnvireBinaryItem& bi
     {
         yaml_parser_delete(&yamlSerialization->parser);
 
-        std::cerr << bin_item.className << " " << bin_item.id << ":" 
+        std::cerr << bin_item.className << " " << bin_item.id_a << ":" 
             << yamlSerialization->parser.problem_mark.line << ":"
             << yamlSerialization->parser.problem;
         throw std::runtime_error("error parsing yaml stream.");
@@ -662,9 +659,8 @@ EnvironmentItem* BinarySerialization::unserializeBinaryItem(EnvireBinaryItem& bi
     return item;
 }
 
-bool BinarySerialization::serializeBinaryItem(EnvironmentItem* item, EnvireBinaryItem& bin_item)
+bool BinarySerialization::serializeBinaryEvent(EnvironmentItem* item, EnvireBinaryEvent& bin_item)
 {
-    bin_item.id = item->getUniqueId();
     bin_item.className = item->getClassName();
     bin_item.yamlProperties.clear();
     bin_item.binaryStreamNames.clear();
@@ -728,4 +724,19 @@ void BinarySerialization::cleanUp()
         delete it->second;
     }
     stringstreams.clear();
+}
+
+
+//// SynchronizationEventHandler ////
+
+void SynchronizationEventHandler::handle(const envire::Event& message)
+{
+    EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, message.id_a, message.id_b);
+    
+    if(message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
+    {
+        serialization.serializeBinaryEvent(message.a.get(), *binary_event);
+    }
+    
+    handle(binary_event);
 }

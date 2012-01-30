@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "Serialization.hpp"
 
 #include <Eigen/Geometry>
 #include <Eigen/SVD>

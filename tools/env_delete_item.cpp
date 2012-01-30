@@ -2,6 +2,7 @@
 #include "boost/scoped_ptr.hpp"
 
 #include <iostream>
+#include <boost/lexical_cast.hpp>
 
 using namespace envire;
 using namespace std;

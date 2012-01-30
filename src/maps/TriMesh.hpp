@@ -3,6 +3,7 @@
 
 #include <envire/Core.hpp>
 #include <envire/maps/Pointcloud.hpp>
+#include <envire/core/Serialization.hpp>
 
 #include <boost/tuple/tuple.hpp>
 #include <Eigen/Core>

@@ -2,6 +2,7 @@
 #define __ENVIRE_POINTCLOUD_HPP__
 
 #include <envire/Core.hpp>
+#include <envire/core/Serialization.hpp>
 #include <Eigen/Core>
 
 namespace envire {

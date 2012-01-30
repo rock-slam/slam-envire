@@ -2,6 +2,7 @@
 #define __ENVIRE_GRIDBASE_HPP__
 
 #include <envire/Core.hpp>
+#include <envire/core/Serialization.hpp>
 
 namespace envire 
 {

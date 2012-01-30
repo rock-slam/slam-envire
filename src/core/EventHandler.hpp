@@ -24,7 +24,7 @@ public:
 class EventDispatcher
 {
 public:
-    static void dispatch( Event::Type type, Event::Operation operation, EnvironmentItem* a, EnvironmentItem* b, EventDispatcher* dispatch );
+    static void dispatch( event::Type type, event::Operation operation, EnvironmentItem* a, EnvironmentItem* b, EventDispatcher* dispatch );
 
     virtual void itemAttached(EnvironmentItem *item);
     virtual void itemDetached(EnvironmentItem *item);

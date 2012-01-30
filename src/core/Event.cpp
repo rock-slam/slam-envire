@@ -4,37 +4,37 @@
 
 using namespace envire;
 
-std::ostream& envire::operator <<( std::ostream& ostream, Event::Type type )
+std::ostream& envire::operator <<( std::ostream& ostream, event::Type type )
 {
     switch( type )
     {
-	case Event::ITEM: ostream << "ITEM"; break;
-	case Event::FRAMENODE_TREE: ostream << "FRAMENODE_TREE"; break;
-	case Event::FRAMENODE: ostream << "FRAMENODE"; break;
-	case Event::LAYER_TREE: ostream << "LAYER_TREE"; break;
-	case Event::ROOT: ostream << "ROOT"; break;
+	case event::ITEM: ostream << "ITEM"; break;
+	case event::FRAMENODE_TREE: ostream << "FRAMENODE_TREE"; break;
+	case event::FRAMENODE: ostream << "FRAMENODE"; break;
+	case event::LAYER_TREE: ostream << "LAYER_TREE"; break;
+	case event::ROOT: ostream << "ROOT"; break;
     }
     return ostream;
 }
 
-std::ostream& envire::operator <<( std::ostream& ostream, Event::Operation operation )
+std::ostream& envire::operator <<( std::ostream& ostream, event::Operation operation )
 {
     switch( operation )
     {
-	case Event::ADD: ostream << "ADD"; break;
-	case Event::REMOVE: ostream << "REMOVE"; break;
-	case Event::UPDATE: ostream << "UPDATE"; break;
+	case event::ADD: ostream << "ADD"; break;
+	case event::REMOVE: ostream << "REMOVE"; break;
+	case event::UPDATE: ostream << "UPDATE"; break;
     }
     return ostream;
 }
 
-std::ostream& envire::operator <<( std::ostream& ostream, Event::Result result )
+std::ostream& envire::operator <<( std::ostream& ostream, event::Result result )
 {
     switch( result )
     {
-	case Event::IGNORE: ostream << "IGNORE"; break;
-	case Event::INVALIDATE: ostream << "INVALIDATE"; break;
-	case Event::CANCEL: ostream << "CANCEL"; break;
+	case event::IGNORE: ostream << "IGNORE"; break;
+	case event::INVALIDATE: ostream << "INVALIDATE"; break;
+	case event::CANCEL: ostream << "CANCEL"; break;
     }
     return ostream;
 }
@@ -52,36 +52,36 @@ std::ostream& envire::operator <<( std::ostream& ostream, const Event& msg )
     return ostream;
 }
 
-Event::Event( Type type, Operation operation, EnvironmentItem::Ptr a, EnvironmentItem::Ptr b  )
+Event::Event( event::Type type, event::Operation operation, EnvironmentItem::Ptr a, EnvironmentItem::Ptr b  )
     : type(type), operation(operation), a(a), b(b), id_a( Environment::ITEM_NOT_ATTACHED ), id_b( Environment::ITEM_NOT_ATTACHED )
 {
 }
 
-Event::Result Event::merge( const Event& other )
+event::Result Event::merge( const Event& other )
 {
-    if( operation == UPDATE )
+    if( operation == event::UPDATE )
     {
-	return (type == other.type && operation == other.operation && a == other.a && b == other.b) ? INVALIDATE : IGNORE;
+	return (type == other.type && operation == other.operation && a == other.a && b == other.b) ? event::INVALIDATE : event::IGNORE;
     }
-    if( operation == REMOVE )
+    if( operation == event::REMOVE )
     {
 	switch( type )
 	{
-	    case FRAMENODE_TREE: 
-	    case FRAMENODE:
-	    case LAYER_TREE:
-		return (type == other.type && a == other.a && b == other.b) ? CANCEL : IGNORE;
-	    case ITEM: 
-		if( (a == other.a || a == other.b) && (other.operation == ADD || other.operation == UPDATE) )
-		    return (type == other.type && other.operation == ADD) ? CANCEL : INVALIDATE;
+	    case event::FRAMENODE_TREE: 
+	    case event::FRAMENODE:
+	    case event::LAYER_TREE:
+		return (type == other.type && a == other.a && b == other.b) ? event::CANCEL : event::IGNORE;
+	    case event::ITEM: 
+		if( (a == other.a || a == other.b) && (other.operation == event::ADD || other.operation == event::UPDATE) )
+		    return (type == other.type && other.operation == event::ADD) ? event::CANCEL : event::INVALIDATE;
 		else
-		    return IGNORE;
-	    case ROOT:
-		return (type == other.type && a == other.a) ? CANCEL : IGNORE;
+		    return event::IGNORE;
+	    case event::ROOT:
+		return (type == other.type && a == other.a) ? event::CANCEL : event::IGNORE;
 	}
     }
 
-    return IGNORE;
+    return event::IGNORE;
 }
 
 void Event::ref()
@@ -90,7 +90,7 @@ void Event::ref()
     if( a ) id_a = a->getUniqueId();
     if( b ) id_b = b->getUniqueId();
 
-    if( type == Event::ITEM && ( operation == Event::ADD || operation == Event::UPDATE ) )
+    if( type == event::ITEM && ( operation == event::ADD || operation == event::UPDATE ) )
     {
 	// perform a copy of the EnvironmentItem in these cases
 	// and already set the unique_id to the source id
