@@ -408,6 +408,7 @@ bool FileSerialization::writeToFile( Environment *env, const std::string &path )
     {
 	delete[] *it;
     }
+    yamlSerialization->buffers.clear();
 
     yaml_emitter_delete(&yamlSerialization->emitter);
     yaml_document_delete(&yamlSerialization->document);
@@ -709,6 +710,7 @@ bool BinarySerialization::serializeBinaryEvent(EnvironmentItem* item, EnvireBina
     {
         delete[] *it;
     }
+    yamlSerialization->buffers.clear();
     yaml_emitter_delete(&yamlSerialization->emitter);
     yaml_document_delete(&yamlSerialization->document);
     cleanUp();
