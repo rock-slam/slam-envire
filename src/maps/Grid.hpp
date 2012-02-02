@@ -86,6 +86,11 @@ namespace envire
         {
             nodata[key] = value;
         }
+        
+        /**
+         * @overload because this class has its own declaration of className
+         */
+        virtual const std::string& getClassName() const {return className;};
 
         /** Returns the nodata value for the given band, if one has been
          * defined.
@@ -310,7 +315,7 @@ namespace envire
                 if(fso)
                     readGridData(layer_name, getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), layer_name));
                 else
-                    readGridData(layer_name, so.getBinaryInputStream(getFullPath(getMapFileName(), layer_name)));
+                    readGridData(layer_name, so.getBinaryInputStream(getFullPath(getMapFileName( getClassName() ), layer_name)));
             }
         }
         else
