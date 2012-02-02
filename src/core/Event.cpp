@@ -135,7 +135,14 @@ struct ApplyEventHelper : public EventDispatcher
 
     void itemDetached(EnvironmentItem *item)
     {
-	env.detachItem( item );
+        // the root node is the only node that should stay
+        FrameNode* fn = dynamic_cast<FrameNode*>(item);
+        if( fn && fn->isRoot() )
+            fn->setTransform(Eigen::Affine3d::Identity());
+        else
+        {
+            env.detachItem( item );
+        }
     }
 
     void childAdded(FrameNode* parent, FrameNode* child)
