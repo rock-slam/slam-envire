@@ -733,7 +733,9 @@ void BinarySerialization::cleanUp()
 
 void SynchronizationEventHandler::handle(const envire::Event& message)
 {
-    EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, message.id_a, message.id_b);
+    long id_a = message.a ? message.a->getUniqueId() : message.id_a;
+    long id_b = message.b ? message.b->getUniqueId() : message.id_b;
+    EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, id_a, id_b);
     
     if(message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
     {
