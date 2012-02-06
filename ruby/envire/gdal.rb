@@ -218,20 +218,20 @@ module Gdal
   #    Z     |  Same as ``a'', except that null is added with *
   #++
   # packs data in prep to write to gdal..
-  def self.pack_to_gdal(data, data_type)
+  def self.pack(data, data_type)
     pack_template = case(data_type)
-      when Gdal::Gdalconst::GDT_UNKNOWN;raise ArgumentError, "GDT_UNKNOWN has no storage template.. not sure what to do here folks", caller
-      when Gdal::Gdalconst::GDT_BYTE; 'c'
-      when Gdal::Gdalconst::GDT_UINT16;'S'
-      when Gdal::Gdalconst::GDT_INT16;'s'
-      when Gdal::Gdalconst::GDT_UINT32; 'I'
-      when Gdal::Gdalconst::GDT_INT32; 'i'
-      when Gdal::Gdalconst::GDT_FLOAT32; 'f'
-      when Gdal::Gdalconst::GDT_FLOAT64; 'D'
-      when Gdal::Gdalconst::GDT_CINT16; ''    #What are these? Complex types?
-      when Gdal::Gdalconst::GDT_CINT32; ''    #What are these?
-      when Gdal::Gdalconst::GDT_CFLOAT32; ''  #What are these?
-      when Gdal::Gdalconst::GDT_CFLOAT64; '' #What are these?
+      when ::Gdal::Gdalconst::GDT_UNKNOWN;raise ArgumentError, "GDT_UNKNOWN has no storage template.. not sure what to do here folks", caller
+      when ::Gdal::Gdalconst::GDT_BYTE; 'c'
+      when ::Gdal::Gdalconst::GDT_UINT16;'S'
+      when ::Gdal::Gdalconst::GDT_INT16;'s'
+      when ::Gdal::Gdalconst::GDT_UINT32; 'I'
+      when ::Gdal::Gdalconst::GDT_INT32; 'i'
+      when ::Gdal::Gdalconst::GDT_FLOAT32; 'f'
+      when ::Gdal::Gdalconst::GDT_FLOAT64; 'D'
+      when ::Gdal::Gdalconst::GDT_CINT16; ''    #What are these? Complex types?
+      when ::Gdal::Gdalconst::GDT_CINT32; ''    #What are these?
+      when ::Gdal::Gdalconst::GDT_CFLOAT32; ''  #What are these?
+      when ::Gdal::Gdalconst::GDT_CFLOAT64; '' #What are these?
       else raise ArgumentError, "Unknown datatype.. not sure what to do here folks", caller
     end
     raise(ArgumentError, "Complex type requested, but no complex type handling.. not sure what to do here folks", caller) if ( pack_template == '')
@@ -246,7 +246,7 @@ module Gdal
 
       #Writes data
       def write(start_x, start_y, width_x, width_y, data)
-        return ::Gdal.write_raster(start_x,start_y,width_x,width_y, pack(data, self.DataType))
+        return write_raster(start_x,start_y,width_x,width_y, ::Gdal.pack(data, self.DataType))
       end
 
       #returns the datatype
@@ -289,11 +289,20 @@ module Gdal
       def ysize
         self.RasterYSize
       end
-
-      def read_band(band_index, x, y, w, h)
+      
+      def band(band_index)
           @bands ||= Array.new
-          b = (@bands[band_index] ||= get_raster_band(band_index))
+          @bands[band_index] ||= get_raster_band(band_index)
+      end
+
+      def read_band(band_index, x = 0, y = 0, w = xsize, h = ysize)
+          b = band(band_index)
           b.read(x, y, w, h)
+      end
+
+      def write_band(band_index, data, x = 0, y = 0, w = xsize, h = ysize)
+          b = band(band_index)
+          b.write(x, y, w, h, data)
       end
 
       def apply_geo_transform(x, y)
