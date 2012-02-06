@@ -1,7 +1,7 @@
 #ifndef __ENVIEW_ENVIREVISUALIZATION__
 #define __ENVIEW_ENVIREVISUALIZATION__
 
-#include <vizkit/VizPlugin.hpp>
+#include <vizkit/Vizkit3DPlugin.hpp>
 #include <osg/Geometry>
 #include <envire/Core.hpp>
 
