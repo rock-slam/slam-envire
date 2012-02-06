@@ -5,7 +5,6 @@
 #include <osg/Geometry>
 #include <osg/Geode>
 #include <osg/PositionAttitudeTransform>
-#include <vizkit/GridNode.hpp>
 
 namespace vizkit {
     
