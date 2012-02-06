@@ -527,7 +527,7 @@ namespace envire
         int has_nodata = 0;
         double nodata = poBand->GetNoDataValue(&has_nodata);
         if (has_nodata)
-            setNoData(*iter, nodata);
+            setNoData(*iter, T(nodata));
 	poBand->RasterIO(GF_Read,0,0,cellSizeX,cellSizeY,data.data(),cellSizeX,cellSizeY,poBand->GetRasterDataType(),0,0);
       }
       GDALClose(poDataset);
