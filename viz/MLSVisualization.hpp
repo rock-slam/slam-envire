@@ -8,6 +8,7 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 {
     public:
 	MLSVisualization();
+        ~MLSVisualization();
 
 	virtual osg::Group* getNodeForItem(envire::EnvironmentItem* item) const;
 	virtual bool handlesItem(envire::EnvironmentItem* item) const;

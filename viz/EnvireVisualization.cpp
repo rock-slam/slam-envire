@@ -10,7 +10,6 @@
 #include "ImageRGB24Visualization.hpp"
 
 #include "ItemManipulator.hpp"
-#include <vizkit/PickHandler.hpp>
 
 #include <QTreeWidget>
 #include <QString>

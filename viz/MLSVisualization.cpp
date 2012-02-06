@@ -54,6 +54,8 @@ MLSVisualization::MLSVisualization()
 {
 }
 
+MLSVisualization::~MLSVisualization() {}
+
 osg::Vec3 Vec3( const Eigen::Vector3d& v )
 {
     return osg::Vec3( v.x(), v.y(), v.z() );
