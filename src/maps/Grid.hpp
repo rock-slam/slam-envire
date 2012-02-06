@@ -201,20 +201,20 @@ namespace envire
          * Reads the data contained in the provided band of the GDAL-readable
          * file at \c path into the \c key band of this map
          */
-	void readGridData(const std::string &band,const std::string& path,int base_band = 1);
+	void readGridData(const std::string &band,const std::string& path,int base_band = 1, boost::enable_if< boost::is_fundamental<T> >* enabler = 0);
 	/** Helper method for deserialization
          *
          * Reads the data contained in the bands
          *      [base_band, base_band + bands.size[
          * of the GDAL-readable file at \c path into the listed bands of this map
          */
-	void readGridData(const std::vector<std::string> &bands,const std::string& path,int base_band = 1);
+	void readGridData(const std::vector<std::string> &bands,const std::string& path,int base_band = 1, boost::enable_if< boost::is_fundamental<T> >* enabler = 0);
 	/** Helper method for deserialization
          *
          * Reads the data contained in the given stream into the provided band
          * of this map
          */
-        void readGridData(const std::string &band, std::istream& is);
+        void readGridData(const std::string &band, std::istream& is, boost::enable_if< boost::is_fundamental<T> >* enabler = 0);
 
         /** Copy the data from the band \c source_band of \c _source into the \c
          * _target_band of this map
@@ -389,7 +389,7 @@ namespace envire
         os.write(reinterpret_cast<const char*>(data.data()), sizeof(T) * data.num_elements());
     }
     
-    template<class T>void Grid<T>::readGridData(const std::string &key, std::istream& is)
+    template<class T>void Grid<T>::readGridData(const std::string &key, std::istream& is, boost::enable_if< boost::is_fundamental<T> >* enabler)
     {
         ArrayType &data = getGridData(key);
         is.read(reinterpret_cast<char*>(data.data()), sizeof(T) * data.num_elements());
@@ -468,7 +468,7 @@ namespace envire
 	GDALClose( (GDALDatasetH) poDstDS );
     }
       
-    template<class T>void Grid<T>::readGridData(const std::vector<std::string> &keys,const std::string& path, int base_band)
+    template<class T>void Grid<T>::readGridData(const std::vector<std::string> &keys,const std::string& path, int base_band, boost::enable_if< boost::is_fundamental<T> >* enabler)
     {
       LOG_DEBUG_S << "reading file "<< path;
       GDALDataset  *poDataset;
@@ -533,7 +533,7 @@ namespace envire
       GDALClose(poDataset);
     }
     
-    template<class T>void Grid<T>::readGridData(const std::string &key,const std::string& path, int base_band)
+    template<class T>void Grid<T>::readGridData(const std::string &key,const std::string& path, int base_band, boost::enable_if< boost::is_fundamental<T> >* enabler)
     {
 	std::vector<std::string> string_vector;
 	string_vector.push_back(key);
