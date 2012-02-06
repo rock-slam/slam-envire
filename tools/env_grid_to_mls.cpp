@@ -38,6 +38,7 @@ int main(int argc, char* argv[])
     op->setOutput(output.get());
     op->updateAll();
     env->serialize(env_path);
+    std::cout << op->getUniqueId() << std::endl;
     return 0;
 }
 
