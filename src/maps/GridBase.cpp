@@ -201,7 +201,7 @@ std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFro
         throw std::runtime_error("enview::Grid<T>: GDT type is not supported.");  
     }
 
-    return make_pair(map, transform);
+    return std::make_pair(map, transform);
 }
 
 void GridBase::copyBandFrom(GridBase const& source, std::string const& source_band, std::string const& _target_band)
