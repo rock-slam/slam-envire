@@ -491,12 +491,24 @@ namespace envire
       // It is made optional as sometime one wants to load existing bitmap
       // data that is not georeferenced in a map that is. It might get more
       // strict in the future if it becomes too fragile
+      //
+      // GDAL data can be arbitrarily ordered w.r.t. the direction of the X or Y
+      // axis. xDir and yDir are the actual directions, which gets updated from
+      // the data in the file
+      int xDir = 0, yDir = 0;
       if (getScaleX() == 0 || getScaleY() == 0)
       {
           double adfGeoTransform[6];
           poDataset->GetGeoTransform(adfGeoTransform);  
-          scalex = sqrt(adfGeoTransform[1]*adfGeoTransform[1]+adfGeoTransform[4]*adfGeoTransform[4]);
-          scaley = sqrt(adfGeoTransform[2]*adfGeoTransform[2]+adfGeoTransform[5]*adfGeoTransform[5]);
+          scalex = fabs(adfGeoTransform[1]);
+          scaley = fabs(adfGeoTransform[5]);
+          if (fabs(adfGeoTransform[4] * cellSizeY) > scaley * 1e-2  || fabs(adfGeoTransform[2]) > scalex * 1e-2)
+              throw std::runtime_error("cannot load rotated raster files");
+
+          if (adfGeoTransform[1] < 0)
+              xDir = -1;
+          if (adfGeoTransform[5] < 0)
+              yDir = -1;
       }
 
       GDALRasterBand  *poBand;
@@ -524,11 +536,36 @@ namespace envire
 	//writing data into the grid object
 	boost::multi_array<T,2> &data(getGridData(*iter));
 
+        T* data_ptr = &data[0][0];
+        // I did not manage to make GDAL invert the data for us, so I do it
+        // manually. To avoid swapping values around, I allocate an additional
+        // line and move the data line-by-line
+        if (xDir == -1)
+        {
+            data.resize( boost::extents[cellSizeY + 1][cellSizeX] );
+            data_ptr = &data[1][0];
+        }
+        if (yDir == -1)
+            data_ptr += cellSizeX * (cellSizeY - 1);
+
         int has_nodata = 0;
         double nodata = poBand->GetNoDataValue(&has_nodata);
         if (has_nodata)
             setNoData(*iter, T(nodata));
-	poBand->RasterIO(GF_Read,0,0,cellSizeX,cellSizeY,data.data(),cellSizeX,cellSizeY,poBand->GetRasterDataType(),0,0);
+	poBand->RasterIO(GF_Read,
+                0,0,cellSizeX,cellSizeY,
+                data_ptr, cellSizeX, cellSizeY,
+                getGDALDataTypeOfArray(),
+                0, yDir * sizeof(T) * cellSizeX);
+
+        // See comment above as to why we do this manually
+        if (xDir == -1)
+        {
+            for (size_t yi = 0; yi < cellSizeY; ++yi)
+                for (size_t xi = 0; xi < cellSizeX; ++xi)
+                    data[yi][xi] = data[yi + 1][cellSizeX - 1 - xi];
+            data.resize( boost::extents[cellSizeY][cellSizeX] );
+        }
       }
       GDALClose(poDataset);
     }

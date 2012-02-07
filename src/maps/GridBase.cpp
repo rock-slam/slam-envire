@@ -168,10 +168,6 @@ std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFro
     poDataset->GetGeoTransform(adfGeoTransform);  
     double offsetx = adfGeoTransform[0];
     double offsety = adfGeoTransform[3];
-    double theta = atan2(adfGeoTransform[4], adfGeoTransform[1]);
-    FrameNode::TransformType transform =
-        Eigen::Translation<double, 3>(offsetx, offsety, 0) *
-        Eigen::AngleAxisd(theta, Eigen::Vector3d::UnitZ());
 
     GridBase::Ptr map;
     switch(poBand->GetRasterDataType())
@@ -201,6 +197,13 @@ std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFro
         throw std::runtime_error("enview::Grid<T>: GDT type is not supported.");  
     }
 
+    if (adfGeoTransform[1] < 0)
+        offsetx -= map->getCellSizeX() * map->getScaleX();
+    if (adfGeoTransform[5] < 0)
+        offsety -= map->getCellSizeY() * map->getScaleY();
+
+    FrameNode::TransformType transform =
+        FrameNode::TransformType(Eigen::Translation<double, 3>(offsetx, offsety, 0));
     return std::make_pair(map, transform);
 }
 
