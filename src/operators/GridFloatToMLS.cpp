@@ -54,7 +54,7 @@ void GridFloatToMLS::setOutput( MLSGrid* mls )
 template<typename T>
 static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls)
 {
-    Transform C = grid->getEnvironment()->relativeTransform( mls, grid );
+    Transform mls2grid = grid->getEnvironment()->relativeTransform( grid, mls );
     
     boost::multi_array<T, 2>* grid_data;
     if (band_name.empty())
@@ -62,21 +62,15 @@ static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls)
     else
         grid_data = &grid->getGridData(band_name);
 
-    for (size_t yi = 0; yi < mls->getHeight(); ++yi)
+    for (size_t yi = 0; yi < mls->getCellSizeY(); ++yi)
     {
         double y = mls->getScaleY() * yi + mls->getOffsetY();
-        for (size_t xi = 0; xi < mls->getWidth(); ++xi)
+        for (size_t xi = 0; xi < mls->getCellSizeX(); ++xi)
         {
-            double x = mls->getScaleY() * xi + mls->getOffsetX();
-            Eigen::Vector3d src_p = C * Eigen::Vector3d(x, y, 0);
-            if (src_p.x() < grid->getOffsetX() || src_p.y() < grid->getOffsetY())
-                continue;
-
-            size_t src_yi = round((src_p.y() - grid->getOffsetY()) / grid->getScaleY());
-            if (src_yi > grid->getHeight())
-                continue;
-            size_t src_xi = round((src_p.x() - grid->getOffsetX()) / grid->getScaleX());
-            if (src_xi > grid->getWidth())
+            double x = mls->getScaleX() * xi + mls->getOffsetX();
+            Eigen::Vector3d src_p = mls2grid * Eigen::Vector3d(x, y, 0);
+            size_t src_xi, src_yi;
+            if (!grid->toGrid(src_p.x(), src_p.y(), src_xi, src_yi))
                 continue;
 
             T value = (*grid_data)[src_yi][src_xi];
