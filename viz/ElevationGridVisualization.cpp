@@ -27,16 +27,20 @@ namespace vizkit
 
   void ElevationGridVisualization::updateNode ( envire::EnvironmentItem* item, osg::Group* node ) const
   {
-    std::cout << "ElevationGridVisualization: Update" << std::endl; 
-     
     osg::ref_ptr<osg::Geode> geode = node->getChild(0)->asGeode();
     envire::ElevationGrid *eg = dynamic_cast<envire::ElevationGrid *>(item);
-    assert(eg);
-    assert(eg->getGridDepth()==8);
     
     //Load the texture image
     osg::ref_ptr<osg::Image> image = new osg::Image();
     envire::ElevationGrid::ArrayType &data = eg->getGridData(envire::ElevationGrid::ELEVATION);
+
+    double min_z = std::numeric_limits<double>::max(), max_z = std::numeric_limits<double>::min();
+    for (size_t yi = 0; yi < eg->getCellSizeY(); ++yi)
+      for (size_t xi = 0; xi < eg->getCellSizeX(); ++xi)
+      {
+        min_z = std::min(min_z, data[yi][xi]);
+        max_z = std::max(max_z, data[yi][xi]);
+      }
    
     //convert double to uint16 
     int size = eg->getWidth()*eg->getHeight()*3;
@@ -45,22 +49,22 @@ namespace vizkit
     unsigned char* end_pos = &data2[size];
     double* pos2 = data.data();
     
-   //scaling between SCALING_MIN_VALUE and SCALING_MAX_VALUE meters 
-   double maxValue = (1<<24)-1.0;
-   double scaling = maxValue/(SCALING_MAX_VALUE-SCALING_MIN_VALUE);  
-   union
-   {
-      uint32_t ivalue;
-      unsigned char cvalue[4];
-   };
-   while(pos!= end_pos)
-   {
-      ivalue = (uint32_t)(std::max(0.0,std::min(((*pos2++)-SCALING_MIN_VALUE)*scaling,maxValue)));
-      *pos++ = cvalue[0];
-      *pos++ = cvalue[1];
-      *pos++ = cvalue[2];
-   }
-   image->setImage(
+    //scaling between SCALING_MIN_VALUE and SCALING_MAX_VALUE meters 
+    double maxValue = (1<<24)-1.0;
+    double scaling = maxValue/(max_z - min_z);
+    union
+    {
+       uint32_t ivalue;
+       unsigned char cvalue[4];
+    };
+    while(pos!= end_pos)
+    {
+       ivalue = (uint32_t)(std::max(0.0,std::min(((*pos2++)-min_z)*scaling,maxValue)));
+       *pos++ = cvalue[0];
+       *pos++ = cvalue[1];
+       *pos++ = cvalue[2];
+    }
+    image->setImage(
 	    eg->getWidth(),
 	    eg->getHeight(),
 	    1, // datadepth per channel
@@ -71,7 +75,6 @@ namespace vizkit
 	    osg::Image::USE_NEW_DELETE, // USE_NEW_DELETE, //osg::Image::NO_DELETE,// AllocationMode mode (shallow copy)
 	    1);
 	    
-    std::cout << image->getTotalSizeInBytes() << "\n\n";
     loadElevationGridAsHeightMap(geode,*eg,image);
 			
 	//		loadElevationGridAsHightMap(geode,image,eg,0,0,
@@ -87,12 +90,12 @@ namespace vizkit
     osg::HeightField* heightField = new osg::HeightField();
     heightField->allocate(elevation_grid.getWidth(), elevation_grid.getHeight());
     heightField->setXInterval(elevation_grid.getScaleX());
-    heightField->setYInterval(elevation_grid.getScaleX());
+    heightField->setYInterval(elevation_grid.getScaleY());
     heightField->setSkirtHeight(0.0f);
     for (unsigned int r = 0; r < heightField->getNumRows(); r++) {
         for (unsigned int c = 0; c < heightField->getNumColumns(); c++) 
 	{
-	    heightField->setHeight(c, r,std::min( std::max(SCALING_MIN_VALUE,data[r][c]),SCALING_MAX_VALUE));
+	    heightField->setHeight(c, r, data[r][c]);
         }
     }
     
