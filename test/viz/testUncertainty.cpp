@@ -18,7 +18,7 @@ using namespace envire;
 
 namespace vizkit
 {
-class UncertaintyVisualization : public VizPlugin<envire::PointWithUncertainty>
+class UncertaintyVisualization : public Vizkit3DPlugin<envire::PointWithUncertainty>
 {
 public:
     UncertaintyVisualization()
