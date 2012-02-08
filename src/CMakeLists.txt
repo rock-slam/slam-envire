@@ -75,6 +75,7 @@ install(FILES operators/MergeMLS.hpp
     operators/MergePointcloud.hpp
     operators/MLSProjection.hpp
     operators/SimpleTraversability.hpp
+    operators/GridFloatToMLS.hpp
     operators/MLSSlope.hpp
     operators/DistanceGridToPointcloud.hpp
     operators/Projection.hpp
