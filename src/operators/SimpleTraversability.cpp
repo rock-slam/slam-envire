@@ -1,13 +1,16 @@
-#include "MLSSimpleTraversability.hpp"
+#include "SimpleTraversability.hpp"
 #include <base/logging.h>
 
 using namespace envire;
 using envire::Grid;
 
-ENVIRONMENT_ITEM_DEF( MLSSimpleTraversability );
-static envire::SerializationPlugin< MLSSimpleTraversability >  nav_graph_search_TraversabilityClassifier("nav_graph_search::TraversabilityClassifier");
+ENVIRONMENT_ITEM_DEF( SimpleTraversability );
+/* For backward compatibility reasons */
+static envire::SerializationPlugin< SimpleTraversability >  nav_graph_search_TraversabilityClassifier("nav_graph_search::TraversabilityClassifier");
+/* For backward compatibility reasons */
+static envire::SerializationPlugin< SimpleTraversability >  envire_MLSSimpleTraversability("envire::MLSSimpleTraversability");
 
-MLSSimpleTraversability::MLSSimpleTraversability(
+SimpleTraversability::SimpleTraversability(
         double weight_force,
         double force_threshold,
         double max_speed,
@@ -25,12 +28,12 @@ MLSSimpleTraversability::MLSSimpleTraversability(
         input_layers_id[i] = -1;
 }
 
-MLSSimpleTraversability::MLSSimpleTraversability(envire::Serialization& so)
+SimpleTraversability::SimpleTraversability(envire::Serialization& so)
 {
     unserialize(so);
 }
 
-void MLSSimpleTraversability::serialize(envire::Serialization& so)
+void SimpleTraversability::serialize(envire::Serialization& so)
 {
     Operator::serialize(so);
 
@@ -52,7 +55,7 @@ void MLSSimpleTraversability::serialize(envire::Serialization& so)
     so.write("output_band", output_band);
 }
 
-void MLSSimpleTraversability::unserialize(envire::Serialization& so)
+void SimpleTraversability::unserialize(envire::Serialization& so)
 {
     Operator::unserialize(so);
     
@@ -75,18 +78,18 @@ void MLSSimpleTraversability::unserialize(envire::Serialization& so)
     so.read<std::string>("output_band", output_band);
 }
 
-envire::Grid<double>* MLSSimpleTraversability::getInputLayer(INPUT_DATA index) const
+envire::Grid<double>* SimpleTraversability::getInputLayer(INPUT_DATA index) const
 {
     if (input_layers_id[index] == -1)
         return 0;
     return getEnvironment()->getItem< Grid<double> >(input_layers_id[index]).get();
 }
-std::string MLSSimpleTraversability::getInputBand(INPUT_DATA index) const
+std::string SimpleTraversability::getInputBand(INPUT_DATA index) const
 { return input_bands[index]; }
 
-envire::Grid<double>* MLSSimpleTraversability::getSlopeLayer() const { return getInputLayer(SLOPE); }
-std::string MLSSimpleTraversability::getSlopeBand() const { return getInputBand(SLOPE); }
-void MLSSimpleTraversability::setSlope(Grid<double>* grid, std::string const& band_name)
+envire::Grid<double>* SimpleTraversability::getSlopeLayer() const { return getInputLayer(SLOPE); }
+std::string SimpleTraversability::getSlopeBand() const { return getInputBand(SLOPE); }
+void SimpleTraversability::setSlope(Grid<double>* grid, std::string const& band_name)
 {
     addInput(grid);
     input_layers_id[SLOPE] = grid->getUniqueId();
@@ -94,37 +97,37 @@ void MLSSimpleTraversability::setSlope(Grid<double>* grid, std::string const& ba
 
 }
 
-envire::Grid<double>* MLSSimpleTraversability::getMaxStepLayer() const { return getInputLayer(MAX_STEP); }
-std::string MLSSimpleTraversability::getMaxStepBand() const { return getInputBand(MAX_STEP); }
-void MLSSimpleTraversability::setMaxStep(Grid<double>* grid, std::string const& band_name)
+envire::Grid<double>* SimpleTraversability::getMaxStepLayer() const { return getInputLayer(MAX_STEP); }
+std::string SimpleTraversability::getMaxStepBand() const { return getInputBand(MAX_STEP); }
+void SimpleTraversability::setMaxStep(Grid<double>* grid, std::string const& band_name)
 {
     addInput(grid);
     input_layers_id[MAX_STEP] = grid->getUniqueId();
     input_bands[MAX_STEP] = band_name;
 }
 
-envire::Grid<double>* MLSSimpleTraversability::getMaxForceLayer() const { return getInputLayer(MAX_FORCE); }
-std::string MLSSimpleTraversability::getMaxForceBand() const { return getInputBand(MAX_FORCE); }
-void MLSSimpleTraversability::setMaxForce(Grid<double>* grid, std::string const& band_name)
+envire::Grid<double>* SimpleTraversability::getMaxForceLayer() const { return getInputLayer(MAX_FORCE); }
+std::string SimpleTraversability::getMaxForceBand() const { return getInputBand(MAX_FORCE); }
+void SimpleTraversability::setMaxForce(Grid<double>* grid, std::string const& band_name)
 {
     addInput(grid);
     input_layers_id[MAX_FORCE] = grid->getUniqueId();
     input_bands[MAX_FORCE] = band_name;
 }
 
-void MLSSimpleTraversability::setOutput(OutputLayer* grid, std::string const& band_name)
+void SimpleTraversability::setOutput(OutputLayer* grid, std::string const& band_name)
 {
     removeOutputs();
     addOutput(grid);
     output_band = band_name;
 }
 
-bool MLSSimpleTraversability::updateAll()
+bool SimpleTraversability::updateAll()
 {
     std::cout << "update: max_speed=" << max_speed << std::endl;
     OutputLayer* output_layer = getOutput< OutputLayer* >();
     if (!output_layer)
-        throw std::runtime_error("MLSSimpleTraversability: no output band set");
+        throw std::runtime_error("SimpleTraversability: no output band set");
 
     OutputLayer::ArrayType& result = output_band.empty() ?
         output_layer->getGridData() :
@@ -160,7 +163,7 @@ bool MLSSimpleTraversability::updateAll()
         }
     }
     if (!has_data)
-        throw std::runtime_error("MLSSimpleTraversability: no input layer configured");
+        throw std::runtime_error("SimpleTraversability: no input layer configured");
 
     if (inputs[MAX_STEP] && ground_clearance == 0)
         throw std::runtime_error("a max_step band is available, but the ground clearance is set to zero");
@@ -327,7 +330,7 @@ struct RadialLUT
     }
 };
 
-void MLSSimpleTraversability::closeNarrowPassages(MLSSimpleTraversability::OutputLayer& map, std::string const& band_name, double min_width)
+void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer& map, std::string const& band_name, double min_width)
 {
     RadialLUT lut;
     lut.precompute(min_width, map.getScaleX(), map.getScaleY());

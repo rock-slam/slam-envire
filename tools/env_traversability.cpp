@@ -1,7 +1,7 @@
 #include "envire/Core.hpp"
 #include "envire/maps/Grid.hpp"
 #include "envire/maps/MLSGrid.hpp"
-#include "envire/operators/MLSSimpleTraversability.hpp"
+#include "envire/operators/SimpleTraversability.hpp"
 
 #include "boost/scoped_ptr.hpp"
 
@@ -12,7 +12,7 @@ int main( int argc, char* argv[] )
 {
     if( argc < 2 || argc > 8)
     {
-	std::cout << "usage: env_mls_traversability input mass force_threshold max_speed [class_count [min_width [ground_clearance]]]" << std::endl;
+	std::cout << "usage: env_traversability input mass force_threshold max_speed [class_count [min_width [ground_clearance]]]" << std::endl;
         std::cout << "  generates a classified map of traversabilities based on the given map (a single map must contain all the necessary bands)" << std::endl;
         std::cout << "  the generated map will have the same width, height and cell size than the source map" << std::endl;
         std::cout << std::endl;
@@ -32,7 +32,7 @@ int main( int argc, char* argv[] )
 
     env->updateOperators();
 
-    boost::intrusive_ptr< MLSSimpleTraversability::OutputLayer > output = new MLSSimpleTraversability::OutputLayer(
+    boost::intrusive_ptr< SimpleTraversability::OutputLayer > output = new SimpleTraversability::OutputLayer(
             input->getWidth(), input->getHeight(),
             input->getScaleX(), input->getScaleY());
     env->attachItem(output.get());
@@ -54,7 +54,7 @@ int main( int argc, char* argv[] )
         ground_clearance = boost::lexical_cast<double>(argv[7]);
 
     // Create the convertion operator and run it
-    envire::MLSSimpleTraversability *op = new MLSSimpleTraversability(
+    envire::SimpleTraversability *op = new SimpleTraversability(
             weight_force, force_threshold, max_speed, class_count, min_width, ground_clearance);
     env->attachItem( op );
     if (input->hasBand("mean_slope"))

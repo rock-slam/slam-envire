@@ -39,7 +39,7 @@ rock_library(envire
     operators/MergePointcloud.cpp
     operators/ScanMeshing.cpp
     operators/MLSSlope.cpp
-    operators/MLSSimpleTraversability.cpp
+    operators/SimpleTraversability.cpp
     operators/DistanceGridToPointcloud.cpp
     operators/GridFloatToMLS.cpp
     tools/PlyFile.cpp
@@ -74,7 +74,7 @@ install(FILES maps/GridBase.hpp
 install(FILES operators/MergeMLS.hpp
     operators/MergePointcloud.hpp
     operators/MLSProjection.hpp
-    operators/MLSSimpleTraversability.hpp
+    operators/SimpleTraversability.hpp
     operators/MLSSlope.hpp
     operators/DistanceGridToPointcloud.hpp
     operators/Projection.hpp

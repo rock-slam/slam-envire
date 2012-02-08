@@ -21,8 +21,8 @@ namespace envire {
      *
      * If one of the modality is missing, it is simply ignored
      */
-    class MLSSimpleTraversability : public envire::Operator {
-        ENVIRONMENT_ITEM( MLSSimpleTraversability );
+    class SimpleTraversability : public envire::Operator {
+        ENVIRONMENT_ITEM( SimpleTraversability );
 
         enum INPUT_DATA {
             SLOPE,
@@ -64,7 +64,7 @@ namespace envire {
     public:
         typedef envire::Grid<uint8_t> OutputLayer;
 
-        MLSSimpleTraversability(
+        SimpleTraversability(
                 double weight_force,
                 double force_threshold,
                 double max_speed,
@@ -72,7 +72,7 @@ namespace envire {
                 double min_width,
                 double ground_clearance);
 
-        MLSSimpleTraversability(envire::Serialization& so);
+        SimpleTraversability(envire::Serialization& so);
 
         envire::Grid<double>* getSlopeLayer() const;
         std::string getSlopeBand() const;

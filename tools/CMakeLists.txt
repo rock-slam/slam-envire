@@ -39,7 +39,7 @@ rock_executable(env_info env_info.cpp
 rock_executable(env_graphviz env_graphviz.cpp
     DEPS envire)
 
-rock_executable(env_mls_traversability env_mls_traversability.cpp
+rock_executable(env_traversability env_traversability.cpp
     DEPS envire)
 
 rock_executable(env_mls_slopes env_mls_slopes.cpp
