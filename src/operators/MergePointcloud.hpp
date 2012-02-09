@@ -18,7 +18,6 @@ namespace envire {
 
     public:
 	MergePointcloud();
-	MergePointcloud(Serialization& so);
 	virtual ~MergePointcloud();
 
 	void serialize(Serialization& so);

@@ -17,11 +17,6 @@ Layer::Layer() :
 {
 }
 
-Layer::Layer(Serialization& so)
-{
-    unserialize(so);
-}
-
 void Layer::serialize(Serialization& so)
 {
     EnvironmentItem::serialize(so);
@@ -132,11 +127,6 @@ void Layer::removeData(const std::string& type)
 const std::string CartesianMap::className = "envire::CartesianMap";
 
 CartesianMap::CartesianMap() 
-{
-}
-
-CartesianMap::CartesianMap(Serialization& so) :
-    Layer(so)
 {
 }
 

@@ -37,11 +37,6 @@ MLSSimpleTraversability::MLSSimpleTraversability(
         input_layers_id[i] = -1;
 }
 
-MLSSimpleTraversability::MLSSimpleTraversability(envire::Serialization& so)
-{
-    unserialize(so);
-}
-
 void MLSSimpleTraversability::serialize(envire::Serialization& so)
 {
     Operator::serialize(so);

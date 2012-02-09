@@ -162,8 +162,7 @@ namespace envire
     public:
 	static const std::string className;
 	
-	EnvironmentItem();	
-	explicit EnvironmentItem(Serialization &so);	
+	EnvironmentItem();
 
 	/** overide copy constructor, to allow copying, but remove environment
 	 * information for the copied item */
@@ -226,7 +225,8 @@ namespace envire
     
     template<class T> EnvironmentItem* createItem(Serialization &so) 
     {
-	T* o = new T(so);
+	T* o = new T();
+        o->unserialize(so);
 	return o;
     }
 
@@ -379,7 +379,6 @@ namespace envire
         FrameNode();
         FrameNode(const TransformType &t);
         FrameNode(const TransformWithUncertainty &t);
-        FrameNode(Serialization &so);
 
 	virtual void serialize(Serialization &so);
         virtual void unserialize(Serialization &so);
@@ -476,7 +475,6 @@ namespace envire
 	Layer();
 	virtual ~Layer();
 
-	Layer(Serialization& so);
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 
@@ -636,7 +634,6 @@ namespace envire
 	static const std::string className;
 
 	CartesianMap();
-        CartesianMap(Serialization& so);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -667,7 +664,6 @@ namespace envire
 
     public:
 	Map() {};
-        Map(Serialization& so) : CartesianMap( so ) {};
 
 	typedef Eigen::AlignedBox<double, DIMENSION> Extents;
 
@@ -736,15 +732,6 @@ namespace envire
          *                  operator requires
          */
 	Operator(int inputArity = 0, int outputArity = 0);
-
-        /** Constructs an operator out of serialized data
-         *
-         * @arg inputArity if nonzero, this is the number of inputs that this
-         *                 operator requires
-         * @arg outputArity if nonzero, this is the number of outputs that this
-         *                  operator requires
-         */
-	Operator(Serialization& so, int inputArity = 0, int outputArity = 0);
 
         /** Update the output layer(s) according to the defined operation.
          */

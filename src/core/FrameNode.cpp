@@ -27,11 +27,6 @@ FrameNode::FrameNode(const TransformType& t)
 {
 }
 
-FrameNode::FrameNode(Serialization &so)
-{
-    unserialize(so);
-}
-
 void FrameNode::serialize(Serialization &so)
 {
     EnvironmentItem::serialize( so );

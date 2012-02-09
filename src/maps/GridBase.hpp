@@ -60,7 +60,6 @@ namespace envire
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0 );
 	~GridBase();
-	GridBase(Serialization& so);
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 

@@ -11,11 +11,6 @@ TriMesh::TriMesh()
 {
 }
 
-TriMesh::TriMesh(Serialization& so)
-{
-    unserialize(so);
-}
-
 void TriMesh::serialize(Serialization& so)
 {
     Pointcloud::serialize(so, false);

@@ -9,11 +9,6 @@ Eigen::AlignedBox<double, 2> MLSMap::getExtents() const
     throw std::runtime_error("not implemented"); 
 }
 
-MLSMap::MLSMap(Serialization& so)
-    : Map<2>( so )
-{
-}
-
 MLSMap::MLSMap()
 {
 }

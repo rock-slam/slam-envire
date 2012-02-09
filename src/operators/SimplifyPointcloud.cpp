@@ -26,12 +26,6 @@ SimplifyPointcloud::SimplifyPointcloud()
     initDefaults();
 }
 
-SimplifyPointcloud::SimplifyPointcloud(Serialization& so)
-{
-    initDefaults();
-    unserialize(so);
-}
-
 void SimplifyPointcloud::serialize(Serialization& so)
 {
     Operator::serialize(so);

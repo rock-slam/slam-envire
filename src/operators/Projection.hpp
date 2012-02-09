@@ -15,7 +15,6 @@ namespace envire {
     public:
 	Projection();
 
-	Projection(Serialization& so);
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 

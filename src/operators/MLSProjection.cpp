@@ -11,11 +11,6 @@ MLSProjection::MLSProjection()
 {
 }
 
-MLSProjection::MLSProjection(Serialization& so)
-{
-    unserialize(so);
-}
-
 void MLSProjection::serialize(Serialization& so)
 {
     Operator::serialize(so);

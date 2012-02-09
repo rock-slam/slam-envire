@@ -13,7 +13,6 @@ namespace envire {
 
 	SurfaceReconstruction();
 
-	SurfaceReconstruction(Serialization& so);
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 

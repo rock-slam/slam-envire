@@ -21,8 +21,7 @@ namespace envire
 
     public:
 	ScanMeshing();
-
-	ScanMeshing(Serialization& so);
+        
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 

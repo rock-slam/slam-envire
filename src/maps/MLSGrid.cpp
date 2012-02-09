@@ -98,12 +98,6 @@ envire::MLSGrid* MLSGrid::cloneShallow() const
     return res;
 }
 
-MLSGrid::MLSGrid(Serialization& so)
-    : mem_pool( sizeof( SurfacePatchItem ) )
-{
-    unserialize(so);
-}
-
 MLSGrid::~MLSGrid()
 {
 }

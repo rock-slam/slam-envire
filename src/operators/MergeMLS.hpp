@@ -13,7 +13,6 @@ class MergeMLS : public Operator
 
 public:
     MergeMLS() {};
-    MergeMLS( Serialization& so ) : Operator( so ) {}
 
     bool updateAll()
     {

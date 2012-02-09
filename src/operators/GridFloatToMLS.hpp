@@ -20,7 +20,6 @@ namespace envire {
 
     public:
 	GridFloatToMLS();
-	GridFloatToMLS(Serialization& so);
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 

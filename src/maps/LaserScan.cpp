@@ -17,11 +17,6 @@ LaserScan::LaserScan()
 {
 }
 
-LaserScan::LaserScan(Serialization& so)
-{
-    unserialize(so);
-}
-
 void LaserScan::serialize(Serialization& so)
 {
     CartesianMap::serialize(so);

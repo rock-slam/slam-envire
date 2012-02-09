@@ -73,8 +73,6 @@ namespace envire {
                 double min_width,
                 double ground_clearance);
 
-        MLSSimpleTraversability(envire::Serialization& so);
-
         envire::Grid<double>* getSlopeLayer() const;
         std::string getSlopeBand() const;
         void setSlope(envire::Grid<double>* grid, std::string const& band_name);

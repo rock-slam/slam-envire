@@ -25,7 +25,6 @@ namespace envire
     public:
         MLSSlope()
             : corrected_step_threshold(0.25) {}
-	MLSSlope( Serialization &so ) : Operator( so ) {}
         MLSSlope(double corrected_step_threshold) 
             : corrected_step_threshold(corrected_step_threshold) {}
 	void serialize( Serialization &so ) { Operator::serialize( so ) ;}

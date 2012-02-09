@@ -19,11 +19,6 @@ Projection::Projection()
 {
 }
 
-Projection::Projection(Serialization& so)
-{
-    unserialize(so);
-}
-
 void Projection::serialize(Serialization& so)
 {
     Operator::serialize(so);

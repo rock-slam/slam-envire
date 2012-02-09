@@ -22,12 +22,6 @@ void ScanMeshing::setDefaultConfiguration()
     extractMarkers = false;
 }
 
-ScanMeshing::ScanMeshing(Serialization& so)
-{
-    setDefaultConfiguration();
-    unserialize(so);
-}
-
 void ScanMeshing::serialize(Serialization& so)
 {
     Operator::serialize(so);
