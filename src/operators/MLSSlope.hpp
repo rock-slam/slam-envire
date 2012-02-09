@@ -29,6 +29,7 @@ namespace envire
         MLSSlope(double corrected_step_threshold) 
             : corrected_step_threshold(corrected_step_threshold) {}
 	void serialize( Serialization &so ) { Operator::serialize( so ) ;}
+	void unserialize( Serialization &so ) { Operator::unserialize( so ) ;}
 
         double computeGradient(double mean0, double mean1, double stdev0, double stdev1);
 	bool updateAll();

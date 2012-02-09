@@ -7,6 +7,18 @@ using envire::Grid;
 ENVIRONMENT_ITEM_DEF( MLSSimpleTraversability );
 static envire::SerializationPlugin< MLSSimpleTraversability >  nav_graph_search_TraversabilityClassifier("nav_graph_search::TraversabilityClassifier");
 
+MLSSimpleTraversability::MLSSimpleTraversability()
+    : weight_force(0)
+    , force_threshold(0)
+    , max_speed(0)
+    , class_count(0)
+    , min_width(0)
+    , ground_clearance(0)
+{
+    for (int i = 0; i < INPUT_COUNT; ++i)
+        input_layers_id[i] = -1;
+}
+
 MLSSimpleTraversability::MLSSimpleTraversability(
         double weight_force,
         double force_threshold,

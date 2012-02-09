@@ -64,6 +64,7 @@ namespace envire {
     public:
         typedef envire::Grid<uint8_t> OutputLayer;
 
+        MLSSimpleTraversability();
         MLSSimpleTraversability(
                 double weight_force,
                 double force_threshold,
