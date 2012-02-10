@@ -12,7 +12,6 @@ namespace envire {
 
 	SimplifyPointcloud();
 
-	SimplifyPointcloud(Serialization& so);
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 

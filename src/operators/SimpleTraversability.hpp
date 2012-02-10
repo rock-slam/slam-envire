@@ -64,6 +64,7 @@ namespace envire {
     public:
         typedef envire::Grid<uint8_t> OutputLayer;
 
+        SimpleTraversability();
         SimpleTraversability(
                 double weight_force,
                 double force_threshold,
@@ -71,8 +72,6 @@ namespace envire {
                 int class_count,
                 double min_width,
                 double ground_clearance);
-
-        SimpleTraversability(envire::Serialization& so);
 
         envire::Grid<double>* getSlopeLayer() const;
         std::string getSlopeBand() const;

@@ -16,7 +16,6 @@ namespace envire
 
     public:
 	Featurecloud();
-	Featurecloud(Serialization& so);
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 

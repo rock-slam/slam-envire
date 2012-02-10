@@ -11,10 +11,6 @@ MLSToGrid::MLSToGrid()
     : Operator(1, 1)
     , mOutLayerName(ElevationGrid::ELEVATION) {}
 
-MLSToGrid::MLSToGrid(Serialization& so)
-    : Operator(so, 1, 1)
-    , mOutLayerName(ElevationGrid::ELEVATION) {}
-
 MLSToGrid::~MLSToGrid() {}
 
 void MLSToGrid::serialize( Serialization &so )

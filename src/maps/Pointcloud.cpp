@@ -21,11 +21,6 @@ Pointcloud::~Pointcloud()
 {
 }
 
-Pointcloud::Pointcloud(Serialization& so, bool handleMap)
-{
-    unserialize(so, handleMap);
-}
-
 void Pointcloud::serialize(Serialization& so)
 {
     serialize(so, true);

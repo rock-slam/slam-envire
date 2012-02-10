@@ -12,6 +12,14 @@ ENVIRONMENT_ITEM_DEF( MLSGrid )
  */
 static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
+MLSGrid::MLSGrid()
+    : GridBase()
+    , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
+    , hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
+{
+    clear();
+}
+
 MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scaley, double offsetx, double offsety)
     : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
     , cells( boost::extents[cellSizeX][cellSizeY] )
@@ -88,12 +96,6 @@ envire::MLSGrid* MLSGrid::cloneShallow() const
     res->thickness = thickness;
     res->cellcount = cellcount;
     return res;
-}
-
-MLSGrid::MLSGrid(Serialization& so)
-    : mem_pool( sizeof( SurfacePatchItem ) )
-{
-    unserialize(so);
 }
 
 MLSGrid::~MLSGrid()

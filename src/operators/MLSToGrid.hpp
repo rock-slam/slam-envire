@@ -19,7 +19,6 @@ namespace envire
 
     public:
         MLSToGrid();
-        MLSToGrid(Serialization& so);
         ~MLSToGrid();
 
 	void serialize( Serialization &so );

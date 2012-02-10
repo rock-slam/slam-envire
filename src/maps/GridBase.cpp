@@ -20,14 +20,6 @@ GridBase::~GridBase()
 {
 }
 
-GridBase::GridBase(Serialization& so)
-    : cellSizeX(0), cellSizeY(0)
-    , scalex(0), scaley(0)
-    , offsetx(0), offsety(0)
-{
-    unserialize(so);
-}
-
 void GridBase::serialize(Serialization& so)
 {
     CartesianMap::serialize(so);

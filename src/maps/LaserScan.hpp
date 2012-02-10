@@ -52,7 +52,6 @@ namespace envire {
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	    LaserScan();
             
-            LaserScan(Serialization& so);
 	    void serialize(Serialization& so);
             void unserialize(Serialization& so);
             

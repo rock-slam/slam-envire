@@ -19,11 +19,6 @@ MergePointcloud::MergePointcloud() {
 
 }
 
-MergePointcloud::MergePointcloud(Serialization& so)
-{
-    unserialize(so);
-}
-
 MergePointcloud::~MergePointcloud() {
     // TODO Auto-generated destructor stub
 }

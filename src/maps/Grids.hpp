@@ -14,8 +14,8 @@ namespace envire
     private:
       const static std::vector<std::string> &bands;
     public:
+      TraversabilityGrid() : Grid<uint8_t>() {};
       TraversabilityGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
-      TraversabilityGrid(Serialization& so):Grid<uint8_t>(so,className){unserialize(so);};
       ~TraversabilityGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
@@ -28,8 +28,8 @@ namespace envire
     private:
       const static std::vector<std::string> &bands;
     public:
+      ConfidenceGrid() : Grid<uint8_t>() {};
       ConfidenceGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
-      ConfidenceGrid(Serialization& so):Grid<uint8_t>(so,className){unserialize(so);};
       ~ConfidenceGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
@@ -43,11 +43,11 @@ namespace envire
   private:
       const static std::vector<std::string> &bands;
   public:
+      DistanceGrid() : Grid<float>() {};
       DistanceGrid( const base::samples::DistanceImage& dimage )
 	  : Grid<float>::Grid(dimage.width,dimage.height,dimage.scale_x,dimage.scale_y,dimage.center_x,dimage.center_y) {}
       DistanceGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 )
 	  : Grid<float>::Grid(width,height,scalex,scaley,offsetx,offsety) {}
-      DistanceGrid(Serialization& so):Grid<float>(so,className) {unserialize(so);}
       virtual const std::vector<std::string>& getBands() const {return bands;}
 
       void copyFromDistanceImage( const base::samples::DistanceImage& dimage );
@@ -63,8 +63,8 @@ namespace envire
     private:
       const static std::vector<std::string> &bands;
     public:
+      ElevationGrid() : Grid<double>() {};
       ElevationGrid(size_t width, size_t height, double scalex, double scaley):Grid<double>::Grid(width,height,scalex,scaley){};
-      ElevationGrid(Serialization& so):Grid<double>(so,className){unserialize(so);};
       ~ElevationGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
 
@@ -96,8 +96,8 @@ namespace envire
     private:
       const static std::vector<std::string> &bands;  
     public:
+      OccupancyGrid() : Grid<unsigned char>() {};
       OccupancyGrid(size_t width, size_t height, double scalex, double scaley):Grid<unsigned char>::Grid(width,height,scalex,scaley){};
-      OccupancyGrid(Serialization& so):Grid<unsigned char>(so,className){unserialize(so);};
       ~OccupancyGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
@@ -112,9 +112,9 @@ namespace envire
     private:
       const static std::vector<std::string> &bands;     
     public:
+      ImageRGB24() : Grid<unsigned char>() {};
       ImageRGB24(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 ) 
 	  : Grid<unsigned char>::Grid(width,height,scalex,scaley,offsetx,offsety){};
-      ImageRGB24(Serialization& so):Grid<unsigned char>(so,className){unserialize(so);};
       ~ImageRGB24(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
       

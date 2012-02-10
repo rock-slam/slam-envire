@@ -21,11 +21,6 @@ SurfaceReconstruction::SurfaceReconstruction()
 {
 }
 
-SurfaceReconstruction::SurfaceReconstruction(Serialization& so)
-{
-    unserialize(so);
-}
-
 void SurfaceReconstruction::serialize(Serialization& so)
 {
     Operator::serialize(so);

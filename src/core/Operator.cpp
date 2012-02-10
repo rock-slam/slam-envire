@@ -10,12 +10,6 @@ Operator::Operator(int inputArity, int outputArity)
 {
 }
 
-Operator::Operator(Serialization& so, int inputArity, int outputArity)
-    : EnvironmentItem(so)
-    , inputArity(inputArity), outputArity(outputArity)
-{
-}
-
 bool Operator::setInput( Layer* layer )
 {
     removeInputs();

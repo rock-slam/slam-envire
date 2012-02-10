@@ -11,8 +11,8 @@ namespace envire
 	
     public:
 	DistanceGridToPointcloud() : uncertaintyFactor(0.1), maxDistance(10.0) {};
-	DistanceGridToPointcloud( Serialization& so ) : Operator( so ) {}
 	void serialize( Serialization& so ) { Operator::serialize( so ); }
+	void unserialize( Serialization& so ) { Operator::unserialize( so ); }
 
 	bool updateAll();
 

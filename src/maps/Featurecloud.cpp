@@ -8,12 +8,6 @@ Featurecloud::Featurecloud()
 {
 }
 
-Featurecloud::Featurecloud(Serialization& so)
-    : descriptorSize(0)
-{
-    unserialize(so);
-}
-
 void Featurecloud::serialize(Serialization& so)
 {
     Pointcloud::serialize( so, false );

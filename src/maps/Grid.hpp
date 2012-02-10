@@ -71,7 +71,6 @@ namespace envire
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0);
 	~Grid();
-	Grid(Serialization& so);
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
@@ -286,10 +285,6 @@ namespace envire
     template<class T>Grid<T>::Grid(Serialization& so,const std::string &class_name)
       : GridBase(so)
     {
-    }
-    template<class T>Grid<T>::Grid(Serialization& so)
-    {
-	unserialize(so);
     }
     template<class T>Grid<T>::~Grid()
     {

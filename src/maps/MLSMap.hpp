@@ -16,7 +16,6 @@ public:
 
     MLSMap();
     MLSMap(const MLSMap& other);
-    MLSMap(Serialization& so);
 
     MLSMap& operator=(const MLSMap& other);
 

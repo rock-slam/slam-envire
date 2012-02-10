@@ -64,12 +64,6 @@ Environment* EnvironmentItem::getEnvironment() const
     return env;
 }
 
-EnvironmentItem::EnvironmentItem(Serialization &so)
-    : ref_count(0)
-{
-    unserialize(so);
-}
-
 void EnvironmentItem::serialize(Serialization &so)
 {
     so.write( "id", unique_id );
