@@ -363,17 +363,15 @@ namespace envire
         FileSerialization* fso = dynamic_cast<FileSerialization*>(&so);
 
 	// get layers vector first
-	std::vector<std::string> layers;
-        int map_index = 0;
+	// base it on the bands and see if there additional layers available
+	std::vector<std::string> layers = getBands();
         for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)
-        {
-            if (it->second->isOfType<ArrayType>())
-            {
+            if (it->second->isOfType<ArrayType>() && find( layers.begin(), layers.end(), it->first ) == layers.end() )
 		layers.push_back( it->first );
-                so.write(boost::lexical_cast<std::string>(map_index), it->first);
-                map_index++;
-	    }
-	}
+
+	// write layer configuration to properties
+	for( size_t i=0; i<layers.size(); i++ )
+	    so.write(boost::lexical_cast<std::string>(i), layers[i]);
 
 	// differentiate between single file, multi-file and memory serialization
 	if( fso && singleFile() )
@@ -386,7 +384,7 @@ namespace envire
 		for( size_t i=0; i<layers.size(); i++ )
 		    writeGridData(layers[i], so.getBinaryOutputStream(getFullPath(getMapFileName(), layers[i])));
 
-        so.write("map_count", map_index);
+        so.write("map_count", layers.size());
     }
 
     template<class T>void Grid<T>::readMap(const std::string& path)
