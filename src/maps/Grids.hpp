@@ -118,17 +118,8 @@ namespace envire
       ~ImageRGB24(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
       
-      //save all bands in one file
-      virtual void writeMap(const std::string& path)
-      {
-	writeGridData(bands,getFullPath(path,""));
-      };
-	
-      //read all bands from one file
-      virtual void readMap(const std::string& path)
-      {
-	readGridData(bands,getFullPath(path,""));
-      };
+      // write all bands into a single tiff file
+      bool singleFile() const { return true; }
 
       void copyFromFrame( const base::samples::frame::Frame& frame )
       {

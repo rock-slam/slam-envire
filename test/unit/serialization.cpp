@@ -250,4 +250,28 @@ BOOST_AUTO_TEST_CASE( DistanceGrid_serialization )
         }
 }
 
+BOOST_AUTO_TEST_CASE( ImageRGB24_serialization ) 
+{
+    boost::scoped_ptr<Environment> env( new Environment() );
+
+    ImageRGB24::Ptr image = new ImageRGB24( 50, 50, 0.5, 0.5 );
+    image->getFromRaster( ImageRGB24::R, 0, 0 ) = 10;
+    image->getFromRaster( ImageRGB24::G, 10, 1 ) = 20;
+    image->getFromRaster( ImageRGB24::B, 20, 1 ) = 30;
+
+    env->setFrameNode( image.get(), env->getRootNode() );
+
+    // test file serialization
+    env->serialize(serialization_test_path);
+
+    boost::scoped_ptr<Environment> env2(Environment::unserialize(serialization_test_path));
+    std::list<CartesianMap*> map_list = env2->getMaps(env2->getRootNode());
+    ImageRGB24* dg2 = dynamic_cast<ImageRGB24*>(map_list.front());
+    BOOST_CHECK(dg2);
+
+    BOOST_CHECK_EQUAL(dg2->getFromRaster( ImageRGB24::R, 0, 0 ), 10 );
+    BOOST_CHECK_EQUAL(dg2->getFromRaster( ImageRGB24::G, 10, 1 ), 20 );
+    BOOST_CHECK_EQUAL(dg2->getFromRaster( ImageRGB24::B, 20, 1 ), 30 );
+}
+
 BOOST_AUTO_TEST_SUITE_END()

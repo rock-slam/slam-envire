@@ -18,7 +18,9 @@
 #include <gdal/gdal_priv.h>
 #include <gdal/ogr_spatialref.h>
 
-#include "boost/multi_array.hpp"
+#include <boost/multi_array.hpp>
+
+#include <boost/filesystem.hpp>
 
 #include <vector>
 #include <stdexcept>
@@ -62,6 +64,13 @@ namespace envire
          * serialization strategy changed. Do not use in new code
          */
         void readMap(const std::string& path);
+
+	/** 
+	 * override this method and return true if the bands in the 
+	 * grid should be written to a single file instead
+	 * of multiple files.
+	 */
+	virtual bool singleFile() const { return false; }
 
     public:
         typedef boost::intrusive_ptr< Grid<T> > Ptr;
@@ -150,6 +159,13 @@ namespace envire
         /** Returns the value of the cell (xi, yi) in band \c band
          */
         T getFromRaster(std::string const& band, size_t xi, size_t yi) const
+        {
+            return getGridData(band)[yi][xi];
+        } 
+
+        /** Returns the value of the cell (xi, yi) in band \c band
+         */
+        T& getFromRaster(std::string const& band, size_t xi, size_t yi)
         {
             return getGridData(band)[yi][xi];
         } 
@@ -301,49 +317,75 @@ namespace envire
         // field. In the old one, that key does not exist. Discriminate, and
         // load old maps the old way
         FileSerialization* fso = dynamic_cast<FileSerialization*>(&so);
-        if (so.hasKey("map_count"))
-        {
-            int count = so.read<int>("map_count");
-            for (int i = 0; i < count; ++i)
-            {
-                std::string layer_name = so.read<std::string>(boost::lexical_cast<std::string>(i));
-                if(fso)
-                    readGridData(layer_name, getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), layer_name));
-                else
-                    readGridData(layer_name, so.getBinaryInputStream(getFullPath(getMapFileName( getClassName() ), layer_name)));
-            }
-        }
-        else
-        {
-            if(fso)
-            {
-                readMap(fso->getMapPath()); 
-            }
-            else
-            {
-                throw std::runtime_error("can't unserialize " + className + ": missing key 'map_count' in yaml data.");
-            }
-        }
+
+	if (so.hasKey("map_count"))
+	{
+	    // read in the layer names 
+	    int count = so.read<int>("map_count");
+	    std::vector<std::string> layers;
+	    for (int i = 0; i < count; ++i)
+		layers.push_back( so.read<std::string>(boost::lexical_cast<std::string>(i)) );
+
+	    // there are three cases to differentiate here
+	    // single file access, multi-file access and memory access
+	    if( fso )
+	    {
+		std::string single_file = getFullPath(getMapFileName( fso->getMapPath(), getClassName() ),"" );
+		if( singleFile() && boost::filesystem::exists( single_file ) )
+		    readGridData(layers, single_file);
+		else
+		    for (int i = 0; i < count; ++i)
+			readGridData(layers[i], getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), layers[i]));
+	    }
+	    else
+	    {
+		for (int i = 0; i < count; ++i)
+		    readGridData(layers[i], so.getBinaryInputStream(getFullPath(getMapFileName( getClassName() ), layers[i])));
+	    }
+	}
+	else
+	{
+	    // old way of using bands
+	    if(fso)
+	    {
+		readMap(fso->getMapPath()); 
+	    }
+	    else
+	    {
+		throw std::runtime_error("can't unserialize " + className + ": missing key 'map_count' in yaml data.");
+	    }
+	}
     }
     template<class T>void Grid<T>::serialize(Serialization& so)
     {
 	GridBase::serialize(so);
         
         FileSerialization* fso = dynamic_cast<FileSerialization*>(&so);
-        
+
+	// get layers vector first
+	std::vector<std::string> layers;
         int map_index = 0;
         for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)
         {
             if (it->second->isOfType<ArrayType>())
             {
+		layers.push_back( it->first );
                 so.write(boost::lexical_cast<std::string>(map_index), it->first);
                 map_index++;
-                if(fso)
-                    writeGridData(it->first, getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), it->first));
-                else
-                    writeGridData(it->first, so.getBinaryOutputStream(getFullPath(getMapFileName(), it->first)));
-            }
-        }
+	    }
+	}
+
+	// differentiate between single file, multi-file and memory serialization
+	if( fso && singleFile() )
+	    writeGridData( layers, getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), "") );
+	else
+	    if( fso )
+		for( size_t i=0; i<layers.size(); i++ )
+		    writeGridData(layers[i], getFullPath(getMapFileName( fso->getMapPath(), getClassName() ), layers[i]));
+	    else
+		for( size_t i=0; i<layers.size(); i++ )
+		    writeGridData(layers[i], so.getBinaryOutputStream(getFullPath(getMapFileName(), layers[i])));
+
         so.write("map_count", map_index);
     }
 
