@@ -1,6 +1,7 @@
 #include "Serialization.hpp"
 
 #include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -265,7 +266,7 @@ FileSerialization::~FileSerialization()
 
 const std::string FileSerialization::getMapPath() const
 {
-    return sceneDir.string();
+    return sceneDir;
 }
 
 void FileSerialization::setSceneDir(const std::string dir)
@@ -275,7 +276,8 @@ void FileSerialization::setSceneDir(const std::string dir)
 
 std::istream& FileSerialization::getBinaryInputStream(const std::string &filename)
 {
-    boost::filesystem::path fileDir(sceneDir / filename);
+    boost::filesystem::path fileDir(sceneDir);
+    fileDir = fileDir / filename;
     std::ifstream *is = new std::ifstream(fileDir.string().c_str());
     if( !is->is_open() || is->fail() )
     {
@@ -287,7 +289,8 @@ std::istream& FileSerialization::getBinaryInputStream(const std::string &filenam
 
 std::ostream& FileSerialization::getBinaryOutputStream(const std::string &filename)
 {
-    boost::filesystem::path fileDir(sceneDir / filename);
+    boost::filesystem::path fileDir(sceneDir);
+    fileDir = fileDir / filename;
     std::ofstream *os = new std::ofstream(fileDir.string().c_str());
     if( !os->is_open() || os->fail() )
     {

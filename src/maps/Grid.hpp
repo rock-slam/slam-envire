@@ -20,14 +20,21 @@
 
 #include <boost/multi_array.hpp>
 
-#include <boost/filesystem.hpp>
-
 #include <vector>
 #include <stdexcept>
 #include <base/logging.h>
 
 namespace envire 
 {
+    /** Tests if a path points to an existing file or not
+     *
+     * It uses directly boost::filesystem, but avoids including
+     * boost::filesystem in headers. This is meant to avoid "leaking"
+     * boost::filesystem to client libraries, since it pushes quite a bit of
+     * requirements and is incompatible with older versions of gccxml
+     */
+    bool fileExists(std::string const& path);
+
     /** Generic handling of a multi-layer grid
      *
      * The data is stored as a boost multiarray. The indices in the boost
@@ -331,7 +338,7 @@ namespace envire
 	    if( fso )
 	    {
 		std::string single_file = getFullPath(getMapFileName( fso->getMapPath(), getClassName() ),"" );
-		if( singleFile() && boost::filesystem::exists( single_file ) )
+		if( singleFile() && fileExists(single_file) )
 		    readGridData(layers, single_file);
 		else
 		    for (int i = 0; i < count; ++i)

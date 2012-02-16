@@ -9,7 +9,6 @@
 #include <string>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem/path.hpp>
 
 namespace envire
 {
@@ -134,7 +133,7 @@ namespace envire
     class FileSerialization : public Serialization
     {
     protected:
-        boost::filesystem::path sceneDir;
+        std::string sceneDir;
         std::vector<std::ifstream*> ifstreams;
         std::vector<std::ofstream*> ofstreams;
         

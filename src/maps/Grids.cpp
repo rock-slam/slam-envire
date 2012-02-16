@@ -1,6 +1,12 @@
 #include "Grids.hpp"
+#include <boost/filesystem/operations.hpp>
 
 using namespace envire;
+
+bool envire::fileExists(std::string const& path)
+{
+    return boost::filesystem::exists(path);
+}
 
 static envire::SerializationPlugin< Grid<double> >   Grid_double_plugin("Grid_d");
 static envire::SerializationPlugin< Grid<float> >    Grid_float_plugin("Grid_f");
