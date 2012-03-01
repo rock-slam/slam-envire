@@ -4,6 +4,7 @@
 #include <vizkit/Vizkit3DPlugin.hpp>
 #include <osg/Geometry>
 #include <envire/Core.hpp>
+#include <envire/core/Serialization.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
 #include <vizkit/EnvireEventListener.hpp>
@@ -14,7 +15,8 @@ class QTreeWidget;
 namespace vizkit 
 {
 
-class EnvireVisualization : public VizPluginAdapter<envire::Environment*>
+class EnvireVisualization : 
+    public VizPluginAdapter<envire::Environment*>
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -39,6 +41,8 @@ public:
 
     void setFilter( envire::EventFilter *filter ) { eventListener->setFilter( filter ); }
 
+    Q_INVOKABLE void updateBinaryEvent( envire::EnvireBinaryEvent const& data );
+
 protected:
     virtual void operatorIntern( osg::Node* node, osg::NodeVisitor* nv );
     virtual void updateDataIntern( envire::Environment* const& data );
@@ -55,6 +59,8 @@ private:
 
     boost::shared_ptr<EnvireEventListener> eventListener;
     boost::shared_ptr<TreeViewListener> twl;
+
+    envire::BinarySerialization serialization;
 };
 
 }
