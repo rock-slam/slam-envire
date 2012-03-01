@@ -205,7 +205,7 @@ namespace envire
          * Unserializes a EnvironmentItem from a given EnvireBinaryEvent.
          * @return the EnvironmentItem
          */
-        EnvironmentItem* unserializeBinaryEvent(EnvireBinaryEvent& bin_item);
+        EnvironmentItem* unserializeBinaryEvent(const EnvireBinaryEvent& bin_item);
         
         /**
          * Serializes a given EnvironmentItem to a given EnvireBinaryEvent.

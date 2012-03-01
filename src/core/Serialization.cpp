@@ -606,12 +606,12 @@ std::ostream& BinarySerialization::getBinaryOutputStream(const std::string &file
     return *ostream;
 }
 
-EnvironmentItem* BinarySerialization::unserializeBinaryEvent(EnvireBinaryEvent& bin_item)
+EnvironmentItem* BinarySerialization::unserializeBinaryEvent(const EnvireBinaryEvent& bin_item)
 {
     // set up yaml document
     yaml_parser_initialize(&yamlSerialization->parser);
     
-    yaml_parser_set_input_string(&yamlSerialization->parser, reinterpret_cast<unsigned char*>(bin_item.yamlProperties.data()), bin_item.yamlProperties.size());
+    yaml_parser_set_input_string(&yamlSerialization->parser, reinterpret_cast<const unsigned char*>(bin_item.yamlProperties.data()), bin_item.yamlProperties.size());
     if(!yaml_parser_load(&yamlSerialization->parser, &yamlSerialization->document))
     {
         yaml_parser_delete(&yamlSerialization->parser);
@@ -646,7 +646,7 @@ EnvironmentItem* BinarySerialization::unserializeBinaryEvent(EnvireBinaryEvent& 
         if(bin_item.binaryStreams.size() > i)
         {
             std::stringstream *istream = new std::stringstream();
-            std::vector<uint8_t> &bin_stream = bin_item.binaryStreams[i];
+            const std::vector<uint8_t> &bin_stream = bin_item.binaryStreams[i];
             std::copy(bin_stream.begin(), bin_stream.end(), ostream_iterator<uint8_t>(*istream));
             stringstreams[bin_item.binaryStreamNames[i]] = istream;
         }
