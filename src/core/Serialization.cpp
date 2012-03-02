@@ -736,6 +736,10 @@ void BinarySerialization::cleanUp()
 
 void SynchronizationEventHandler::handle(const envire::Event& message)
 {
+    // if there is a filter, see if the event gets filtered out
+    if( filter && !filter->filter( message ) )
+	return;
+
     long id_a = message.a ? message.a->getUniqueId() : message.id_a;
     long id_b = message.b ? message.b->getUniqueId() : message.id_b;
     EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, id_a, id_b);

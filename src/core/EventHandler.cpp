@@ -14,9 +14,6 @@ void EventDispatcher::setRootNode(FrameNode *root) {}
 void EventDispatcher::removeRootNode(FrameNode *root) {}
 void EventDispatcher::itemModified(EnvironmentItem *item) {}
 
-EventListener::EventListener()
-    : filter(NULL) {}
-
 void EventListener::handle( const Event& event )
 {
     bool res = true;

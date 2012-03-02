@@ -9,13 +9,43 @@
 namespace envire
 {
 
+class EventHandler;
+
+class EventFilter
+{
+public:
+    EventFilter() : handler(NULL) {}
+    virtual bool filter( envire::Event const& ) = 0;
+
+    /** @brief this function will get called 
+     * by the handler, once the filter is attached.
+     */
+    void setHandler( EventHandler* handler ) { this->handler = handler; }
+
+protected:
+    EventHandler *handler;
+};
+
 /** An EventHandler can be registered with an environment, and is then called,
  * whenever an new Event is generated within the Environment
  */
 class EventHandler
 {
 public:
+    EventHandler() : filter(NULL) {}
+
     virtual void handle( const Event& message ) = 0;
+
+    /** @brief set optional event filter
+     */
+    void setFilter( EventFilter* filter ) 
+    { 
+	this->filter = filter; 
+	filter->setHandler( this );
+    }
+
+protected:
+    EventFilter* filter;
 };
 
 /** Event dispatcher interface class. Override the callbacks methods that you
@@ -43,25 +73,13 @@ public:
     virtual void itemModified(EnvironmentItem *item);
 };
 
-class EventFilter
-{
-public:
-    virtual bool filter( envire::Event const& ) = 0;
-};
-
 /** Convenience class, that performs the dispatching of particular event
  * types into callback methods.
  */
 class EventListener : public EventHandler, public EventDispatcher
 {
 public:
-    EventListener();
     void handle( const Event& message );
-
-    void setFilter( EventFilter *filter ) { this->filter = filter; }
-
-protected:
-    EventFilter *filter;
 };
 
 class EventQueue : public EventHandler

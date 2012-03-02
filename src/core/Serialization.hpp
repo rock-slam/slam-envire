@@ -243,7 +243,7 @@ namespace envire
         void handle( const Event& message );
         
         virtual void handle( EnvireBinaryEvent* binary_event ) = 0;
-        
+
     protected:
         BinarySerialization serialization;
     };
