@@ -18,6 +18,8 @@ namespace vizkit
 class EnvireVisualization : 
     public VizPluginAdapter<envire::Environment*>
 {
+    Q_OBJECT
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
