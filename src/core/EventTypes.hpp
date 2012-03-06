@@ -40,7 +40,7 @@ namespace envire
     struct EnvireBinaryEvent
     {
         // event part
-        long id_a, id_b;
+        std::string id_a, id_b;
         event::Type type;
         event::Operation operation;
         
@@ -51,8 +51,8 @@ namespace envire
         std::vector< std::vector<uint8_t> > binaryStreams;
         
         EnvireBinaryEvent()
-         : id_a(-1), id_b(-1), className("") {};
-        EnvireBinaryEvent(event::Type type, event::Operation operation, long id_a, long id_b)
+         : id_a(""), id_b(""), className("") {};
+        EnvireBinaryEvent(event::Type type, event::Operation operation, std::string id_a, std::string id_b)
          : id_a(id_a), id_b(id_b), type(type), operation(operation), className("") {};
     };
 

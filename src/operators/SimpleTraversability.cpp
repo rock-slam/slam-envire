@@ -19,7 +19,7 @@ SimpleTraversability::SimpleTraversability()
     , ground_clearance(0)
 {
     for (int i = 0; i < INPUT_COUNT; ++i)
-        input_layers_id[i] = -1;
+        input_layers_id[i] = "";
 }
 
 SimpleTraversability::SimpleTraversability(
@@ -37,7 +37,7 @@ SimpleTraversability::SimpleTraversability(
     , ground_clearance(ground_clearance)
 {
     for (int i = 0; i < INPUT_COUNT; ++i)
-        input_layers_id[i] = -1;
+        input_layers_id[i] = "";
 }
 
 void SimpleTraversability::serialize(envire::Serialization& so)
@@ -46,7 +46,7 @@ void SimpleTraversability::serialize(envire::Serialization& so)
 
     for (int i = 0; i < INPUT_COUNT; ++i)
     {
-        if (input_layers_id[i] != -1 && !input_bands[i].empty())
+        if (input_layers_id[i] != "" && !input_bands[i].empty())
         {
             so.write("input" + boost::lexical_cast<std::string>(i), input_layers_id[i]);
             so.write("input" + boost::lexical_cast<std::string>(i) + "_band", input_bands[i]);
@@ -71,7 +71,7 @@ void SimpleTraversability::unserialize(envire::Serialization& so)
         std::string input_key = "input" + boost::lexical_cast<std::string>(i);
         if (so.hasKey(input_key))
         {
-            input_layers_id[i] = so.read<int>(input_key);
+            input_layers_id[i] = so.read<std::string>(input_key);
             input_bands[i] = so.read<std::string>(input_key + "_band");
         }
     }
@@ -87,7 +87,7 @@ void SimpleTraversability::unserialize(envire::Serialization& so)
 
 envire::Grid<double>* SimpleTraversability::getInputLayer(INPUT_DATA index) const
 {
-    if (input_layers_id[index] == -1)
+    if (input_layers_id[index] == "")
         return 0;
     return getEnvironment()->getItem< Grid<double> >(input_layers_id[index]).get();
 }
@@ -153,7 +153,7 @@ bool SimpleTraversability::updateAll()
     bool has_data = false;
     for (int i = 0; i < INPUT_COUNT; ++i)
     {
-        if (input_layers_id[i] != -1 && !input_bands[i].empty())
+        if (input_layers_id[i] != "" && !input_bands[i].empty())
         {
             input_layers[i] = getEnvironment()->getItem< Grid<double> >(input_layers_id[i]).get();
             has_data = true;

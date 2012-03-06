@@ -148,7 +148,7 @@ namespace envire
 
 	/** each environment item must have a unique id.
 	 */
-	long unique_id;
+	std::string unique_id;
 
 	/** non-unique label which can be used for any purpose
 	 */
@@ -199,7 +199,15 @@ namespace envire
 
 	/** @return the unique id of this environmentitem
 	 */
-	long getUniqueId() const;
+	std::string getUniqueId() const;
+        
+        /** @return the environment prefix, which is part of the unique id
+         */
+        std::string getUniqueIdPrefix() const;
+        
+        /** @return the suffix of the unique id, which must be a integral number
+         */
+        long getUniqueIdSuffix() const;
 
 	/** marks this item as modified
 	 */
@@ -821,12 +829,12 @@ namespace envire
 
 	/** we track the last id given to an item, for assigning new id's.
 	 */
-	long last_id;
+        long last_id;
     public:
-	static const long ITEM_NOT_ATTACHED = -1;
+	static const std::string ITEM_NOT_ATTACHED;
 
     protected:
-	typedef std::map<long, EnvironmentItem::Ptr > itemListType;
+	typedef std::map<std::string, EnvironmentItem::Ptr > itemListType;
 	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
 	typedef std::multimap<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
@@ -840,6 +848,7 @@ namespace envire
 	cartesianMapGraphType cartesianMapGraph;
 	
 	FrameNode* rootNode;
+        std::string envPrefix;
 
 	EventSource eventHandlers;
 	void publishChilds(EventHandler* handler, FrameNode *parent);
@@ -872,7 +881,7 @@ namespace envire
 	**/
 	void itemModified(EnvironmentItem* item);
 	
-	EnvironmentItem::Ptr getItem(int uniqueId) const
+	EnvironmentItem::Ptr getItem(std::string uniqueId) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);
             if (it == items.end())
@@ -910,7 +919,7 @@ namespace envire
         }
 
 	template <class T>
-	boost::intrusive_ptr<T> getItem(int uniqueId) const
+	boost::intrusive_ptr<T> getItem(std::string uniqueId) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);
             if (it == items.end())
@@ -948,7 +957,7 @@ namespace envire
 	bool removeOutputs(Operator* op);
 
 	std::list<Layer*> getInputs(Operator* op);
-
+        
         /** Returns the only layer that is an input of type LayerT for the given
          * operator
          *
@@ -1136,6 +1145,10 @@ namespace envire
          * the frames of two cartesian maps, 
          */
 	TransformWithUncertainty relativeTransformWithUncertainty(const CartesianMap* from, const CartesianMap* to);
+        
+        void setEnvironmentPrefix(std::string envPrefix) { this->envPrefix = envPrefix; }
+        
+        std::string getEnvironmentPrefix() const { return envPrefix; }
     };
    
     template<typename LayerT>

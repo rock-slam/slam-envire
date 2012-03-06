@@ -294,7 +294,7 @@ std::ostream& FileSerialization::getBinaryOutputStream(const std::string &filena
     std::ofstream *os = new std::ofstream(fileDir.string().c_str());
     if( !os->is_open() || os->fail() )
     {
-        throw std::runtime_error("could not open file " + filename);
+        throw NoSuchBinaryStream("could not open file " + filename);
     }
     ofstreams.push_back(os);
     return *os;
@@ -439,6 +439,7 @@ Environment* FileSerialization::readFromFile( const std::string& path )
     Environment* env;
     
     int64_t lastID = 0;
+    std::string lastPrefix = "";
 
     FILE *input = fopen(path.c_str(), "rb");
     yaml_parser_initialize(&yamlSerialization->parser);
@@ -499,13 +500,17 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 
 			env->attachItem( envItem );
 			//hack to preserve root node
-			if(envItem->getUniqueId() == 0) {
+			if(envItem->getUniqueId() == "0" || envItem->getUniqueId() == "/0") {
 			    env->rootNode = dynamic_cast<FrameNode *>(envItem);
 			    assert(env->rootNode);
 			}
-
-			if(envItem->getUniqueId() > lastID)
-			    lastID = envItem->getUniqueId();
+			
+			long currentID = envItem->getUniqueIdSuffix();
+			if(currentID > lastID)
+                        {
+			    lastID = currentID;
+                            lastPrefix = envItem->getUniqueIdPrefix();
+                        }
 		    }
 		    else if( key == "links" )
 		    {
@@ -514,36 +519,36 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "frameNodeTree" )
 			{
 			    env->frameNodeTree.insert( make_pair( 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<long>("child") ).get(), 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<long>("parent") ).get() ) );
+					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<std::string>("child") ).get(), 
+					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<std::string>("parent") ).get() ) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "layerTree" )
 			{
 			    env->layerTree.insert( make_pair( 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("child") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("parent") ).get() ) );
+					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("child") ).get(), 
+					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("parent") ).get() ) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "operatorGraphInput" )
 			{
 			    env->operatorGraphInput.insert( make_pair( 
-					env->getItem<Operator>( yamlSerialization->getScalarInMap<long>("operator") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("layer") ).get() ) );
+					env->getItem<Operator>( yamlSerialization->getScalarInMap<std::string>("operator") ).get(), 
+					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("layer") ).get() ) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "operatorGraphOutput" )
 			{
 			    env->operatorGraphOutput.insert( make_pair( 
-					env->getItem<Operator>( yamlSerialization->getScalarInMap<long>("operator") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("layer") ).get() ) );
+					env->getItem<Operator>( yamlSerialization->getScalarInMap<std::string>("operator") ).get(), 
+					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("layer") ).get() ) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "cartesianMapGraph" )
 			{
 			    env->cartesianMapGraph.insert( make_pair( 
-					env->getItem<CartesianMap>( yamlSerialization->getScalarInMap<long>("map") ).get(), 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<long>("node") ).get() ) );
+					env->getItem<CartesianMap>( yamlSerialization->getScalarInMap<std::string>("map") ).get(), 
+					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<std::string>("node") ).get() ) );
 			}
 		    }
 		}
@@ -556,6 +561,7 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 	throw std::runtime_error("empty document.");
     }
 
+    env->setEnvironmentPrefix(lastPrefix);
     lastID++;
     env->last_id = lastID;
 
@@ -665,6 +671,8 @@ EnvironmentItem* BinarySerialization::unserializeBinaryEvent(const EnvireBinaryE
 
 bool BinarySerialization::serializeBinaryEvent(EnvironmentItem* item, EnvireBinaryEvent& bin_item)
 {
+    assert(item);
+    
     bin_item.className = item->getClassName();
     bin_item.yamlProperties.clear();
     bin_item.binaryStreamNames.clear();
@@ -740,8 +748,9 @@ void SynchronizationEventHandler::handle(const envire::Event& message)
     if( filter && !filter->filter( message ) )
 	return;
 
-    long id_a = message.a ? message.a->getUniqueId() : message.id_a;
-    long id_b = message.b ? message.b->getUniqueId() : message.id_b;
+    std::string id_a = message.a ? message.a->getUniqueId() : message.id_a;
+    std::string id_b = message.b ? message.b->getUniqueId() : message.id_b;
+    
     EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, id_a, id_b);
     
     if(message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))

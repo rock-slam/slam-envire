@@ -43,7 +43,7 @@ namespace envire {
          * They are store as integers to support deserialization properly (we
          * have no way in unserialize() to get hold on our input layers)
          */
-        int input_layers_id[INPUT_COUNT];
+        std::string input_layers_id[INPUT_COUNT];
         /** The bands that should be used in the input layers */
         std::string input_bands[INPUT_COUNT];
 

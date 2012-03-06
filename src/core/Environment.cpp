@@ -54,9 +54,45 @@ bool EnvironmentItem::isAttached() const
     return env;
 }
 
-long EnvironmentItem::getUniqueId() const
+std::string EnvironmentItem::getUniqueId() const
 {
     return unique_id;
+}
+
+std::string EnvironmentItem::getUniqueIdPrefix() const
+{
+    size_t idpos = unique_id.rfind('/');
+    std::string prefix_str = "";
+    if(idpos != string::npos && idpos > 0)
+    {
+        prefix_str = unique_id.substr(0,idpos);
+    }
+    return prefix_str;
+}
+
+long EnvironmentItem::getUniqueIdSuffix() const
+{
+    size_t idpos = unique_id.rfind('/');
+    std::string idstr;
+    if(idpos != string::npos)
+    {
+        idstr = unique_id.substr(idpos+1);
+    }
+    else
+    {
+        // backward compatibility
+        idstr = unique_id;
+    }
+    long id = 0;
+    try
+    {
+        id = boost::lexical_cast<long>(idstr);
+    }
+    catch(boost::bad_lexical_cast)
+    {
+        throw std::runtime_error("expect an integral number as suffix part of the id");
+    }
+    return id;
 }
 
 Environment* EnvironmentItem::getEnvironment() const
@@ -88,11 +124,14 @@ EnvironmentItem::Ptr EnvironmentItem::detach()
     return env->detachItem( this );
 }
 
-Environment::Environment() :
-    last_id(0)
+const std::string Environment::ITEM_NOT_ATTACHED = "";
+
+Environment::Environment() : last_id(0)
 {
     // each environment has a root node
     rootNode = new FrameNode();
+    rootNode->unique_id = "0";
+    last_id++;
     // also put it in the same managed process
     attachItem( rootNode );
 }
@@ -193,9 +232,34 @@ void Environment::attachItem(EnvironmentItem* item)
 {
     assert( item );
 
-    if( item->getUniqueId() == ITEM_NOT_ATTACHED )
-	item->unique_id = last_id++;
-
+    if(!item->isAttached())
+    {
+        if(item->unique_id == ITEM_NOT_ATTACHED)
+        {
+            item->unique_id = envPrefix + item->unique_id;
+            item->unique_id += '/';
+            item->unique_id += boost::lexical_cast<std::string>(last_id++);
+        }
+        else if(*item->unique_id.rbegin() != '/' && !isdigit(*item->unique_id.rbegin()))
+        {
+            item->unique_id += '/';
+            item->unique_id += boost::lexical_cast<std::string>(last_id++);
+        }
+        else if(*item->unique_id.rbegin() == '/')
+        {
+            item->unique_id += boost::lexical_cast<std::string>(last_id++);
+        }        
+    }
+    // id's must have an integral number as suffix part 
+    try
+    {
+        item->getUniqueIdSuffix();
+    }
+    catch (std::runtime_error e)
+    {
+        throw std::runtime_error(e.what());
+    }
+        
     // make sure item not already present
     if( items.count(item->getUniqueId()) ) {
 	std::cout << "Duplicated id:" << item->getUniqueId() << std::endl;

@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     FrameNode::TransformType transform;
     boost::tie(input, transform) = GridBase::readGridFromGdal(grid_file, target_band);
 
-    int frame_id = -1, map_id = -1;
+    std::string frame_id = "", map_id = "";
     std::string map_type;
     if (argc > 4)
     {
@@ -58,13 +58,13 @@ int main(int argc, char* argv[])
 
             std::string mode = argv[next_idx];
             if (mode ==  "-frame")
-                frame_id = boost::lexical_cast<int>(argv[next_idx + 1]);
+                frame_id = argv[next_idx + 1];
             else if (mode == "-map")
-                map_id = boost::lexical_cast<int>(argv[next_idx + 1]);
+                map_id = argv[next_idx + 1];
         }
     }
 
-    if (frame_id == -1 && map_id == -1)
+    if (frame_id == "" && map_id == "")
     {
         if (transform.isApprox(FrameNode::TransformType::Identity()))
             frame_id = env->getRootNode()->getUniqueId();
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
     if (!map_type.empty())
     {
-        if (frame_id == -1)
+        if (frame_id == "")
         {
             std::cerr << "both map type and -map have been specified" << std::endl;
             usage(1);
@@ -94,11 +94,11 @@ int main(int argc, char* argv[])
         envire::FrameNode::Ptr frame = env->getItem<envire::FrameNode>(frame_id);
         target->setFrameNode(frame.get());
 
-        frame_id = -1;
+        frame_id = "";
         map_id = target->getUniqueId();
     }
 
-    if (frame_id != -1)
+    if (frame_id != "")
     {
         envire::FrameNode::Ptr frame = env->getItem<envire::FrameNode>(frame_id);
         env->attachItem(input.get());

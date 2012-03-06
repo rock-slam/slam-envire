@@ -47,7 +47,7 @@ struct Event
     event::Type type;
     event::Operation operation;
     EnvironmentItem::Ptr a, b;
-    long id_a, id_b;
+    std::string id_a, id_b;
 };
 
 std::ostream& operator <<( std::ostream& ostream, event::Type type );

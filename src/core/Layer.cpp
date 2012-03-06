@@ -102,7 +102,8 @@ const std::string Layer::getMapFileName() const
 
 const std::string Layer::getMapFileName(const std::string& className) const 
 {
-    return className + "_" + boost::lexical_cast<std::string>(getUniqueId());
+    std::string uniqueId = getUniqueIdPrefix() != "" ? getUniqueIdPrefix() + "_" + boost::lexical_cast<std::string>(getUniqueIdSuffix()) : boost::lexical_cast<std::string>(getUniqueIdSuffix());
+    return className + "_" + uniqueId;
 }
 
 const std::string Layer::getMapFileName(const std::string& path, const std::string& className) const 
