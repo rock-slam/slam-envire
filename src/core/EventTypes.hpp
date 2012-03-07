@@ -39,6 +39,9 @@ namespace envire
      */
     struct EnvireBinaryEvent
     {
+	// timestamp of the event
+	base::Time time;
+
         // event part
         std::string id_a, id_b;
         event::Type type;
