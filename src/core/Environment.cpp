@@ -236,9 +236,16 @@ void Environment::attachItem(EnvironmentItem* item)
     {
         if(item->unique_id == ITEM_NOT_ATTACHED)
         {
-            item->unique_id = envPrefix + item->unique_id;
-            item->unique_id += '/';
-            item->unique_id += boost::lexical_cast<std::string>(last_id++);
+            if(envPrefix != "")
+            {
+                item->unique_id = envPrefix + item->unique_id;
+                item->unique_id += '/';
+                item->unique_id += boost::lexical_cast<std::string>(last_id++);
+            }
+            else
+            {
+                item->unique_id = boost::lexical_cast<std::string>(last_id++);
+            }
         }
         else if(*item->unique_id.rbegin() != '/' && !isdigit(*item->unique_id.rbegin()))
         {
