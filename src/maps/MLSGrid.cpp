@@ -85,6 +85,7 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
     gapSize = other.gapSize;
     thickness = other.thickness;
     cellcount = other.cellcount;
+    hasCellColor_ = other.hasCellColor_;
 
     return *this;
 }
@@ -95,6 +96,7 @@ envire::MLSGrid* MLSGrid::cloneShallow() const
     res->gapSize = gapSize;
     res->thickness = thickness;
     res->cellcount = cellcount;
+    res->hasCellColor_ = hasCellColor_;
     return res;
 }
 
