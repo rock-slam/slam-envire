@@ -52,6 +52,7 @@ MLSGrid::MLSGrid(const MLSGrid& other)
     , hasCellColor_( other.hasCellColor_), mem_pool( sizeof( SurfacePatchItem ) )
 {
     clear();
+    hasCellColor_ = other.hasCellColor_;
     for(size_t xi=0;xi<cellSizeX;xi++)
     {
 	for(size_t yi=0;yi<cellSizeY;yi++)
