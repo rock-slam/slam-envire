@@ -98,10 +98,10 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_serialization )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
     env->attachItem( mls );
 
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, MLSGrid::SurfacePatch::HORIZONTAL ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL ) );
 
-    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL ) );
 
     env->serialize(serialization_test_path);
 
@@ -148,9 +148,9 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_binitem_serialization )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
     env->attachItem( mls );
 
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
-    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, MLSGrid::SurfacePatch::HORIZONTAL) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL) );
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL) );
     
     BinarySerialization serialization;
     EnvireBinaryEvent bin_item;

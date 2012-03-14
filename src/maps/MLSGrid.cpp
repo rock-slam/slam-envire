@@ -153,7 +153,8 @@ struct SurfacePatchStore10
 
     MLSGrid::SurfacePatch toSurfacePatch()
     {
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal );
+	typedef envire::MLSGrid::SurfacePatch sp;
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
 	p.update_idx = update_idx;
 	return p;
     }
@@ -173,7 +174,8 @@ struct SurfacePatchStore11
 
     MLSGrid::SurfacePatch toSurfacePatch()
     {
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal );
+	typedef envire::MLSGrid::SurfacePatch sp;
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
 	p.update_idx = update_idx;
 	p.color = color;
 	return p;
@@ -417,7 +419,7 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	    && (p.mean + gapSize + delta_dev) > (o.mean - o.height) )
     {
 	// if both patches are horizontal, we see if we can merge them
-	if( p.horizontal && o.horizontal ) 
+	if( p.isHorizontal() && o.isHorizontal() ) 
 	{
 	    if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
 		    (p.mean + thickness + delta_dev) > o.mean )
@@ -440,15 +442,15 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 		// convert into a vertical patch element
 		//p.mean += p.stdev;
 		//p.height = 2 * p.stdev; 
-		p.horizontal = false;
+		p.setVertical();
 	    }
 	}
 
 	// if either of the patches is vertical, the result is also going
 	// to be vertical
-	if( !p.horizontal || !o.horizontal)
+	if( !p.isHorizontal() || !o.isHorizontal())
 	{
-	    p.horizontal = false;
+	    p.setVertical();
 	    if( o.mean > p.mean )
 	    {
 		p.height += ( o.mean - p.mean );

@@ -276,7 +276,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		double xp = (x+0.5) * xs + xo;
 		double yp = (y+0.5) * ys + yo; 
 
-		if( p.horizontal == true )
+		if( p.isHorizontal() )
 		{
 		    osg::Vec4 col;
 		    if( mls->getHasCellColor() )

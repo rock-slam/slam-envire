@@ -65,21 +65,35 @@ namespace envire
          */
 	struct SurfacePatch
 	{
+	    /** a surface patch can be three different types,
+	     * each changing how the cell values are interpreded
+	     *
+	     * HORIZONTAL - is a horizontal patch, which does not have a height value
+	     * VERTICAL - used to represent walls and other vertical structures, has a height
+	     * NEGATIVE - represent absence of structure, otherwise equal to VERTICAL
+	     */
+	    enum TYPE
+	    {
+		VERTICAL = 0,
+		HORIZONTAL = 1,
+		NEGATIVE = 2
+	    };
+
 	    SurfacePatch() {};
-	    SurfacePatch( double mean, double stdev, double height = 0, double horizontal = true )
-		: mean(mean), stdev(stdev), height(height), horizontal(horizontal), update_idx(0) {};
+	    SurfacePatch( double mean, double stdev, double height = 0, TYPE type = HORIZONTAL )
+		: mean(mean), stdev(stdev), height(height), type(type), update_idx(0) {};
 
             /** Experimental code. Don't use it unless you know what you are
              * doing */
 	    double distance( const SurfacePatch& other ) const
 	    {
-		if( !horizontal && !other.horizontal )
+		if( !isHorizontal() && !other.isHorizontal() )
 		    return 0;
-		if( !horizontal )
+		if( !isHorizontal() )
 		    return other.mean > mean ?
 			other.mean - mean :
 			std::max( 0.0, mean - height - other.mean);
-		if( !other.horizontal )
+		if( !other.isHorizontal() )
 		    return mean > other.mean ?
 			mean - other.mean :
 			std::max( 0.0, other.mean - other.height - mean);
@@ -101,7 +115,7 @@ namespace envire
              */
             double getMinZ(double sigma_threshold = 2.0) const
             {
-                if (horizontal)
+                if (isHorizontal())
                     return mean - stdev *  sigma_threshold;
                 else
                     return mean - height - stdev * sigma_threshold;
@@ -117,6 +131,44 @@ namespace envire
                 return mean + stdev * sigma_threshold;
             }
 
+	    /** flag the patch as horizontal
+	     */
+	    void setHorizontal()
+	    {
+		type = HORIZONTAL;
+	    }
+
+	    /** flag the patch as vertical
+	     */
+	    void setVertical()
+	    {
+		type = VERTICAL;
+	    }
+
+	    void setNegative()
+	    {
+		type = NEGATIVE;
+	    }
+
+	    /** @return true if the patch is horizontal
+	     */
+	    bool isHorizontal() const
+	    {
+		return type == HORIZONTAL;
+	    }
+
+	    /** @return true if patch is vertical
+	     */
+	    bool isVertical() const
+	    {
+		return type == VERTICAL;
+	    }
+
+	    bool isNegative() const
+	    {
+		return type == NEGATIVE;
+	    }
+
             /** The mean Z value. This always represents the top of the patch,
              * regardless whether the patch is horizontal or vertical
              */
@@ -129,8 +181,11 @@ namespace envire
              * Vertical patches also have a height, i.e. the patch is a vertical
              * block between z=(mean-height) and z
              */
-	    bool horizontal;
 
+	protected:
+	    TYPE type;
+
+	public:
 	    size_t update_idx;
 	    base::Vector3d color;
 	};

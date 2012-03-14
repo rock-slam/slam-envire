@@ -16,10 +16,10 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
     env->attachItem( mls );
 
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, MLSGrid::SurfacePatch::HORIZONTAL ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL ) );
 
-    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL ) );
 
     MultiLevelSurfaceGrid::iterator it = mls->beginCell(0,0);
     BOOST_CHECK_EQUAL( it->mean, 2.0 );
