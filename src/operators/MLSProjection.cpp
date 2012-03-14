@@ -7,7 +7,7 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( MLSProjection )
 
 MLSProjection::MLSProjection()
-    : withUncertainty( true )
+    : withUncertainty( true ), m_negativeInformation( false )
 {
 }
 
@@ -37,8 +37,13 @@ void MLSProjection::addOutput( MultiLevelSurfaceGrid* grid )
 
 void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
 {
-    TransformWithUncertainty C_m2g = env->relativeTransformWithUncertainty(
-	    pc->getFrameNode(), grid->getFrameNode() );
+    // this method also incorporates the uncertainty in the transform
+    // instead of just the uncertainty from the pointcloud items
+    // this is done by transforming the pointcloud to temporary mls
+    // grid first, and then "smearing" the uncertainty over the already
+    // indexed cells. This is mainly for performance issues, since calculating
+    // the transform for each input point is much more costly.
+
     // create a new grid with the same dimensions in case the given grid is not
     // empty
     boost::intrusive_ptr<envire::MultiLevelSurfaceGrid> t_grid;
@@ -50,39 +55,10 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
     // make sure we are recording the cell positions in a set
     t_grid->initIndex();
+    projectPointcloud( t_grid.get(), pc );
 
-    // store the updated positions in the vector, since we won't probably touch
-    // so many items in the grid
-
-    std::vector<Eigen::Vector3d>& points(pc->vertices);
-    std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
-    std::vector<Eigen::Vector3d> *color = NULL;
-    if( pc->hasData( Pointcloud::VERTEX_COLOR ) )
-    {
-	color = &pc->getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR);
-	t_grid->setHasCellColor( true );
-	grid->setHasCellColor( true );
-    }
-    assert(points.size() == uncertainty.size());
-
-    for(size_t i=0;i<points.size();i++)
-    {
-	const double p_var = uncertainty[i];
-	Point p = C_m2g.getTransform() * points[i];
-
-	const Eigen::Vector3d &mean( p );
-
-	size_t xi, yi;
-	if( t_grid->toGrid( mean.x(), mean.y(), xi, yi ) )
-	{
-	    const double stdev = sqrt(p_var);
-	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
-	    if( color )
-		patch.color = (*color)[i];
-	    t_grid->updateCell(xi, yi, patch);
-	}
-    }
-
+    TransformWithUncertainty C_m2g = env->relativeTransformWithUncertainty(
+	    pc->getFrameNode(), grid->getFrameNode() );
     Eigen::Affine3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
     typedef MultiLevelSurfaceGrid::Position position;

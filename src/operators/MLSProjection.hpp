@@ -24,12 +24,14 @@ namespace envire {
 	bool updateAll();
 
 	void useUncertainty( bool use ) { withUncertainty = use; }
+	void useNegativeInformation( bool use ) { m_negativeInformation = use; }
 
     protected:
 	void projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
 	void projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
 
 	bool withUncertainty;
+	bool m_negativeInformation;
     };
 }
 #endif
