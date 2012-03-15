@@ -329,6 +329,7 @@ namespace envire
 	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
 	void updateCell( size_t xi, size_t yi, double mean, double stdev );
 	void updateCell( size_t xi, size_t yi, const SurfacePatch& patch );
+	void updateCell( const Position& pos, const SurfacePatch& patch );
 
 	void setGapSize( double gapsize ) { this->gapSize = gapsize; }
 	double getGapSize() const { return gapSize; }

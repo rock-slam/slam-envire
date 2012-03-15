@@ -371,6 +371,11 @@ void MLSGrid::updateCell( size_t xi, size_t yi, double mean, double stdev )
     updateCell( xi, yi, SurfacePatch( mean, stdev ) );
 }
 
+void MLSGrid::updateCell( const Position& pos, const SurfacePatch& o )
+{
+    updateCell( pos.x, pos.y, o );
+}
+
 void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& o )
 {
     typedef std::list<MLSGrid::iterator> iterator_list;
