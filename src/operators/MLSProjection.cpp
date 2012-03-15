@@ -9,7 +9,7 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( MLSProjection )
 
 MLSProjection::MLSProjection()
-    : withUncertainty( true ), m_negativeInformation( false )
+    : withUncertainty( true ), m_negativeInformation( false ), defaultUncertainty( 0.01 )
 {
 }
 
@@ -120,8 +120,9 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 		// this is the maximum height of the negative cell,
 		// which joins the height of the cell, and how high it
 		// is perceived from the origin point of view
-		const double height = 
-		    fabs( grid->getScaleX()/2.0 / plane_dist * plane_z ) + cit->height;
+		double height = cit->height;
+		if( plane_dist > 0 )
+		    height += fabs( grid->getScaleX()/2.0 / plane_dist * plane_z );
 
 		std::vector<GridBase::Position> line_cells;
 		lineBresenham( *it, origin, line_cells );
@@ -129,11 +130,18 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 		for( size_t li = 0; li < line_cells.size(); li++ )
 		{
 		    const double factor = (li * 1.0 / line_cells.size());
-		    const double z_mean = cit->mean + plane_z * factor;
-		    const double z_stdev = cit->stdev * (1.0 - factor); 
-		    const double p_height = height * (1.0 - factor);
+		    const double z_mean = cit->mean + plane_z * (1.0 - factor);
+		    const double z_stdev = cit->stdev * factor; 
+		    const double p_height = height * factor;
 
 		    MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
+
+		    /*
+		    std::cout << "update cell " 
+			<< line_cells[li].x << ":" << line_cells[li].y 
+			<< " " << np.mean << " " << np.height << " " << np.stdev
+			<< std::endl;
+			*/
 		    
 		    t_grid->updateCell( line_cells[li], np );
 		}
@@ -184,7 +192,7 @@ bool MLSProjection::updateAll()
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
 	Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(*it);
-	if( withUncertainty )
+	if( withUncertainty || m_negativeInformation )
 	    projectPointcloudWithUncertainty( grid, mesh );
 	else
 	    projectPointcloud( grid, mesh );

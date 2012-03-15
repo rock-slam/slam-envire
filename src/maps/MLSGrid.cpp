@@ -455,7 +455,20 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	// to be vertical
 	if( !p.isHorizontal() || !o.isHorizontal())
 	{
-	    p.setVertical();
+	    if( p.isVertical() && o.isVertical() )
+		p.setVertical();
+	    else 
+	    {
+		// some of the patches are negative
+		// only join negative and non-negative if they occupy the same
+		// area
+		if( (p.isNegative() && !o.isNegative() && ( p.mean < o.mean - o.height || p.mean - p.height > o.height )) 
+		    || (o.isNegative() && !p.isNegative() && ( o.mean < p.mean - p.height || o.mean - o.height > p.height )) )
+		    return false;
+
+		p.setNegative();
+	    }
+
 	    if( o.mean > p.mean )
 	    {
 		p.height += ( o.mean - p.mean );
