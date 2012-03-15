@@ -154,11 +154,11 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 	color = &pc->getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR);
 	grid->setHasCellColor( true );
     }
-    assert(points.size() == uncertainty.size());
+    bool hasUncertainty = points.size() == uncertainty.size();
 
     for(size_t i=0;i<points.size();i++)
     {
-	const double p_var = uncertainty[i];
+	const double p_var = hasUncertainty? uncertainty[i] : defaultUncertainty;
 	Point p = C_m2g * points[i];
 
 	const Eigen::Vector3d &mean( p );

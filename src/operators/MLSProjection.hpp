@@ -25,6 +25,7 @@ namespace envire {
 
 	void useUncertainty( bool use ) { withUncertainty = use; }
 	void useNegativeInformation( bool use ) { m_negativeInformation = use; }
+	void setDefaultUncertainty( double uncertainty ) { defaultUncertainty = uncertainty; }
 
     protected:
 	void projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
@@ -32,6 +33,7 @@ namespace envire {
 
 	bool withUncertainty;
 	bool m_negativeInformation;
+	double defaultUncertainty;
     };
 }
 #endif
