@@ -47,6 +47,7 @@ osg::Vec4 hslToRgb(float h, float s, float l)
 MLSVisualization::MLSVisualization()
     : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
+    negativeCellColor(osg::Vec4(0.1,0.5,0.9,0.2)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
     showUncertainty(false),
     estimateNormals(true),
@@ -293,7 +294,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		}
 		else
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), verticalCellColor, osg::Vec3(0, 0, 1.0) );
+		    osg::Vec4 col = p.isVertical() ? verticalCellColor : negativeCellColor;
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), col, osg::Vec3(0, 0, 1.0) );
 		}
 
 		if( showUncertainty )
