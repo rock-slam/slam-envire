@@ -66,3 +66,94 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
 	usleep( 1000*1000 );
     }
 }
+
+BOOST_AUTO_TEST_CASE( mlsnegative_test ) 
+{
+    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    vizkit::EnvireVisualization envViz;
+    app.start();
+    app.getWidget()->addDataHandler( &envViz );
+
+    boost::scoped_ptr<Environment> env( new Environment() );
+    envViz.updateData( env.get() );
+
+    // setup a transformation chain
+    // pointcloud -> mls
+
+    Pointcloud *pc = new Pointcloud();
+    env->attachItem( pc );
+    FrameNode *pcfn = new FrameNode( 
+	    Eigen::Affine3d( Eigen::Translation3d( 0, 0, 2 ) ) );
+    env->getRootNode()->addChild( pcfn );
+    pc->setFrameNode( pcfn );
+
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.5, 0.5, -5, -5);
+    env->attachItem( mls );
+    FrameNode *mlsfn = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    env->getRootNode()->addChild( mlsfn );
+    mls->setFrameNode( mlsfn );
+
+    MLSProjection *mlsp = new MLSProjection();
+    mlsp->useNegativeInformation( true );
+    env->attachItem( mlsp );
+    mlsp->addInput( pc );
+    mlsp->addOutput( mls );
+
+    // fill the pointcloud 
+    for(int i=0; i<20; i++)
+    {
+	for(int j=0; j<20; j++)
+	{
+	    if( (i < 5 || i >= 15) && (j < 5 || j >= 15) )
+	    {
+		pc->vertices.push_back( Eigen::Vector3d( i / 4.0, j / 4.0, -2.0 ) );
+	    }
+	}
+    }
+
+    mlsp->updateAll();
+
+    while( app.isRunning() );
+
+
+    /*
+    env->getRootNode()->addChild( fm );
+    mls->setFrameNode( fm );
+    for( int i=0; i<100; i++ )
+    {
+	for( int j=0; j<100; j++ )
+	{
+	    double h = 0.0;
+	    mls->insertTail( i, j, MultiLevelSurfaceGrid::SurfacePatch( h, 0.05 ) );
+	}
+    }
+    mls->itemModified();
+
+    MultiLevelSurfaceGrid *mls2 = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    env->attachItem( mls2 );
+
+    FrameNode *fm2 = fm->clone();
+    env->getRootNode()->addChild( fm2 );
+    mls2->setFrameNode( fm2 );
+
+    for(int i=0;i<500 && app.isRunning();i++)
+    {
+	mls2->clear();
+	for( int m=48; m<52; m++ )
+	{
+	    for( int n=40; n<60; n++ )
+	    {
+		double r = i * 0.02;
+		double h = std::max( sin(m*0.1+n*0.2), r  );
+		mls2->insertTail( m, n, MultiLevelSurfaceGrid::SurfacePatch( h, 0.05 ) );
+	    }
+	}
+	mls2->itemModified();
+	std::pair<double, double> res = mls->matchHeight( *mls2 );
+	std::cout << "diff : " << res.first << " var: " << res.second << std::endl;
+	fm2->setTransform( Eigen::Affine3d( Eigen::Translation3d( 0, 0, -res.first ) ) );
+
+	usleep( 1000*1000 );
+    }
+    */
+}
