@@ -122,17 +122,17 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 		// is perceived from the origin point of view
 		double height = cit->height;
 		if( plane_dist > 0 )
-		    height += fabs( grid->getScaleX()/2.0 / plane_dist * plane_z );
+		    height += fabs( grid->getScaleX() / plane_dist * plane_z );
 
 		std::vector<GridBase::Position> line_cells;
 		lineBresenham( *it, origin, line_cells );
 
 		for( size_t li = 0; li < line_cells.size(); li++ )
 		{
-		    const double factor = (li * 1.0 / line_cells.size());
-		    const double z_mean = cit->mean + plane_z * (1.0 - factor);
-		    const double z_stdev = cit->stdev * factor; 
+		    const double factor = line_cells.size() > 0 ? (li * 1.0 / (line_cells.size()-1)) : 1.0;
 		    const double p_height = height * factor;
+		    const double z_mean = cit->mean + p_height + plane_z * (1.0 - factor);
+		    const double z_stdev = cit->stdev * factor; 
 
 		    MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
 
