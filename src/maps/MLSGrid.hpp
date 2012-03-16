@@ -65,6 +65,8 @@ namespace envire
          */
 	struct SurfacePatch
 	{
+	    friend class MLSGrid;
+
 	    /** a surface patch can be three different types,
 	     * each changing how the cell values are interpreded
 	     *
@@ -324,7 +326,7 @@ namespace envire
          * The mean Z of the returned patch has to be within \c sigma_threshold
          * patch.sigma of sigma.mean
          */
-	SurfacePatch* get( const Position& position, const SurfacePatch& patch, double sigma_threshold = 3.0 );
+	SurfacePatch* get( const Position& position, const SurfacePatch& patch, double sigma_threshold = 3.0, bool ignore_negative = true );
 	/** @deprecated */
 	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
 	void updateCell( size_t xi, size_t yi, double mean, double stdev );
@@ -365,7 +367,7 @@ namespace envire
 	Extents getExtents() { return extents; }
 
     protected:
-	bool mergePatch( SurfacePatch& p, const SurfacePatch& o );
+	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
 	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
 	ArrayType cells;
 

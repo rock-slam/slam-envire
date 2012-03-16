@@ -332,14 +332,14 @@ MLSGrid::iterator MLSGrid::erase( iterator position )
     return res; 
 }
 
-MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold )
+MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
 {
     MLSGrid::iterator it = beginCell(position.x, position.y);
     while( it != endCell() )
     {
 	MLSGrid::SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
-	if( p.distance( patch ) < interval )
+	if( p.distance( patch ) < interval && (ignore_negative || !p.isNegative()) )
 	{
 	    return &p;
 	}
@@ -349,7 +349,7 @@ MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatc
 }
 
 
-bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
+bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev )
 {
     size_t xi, yi;
     if( toGrid(position.x(), position.y(), xi, yi) )
