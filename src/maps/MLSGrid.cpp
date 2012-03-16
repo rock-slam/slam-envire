@@ -472,7 +472,7 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 		p.height = p.mean - o_min;
 	    }
 	}
-	p.update_idx = o.update_idx;
+	p.update_idx = std::max( p.update_idx, o.update_idx );
 
 	if( hasCellColor_ )
 	    p.color = (p.color + o.color)/2.0;
