@@ -25,6 +25,7 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 	mutable osg::ref_ptr<osg::Geode> extents;
 
 	bool showUncertainty;
+	bool showNegative;
 	bool estimateNormals;
 	bool cycleHeightColor;
 };
