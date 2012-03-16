@@ -376,10 +376,12 @@ void MLSGrid::updateCell( const Position& pos, const SurfacePatch& o )
     updateCell( pos.x, pos.y, o );
 }
 
-void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& o )
+void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& co )
 {
     typedef std::list<MLSGrid::iterator> iterator_list;
     iterator_list merged;
+    // make a copy of the surfacepatch as it may get updated in the merge
+    SurfacePatch o( co );
 
     for(MLSGrid::iterator it = beginCell( xi, yi ); it != endCell(); it++ )
     {
@@ -415,7 +417,7 @@ void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& o )
     }
 }
 
-bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
+bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
     const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
 
@@ -446,16 +448,47 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	{
 	    if( p.isVertical() && o.isVertical() )
 		p.setVertical();
-	    else 
+	    else if( p.isNegative() && o.isNegative() )
+		p.setNegative();
+	    else if( p.isNegative() || o.isNegative() )
 	    {
-		// some of the patches are negative
-		// only join negative and non-negative if they occupy the same
-		// area
-		if( (p.isNegative() && !o.isNegative() && ( p.mean < o.mean - o.height || p.mean - p.height > o.height )) 
-		    || (o.isNegative() && !p.isNegative() && ( o.mean < p.mean - p.height || o.mean - o.height > p.height )) )
+		// in this case (one negative one non negative)
+		// its a bit hard to decide, since we have to remove
+		// something somewhere to make it compatible
+		//
+		// best is to decide on age (based on update_idx) 
+		// of the patch. Newer patches will be preferred
+
+		if( p.update_idx == o.update_idx )
 		    return false;
 
-		p.setNegative();
+		SurfacePatch &rp( p.update_idx < o.update_idx ? p : o );
+		SurfacePatch &ro( p.update_idx < o.update_idx ? o : p );
+
+		if( rp.update_idx < ro.update_idx )
+		{
+		    // the new patch fully encloses the old one, 
+		    // so will overwrite it
+		    if( ro.mean > rp.mean && ro.mean - ro.height < rp.mean - rp.height )
+		    {
+			p = ro;
+			return true; 
+		    } 
+
+		    // the other patch is occupied, so cut
+		    // the free patch accordingly
+		    if( ro.mean < rp.mean )
+			rp.height = rp.mean - ro.mean;
+		    else if( ro.mean - ro.height < rp.mean )
+		    {
+			double new_mean = ro.mean - ro.height;
+			rp.height -= rp.mean - new_mean;
+			rp.mean = new_mean;
+		    }
+
+		    // both patches can live 
+		    return false;
+		}
 	    }
 
 	    if( o.mean > p.mean )
