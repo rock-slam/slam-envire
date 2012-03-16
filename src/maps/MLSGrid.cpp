@@ -430,17 +430,6 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 		    (p.mean + thickness + delta_dev) > o.mean )
 	    {
 		kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-		/*
-		// for horizontal patches, perform an update similar to the kalman
-		// update rule
-		const double pvar = p.stdev * p.stdev;
-		const double var = o.stdev * o.stdev;
-		double gain = pvar / (pvar + var);
-		if( gain != gain )
-		    gain = 0.5; // this happens when both stdevs are 0. 
-		p.mean = p.mean + gain * (o.mean - p.mean);
-		p.stdev = sqrt((1.0-gain)*pvar);
-		*/
 	    }
 	    else
 	    {
