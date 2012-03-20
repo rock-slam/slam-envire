@@ -61,7 +61,7 @@ event::Result Event::merge( const Event& other )
 {
     if( operation == event::UPDATE )
     {
-	return (type == other.type && operation == other.operation && a == other.a && b == other.b) ? event::INVALIDATE : event::IGNORE;
+	return (type == other.type && operation == other.operation && id_a == other.id_a && id_b == other.id_b) ? event::INVALIDATE : event::IGNORE;
     }
     if( operation == event::REMOVE )
     {
@@ -70,14 +70,14 @@ event::Result Event::merge( const Event& other )
 	    case event::FRAMENODE_TREE: 
 	    case event::FRAMENODE:
 	    case event::LAYER_TREE:
-		return (type == other.type && a == other.a && b == other.b) ? event::CANCEL : event::IGNORE;
+		return (type == other.type && id_a == other.id_a && id_b == other.id_b) ? event::CANCEL : event::IGNORE;
 	    case event::ITEM: 
-		if( (a == other.a || a == other.b) && (other.operation == event::ADD || other.operation == event::UPDATE) )
+		if( (id_a == other.id_a || id_a == other.id_b) && (other.operation == event::ADD || other.operation == event::UPDATE) )
 		    return (type == other.type && other.operation == event::ADD) ? event::CANCEL : event::INVALIDATE;
 		else
 		    return event::IGNORE;
 	    case event::ROOT:
-		return (type == other.type && a == other.a) ? event::CANCEL : event::IGNORE;
+		return (type == other.type && id_a == other.id_a) ? event::CANCEL : event::IGNORE;
 	}
     }
 
