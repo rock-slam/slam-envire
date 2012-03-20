@@ -339,7 +339,7 @@ MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatc
     {
 	MLSGrid::SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
-	if( p.distance( patch ) < interval && (ignore_negative || !p.isNegative()) )
+	if( p.distance( patch ) < interval && (!ignore_negative || !p.isNegative()) )
 	{
 	    return &p;
 	}
