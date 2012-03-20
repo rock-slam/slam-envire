@@ -93,7 +93,7 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 
 envire::MLSGrid* MLSGrid::cloneShallow() const
 {
-    MLSGrid* res = new MLSGrid( cellSizeX, cellSizeY, scalex, scaley );
+    MLSGrid* res = new MLSGrid( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety );
     res->gapSize = gapSize;
     res->thickness = thickness;
     res->cellcount = cellcount;
