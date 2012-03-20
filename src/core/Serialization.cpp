@@ -744,9 +744,23 @@ void BinarySerialization::cleanUp()
 
 void SynchronizationEventHandler::handle(const envire::Event& message)
 {
+    if(use_event_queue)
+    {
+        EventQueue::handle(message);
+    }
+    else
+    {
+        if(msgQueue.size())
+            flush();
+        process(message);
+    }
+}
+
+void SynchronizationEventHandler::process(const envire::Event& message)
+{
     // if there is a filter, see if the event gets filtered out
     if( filter && !filter->filter( message ) )
-	return;
+        return;
 
     std::string id_a = message.a ? message.a->getUniqueId() : message.id_a;
     std::string id_b = message.b ? message.b->getUniqueId() : message.id_b;
@@ -760,3 +774,9 @@ void SynchronizationEventHandler::handle(const envire::Event& message)
     
     handle(binary_event);
 }
+
+void SynchronizationEventHandler::useEventQueue(bool b)
+{
+    use_event_queue = b;
+}
+
