@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     Pointcloud *pc = new Pointcloud();
     env->attachItem( pc );
     FrameNode *pcfn = new FrameNode( 
-	    Eigen::Affine3d( Eigen::Translation3d( 0, 0, 2 ) ) );
+	    Eigen::Affine3d( Eigen::Translation3d( 0, 0.5, 2 ) ) );
     env->getRootNode()->addChild( pcfn );
     pc->setFrameNode( pcfn );
 
@@ -104,15 +104,16 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     {
 	for(int j=0; j<20; j++)
 	{
-	    if( (i < 5 || i >= 15) && (j < 5 || j >= 15) )
+	    if( i == 0 || j == 0 || j == 19 )
 	    {
-		pc->vertices.push_back( Eigen::Vector3d( i / 4.0, j / 4.0, -2.0 ) );
+		pc->vertices.push_back( Eigen::Vector3d( j / 4.0 - 2.5, 2.0, i / 4.0 - 2.5 ) );
 	    }
 	}
     }
 
     mlsp->updateAll();
 
+    /*
     MLSGrid::SurfacePatch p1( 0.5, 0.1, 0.0, MLSGrid::SurfacePatch::HORIZONTAL );
     p1.update_idx = 1;
     mls->updateCell( 50, 51, p1 );
@@ -122,6 +123,17 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     mls->updateCell( 50, 52, p2 );
 
     mls->itemModified();
+    */
 
-    while( app.isRunning() );
+    //while( app.isRunning() );
+    for(int i=0;i<500 && app.isRunning();i++)
+    {
+	usleep( 1000*1000 );
+
+	Eigen::Affine3d t = pcfn->getTransform();
+	t.translation() += Eigen::Vector3d( 0, 0.25, 0 ); 
+	pcfn->setTransform( t );
+
+	mlsp->updateAll();
+    }
 }
