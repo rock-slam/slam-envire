@@ -34,6 +34,9 @@ namespace envire {
 	bool withUncertainty;
 	bool m_negativeInformation;
 	double defaultUncertainty;
+
+    private:
+	TransformWithUncertainty C_m2g;
     };
 }
 #endif

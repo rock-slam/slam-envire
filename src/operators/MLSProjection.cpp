@@ -52,8 +52,6 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     t_grid->initIndex();
     projectPointcloud( t_grid.get(), pc );
 
-    TransformWithUncertainty C_m2g = env->relativeTransformWithUncertainty(
-	    pc->getFrameNode(), grid->getFrameNode() );
     Eigen::Affine3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
     // get the origin of the poincloud as a map cell
@@ -152,8 +150,8 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
 void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
 {
-    Transform C_m2g = env->relativeTransform( pc->getFrameNode(), grid->getFrameNode() );
-
+    // note: the grid might actually be a local copy and not attached to an
+    // environment
     std::vector<Eigen::Vector3d>& points(pc->vertices);
     std::vector<double>& uncertainty(pc->getVertexData<double>(Pointcloud::VERTEX_VARIANCE));
     std::vector<Eigen::Vector3d> *color = NULL;
@@ -167,7 +165,7 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
     for(size_t i=0;i<points.size();i++)
     {
 	const double p_var = hasUncertainty? uncertainty[i] : defaultUncertainty;
-	Point p = C_m2g * points[i];
+	Point p = C_m2g.getTransform() * points[i];
 
 	const Eigen::Vector3d &mean( p );
 
@@ -192,6 +190,10 @@ bool MLSProjection::updateAll()
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
 	Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(*it);
+
+	C_m2g = env->relativeTransformWithUncertainty(
+	    mesh->getFrameNode(), grid->getFrameNode() );
+
 	if( withUncertainty || m_negativeInformation )
 	    projectPointcloudWithUncertainty( grid, mesh );
 	else
