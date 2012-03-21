@@ -51,7 +51,7 @@ MLSVisualization::MLSVisualization()
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
     showUncertainty(false),
     showNegative(false),
-    estimateNormals(true),
+    estimateNormals(false),
     cycleHeightColor(true)
 {
 }
@@ -290,7 +290,9 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    
 		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), 
 			    col,
-			    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
+			    estimateNormals ? 
+				estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
+				osg::Vec3( 0, 0, 1.0 ) );
 		    hor++;
 		}
 		else
