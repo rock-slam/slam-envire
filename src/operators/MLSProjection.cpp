@@ -118,30 +118,36 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 		// this is the maximum height of the negative cell,
 		// which joins the height of the cell, and how high it
 		// is perceived from the origin point of view
-		double height = cit->height;
-		if( plane_dist > 0 )
-		    height += fabs( grid->getScaleX() / plane_dist * plane_z );
+		double height = 0; //cit->height;
+		if( plane_dist * plane_z != 0 )
+		    height += grid->getScaleX() / plane_dist * plane_z;
 
 		std::vector<GridBase::Position> line_cells;
 		lineBresenham( *it, origin, line_cells );
 
+		int xdiff = it->x - origin.x;
+		int ydiff = it->y - origin.y;
+		bool xdir = abs( xdiff ) >= abs( ydiff );
+
 		for( size_t li = 0; li < line_cells.size(); li++ )
 		{
-		    const double factor = line_cells.size() > 0 ? (li * 1.0 / (line_cells.size()-1)) : 1.0;
-		    const double p_height = height * factor;
-		    const double z_mean = cit->mean + p_height + plane_z * (1.0 - factor);
+		    double factor = 1.0;
+		    if( xdir && xdiff )
+			factor = (int)(line_cells[li].x - origin.x) / (double)xdiff;
+		    else if( ydiff )
+			factor = (int)(line_cells[li].y - origin.y) / (double)ydiff;
+
+		    const double p_height = fabs((cit->height + height) * factor);
+		    const double z_mean = cit->mean + height * factor + plane_z * (1.0 - factor);
 		    const double z_stdev = cit->stdev * factor; 
 
 		    MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
 
-		    /*
-		    std::cout << "update cell " 
-			<< line_cells[li].x << ":" << line_cells[li].y 
-			<< " " << np.mean << " " << np.height << " " << np.stdev
-			<< std::endl;
-			*/
-		    
-		    t_grid->updateCell( line_cells[li], np );
+		    // for now don't put anything into the cell with the
+		    // positive information. This could be changed later
+		    // for partial information
+		    if( factor < 1.0 )
+			grid->updateCell( line_cells[li], np );
 		}
 	    }
 	}
