@@ -6,6 +6,13 @@
 
 using namespace envire;
 
+std::string dot_id(envire::EnvironmentItem* item)
+{
+    std::string result = item->getUniqueId();
+    std::replace(result.begin(), result.end(), '/', '_');
+    return result;
+}
+
 void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 {
     std::ofstream os(outputfile.c_str());
@@ -21,7 +28,7 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
 	if( classname.find("::") != std::string::npos )
 	    classname = classname.substr( classname.rfind("::") + 2 );
 
-	os << "g" << item->getUniqueId() << " ";
+	os << "g" << dot_id(item) << " ";
 	std::string name = (boost::format("%s [%i]") % classname % item->getUniqueId()).str();
 	if( !item->getLabel().empty() )
 	    name = item->getLabel() + "\\n" + name;
@@ -56,8 +63,8 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
     foreach( const Environment::frameNodeTreeType::value_type& pair, env->frameNodeTree )
     {
 	os 
-	    << "g" << pair.first->getUniqueId() 
-	    << " -> g" << pair.second->getUniqueId()
+	    << "g" << dot_id(pair.first)
+	    << " -> g" << dot_id(pair.second)
 	    << std::endl;
     }
 
@@ -65,8 +72,8 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
     foreach( const Environment::layerTreeType::value_type& pair, env->layerTree )
     {
 	os 
-	    << "g" << pair.second->getUniqueId() 
-	    << " -> g" << pair.first->getUniqueId()
+	    << "g" << dot_id(pair.second)
+	    << " -> g" << dot_id(pair.first)
 	    << " [style=dotted]"
 	    << std::endl;
     }
@@ -75,8 +82,8 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
     foreach( const Environment::operatorGraphType::value_type& pair, env->operatorGraphInput )
     {
 	os 
-	    << "g" << pair.second->getUniqueId() 
-	    << " -> g" << pair.first->getUniqueId()
+	    << "g" << dot_id(pair.second)
+	    << " -> g" << dot_id(pair.first)
 	    << std::endl;
     }
 
@@ -84,8 +91,8 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
     foreach( const Environment::operatorGraphType::value_type& pair, env->operatorGraphOutput )
     {
 	os 
-	    << "g" << pair.first->getUniqueId() 
-	    << " -> g" << pair.second->getUniqueId()
+	    << "g" << dot_id(pair.second)
+	    << " -> g" << dot_id(pair.first)
 	    << std::endl;
     }
 
@@ -93,8 +100,8 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
     foreach( const Environment::cartesianMapGraphType::value_type& pair, env->cartesianMapGraph )
     {
 	os 
-	    << "g" << pair.first->getUniqueId() 
-	    << " -> g" << pair.second->getUniqueId()
+	    << "g" << dot_id(pair.second)
+	    << " -> g" << dot_id(pair.first)
 	    << " [shape=dot]"
 	    << std::endl;
     }
