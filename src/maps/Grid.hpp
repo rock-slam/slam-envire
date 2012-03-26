@@ -469,6 +469,9 @@ namespace envire
                 keys.size(), data_type, 
 		papszOptions );
 
+        if (!poDstDS)
+            throw std::runtime_error("failed to create file " + path);
+
 	if(getEnvironment())
 	{
 	  envire::FrameNode::TransformType t = getEnvironment()->relativeTransform(
