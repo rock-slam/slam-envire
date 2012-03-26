@@ -241,6 +241,18 @@ void Environment::setEnvironmentPrefix(std::string envPrefix)
     this->envPrefix = envPrefix;
 }
 
+void Environment::attachItem(CartesianMap* item, FrameNode* node)
+{
+    attachItem(static_cast<EnvironmentItem*>(item));
+    if (!item->getFrameNode())
+    {
+        if (node)
+            item->setFrameNode(node);
+        else
+            item->setFrameNode(getRootNode());
+    }
+}
+
 void Environment::attachItem(EnvironmentItem* item)
 {
     assert( item );

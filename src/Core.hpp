@@ -885,6 +885,12 @@ namespace envire
 	 */
 	void attachItem(EnvironmentItem* item);
 
+        /** Attaches a cartesian map to this environment. If the map does not
+         * yet have a frame node, and none is given in this call, it is
+         * automatically attached to the root node
+         */
+        void attachItem(CartesianMap* item, FrameNode* node = 0);
+
 	/** detaches an object from the environment. After this, the object is no longer owned by
 	 * by the environment. All links to this object from other objects in the environment are
 	 * removed.
