@@ -434,12 +434,24 @@ bool FileSerialization::writeToFile( Environment *env, const std::string &path )
     return result;
 }
 
+template<typename MapType>
+static MapType* getMap(YAMLSerializationImpl* yaml, Environment* env, const char* key)
+{
+    std::string map_id = yaml->getScalarInMap<std::string>(key);
+    if (*map_id.begin() != '/')
+        map_id = "/" + map_id;
+
+    MapType* map = env->getItem<MapType>(map_id).get();
+    if (!map)
+        throw std::runtime_error("cannot find map " + map_id + " in scene");
+    return map;
+}
+
 Environment* FileSerialization::readFromFile( const std::string& path )
 {
     Environment* env;
     
     int64_t lastID = 0;
-    std::string lastPrefix = "";
 
     FILE *input = fopen(path.c_str(), "rb");
     yaml_parser_initialize(&yamlSerialization->parser);
@@ -505,12 +517,17 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 			    assert(env->rootNode);
 			}
 			
-			long currentID = envItem->getUniqueIdSuffix();
-			if(currentID > lastID)
+                        std::string currentID = envItem->getUniqueIdSuffix();
+                        // If this is a number, make sure that we update lastID
+                        // properly
+                        try
                         {
-			    lastID = currentID;
-                            lastPrefix = envItem->getUniqueIdPrefix();
+                            long id = boost::lexical_cast<long>(currentID);
+                            if(id > lastID)
+                                lastID = id;
                         }
+                        catch(boost::bad_lexical_cast)
+                        { }
 		    }
 		    else if( key == "links" )
 		    {
@@ -519,36 +536,36 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "frameNodeTree" )
 			{
 			    env->frameNodeTree.insert( make_pair( 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<std::string>("child") ).get(), 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<std::string>("parent") ).get() ) );
+					getMap<FrameNode>(yamlSerialization, env, "child"), 
+					getMap<FrameNode>(yamlSerialization, env, "parent") ) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "layerTree" )
 			{
 			    env->layerTree.insert( make_pair( 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("child") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("parent") ).get() ) );
+                                        getMap<Layer>(yamlSerialization, env, "child"),
+                                        getMap<Layer>(yamlSerialization, env, "parent") ));
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "operatorGraphInput" )
 			{
 			    env->operatorGraphInput.insert( make_pair( 
-					env->getItem<Operator>( yamlSerialization->getScalarInMap<std::string>("operator") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("layer") ).get() ) );
+                                        getMap<Operator>(yamlSerialization, env, "operator"),
+                                        getMap<Layer>(yamlSerialization, env, "layer")) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "operatorGraphOutput" )
 			{
 			    env->operatorGraphOutput.insert( make_pair( 
-					env->getItem<Operator>( yamlSerialization->getScalarInMap<std::string>("operator") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<std::string>("layer") ).get() ) );
+                                        getMap<Operator>(yamlSerialization, env, "operator"),
+                                        getMap<Layer>(yamlSerialization, env, "layer")) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "cartesianMapGraph" )
 			{
 			    env->cartesianMapGraph.insert( make_pair( 
-					env->getItem<CartesianMap>( yamlSerialization->getScalarInMap<std::string>("map") ).get(), 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<std::string>("node") ).get() ) );
+                                        getMap<CartesianMap>(yamlSerialization, env, "map"),
+                                        getMap<FrameNode>(yamlSerialization, env, "node")) );
 			}
 		    }
 		}
@@ -561,7 +578,6 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 	throw std::runtime_error("empty document.");
     }
 
-    env->setEnvironmentPrefix(lastPrefix);
     lastID++;
     env->last_id = lastID;
 

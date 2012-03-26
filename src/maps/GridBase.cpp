@@ -5,12 +5,15 @@ using namespace envire;
 
 const std::string GridBase::className = "envire::GridBase";
 
-GridBase::GridBase()
-    : cellSizeX(0), cellSizeY(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
+GridBase::GridBase(std::string const& id)
+    : Map<2>(id)
+    , cellSizeX(0), cellSizeY(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
 
 GridBase::GridBase(size_t cellSizeX, size_t cellSizeY,
-        double scalex, double scaley, double offsetx, double offsety)
-    : cellSizeX(cellSizeX), cellSizeY(cellSizeY)
+        double scalex, double scaley, double offsetx, double offsety,
+        std::string const& id)
+    : Map<2>(id)
+    , cellSizeX(cellSizeX), cellSizeY(cellSizeY)
     , scalex(scalex), scaley(scaley)
     , offsetx(offsetx), offsety(offsety)
 {

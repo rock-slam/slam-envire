@@ -12,8 +12,8 @@ namespace fs = boost::filesystem;
 
 const std::string Layer::className = "envire::Layer";
 
-Layer::Layer() :
-    immutable(false)
+Layer::Layer(std::string const& id) :
+    EnvironmentItem(id), immutable(false)
 {
 }
 
@@ -102,8 +102,9 @@ const std::string Layer::getMapFileName() const
 
 const std::string Layer::getMapFileName(const std::string& className) const 
 {
-    std::string uniqueId = getUniqueIdPrefix() != "" ? getUniqueIdPrefix() + "_" + boost::lexical_cast<std::string>(getUniqueIdSuffix()) : boost::lexical_cast<std::string>(getUniqueIdSuffix());
-    return className + "_" + uniqueId;
+    std::string uniqueId = getUniqueId();
+    std::replace(uniqueId.begin(), uniqueId.end(), '/', '_');
+    return className + uniqueId;
 }
 
 const std::string Layer::getMapFileName(const std::string& path, const std::string& className) const 
@@ -127,7 +128,8 @@ void Layer::removeData(const std::string& type)
 
 const std::string CartesianMap::className = "envire::CartesianMap";
 
-CartesianMap::CartesianMap() 
+CartesianMap::CartesianMap(std::string const& id)
+    : Layer(id)
 {
 }
 

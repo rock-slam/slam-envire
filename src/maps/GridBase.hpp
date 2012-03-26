@@ -55,10 +55,11 @@ namespace envire
     public:
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
-        GridBase();
+        GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	GridBase(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
-                double offsetx = 0.0, double offsety = 0.0 );
+                double offsetx = 0.0, double offsety = 0.0,
+                std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	~GridBase();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);

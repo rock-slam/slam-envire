@@ -162,7 +162,7 @@ namespace envire
     public:
 	static const std::string className;
 	
-	EnvironmentItem();
+	EnvironmentItem(std::string const& id);
 
 	/** overide copy constructor, to allow copying, but remove environment
 	 * information for the copied item */
@@ -197,6 +197,14 @@ namespace envire
 	 */	
 	bool isAttached() const;
 
+	/** Sets all or part of the uniqe ID for this item.
+         *
+         * This is made unique by the environment when this item is attached to
+         * an environment. This method will raise logic_error if used after the
+         * item has been attached.
+	 */
+	void setUniqueId(std::string const& id);
+        
 	/** @return the unique id of this environmentitem
 	 */
 	std::string getUniqueId() const;
@@ -207,7 +215,7 @@ namespace envire
         
         /** @return the suffix of the unique id, which must be a integral number
          */
-        long getUniqueIdSuffix() const;
+        std::string getUniqueIdSuffix() const;
 
 	/** marks this item as modified
 	 */
@@ -480,7 +488,7 @@ namespace envire
     public:
 	static const std::string className;
 
-	Layer();
+	Layer(std::string const& id);
 	virtual ~Layer();
 
 	void serialize(Serialization& so);
@@ -641,7 +649,7 @@ namespace envire
     public:
 	static const std::string className;
 
-	CartesianMap();
+	CartesianMap(std::string const& id);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -671,7 +679,12 @@ namespace envire
 	static const int DIMENSION = _DIMENSION;
 
     public:
-	Map() {};
+
+        // Defined later as it requires Environment
+        Map();
+
+        Map(std::string const& id)
+            : CartesianMap(id) {}
 
 	typedef Eigen::AlignedBox<double, DIMENSION> Extents;
 
@@ -731,6 +744,15 @@ namespace envire
     {
     public:
 	static const std::string className;
+
+        /** Constructs a new operator
+         *
+         * @arg inputArity if nonzero, this is the number of inputs that this
+         *                 operator requires
+         * @arg outputArity if nonzero, this is the number of outputs that this
+         *                  operator requires
+         */
+	Operator(std::string const& id, int inputArity = 0, int outputArity = 0);
 
         /** Constructs a new operator
          *
@@ -1146,8 +1168,19 @@ namespace envire
          */
 	TransformWithUncertainty relativeTransformWithUncertainty(const CartesianMap* from, const CartesianMap* to);
         
-        void setEnvironmentPrefix(std::string envPrefix) { this->envPrefix = envPrefix; }
+        /** Sets the prefix for ID generation for this environment
+         *
+         * The prefix is normalized to start and end with the '/' separation
+         * marker
+         *
+         * The default prefix is /
+         */
+        void setEnvironmentPrefix(std::string envPrefix);
         
+        /** Returns the prefix for ID generation on this environment
+         *
+         * The default prefix is /
+         */
         std::string getEnvironmentPrefix() const { return envPrefix; }
     };
    
@@ -1158,6 +1191,15 @@ namespace envire
     template<typename LayerT>
     LayerT Operator::getOutput()
     { return getEnvironment()->getOutput<LayerT>(this); }
+
+    /** This is defined here for backward compatibility reasons. The default
+     * constructor for Map should be removed in the long run, as we want to make
+     * sure that all map types define a constructor that allows to set the map
+     * ID
+     */
+    template<int _DIM>
+    Map<_DIM>::Map()
+        : CartesianMap(Environment::ITEM_NOT_ATTACHED) {}
 }
 
 #endif

@@ -23,8 +23,8 @@ const std::string EnvironmentItem::className = "envire::EnvironmentItem";
 void envire::intrusive_ptr_add_ref( EnvironmentItem* item ) { item->ref_count++; }
 void envire::intrusive_ptr_release( EnvironmentItem* item ) { if(!--item->ref_count) delete item; }
 
-EnvironmentItem::EnvironmentItem()
-    : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+EnvironmentItem::EnvironmentItem(std::string const& unique_id)
+    : ref_count(0), unique_id(unique_id), env(NULL)
 {
 }
 
@@ -54,6 +54,14 @@ bool EnvironmentItem::isAttached() const
     return env;
 }
 
+void EnvironmentItem::setUniqueId(std::string const& id)
+{
+    if (isAttached())
+        throw std::logic_error("trying to change an item's ID after it was attached to an environment");
+
+    unique_id = id;
+}
+
 std::string EnvironmentItem::getUniqueId() const
 {
     return unique_id;
@@ -70,7 +78,7 @@ std::string EnvironmentItem::getUniqueIdPrefix() const
     return prefix_str;
 }
 
-long EnvironmentItem::getUniqueIdSuffix() const
+std::string EnvironmentItem::getUniqueIdSuffix() const
 {
     size_t idpos = unique_id.rfind('/');
     std::string idstr;
@@ -83,16 +91,7 @@ long EnvironmentItem::getUniqueIdSuffix() const
         // backward compatibility
         idstr = unique_id;
     }
-    long id = 0;
-    try
-    {
-        id = boost::lexical_cast<long>(idstr);
-    }
-    catch(boost::bad_lexical_cast)
-    {
-        throw std::runtime_error("expect an integral number as suffix part of the id");
-    }
-    return id;
+    return idstr;
 }
 
 Environment* EnvironmentItem::getEnvironment() const
@@ -109,6 +108,11 @@ void EnvironmentItem::serialize(Serialization &so)
 void EnvironmentItem::unserialize(Serialization &so)
 {
     so.read( "id", unique_id );
+
+    // For backward compatibility
+    if (*unique_id.begin() != '/')
+        unique_id = "/" + unique_id;
+
     so.read( "label", label );
 }
 
@@ -126,11 +130,11 @@ EnvironmentItem::Ptr EnvironmentItem::detach()
 
 const std::string Environment::ITEM_NOT_ATTACHED = "";
 
-Environment::Environment() : last_id(0)
+Environment::Environment() : last_id(0), envPrefix("/")
 {
     // each environment has a root node
     rootNode = new FrameNode();
-    rootNode->unique_id = "0";
+    rootNode->unique_id = "/0";
     last_id++;
     // also put it in the same managed process
     attachItem( rootNode );
@@ -228,6 +232,15 @@ void Environment::removeEventHandler(EventHandler *handler)
     eventHandlers.removeEventHandler( handler );
 }
 
+void Environment::setEnvironmentPrefix(std::string envPrefix)
+{
+    if (*envPrefix.begin() != '/')
+        envPrefix = "/" + envPrefix;
+    if (*envPrefix.rbegin() != '/')
+        envPrefix += "/";
+    this->envPrefix = envPrefix;
+}
+
 void Environment::attachItem(EnvironmentItem* item)
 {
     assert( item );
@@ -235,38 +248,15 @@ void Environment::attachItem(EnvironmentItem* item)
     if(!item->isAttached())
     {
         if(item->unique_id == ITEM_NOT_ATTACHED)
-        {
-            if(envPrefix != "")
-            {
-                item->unique_id = envPrefix + item->unique_id;
-                item->unique_id += '/';
-                item->unique_id += boost::lexical_cast<std::string>(last_id++);
-            }
-            else
-            {
-                item->unique_id = boost::lexical_cast<std::string>(last_id++);
-            }
-        }
-        else if(*item->unique_id.rbegin() != '/' && !isdigit(*item->unique_id.rbegin()))
-        {
-            item->unique_id += '/';
+            item->unique_id = envPrefix;
+
+        if(*item->unique_id.begin() != '/')
+            item->unique_id = envPrefix + item->unique_id;
+
+        if(*item->unique_id.rbegin() == '/')
             item->unique_id += boost::lexical_cast<std::string>(last_id++);
-        }
-        else if(*item->unique_id.rbegin() == '/')
-        {
-            item->unique_id += boost::lexical_cast<std::string>(last_id++);
-        }        
     }
-    // id's must have an integral number as suffix part 
-    try
-    {
-        item->getUniqueIdSuffix();
-    }
-    catch (std::runtime_error e)
-    {
-        throw std::runtime_error(e.what());
-    }
-        
+
     // make sure item not already present
     if( items.count(item->getUniqueId()) ) {
 	std::cout << "Duplicated id:" << item->getUniqueId() << std::endl;

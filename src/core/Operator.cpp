@@ -5,8 +5,14 @@ using namespace envire;
 
 const std::string Operator::className = "envire::Operator";
 
+Operator::Operator(std::string const& id, int inputArity, int outputArity)
+    : EnvironmentItem(id), inputArity(inputArity), outputArity(outputArity)
+{
+}
+
 Operator::Operator(int inputArity, int outputArity)
-    : inputArity(inputArity), outputArity(outputArity)
+    : EnvironmentItem(Environment::ITEM_NOT_ATTACHED)
+    , inputArity(inputArity), outputArity(outputArity)
 {
 }
 
