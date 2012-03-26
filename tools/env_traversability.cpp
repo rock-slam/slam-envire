@@ -12,7 +12,7 @@ int main( int argc, char* argv[] )
 {
     if( argc < 2 || argc > 8)
     {
-	std::cout << "usage: env_traversability input mass force_threshold max_speed [class_count [min_width [ground_clearance]]]" << std::endl;
+	std::cout << "usage: env_traversability input mass force_threshold [class_count [min_width [ground_clearance]]]" << std::endl;
         std::cout << "  generates a classified map of traversabilities based on the given map (a single map must contain all the necessary bands)" << std::endl;
         std::cout << "  the generated map will have the same width, height and cell size than the source map" << std::endl;
         std::cout << std::endl;
@@ -40,22 +40,21 @@ int main( int argc, char* argv[] )
 
     double weight_force = boost::lexical_cast<double>(argv[2]) * 9.81;
     double force_threshold = boost::lexical_cast<double>(argv[3]);
-    double max_speed = boost::lexical_cast<double>(argv[4]);
     int class_count = 10;
-    if (argc > 5)
+    if (argc > 4)
         class_count = boost::lexical_cast<int>(argv[5]);
 
     double min_width = 0.5;
-    if (argc > 6)
+    if (argc > 5)
         min_width = boost::lexical_cast<double>(argv[6]);
 
     double ground_clearance = 0;
-    if (argc > 7)
+    if (argc > 6)
         ground_clearance = boost::lexical_cast<double>(argv[7]);
 
     // Create the convertion operator and run it
     envire::SimpleTraversability *op = new SimpleTraversability(
-            weight_force, force_threshold, max_speed, class_count, min_width, ground_clearance);
+            weight_force, force_threshold, class_count, min_width, ground_clearance);
     env->attachItem( op );
     if (input->hasBand("mean_slope"))
         op->setSlope(input.get(), "mean_slope");

@@ -11,33 +11,29 @@ static envire::SerializationPlugin< SimpleTraversability >  nav_graph_search_Tra
 static envire::SerializationPlugin< SimpleTraversability >  envire_MLSSimpleTraversability("envire::MLSSimpleTraversability");
 
 SimpleTraversability::SimpleTraversability()
-    : weight_force(0)
-    , force_threshold(0)
-    , max_speed(0)
-    , class_count(0)
-    , min_width(0)
-    , ground_clearance(0)
 {
-    for (int i = 0; i < INPUT_COUNT; ++i)
-        input_layers_id[i] = "";
+}
+
+SimpleTraversability::SimpleTraversability(
+        SimpleTraversabilityConfig const& conf)
+    : Operator(0, 1)
+    , conf(conf)
+{
 }
 
 SimpleTraversability::SimpleTraversability(
         double weight_force,
         double force_threshold,
-        double max_speed,
         int class_count,
         double min_width,
         double ground_clearance)
-    : weight_force(weight_force)
-    , force_threshold(force_threshold)
-    , max_speed(max_speed)
-    , class_count(class_count)
-    , min_width(min_width)
-    , ground_clearance(ground_clearance)
+    : Operator(0, 1)
 {
-    for (int i = 0; i < INPUT_COUNT; ++i)
-        input_layers_id[i] = "";
+    conf.weight_force     = weight_force;
+    conf.force_threshold  = force_threshold;
+    conf.class_count      = class_count;
+    conf.min_width        = min_width;
+    conf.ground_clearance = ground_clearance;
 }
 
 void SimpleTraversability::serialize(envire::Serialization& so)
@@ -53,12 +49,11 @@ void SimpleTraversability::serialize(envire::Serialization& so)
         }
     }
 
-    so.write("weight_force", weight_force);
-    so.write("force_threshold", force_threshold);
-    so.write("max_speed", max_speed);
-    so.write("class_count", class_count);
-    so.write("ground_clearance", ground_clearance);
-    so.write("min_width", min_width);
+    so.write("weight_force", conf.weight_force);
+    so.write("force_threshold", conf.force_threshold);
+    so.write("class_count", conf.class_count);
+    so.write("ground_clearance", conf.ground_clearance);
+    so.write("min_width", conf.min_width);
     so.write("output_band", output_band);
 }
 
@@ -76,12 +71,11 @@ void SimpleTraversability::unserialize(envire::Serialization& so)
         }
     }
 
-    so.read<double>("weight_force", weight_force);
-    so.read<double>("force_threshold", force_threshold);
-    so.read<double>("max_speed", max_speed);
-    so.read<int>("class_count", class_count);
-    so.read<double>("ground_clearance", ground_clearance);
-    so.read<double>("min_width", min_width);
+    so.read<double>("weight_force", conf.weight_force);
+    so.read<double>("force_threshold", conf.force_threshold);
+    so.read<int>("class_count", conf.class_count);
+    so.read<double>("ground_clearance", conf.ground_clearance);
+    so.read<double>("min_width", conf.min_width);
     so.read<std::string>("output_band", output_band);
 }
 
@@ -131,7 +125,6 @@ void SimpleTraversability::setOutput(OutputLayer* grid, std::string const& band_
 
 bool SimpleTraversability::updateAll()
 {
-    std::cout << "update: max_speed=" << max_speed << std::endl;
     OutputLayer* output_layer = getOutput< OutputLayer* >();
     if (!output_layer)
         throw std::runtime_error("SimpleTraversability: no output band set");
@@ -172,10 +165,10 @@ bool SimpleTraversability::updateAll()
     if (!has_data)
         throw std::runtime_error("SimpleTraversability: no input layer configured");
 
-    if (inputs[MAX_STEP] && ground_clearance == 0)
+    if (inputs[MAX_STEP] && conf.ground_clearance == 0)
         throw std::runtime_error("a max_step band is available, but the ground clearance is set to zero");
 
-    double const class_width = 1.0 / class_count;
+    double const class_width = 1.0 / conf.class_count;
                 
     int width = output_layer->getWidth(), height = output_layer->getHeight();
     for (int y = 0; y < height; ++y)
@@ -205,7 +198,7 @@ bool SimpleTraversability::updateAll()
 
             // First, max_step is an ON/OFF threshold on the ground clearance
             // parameter
-            if (has_max_step && (values[MAX_STEP] > ground_clearance))
+            if (has_max_step && (values[MAX_STEP] > conf.ground_clearance))
             {
                 result[y][x] = CLASS_OBSTACLE;
                 continue;
@@ -222,19 +215,19 @@ bool SimpleTraversability::updateAll()
             //
             // The result is then a linear mapping of F=[O, force_threshold] to
             // [0, 1]
-            double max_force = force_threshold;
+            double max_force = conf.force_threshold;
             double speed = 1;
             if (has_max_force)
                 max_force = values[MAX_FORCE];
             if (has_slope)
-                max_force = max_force - weight_force * fabs(sin(values[SLOPE]));
+                max_force = max_force - conf.weight_force * fabs(sin(values[SLOPE]));
 
             if (max_force <= 0)
                 result[y][x] = CLASS_OBSTACLE;
             else
             {
-                if (max_force < force_threshold)
-                    speed *= max_force / force_threshold;
+                if (max_force < conf.force_threshold)
+                    speed *= max_force / conf.force_threshold;
 
                 int klass = rint(speed / class_width);
                 result[y][x] = CUSTOM_CLASSES + klass;
@@ -242,8 +235,7 @@ bool SimpleTraversability::updateAll()
         }
     }
 
-    closeNarrowPassages(*output_layer, output_band, min_width);
-    std::cout << "end update: max_speed=" << max_speed << std::endl;
+    closeNarrowPassages(*output_layer, output_band, conf.min_width);
     return true;
 }
 
