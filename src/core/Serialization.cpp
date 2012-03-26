@@ -628,6 +628,25 @@ std::ostream& BinarySerialization::getBinaryOutputStream(const std::string &file
     return *ostream;
 }
 
+void BinarySerialization::applyEvent(envire::Environment* env, const EnvireBinaryEvent& binary_event)
+{
+    EnvironmentItem* item = 0;
+    if(binary_event.type == event::ITEM && (binary_event.operation == event::ADD || binary_event.operation == event::UPDATE ))
+    {
+        // unserialize item
+        item = unserializeBinaryEvent(binary_event);
+    }
+    
+    // set up event
+    EnvironmentItem::Ptr item_ptr(item);
+    envire::Event event(binary_event.type, binary_event.operation, item_ptr);
+    event.id_a = binary_event.id_a;
+    event.id_b = binary_event.id_b;
+    
+    // apply event
+    event.apply(env);
+}
+
 EnvironmentItem* BinarySerialization::unserializeBinaryEvent(const EnvireBinaryEvent& bin_item)
 {
     // set up yaml document
