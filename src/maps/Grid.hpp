@@ -63,8 +63,6 @@ namespace envire
         std::map<std::string, T> nodata;
 
     protected:	
-	Grid(Serialization& so,const std::string &class_name);
-
         /** @deprecated
          *
          * This is used to re-read maps that were serialized before the Grid
@@ -274,6 +272,15 @@ namespace envire
 	GDALDataType getGDALDataTypeOfArray();
 
     };
+
+    /* Explicit instanciations in Grids.cpp for the purpose of serialization */
+    extern template class Grid<double>;
+    extern template class Grid<float>;
+    extern template class Grid<uint8_t>;
+    extern template class Grid<int16_t>;
+    extern template class Grid<uint16_t>;
+    extern template class Grid<int32_t>;
+    extern template class Grid<uint32_t>;
     
     //set unique class name for each template type
     #define GRID_DATA_VALUE "grid_data"
@@ -308,11 +315,6 @@ namespace envire
       }
     }
     
-    //this is for initializing CartesianMap from a child class without loading GridData
-    template<class T>Grid<T>::Grid(Serialization& so,const std::string &class_name)
-      : GridBase(so)
-    {
-    }
     template<class T>Grid<T>::~Grid()
     {
       

@@ -8,6 +8,14 @@ bool envire::fileExists(std::string const& path)
     return boost::filesystem::exists(path);
 }
 
+template class Grid<double>;
+template class Grid<float>;
+template class Grid<uint8_t>;
+template class Grid<int16_t>;
+template class Grid<uint16_t>;
+template class Grid<int32_t>;
+template class Grid<uint32_t>;
+
 static envire::SerializationPlugin< Grid<double> >   Grid_double_plugin("Grid_d");
 static envire::SerializationPlugin< Grid<float> >    Grid_float_plugin("Grid_f");
 static envire::SerializationPlugin< Grid<uint8_t> >  Grid_uint8_plugin("Grid_h");
