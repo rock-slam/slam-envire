@@ -685,6 +685,9 @@ std::pair<T, const FrameNode*> relativeFrameNodeRoot( const FrameNode* from )
 template <class T>
 T relativeTransform(const FrameNode* from, const FrameNode* to)
 {
+    if (from == to)
+        return T( Eigen::Affine3d::Identity() );
+
     std::pair<T, const FrameNode*> fg = relativeFrameNodeRoot<T>(from);
     std::pair<T, const FrameNode*> tg = relativeFrameNodeRoot<T>(to);
 
