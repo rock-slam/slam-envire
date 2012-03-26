@@ -230,3 +230,21 @@ GridBase::Ptr GridBase::create(std::string const& type_name,
     return boost::dynamic_pointer_cast<GridBase>(ptr);
 }
 
+bool GridBase::isAlignedWith(GridBase const& grid) const
+{
+    if (getCellSizeX() != grid.getCellSizeX() ||
+        getCellSizeY() != grid.getCellSizeY() ||
+        getOffsetX() != grid.getOffsetX() ||
+        getOffsetY() != grid.getOffsetY())
+        return false;
+
+    FrameNode::TransformType tf = getEnvironment()->relativeTransform(this, &grid);
+    base::Vector3d p(grid.getCellSizeX(), grid.getCellSizeY(), 0);
+    p = tf * p;
+    if (rint(p.x()) != grid.getCellSizeX() ||
+            rint(p.y()) != grid.getCellSizeY())
+        return false;
+
+    return true;
+}
+

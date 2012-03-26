@@ -169,6 +169,13 @@ namespace envire
                 size_t cellSizeX, size_t cellSizeY,
                 double scalex = 1, double scaley = 1,
                 double offsetx = 0, double offsety = 0);
+
+        /** Checks if two grids are approximately aligned
+         *
+         * It returns true if the maximum misalignment error is less than a half
+         * cell
+         */
+        bool isAlignedWith(GridBase const& grid) const;
     };
 }
 
