@@ -91,8 +91,8 @@ void GraphViz::writeToFile( Environment* env, const std::string& outputfile )
     foreach( const Environment::operatorGraphType::value_type& pair, env->operatorGraphOutput )
     {
 	os 
-	    << "g" << dot_id(pair.second)
-	    << " -> g" << dot_id(pair.first)
+	    << "g" << dot_id(pair.first)
+	    << " -> g" << dot_id(pair.second)
 	    << std::endl;
     }
 
