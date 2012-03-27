@@ -12,9 +12,14 @@ class MergeMLS : public Operator
     ENVIRONMENT_ITEM( MergeMLS )
 
 public:
-    MergeMLS() {};
+    MergeMLS() : reverse(false) {};
 
     bool updateAll();
+
+    void setReverse( bool value ) { reverse = value; }
+
+protected:
+    bool reverse;
 };
 }
 #endif
