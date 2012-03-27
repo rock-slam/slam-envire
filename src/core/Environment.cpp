@@ -745,3 +745,9 @@ Environment* Environment::unserialize(std::string const& path)
     return serialization.readFromFile( scene.string() );
 }
 
+
+void Environment::applyEvents(std::vector<BinaryEvent> const& events)
+{
+    BinarySerialization::applyEvents(this, events);
+}
+

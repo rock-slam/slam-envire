@@ -628,6 +628,14 @@ std::ostream& BinarySerialization::getBinaryOutputStream(const std::string &file
     return *ostream;
 }
 
+void BinarySerialization::applyEvents(envire::Environment* env,
+        const std::vector<EnvireBinaryEvent>& events)
+{
+    BinarySerialization serialization;
+    for (int i = 0; i < events.size(); ++i)
+        serialization.applyEvent(env, events[i]);
+}
+
 void BinarySerialization::applyEvent(envire::Environment* env, const EnvireBinaryEvent& binary_event)
 {
     EnvironmentItem* item = 0;

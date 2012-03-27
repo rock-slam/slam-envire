@@ -14,6 +14,7 @@
 #include <stdexcept>
 
 #include <envire/core/EventSource.hpp>
+#include <envire/core/EventTypes.hpp>
 #include <base/samples/rigid_body_state.h>
 
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
@@ -1188,6 +1189,10 @@ namespace envire
          * The default prefix is /
          */
         std::string getEnvironmentPrefix() const { return envPrefix; }
+
+        /** Apply a set of serialized modifications to this environment
+         */
+        void applyEvents(std::vector<BinaryEvent> const& events);
     };
    
     template<typename LayerT>
