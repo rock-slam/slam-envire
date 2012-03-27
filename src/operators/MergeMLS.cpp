@@ -1,4 +1,5 @@
 #include "MergeMLS.hpp"
+#include <envire/maps/MLSMap.hpp>
 
 using namespace envire;
 
@@ -9,11 +10,39 @@ bool MergeMLS::updateAll()
     MLSGrid* output = static_cast<envire::MLSGrid*>(*env->getOutputs(this).begin());
     assert(output);
 
+    // get the maps from the input
+    // inputs can either be grids directly, or maps which
+    // have grids as children
+    std::vector<MLSGrid*> grids;
     std::list<Layer*> inputs = env->getInputs(this);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
-	MLSGrid* input = dynamic_cast<envire::MLSGrid*>(*it);
-	assert(input);
+	MLSGrid* grid = dynamic_cast<envire::MLSGrid*>(*it);
+	if( grid )
+	    grids.push_back( grid );
+	else
+	{
+	    MLSMap* map = dynamic_cast<envire::MLSMap*>(*it);
+	    if( map )
+	    {
+		std::list<Layer*> children = env->getChildren( map );
+		for( std::list<Layer*>::iterator it2 = children.begin(); it2 != children.end(); it2++ )
+		{
+		    MLSGrid* grid = dynamic_cast<envire::MLSGrid*>(*it2);
+		    assert( grid );
+		    grids.push_back( grid );
+		}
+	    }
+	    else
+		throw std::runtime_error("Not a valid input to MLSMerge operator");
+	}
+    }
+
+    // now for each cell in the input grid, 
+    // merge into the output grid
+    for( std::vector<MLSGrid*>::iterator it = grids.begin(); it != grids.end(); it++ )
+    {
+	MLSGrid* input = *it;
 
 	FrameNode::TransformType C_m2g = env->relativeTransform( input->getFrameNode(), output->getFrameNode() );
 	// we support only translations for now
