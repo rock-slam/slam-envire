@@ -485,6 +485,18 @@ std::list<FrameNode*> Environment::getChildren(FrameNode* parent)
     return children;
 }
 
+std::list<const Layer*> Environment::getChildren(const Layer* parent) const 
+{
+    std::list<const Layer*> children;
+    for(layerTreeType::const_iterator it=layerTree.begin();it != layerTree.end(); ++it )
+    {
+	if( it->second == parent )
+	    children.push_back( it->first );
+    }
+
+    return children;
+}
+
 std::list<Layer*> Environment::getChildren(Layer* parent) 
 {
     std::list<Layer*> children;

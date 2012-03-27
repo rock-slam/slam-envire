@@ -364,7 +364,7 @@ namespace envire
 
 	/** return the extents of the grid.
 	 */
-	Extents getExtents() { return extents; }
+	Extents getExtents() const { return extents; }
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
