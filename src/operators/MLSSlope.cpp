@@ -59,7 +59,7 @@ bool MLSSlope::updateAll()
 {
     // this implementation can handle only one input at the moment
     if( env->getInputs(this).size() != 1 || env->getOutputs(this).size() != 1 )
-        throw std::runtime_error("MLSSlope needs to have exactly 1 input and 1 output for now.");
+        throw std::runtime_error("MLSSlope needs to have exactly 1 input and 1 output for now. Got " + boost::lexical_cast<std::string>(env->getInputs(this).size()) + " inputs and " + boost::lexical_cast<std::string>(env->getOutputs(this).size()) + "outputs");
     
     Grid<double>& travGrid = *env->getOutput< Grid<double>* >(this);
     MLSGrid const& mls = *env->getInput< MLSGrid* >(this);
