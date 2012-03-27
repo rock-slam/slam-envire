@@ -37,7 +37,7 @@ namespace envire
      * Environment binary item, holds the data of an EnvironmentItem
      * in binary form. It is used to serialize one single EnvironmentItem.
      */
-    struct EnvireBinaryEvent
+    struct BinaryEvent
     {
 	// timestamp of the event
 	base::Time time;
@@ -53,11 +53,12 @@ namespace envire
         std::vector<std::string> binaryStreamNames;
         std::vector< std::vector<uint8_t> > binaryStreams;
         
-        EnvireBinaryEvent()
+        BinaryEvent()
          : id_a(""), id_b(""), className("") {};
-        EnvireBinaryEvent(event::Type type, event::Operation operation, std::string id_a, std::string id_b)
+        BinaryEvent(event::Type type, event::Operation operation, std::string id_a, std::string id_b)
          : id_a(id_a), id_b(id_b), type(type), operation(operation), className("") {};
     };
 
+    typedef BinaryEvent EnvireBinaryEvent;
 }
 #endif
