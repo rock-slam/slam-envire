@@ -266,7 +266,18 @@ void Environment::attachItem(EnvironmentItem* item)
             item->unique_id = envPrefix + item->unique_id;
 
         if(*item->unique_id.rbegin() == '/')
-            item->unique_id += boost::lexical_cast<std::string>(last_id++);
+        {
+            int numeric_id = last_id++;
+            std::string candidate = item->unique_id + boost::lexical_cast<std::string>(numeric_id);
+            while( items.count(item->getUniqueId()) )
+            {
+                numeric_id++;
+                candidate = item->unique_id + boost::lexical_cast<std::string>(numeric_id);
+            }
+
+            last_id = numeric_id + 1;
+            item->unique_id = candidate;
+        }
     }
 
     // make sure item not already present
@@ -368,7 +379,6 @@ EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item, bool deep)
     
     EnvironmentItem::Ptr itemPtr = items[ item->getUniqueId() ];
     items.erase( item->getUniqueId() );
-    item->unique_id = ITEM_NOT_ATTACHED;
     item->env = NULL;
 
     return itemPtr;
