@@ -58,8 +58,26 @@ namespace envire
          : id_a(""), id_b(""), className("") {};
         BinaryEvent(event::Type type, event::Operation operation, std::string id_a, std::string id_b)
          : id_a(id_a), id_b(id_b), type(type), operation(operation), className("") {};
-    };
 
+        /** Sets values in @a this using the data in @a event, modifying @a
+         * event in the process
+         *
+         * In C++11, we would use a move constructor
+         */
+        void move(BinaryEvent& other_event)
+        {
+            time = other_event.time;
+            id_a = other_event.id_a;
+            id_b = other_event.id_b;
+            type = other_event.type;
+            operation = other_event.operation;
+
+            className = other_event.className;
+            std::swap(yamlProperties, other_event.yamlProperties);
+            std::swap(binaryStreamNames, other_event.binaryStreamNames);
+            std::swap(binaryStreams, other_event.binaryStreams);
+        }
+    };
     typedef BinaryEvent EnvireBinaryEvent;
 }
 #endif
