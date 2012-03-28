@@ -16,7 +16,7 @@ namespace vizkit
 {
 
 class EnvireVisualization : 
-    public VizPluginAdapter<envire::Environment*>
+    public Vizkit3DPlugin<envire::Environment*>
 {
     Q_OBJECT
 
@@ -46,14 +46,16 @@ public:
     Q_INVOKABLE void updateBinaryEvent( envire::EnvireBinaryEvent const& data );
 
 protected:
-    virtual void operatorIntern( osg::Node* node, osg::NodeVisitor* nv );
+    virtual void updateMainNode(osg::Node* node);
     virtual void updateDataIntern( envire::Environment* const& data );
+    virtual osg::ref_ptr<osg::Node> createMainNode();
 
 private:
     bool m_handleDirty;
     /** If true, the object pointed-to by @c env is owned by this object */
     bool m_ownsEnvironment;
 
+    osg::ref_ptr<osg::Group> ownNode;
     envire::Environment *env;
     boost::recursive_mutex envLock;
 

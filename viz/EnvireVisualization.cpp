@@ -21,7 +21,6 @@ EnvireVisualization::EnvireVisualization()
     : m_handleDirty( true ), m_ownsEnvironment( false ), env( NULL )
 {
     ownNode = new osg::Group();
-    setMainNode( ownNode );
 
     // setup eventlistener
     eventListener = boost::shared_ptr<EnvireEventListener>(
@@ -96,7 +95,7 @@ bool EnvireVisualization::isDirty() const
 	return VizPluginBase::isDirty();
 }
     
-void EnvireVisualization::operatorIntern( osg::Node* node, osg::NodeVisitor* nv )
+void EnvireVisualization::updateMainNode(osg::Node* node)
 {
     // since we are in the update call here, we can modify the osg tree
     // we'll call the apply method of the eventlistener, to perform back/front
@@ -155,6 +154,11 @@ void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
     env->addEventHandler( eventListener.get() );
     if( twl )
 	env->addEventHandler( twl.get() );
+}
+
+osg::ref_ptr< osg::Node > EnvireVisualization::createMainNode()
+{
+    return ownNode;
 }
 
 VizkitQtPlugin(EnvireVisualization);
