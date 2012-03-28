@@ -38,6 +38,7 @@ public:
 class DummyLayer : public Layer 
 {
 public:
+    DummyLayer() : Layer("layer/") {}
     void set( EnvironmentItem* other ) {}
     Layer* clone() const {return new DummyLayer(*this);};
     void serialize(Serialization &) {};
