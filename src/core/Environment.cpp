@@ -379,6 +379,8 @@ void Environment::itemModified(EnvironmentItem* item)
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
 {
+    assert( parent != child );
+
     if( !child->isAttached() )
 	attachItem( child );
 
@@ -394,6 +396,8 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 
 void Environment::addChild(Layer* parent, Layer* child)
 {
+    assert( parent != child );
+    
     if( !child->isAttached() )
 	attachItem( child );
 
