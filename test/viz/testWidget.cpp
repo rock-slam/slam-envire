@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( mlsviz_test )
 	{
 	    for(int y=0;y<100;y++)
 	    {
-		MultiLevelSurfaceGrid::SurfacePatch p( cos( (x+r)/10.0 ) * sin( (y+r)/10.0 ), 0.1, 0, true );
+		MultiLevelSurfaceGrid::SurfacePatch p( cos( (x+r)/10.0 ) * sin( (y+r)/10.0 ), 0.1, 0, MLSGrid::SurfacePatch::HORIZONTAL );
 
 		MultiLevelSurfaceGrid::iterator it = mls->beginCell(x,y);
 		if( it == mls->endCell() )

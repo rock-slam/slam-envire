@@ -38,11 +38,13 @@ Layer::~Layer()
 
 void Layer::addChild( Layer* child ) 
 {
+    assert( env );
     env->addChild(this, child);
 }
 
 std::list<Layer*> Layer::getParents()
 {
+    assert( env );
     return env->getParents(this);
 }
 
@@ -86,6 +88,7 @@ bool Layer::isGenerated() const
 
 Operator* Layer::getGenerator() const
 {
+    assert( env );
     return env->getGenerator(const_cast<Layer*>(this));
 }
 
@@ -147,6 +150,7 @@ FrameNode* CartesianMap::getFrameNode()
 
 const FrameNode* CartesianMap::getFrameNode() const 
 {
+    assert( env );
     return env->getFrameNode(const_cast<CartesianMap*>(this));
 }
 

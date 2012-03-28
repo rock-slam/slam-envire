@@ -969,6 +969,7 @@ namespace envire
 	FrameNode* getRootNode();
 	std::list<FrameNode*> getChildren(FrameNode* parent);
 	std::list<Layer*> getChildren(Layer* parent);
+	std::list<const Layer*> getChildren(const Layer* parent) const;
 
 	void setFrameNode(CartesianMap* map, FrameNode* node);
 	void detachFrameNode(CartesianMap* map, FrameNode* node);

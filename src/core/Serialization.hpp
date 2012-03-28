@@ -248,14 +248,17 @@ namespace envire
     };
     
     
-    class SynchronizationEventHandler : public EventHandler
+    class SynchronizationEventHandler : public EventQueue
     {
     public:
-        void handle( const Event& message );
-        
+        SynchronizationEventHandler() : use_event_queue(false) {};
+        virtual void handle( const Event& message );
+        virtual void process( const Event& message );
         virtual void handle( EnvireBinaryEvent* binary_event ) = 0;
+        void useEventQueue(bool b);
 
     protected:
+        bool use_event_queue;
         BinarySerialization serialization;
     };
 }

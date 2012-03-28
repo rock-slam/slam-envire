@@ -44,6 +44,14 @@ namespace envire
 		    else
 			return false;
 	    }
+	    bool operator==( const Position& other ) const
+	    {
+		return x == other.x && y == other.y;
+	    }
+	    bool operator!=( const Position& other ) const
+	    {
+		return x != other.x || y != other.y;
+	    }
 	};
 	typedef Eigen::Vector2d Point2D;
 

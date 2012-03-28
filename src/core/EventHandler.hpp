@@ -84,6 +84,7 @@ public:
 
 class EventQueue : public EventHandler
 {
+protected:
     std::list<Event> msgQueue;
     boost::mutex queueMutex;
 

@@ -93,7 +93,7 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 
 envire::MLSGrid* MLSGrid::cloneShallow() const
 {
-    MLSGrid* res = new MLSGrid( cellSizeX, cellSizeY, scalex, scaley );
+    MLSGrid* res = new MLSGrid( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety );
     res->gapSize = gapSize;
     res->thickness = thickness;
     res->cellcount = cellcount;
@@ -153,7 +153,8 @@ struct SurfacePatchStore10
 
     MLSGrid::SurfacePatch toSurfacePatch()
     {
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal );
+	typedef envire::MLSGrid::SurfacePatch sp;
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
 	p.update_idx = update_idx;
 	return p;
     }
@@ -173,7 +174,8 @@ struct SurfacePatchStore11
 
     MLSGrid::SurfacePatch toSurfacePatch()
     {
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal );
+	typedef envire::MLSGrid::SurfacePatch sp;
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
 	p.update_idx = update_idx;
 	p.color = color;
 	return p;
@@ -330,14 +332,14 @@ MLSGrid::iterator MLSGrid::erase( iterator position )
     return res; 
 }
 
-MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold )
+MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
 {
     MLSGrid::iterator it = beginCell(position.x, position.y);
     while( it != endCell() )
     {
 	MLSGrid::SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
-	if( p.distance( patch ) < interval )
+	if( p.distance( patch ) < interval && (!ignore_negative || !p.isNegative()) )
 	{
 	    return &p;
 	}
@@ -347,7 +349,7 @@ MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatc
 }
 
 
-bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev)
+bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev )
 {
     size_t xi, yi;
     if( toGrid(position.x(), position.y(), xi, yi) )
@@ -369,10 +371,17 @@ void MLSGrid::updateCell( size_t xi, size_t yi, double mean, double stdev )
     updateCell( xi, yi, SurfacePatch( mean, stdev ) );
 }
 
-void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& o )
+void MLSGrid::updateCell( const Position& pos, const SurfacePatch& o )
+{
+    updateCell( pos.x, pos.y, o );
+}
+
+void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& co )
 {
     typedef std::list<MLSGrid::iterator> iterator_list;
     iterator_list merged;
+    // make a copy of the surfacepatch as it may get updated in the merge
+    SurfacePatch o( co );
 
     for(MLSGrid::iterator it = beginCell( xi, yi ); it != endCell(); it++ )
     {
@@ -408,7 +417,7 @@ void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& o )
     }
 }
 
-bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
+bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
     const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
 
@@ -417,38 +426,71 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 	    && (p.mean + gapSize + delta_dev) > (o.mean - o.height) )
     {
 	// if both patches are horizontal, we see if we can merge them
-	if( p.horizontal && o.horizontal ) 
+	if( p.isHorizontal() && o.isHorizontal() ) 
 	{
 	    if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
 		    (p.mean + thickness + delta_dev) > o.mean )
 	    {
 		kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-		/*
-		// for horizontal patches, perform an update similar to the kalman
-		// update rule
-		const double pvar = p.stdev * p.stdev;
-		const double var = o.stdev * o.stdev;
-		double gain = pvar / (pvar + var);
-		if( gain != gain )
-		    gain = 0.5; // this happens when both stdevs are 0. 
-		p.mean = p.mean + gain * (o.mean - p.mean);
-		p.stdev = sqrt((1.0-gain)*pvar);
-		*/
 	    }
 	    else
 	    {
 		// convert into a vertical patch element
 		//p.mean += p.stdev;
 		//p.height = 2 * p.stdev; 
-		p.horizontal = false;
+		p.setVertical();
 	    }
 	}
 
 	// if either of the patches is vertical, the result is also going
 	// to be vertical
-	if( !p.horizontal || !o.horizontal)
+	if( !p.isHorizontal() || !o.isHorizontal())
 	{
-	    p.horizontal = false;
+	    if( p.isVertical() && o.isVertical() )
+		p.setVertical();
+	    else if( p.isNegative() && o.isNegative() )
+		p.setNegative();
+	    else if( p.isNegative() || o.isNegative() )
+	    {
+		// in this case (one negative one non negative)
+		// its a bit hard to decide, since we have to remove
+		// something somewhere to make it compatible
+		//
+		// best is to decide on age (based on update_idx) 
+		// of the patch. Newer patches will be preferred
+
+		if( p.update_idx == o.update_idx )
+		    return false;
+
+		SurfacePatch &rp( p.update_idx < o.update_idx ? p : o );
+		SurfacePatch &ro( p.update_idx < o.update_idx ? o : p );
+
+		if( rp.update_idx < ro.update_idx )
+		{
+		    // the new patch fully encloses the old one, 
+		    // so will overwrite it
+		    if( ro.mean > rp.mean && ro.mean - ro.height < rp.mean - rp.height )
+		    {
+			p = ro;
+			return true; 
+		    } 
+
+		    // the other patch is occupied, so cut
+		    // the free patch accordingly
+		    if( ro.mean < rp.mean )
+			rp.height = rp.mean - ro.mean;
+		    else if( ro.mean - ro.height < rp.mean )
+		    {
+			double new_mean = ro.mean - ro.height;
+			rp.height -= rp.mean - new_mean;
+			rp.mean = new_mean;
+		    }
+
+		    // both patches can live 
+		    return false;
+		}
+	    }
+
 	    if( o.mean > p.mean )
 	    {
 		p.height += ( o.mean - p.mean );
@@ -463,7 +505,7 @@ bool MLSGrid::mergePatch( SurfacePatch& p, const SurfacePatch& o )
 		p.height = p.mean - o_min;
 	    }
 	}
-	p.update_idx = o.update_idx;
+	p.update_idx = std::max( p.update_idx, o.update_idx );
 
 	if( hasCellColor_ )
 	    p.color = (p.color + o.color)/2.0;
