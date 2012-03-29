@@ -214,9 +214,17 @@ namespace envire
          */
         std::string getUniqueIdPrefix() const;
         
-        /** @return the suffix of the unique id, which must be a integral number
+        /** @return the suffix (last part after the /) of the unique id
          */
         std::string getUniqueIdSuffix() const;
+
+	/** @return the suffix of the unique id and perform a conversion to
+	 * integer type
+	 *
+	 * will throw if suffix is not actually numerical, which happens, when
+	 * the original unique id given had a trailing slash.
+         */
+        long getUniqueIdNumericalSuffix() const;
 
 	/** marks this item as modified
 	 */
@@ -1179,7 +1187,8 @@ namespace envire
         /** Sets the prefix for ID generation for this environment
          *
          * The prefix is normalized to start and end with the '/' separation
-         * marker
+         * marker. The prefix is used as a sort of namespace, so that
+	 * ids can be kept unique between different environments.
          *
          * The default prefix is /
          */

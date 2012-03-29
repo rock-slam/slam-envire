@@ -94,6 +94,11 @@ std::string EnvironmentItem::getUniqueIdSuffix() const
     return idstr;
 }
 
+long EnvironmentItem::getUniqueIdNumericalSuffix() const
+{
+    return boost::lexical_cast<long>(getUniqueIdSuffix());
+}
+
 Environment* EnvironmentItem::getEnvironment() const
 {
     return env;
