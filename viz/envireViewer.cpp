@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     a.setCentralWidget(widget);
 
     //add envire plugin
-    widget->addDataHandler(envViz);
+    widget->addPlugin(envViz);
     
     a.show();
     return app.exec();

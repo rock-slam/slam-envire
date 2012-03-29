@@ -40,6 +40,7 @@ EnvireVisualization::EnvireVisualization()
     // attach visualizers
     for(std::vector<boost::shared_ptr<EnvironmentItemVisualizer> >::iterator it = visualizers.begin(); it != visualizers.end(); it++)
     {
+        (*it)->setParent(this);
 	eventListener->addVisualizer( (*it).get() );
     }
 
