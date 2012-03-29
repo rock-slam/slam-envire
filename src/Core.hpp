@@ -118,6 +118,18 @@ namespace envire
      * Mainly handles the unique_id feature and the pointer to the environment
      * object.
      *
+     * The unique_id of an item is a string representation with an optional
+     * integer part. Ids given on construction of an EnvironmentItem based
+     * object are first prefixed by the environment prefix (which defaults to
+     * '/'), then the provided string is used to form an unique identifier. If
+     * this identifier is already in the environment, attaching it will throw.
+     * There is however the option to add a trailing '/' to the id. In this
+     * case, attaching the item in this case will not generate an exception,
+     * but will make the item unique by appending a number to make the complete
+     * id unique.
+     *
+     * [/<environment_prefix>]/<id>[/<numeric_id]
+     *
      * Ownership of objects is managed as follows: Objects are owned by the user
      * as long as they are not attached to the environment.
      *
