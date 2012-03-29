@@ -55,7 +55,9 @@ namespace envire {
      * is then quantified in @a class_count intervals.
      *
      * It outputs a map in which each cell has an integer value, this integer
-     * value being the traversability class for the cell
+     * value being the traversability class for the cell. Since CLASS_UNKNOWN
+     * (=0) and CLASS_OBSTACLE (=1) are reserved, the resulting traversability
+     * class is in [2, * 2 + class_count[
      *
      * If one of the modality is missing, it is simply ignored
      */

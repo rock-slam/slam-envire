@@ -89,8 +89,17 @@ protected:
     boost::mutex queueMutex;
 
 public:
+    /** Callback that is called by the environment as an event handler. You
+     * should normally not reimplement this
+     */
     void handle( const Event& message );
+
+    /** Send all events currently stored in the queue to process
+     */
     void flush();
+
+    /** Callback called with each queued event when flush() is called
+     */
     virtual void process( const Event& message ) = 0;
 };
 
