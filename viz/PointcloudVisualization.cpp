@@ -191,3 +191,79 @@ void PointcloudVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
 
     geode->addDrawable(geom.get());    
 }
+
+bool PointcloudVisualization::areNormalsShown() const
+{
+    return showNormals;
+}
+
+void PointcloudVisualization::setShowNormals(bool enabled)
+{
+    showNormals = enabled;
+    emit propertyChanged("show_normals");
+}
+
+bool PointcloudVisualization::areFeaturesShown() const
+{
+    return showFeatures;
+}
+
+void PointcloudVisualization::setShowFeatures(bool enabled)
+{
+    showFeatures = enabled;
+    emit propertyChanged("show_features");
+}
+
+bool PointcloudVisualization::isColorCycled() const
+{
+    return colorCycling;
+}
+
+void PointcloudVisualization::setColorCycling(bool enabled)
+{
+    colorCycling = enabled;
+    emit propertyChanged("color_cycling");
+}
+
+double PointcloudVisualization::getNormalScaling() const
+{
+    return normalScaling;
+}
+
+void PointcloudVisualization::setNormalScaling(double scaling)
+{
+    normalScaling = scaling;
+    emit propertyChanged("normal_scaling");
+}
+
+QColor PointcloudVisualization::getNormalColor() const
+{
+    QColor color;
+    color.setRgbF(normalColor.x(), normalColor.y(), normalColor.z(), normalColor.w());
+    return color;
+}
+
+void PointcloudVisualization::setNormalColor(QColor color)
+{
+    normalColor.x() = color.redF();
+    normalColor.y() = color.greenF();
+    normalColor.z() = color.blueF();
+    normalColor.w() = color.alphaF();
+    emit propertyChanged("normal_color");
+}
+
+QColor PointcloudVisualization::getVertexColor() const
+{
+    QColor color;
+    color.setRgbF(vertexColor.x(), vertexColor.y(), vertexColor.z(), vertexColor.w());
+    return color;
+}
+
+void PointcloudVisualization::setVertexColor(QColor color)
+{
+    vertexColor.x() = color.redF();
+    vertexColor.y() = color.greenF();
+    vertexColor.z() = color.blueF();
+    vertexColor.w() = color.alphaF();
+    emit propertyChanged("vertex_color");
+}
