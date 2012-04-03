@@ -70,8 +70,8 @@ int main(int argc, char* argv[])
         }
         width   = boost::lexical_cast<int>(argv[3]);
         height  = boost::lexical_cast<int>(argv[4]);
-        scale_x = boost::lexical_cast<int>(argv[5]);
-        scale_y = boost::lexical_cast<int>(argv[6]);
+        scale_x = boost::lexical_cast<double>(argv[5]);
+        scale_y = boost::lexical_cast<double>(argv[6]);
         if (argc > 7)
         {
             if (argc < 9)
