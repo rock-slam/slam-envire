@@ -87,6 +87,9 @@ bool MLSSlope::updateAll()
     size_t width = mls.getWidth(); 
     size_t height = mls.getHeight(); 
 
+    if( width == 0 || height == 0 )
+	throw std::runtime_error("MLSSlope needs a grid size greater zero for both width and height.");
+
     double scalex = mls.getScaleX();
     double scaley = mls.getScaleY();
 
