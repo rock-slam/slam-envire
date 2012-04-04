@@ -362,9 +362,10 @@ namespace envire
 	 */
 	Index* getIndex() { return index.get(); }
 
-	/** return the extents of the grid.
+	/** return the extents of the subset of the grid, which 
+	 * contains cells.
 	 */
-	Extents getExtents() const { return extents; }
+	Extents getCellExtents() const { return extents; }
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
