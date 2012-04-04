@@ -680,6 +680,7 @@ Operator* Environment::getGenerator(Layer* output)
 }
 
 void Environment::updateOperators(){
+    // TODO handle operator chains
     std::vector<envire::Operator*> ops = getItems<envire::Operator>();
 
     for(std::vector<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
