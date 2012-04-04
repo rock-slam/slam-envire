@@ -128,8 +128,8 @@ bool GridBase::contains( const Position& pos ) const
         
 GridBase::Extents GridBase::getExtents() const
 {
-    // TODO provide proper extents
-    return Extents( Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
+    Eigen::Vector2d min( offsetx, offsety );
+    return Extents( min, min + Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
 }
 
 template<typename T>
