@@ -178,12 +178,19 @@ namespace envire
                 double scalex = 1, double scaley = 1,
                 double offsetx = 0, double offsety = 0);
 
-        /** Checks if two grids are approximately aligned
+        /** @brief Checks if two grids are approximately aligned
          *
-         * It returns true if the maximum misalignment error is less than a half
-         * cell
+	 * It returns true if both grids are of the same dimensions, and the
+	 * maximum misalignment error is less than a half cell. 
          */
         bool isAlignedWith(GridBase const& grid) const;
+
+	/** @brief checks if two grids are approximately aligned on the cell level
+	 *
+	 * @return true if both grids have the same scaling and are aligned on cell 
+	 * level. Grids can be of different size.
+	 */
+	bool isCellAlignedWith(GridBase const& grid) const;
     };
 }
 

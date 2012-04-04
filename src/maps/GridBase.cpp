@@ -230,6 +230,26 @@ GridBase::Ptr GridBase::create(std::string const& type_name,
     return boost::dynamic_pointer_cast<GridBase>(ptr);
 }
 
+bool GridBase::isCellAlignedWith(GridBase const& grid) const
+{
+    if (getScaleX() != grid.getScaleX() ||
+        getScaleY() != grid.getScaleY() )
+	return false;
+
+    // see if the difference of the world position of the 0 grid cells is a
+    // multiple of the cell scale
+    Eigen::Vector3d rootDiff = 
+	fromGrid( 0, 0, getEnvironment()->getRootNode() )
+	 -grid.fromGrid( 0, 0, grid.getEnvironment()->getRootNode() );
+    Eigen::Vector3d cellDiff = 
+	(rootDiff.array() * Eigen::Array3d( 1.0/getScaleX(), 1.0/getScaleY(), 0 )).matrix();
+
+    if( !(cellDiff.cast<int>().cast<double>() - cellDiff).isZero() )
+	return false;
+
+    return true;
+}
+
 bool GridBase::isAlignedWith(GridBase const& grid) const
 {
     if (getCellSizeX() != grid.getCellSizeX() ||
