@@ -227,6 +227,7 @@ GridBase::Ptr GridBase::create(std::string const& type_name,
     so.write("map_count", 0);
     EnvironmentItem::Ptr ptr = SerializationFactory::createObject(type_name, so);
     so.end();
+    ptr->setUniqueId("");
     return boost::dynamic_pointer_cast<GridBase>(ptr);
 }
 
