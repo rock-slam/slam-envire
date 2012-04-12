@@ -177,7 +177,28 @@ struct SurfacePatchStore11
 	typedef envire::MLSGrid::SurfacePatch sp;
 	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
 	p.update_idx = update_idx;
-	p.color = color;
+	p.setColor( color );
+	return p;
+    }
+};
+
+struct SurfacePatchStore12
+{
+    float mean;
+    float stdev;
+    float height;
+    bool horizontal;
+    size_t update_idx;
+    uint8_t color[3];
+
+    size_t xi, yi;
+
+    MLSGrid::SurfacePatch toSurfacePatch()
+    {
+	typedef envire::MLSGrid::SurfacePatch sp;
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	p.update_idx = update_idx;
+	std::copy( color, color+3, p.color );
 	return p;
     }
 };
@@ -195,7 +216,7 @@ struct SurfacePatchStore : MLSGrid::SurfacePatch
 void MLSGrid::writeMap(std::ostream& os)
 {
     os << "mls" << std::endl;
-    os << "1.1" << std::endl;
+    os << "1.2" << std::endl;
     os << sizeof( SurfacePatchStore ) << std::endl;
     os << "bin" << std::endl;
 
@@ -235,6 +256,11 @@ void MLSGrid::readMap(std::istream& is)
 	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore11 ) )
 	    throw std::runtime_error("binary size mismatch");
     }
+    else if( version == "1.2" )
+    {
+	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore12 ) )
+	    throw std::runtime_error("binary size mismatch");
+    }
 
     is.getline(c, 20);
     if( std::string(c) != "bin" )
@@ -252,6 +278,14 @@ void MLSGrid::readMap(std::istream& is)
     {
 	SurfacePatchStore11 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore11 ) ) )
+	{
+	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
+	}
+    }
+    else if( version == "1.2" )
+    {
+	SurfacePatchStore11 d;
+	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore12 ) ) )
 	{
 	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
 	}
@@ -508,7 +542,7 @@ bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 	p.update_idx = std::max( p.update_idx, o.update_idx );
 
 	if( hasCellColor_ )
-	    p.color = (p.color + o.color)/2.0;
+	    p.setColor( (p.getColor() + o.getColor()) / 2.0 );
 
 	return true;
     }

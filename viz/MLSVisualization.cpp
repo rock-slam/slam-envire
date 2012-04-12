@@ -282,7 +282,10 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		{
 		    osg::Vec4 col;
 		    if( mls->getHasCellColor() )
-			col = osg::Vec4( p.color.x(), p.color.y(), p.color.z(), 1.0 );
+		    {
+			base::Vector3d c = p.getColor();
+			col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
+		    }
 		    else if( cycleHeightColor )
 			col = hslToRgb( p.mean - std::floor(p.mean), 1.0, 0.6 );
 		    else
