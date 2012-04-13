@@ -123,21 +123,25 @@ void MLSGrid::unserialize(Serialization& so)
 	hasCellColor_ = false;
 
     cells.resize( boost::extents[cellSizeX][cellSizeY] );
-    try { readMap( so.getBinaryInputStream(getMapFileName() + ".mls") ); }
-    catch(...)
+    std::string filename = getMapFileName() + ".mls";
+
+    std::istream *is;
+    try 
     {
-        // Try with MultiLevelSurfaceGrid (backward compatibility)
-        try {
-	    readMap( so.getBinaryInputStream(getMapFileName("envire::MultiLevelSurfaceGrid") + ".mls"));
-	    return;
-	}
-        catch(Serialization::NoSuchBinaryStream)
-        { 
-            // Assume that serialization is being used as a factory
-            return;
-        }
-        catch(...) { throw; }
+	is = &so.getBinaryInputStream(getMapFileName() + ".mls");
     }
+    catch(Serialization::NoSuchBinaryStream)
+    { 
+	try
+	{
+	    is = &so.getBinaryInputStream(getMapFileName("envire::MultiLevelSurfaceGrid") + ".mls");
+	}
+	catch(Serialization::NoSuchBinaryStream)
+	{
+	    throw std::runtime_error("Could not get input stream for MLS.");
+	}
+    }
+    readMap( *is );
 }
 
 // memory structure of version 1.0
@@ -242,7 +246,7 @@ void MLSGrid::readMap(std::istream& is)
 
     is.getline(c, 20);
     std::string version = std::string(c);
-    if( version != "1.0" && version != "1.1" )
+    if( version != "1.0" && version != "1.1" && version != "1.2" )
 	throw std::runtime_error("version not supported " + version );
 
     is.getline(c, 20);
@@ -284,7 +288,7 @@ void MLSGrid::readMap(std::istream& is)
     }
     else if( version == "1.2" )
     {
-	SurfacePatchStore11 d;
+	SurfacePatchStore12 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore12 ) ) )
 	{
 	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
