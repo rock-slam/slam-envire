@@ -57,6 +57,7 @@ install(FILES core/EventHandler.hpp
     core/EventSource.hpp
     core/Serialization.hpp
     core/EventTypes.hpp
+    core/Transform.hpp
     DESTINATION include/envire/core)
 
 install(FILES maps/GridBase.hpp
