@@ -1,6 +1,7 @@
-#include "Core.hpp"
+#include "Transform.hpp"
 #include <Eigen/LU>
 #include <Eigen/Geometry>
+#include <Eigen/SVD>
 
 using namespace envire;
 
