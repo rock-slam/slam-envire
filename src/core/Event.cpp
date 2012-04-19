@@ -111,69 +111,133 @@ struct ApplyEventHelper : public EventDispatcher
 {
     const Event &event;
     Environment &env;
+    bool lenient;
 
-    ApplyEventHelper( const Event& event, Environment& env ) : event( event ), env( env ) {}
+    ApplyEventHelper( const Event& event, Environment& env ) : event( event ), env( env ), lenient( true ) {}
 
     void itemAttached(EnvironmentItem *item)
     {
-	// the root node is the only node to already exist
-	FrameNode* fn = dynamic_cast<FrameNode*>(item);
-	if( fn && fn->isRoot() )
+	if( item && (lenient || item == env.getRootNode()) )
+	{
+	    // item already exists, but we can just overwrite it
 	    item->set( event.a.get() );
+	}
 	else
 	{
+	    // doesn't exist yet, so attach it
 	    env.attachItem( event.a.get() );
 	}
     };
 
     void itemModified(EnvironmentItem *item)
     {
-	// for the time being copy the whole item
-	// TODO: implement partial updates
-	item->set( event.a.get() );
+	if( item )
+	{
+	    // for the time being copy the whole item
+	    // TODO: implement partial updates
+	    item->set( event.a.get() );
+	}
+	else if( lenient )
+	{
+	    // since it has not been present,
+	    // just add the map 
+	    env.attachItem( event.a.get() );
+	}
+	else
+	{
+	    throw std::runtime_error("Event could not be applied. Item does not exist in environment.");
+	}
 	
 	env.itemModified( item );
     }
 
     void itemDetached(EnvironmentItem *item)
     {
-        // the root node is the only node that should stay
-        FrameNode* fn = dynamic_cast<FrameNode*>(item);
-        if( fn && fn->isRoot() )
-            fn->setTransform(Eigen::Affine3d::Identity());
-        else
-        {
-            env.detachItem( item );
-        }
+	if( item && !(item == env.getRootNode()) )
+	{
+	    env.detachItem( item );
+	}
+	else if( !lenient )
+	{
+	    throw std::runtime_error("Event could not be applied. Item does not exist in environment.");
+	}
     }
 
     void childAdded(FrameNode* parent, FrameNode* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.addChild( parent, child );
     }
 
     void childAdded(Layer* parent, Layer* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.addChild( parent, child );
     }
 
     void frameNodeSet(CartesianMap* map, FrameNode* node)
     {
+	if( map == NULL || node == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.setFrameNode( map, node );
     }
 
     void frameNodeDetached(CartesianMap* map, FrameNode* node)
     {
+	if( map == NULL || node == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.detachFrameNode( map, node );
     }
 
     void childRemoved(FrameNode* parent, FrameNode* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.removeChild( parent, child );
     }
 
     void childRemoved(Layer* parent, Layer* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.removeChild( parent, child );
     }
 
