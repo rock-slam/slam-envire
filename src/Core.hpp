@@ -31,18 +31,13 @@ static envire::SerializationPlugin<_classname> _classname ## factory;
 	    _classname* fn = dynamic_cast<_classname*>( other ); \
 	    if( fn ) \
 	    {\
-		_classname* t = dynamic_cast<_classname*>( this ); \
-		t->operator=( *fn );\
+		this->operator=( *fn );\
 	    }\
 	}\
 	typedef boost::intrusive_ptr<_classname> Ptr; \
 	_classname* clone() const \
 	{ \
-	    const _classname* fn = dynamic_cast<const _classname*>( this ); \
-	    if( fn )\
-		return new _classname( *fn );\
-	    else \
-		return NULL;\
+	    return new _classname( *this );\
 	}\
 	protected:\
 
