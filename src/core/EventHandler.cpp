@@ -2,6 +2,22 @@
 
 using namespace envire;
 
+void EventHandler::receive( const Event& message )
+{
+    // if there is a filter apply and return if
+    // we are not allowed to pass the message
+    if( filter && !filter->filter( message ) )
+	return;
+
+    handle( message );
+}
+
+void EventHandler::setFilter( EventFilter* filter ) 
+{ 
+    this->filter = filter; 
+    filter->setHandler( this );
+}
+
 void EventDispatcher::itemAttached(EnvironmentItem *item) {}
 void EventDispatcher::itemDetached(EnvironmentItem *item) {}
 void EventDispatcher::childAdded(FrameNode* parent, FrameNode* child) {}

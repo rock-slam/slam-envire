@@ -31,20 +31,24 @@ protected:
  */
 class EventHandler
 {
+    friend class EventFilter;
+
 public:
     EventHandler() : filter(NULL) {}
 
-    virtual void handle( const Event& message ) = 0;
+    /** @brief call this message to pass a message to the EventHandler
+     */
+    void receive( const Event& message );
 
     /** @brief set optional event filter
      */
-    void setFilter( EventFilter* filter ) 
-    { 
-	this->filter = filter; 
-	filter->setHandler( this );
-    }
+    void setFilter( EventFilter* filter );
 
 protected:
+    /** @brief callback method for possibly filtered events
+     */
+    virtual void handle( const Event& message ) = 0;
+    
     EventFilter* filter;
 };
 
