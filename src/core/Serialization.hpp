@@ -248,18 +248,62 @@ namespace envire
     };
     
     
+    /**
+     * @brief Used for conversion of Events into Binary events.
+     *
+     * Use this class if you are interested in converting envire events into
+     * binary events.  Subclass this handler and implement the handle(
+     * std::vector<BinaryEvent&> msgs ) method. When attached to an
+     * environment, all envire events get passed to the handle callback in
+     * binary form. 
+     *
+     * You can optionally use eventqueueing, which will hold off any callbacks
+     * until flush() is called.
+     *
+     * Using ContextUpdates will provide additional events to make it easier to
+     * interpret partial event sets.
+     */
     class SynchronizationEventHandler : public EventQueue
     {
     public:
-        SynchronizationEventHandler() : use_event_queue(false) {};
-        virtual void handle( const Event& message );
-        virtual void process( const Event& message );
-        virtual void handle( EnvireBinaryEvent* binary_event ) = 0;
+        SynchronizationEventHandler() 
+	    : m_useEventQueue(false), m_useContextUpdates(false) {};
+
+	/** @brief callback for binary events
+	 */
+        virtual void handle( std::vector<BinaryEvent>& msgs ) = 0;
+	/** @brief set to true if you want event queueing
+	 *
+	 * You need to call flush in order to emit any events
+	 * in this case.
+	 */
         void useEventQueue(bool b);
+	/** @brief set to environment that you want to use for context updates
+	 * or null to disable context updates altogether (default) 
+	 *
+	 * Using ContextUpdates will provide additional events to make it easier to
+	 * interpret partial event sets.
+	 */
+	void useContextUpdates(Environment* m_env);
+	/** @brief call to flush the event queue (if activated)
+	 */
+	virtual void flush();
 
     protected:
-        bool use_event_queue;
+	/** @brief gets called by the environment when new events appear
+	 */
+        virtual void handle( const Event& message );
+	/** @brief callback to process the events into binary form
+	 */
+        virtual void process( const Event& message );
+
+        bool m_useEventQueue;
+	bool m_useContextUpdates;
+	Environment* m_env;
         BinarySerialization serialization;
+	std::vector<BinaryEvent> msg_buffer;
+
+	void addBinaryEvent( const envire::Event& message );
     };
 }
 #endif
