@@ -398,6 +398,11 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 {
     assert( parent != child );
 
+    // don't do anything if relationsship already present
+    frameNodeTreeType::iterator it = frameNodeTree.find( child );
+    if( it != frameNodeTree.end() && it->second == parent )
+	return;
+
     if( !child->isAttached() )
 	attachItem( child );
 
@@ -414,6 +419,11 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 void Environment::addChild(Layer* parent, Layer* child)
 {
     assert( parent != child );
+
+    // don't do anything if relationsship already present
+    layerTreeType::iterator it = layerTree.find( child );
+    if( it != layerTree.end() && it->second == parent )
+	return;
     
     if( !child->isAttached() )
 	attachItem( child );
@@ -538,6 +548,10 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
     if( !map->isAttached() )
 	attachItem(map);
 
+    // don't do anything if relationsship already present
+    if( map->getFrameNode() == node )
+	return;
+
     cartesianMapGraph[map] = node;
 
     handle( Event( event::FRAMENODE, event::ADD, map, node ) );
@@ -571,6 +585,11 @@ std::list<CartesianMap*> Environment::getMaps(FrameNode* node)
 
 bool Environment::addInput(Operator* op, Layer* input)
 {
+    // don't do anything if relationsship already present
+    operatorGraphType::iterator it = operatorGraphInput.find( op );
+    if( it != operatorGraphInput.end() && it->second == input )
+	return false;
+    
     if( !op->isAttached() )
 	attachItem( op );
 
@@ -584,6 +603,11 @@ bool Environment::addInput(Operator* op, Layer* input)
 
 bool Environment::addOutput(Operator* op, Layer* output)
 {
+    // don't do anything if relationsship already present
+    operatorGraphType::iterator it = operatorGraphOutput.find( op );
+    if( it != operatorGraphOutput.end() && it->second == output )
+	return false;
+
     if( !op->isAttached() )
 	attachItem( op );
 
