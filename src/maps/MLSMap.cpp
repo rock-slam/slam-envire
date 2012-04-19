@@ -33,21 +33,26 @@ MLSMap::MLSMap(const MLSMap& other)
 
 MLSMap& MLSMap::operator=(const MLSMap& other)
 {
-    grids = other.grids;
-    active = other.active;
-
-    if( isAttached() )
+    if( this != &other )
     {
-	std::list<Layer*> children = env->getChildren( this );
-	for( std::list<Layer*>::iterator it = children.begin(); it != children.end(); it++ )
-	{
-	    env->removeChild( this, *it );
-	}
+	Map<2>::operator=( other );
 
-	typedef std::vector<MLSGrid::Ptr>::iterator iterator;
-	for( iterator it = grids.begin(); it != grids.end(); it++ )
+	grids = other.grids;
+	active = other.active;
+
+	if( isAttached() )
 	{
-	    env->addChild( this, (*it).get() );
+	    std::list<Layer*> children = env->getChildren( this );
+	    for( std::list<Layer*>::iterator it = children.begin(); it != children.end(); it++ )
+	    {
+		env->removeChild( this, *it );
+	    }
+
+	    typedef std::vector<MLSGrid::Ptr>::iterator iterator;
+	    for( iterator it = grids.begin(); it != grids.end(); it++ )
+	    {
+		env->addChild( this, (*it).get() );
+	    }
 	}
     }
 
