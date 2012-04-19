@@ -81,12 +81,12 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 		    insertTail( xi, yi, *it );
 	    }
 	}
-    }
 
-    gapSize = other.gapSize;
-    thickness = other.thickness;
-    cellcount = other.cellcount;
-    hasCellColor_ = other.hasCellColor_;
+	gapSize = other.gapSize;
+	thickness = other.thickness;
+	cellcount = other.cellcount;
+	hasCellColor_ = other.hasCellColor_;
+    }
 
     return *this;
 }
