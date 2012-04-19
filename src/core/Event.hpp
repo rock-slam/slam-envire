@@ -40,9 +40,11 @@ struct Event
     void apply( Environment* env ) const;
 
     /** resolve the references to the items referenced in the event, and
-     * perform copies if needed.
+     * perform copies if needed. 
+     *
+     * @param set to false if copying should be omitted.
      */
-    void ref();
+    void ref( bool clone );
 
     event::Type type;
     event::Operation operation;

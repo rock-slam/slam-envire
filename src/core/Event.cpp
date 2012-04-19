@@ -84,7 +84,7 @@ event::Result Event::merge( const Event& other )
     return event::IGNORE;
 }
 
-void Event::ref()
+void Event::ref( bool clone )
 {
     // store unique id's
     if( a ) id_a = a->getUniqueId();
@@ -94,7 +94,9 @@ void Event::ref()
     {
 	// perform a copy of the EnvironmentItem in these cases
 	// and already set the unique_id to the source id
-	a = a->clone();
+	if( clone )
+	    a = a->clone();
+
 	a->unique_id = id_a;
 	b = 0;
     }

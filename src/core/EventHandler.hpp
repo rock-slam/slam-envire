@@ -99,13 +99,25 @@ class EventQueue : public EventHandler
 protected:
     std::list<Event> msgQueue;
     boost::mutex queueMutex;
+    bool m_async;
 
-public:
     /** Callback that is called by the environment as an event handler. You
      * should normally not reimplement this
      */
     void handle( const Event& message );
 
+public:
+    EventQueue() : m_async( false ) {}
+
+    /** @brief if set to true, the eventqueue will allow the
+     * messages to be processed in a different thread.
+     *
+     * Note: this does have a performance impact, since the messages
+     * need to create copies of the environment items, instead of 
+     * just referencing them. 
+     */
+    void allowMultithreading( bool allow ) { m_async = allow; }
+	
     /** Send all events currently stored in the queue to process
      */
     void flush();

@@ -74,13 +74,16 @@ void EventQueue::handle( const Event& message )
     std::list<Event>::iterator it = msgQueue.begin();
     // create a local copy of the event
     Event event(message);
-    event.ref();
+    event.ref( m_async );
+
     bool valid = true;
     while( it != msgQueue.end() )
     {
 	event::Result res = 
 	    event.merge( *it );
 
+	// either cancel or invalidate make the old event
+	// obsolete
 	if( res == event::CANCEL || res == event::INVALIDATE )
         {
 	    it = msgQueue.erase( it );
@@ -88,6 +91,7 @@ void EventQueue::handle( const Event& message )
         else
             ++it;
 
+	// cancel will also make the current event obsolete
 	if( res == event::CANCEL )
 	    valid = false;
     }
