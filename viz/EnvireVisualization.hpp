@@ -43,7 +43,8 @@ public:
 
     void setFilter( envire::EventFilter *filter ) { eventListener->setFilter( filter ); }
 
-    Q_INVOKABLE void updateBinaryEvent( envire::EnvireBinaryEvent const& data );
+    Q_INVOKABLE void updateBinaryEvent( envire::BinaryEvent const& data );
+    Q_INVOKABLE void updateBinaryEvents( std::vector<envire::BinaryEvent> const& data );
 
 protected:
     virtual void updateMainNode(osg::Node* node);

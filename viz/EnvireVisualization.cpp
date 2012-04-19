@@ -102,7 +102,16 @@ void EnvireVisualization::updateMainNode(osg::Node* node)
     eventListener->apply();
 }
 
-void EnvireVisualization::updateBinaryEvent( envire::EnvireBinaryEvent const& binary_event )
+void EnvireVisualization::updateBinaryEvents( std::vector<envire::BinaryEvent> const& events )
+{
+    for( std::vector<envire::BinaryEvent>::const_iterator it = events.begin(); 
+	    it != events.end(); it++ )
+    {
+	updateBinaryEvent( *it );
+    }
+}
+
+void EnvireVisualization::updateBinaryEvent( envire::BinaryEvent const& binary_event )
 {
     // the only thing that needs to be locked against the osg thread
     // is the actual generation of the environment
