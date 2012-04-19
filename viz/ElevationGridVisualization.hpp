@@ -6,7 +6,7 @@
 #include <osg/Node>
 #include <envire/maps/Grids.hpp>
 
-namespace vizkit 
+namespace envire 
 {
   class ElevationGridVisualization : public GridVisualizationBase
   {

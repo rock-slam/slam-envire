@@ -12,11 +12,11 @@
 
 class QTreeWidget;
 
-namespace vizkit 
+namespace envire 
 {
 
 class EnvireVisualization : 
-    public Vizkit3DPlugin<envire::Environment*>
+    public vizkit::Vizkit3DPlugin<envire::Environment*>
 {
     Q_OBJECT
 
@@ -30,7 +30,7 @@ public:
     bool isDirty() const;
 
     /** Load the environment from disk and display it */
-    void load(std::string const& path);
+    Q_INVOKABLE void load(std::string const& path);
 
     /** set to false if you want to manually handle the dirty flag by calling
      * setDirty() directly 

@@ -9,6 +9,8 @@
 #include "TreeViewListener.hpp"
 #include "EnvireVisualization.hpp"
 
+using namespace envire;
+
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
@@ -26,7 +28,7 @@ int main(int argc, char** argv)
     envire::Environment *env = envire::Environment::unserialize( std::string(argv[1]) );
 
     //create vizkit plugin for showing envire
-    vizkit::EnvireVisualization *envViz = new vizkit::EnvireVisualization();    
+    EnvireVisualization *envViz = new EnvireVisualization();    
     envViz->updateData(env);
 
     //create tree widget for showing nodes

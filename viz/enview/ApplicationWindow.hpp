@@ -64,7 +64,7 @@ public:  // for now
     //TreeViewListener *twl;
     Ui::MainWindow ui;
 
-    boost::shared_ptr<vizkit::EnvireVisualization> envViz;
+    boost::shared_ptr<envire::EnvireVisualization> envViz;
     boost::shared_ptr<envire::Environment> env;
 };
 

@@ -3,7 +3,9 @@
 
 #include "EnvironmentItemVisualizer.hpp"
 
-class TriMeshVisualization : public vizkit::EnvironmentItemVisualizer
+namespace envire
+{
+class TriMeshVisualization : public EnvironmentItemVisualizer
 {
     public:
 	virtual osg::Group* getNodeForItem(envire::EnvironmentItem* item) const;
@@ -12,5 +14,6 @@ class TriMeshVisualization : public vizkit::EnvironmentItemVisualizer
 	virtual void unHighlightNode(envire::EnvironmentItem* item, osg::Group* group) const;
 	virtual void updateNode(envire::EnvironmentItem* item, osg::Group* group) const;
 };
+}
 
 #endif // TRIMESHVISUALIZATION_H

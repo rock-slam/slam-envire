@@ -15,7 +15,7 @@
 #include <QString>
 #include <QAction>
 
-using namespace vizkit;
+using namespace envire;
 
 EnvireVisualization::EnvireVisualization()
     : m_handleDirty( true ), m_ownsEnvironment( false ), env( NULL )
@@ -43,8 +43,6 @@ EnvireVisualization::EnvireVisualization()
         (*it)->setParent(this);
 	eventListener->addVisualizer( (*it).get() );
     }
-
-    VizPluginRubyConfig(EnvireVisualization, std::string, load);
 }
 
 EnvireVisualization::~EnvireVisualization()

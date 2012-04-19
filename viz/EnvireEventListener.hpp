@@ -11,7 +11,7 @@
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 
-namespace vizkit 
+namespace envire 
 {
 
 /** 

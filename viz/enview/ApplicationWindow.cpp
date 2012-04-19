@@ -36,7 +36,7 @@ ApplicationWindow::ApplicationWindow()
     //sequenceHandler = new SequenceHandler(this, ui);
 
     // seting up envire plugin and creating an empty environment
-    envViz = boost::shared_ptr<vizkit::EnvireVisualization>(new vizkit::EnvireVisualization());
+    envViz = boost::shared_ptr<envire::EnvireVisualization>(new envire::EnvireVisualization());
     ui.vizkitWidget->addDataHandler( envViz.get() );
     envViz->attachTreeWidget( ui.treeWidget );
 

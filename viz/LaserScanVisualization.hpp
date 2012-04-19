@@ -6,10 +6,10 @@
 #include <vector>
 #include <osg/Node>
 
-namespace vizkit {
+namespace envire {
 
     
-class LaserScanVisualization : public EnvironmentItemVisualizer
+class LaserScanVisualization : public envire::EnvironmentItemVisualizer
 {
     public:
 	virtual bool handlesItem(envire::EnvironmentItem *item) const;

@@ -10,7 +10,7 @@
 #include <osgManipulator/TrackballDragger>
 #include <osg/PositionAttitudeTransform>
 
-namespace vizkit {
+namespace envire {
 
 class FrameNodeManipulator
 {

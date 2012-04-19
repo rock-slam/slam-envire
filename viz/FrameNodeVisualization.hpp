@@ -2,9 +2,9 @@
 #define FRAMENODEVISUALIZATION_H
 #include "EnvironmentItemVisualizer.hpp"
 
-namespace vizkit {
+namespace envire {
 
-class FrameNodeVisualization: public vizkit::EnvironmentItemVisualizer
+class FrameNodeVisualization: public envire::EnvironmentItemVisualizer
 {
     public:
 	virtual osg::Group* getNodeForItem(envire::EnvironmentItem* item) const;

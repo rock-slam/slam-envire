@@ -4,7 +4,9 @@
 #include "EnvironmentItemVisualizer.hpp"
 #include <osg/Geometry>
 
-class PointcloudVisualization : public vizkit::EnvironmentItemVisualizer
+namespace envire
+{
+class PointcloudVisualization : public EnvironmentItemVisualizer
 {
     Q_OBJECT
     
@@ -47,5 +49,6 @@ class PointcloudVisualization : public vizkit::EnvironmentItemVisualizer
 	bool colorCycling;
 
 };
+}
 
 #endif // POINTCLOUDVISUALIZATION_H

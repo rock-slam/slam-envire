@@ -10,6 +10,8 @@
 #include <osg/ShapeDrawable>
 #include <osg/LineWidth>
 
+using namespace envire;
+
 PointcloudVisualization::PointcloudVisualization()
     : vertexColor(osg::Vec4(0.1,0.9,0.1,.5)), 
       normalColor(osg::Vec4(0.9,0.1,0.1,.5)), 

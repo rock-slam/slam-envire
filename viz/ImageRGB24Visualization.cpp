@@ -11,7 +11,7 @@
 #include <iostream>
 #include <osg/ShapeDrawable>
 
-namespace vizkit 
+namespace envire 
 {
     
   bool ImageRGB24Visualization::handlesItem(envire::EnvironmentItem *item) const

@@ -8,7 +8,7 @@
 #include <QList>
 #include <QObject>
 
-namespace vizkit {
+namespace envire {
 
 class TreeViewListener : public QObject, public envire::EventListener
 {

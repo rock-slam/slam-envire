@@ -16,16 +16,16 @@
 
 using namespace envire;
 
-namespace vizkit
+namespace envire
 {
-class UncertaintyVisualization : public Vizkit3DPlugin<envire::PointWithUncertainty>
+class UncertaintyVisualization : public vizkit::Vizkit3DPlugin<envire::PointWithUncertainty>
 {
 public:
     UncertaintyVisualization()
 	: point( Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero() ) {}
     osg::ref_ptr<osg::Node> createMainNode()
     {
-	m_uncertainty = new Uncertainty();
+	m_uncertainty = new vizkit::Uncertainty();
 	m_uncertainty->setNumSamples( 10000 );
 	return m_uncertainty;
     }
@@ -43,14 +43,14 @@ public:
 
 private:
     envire::PointWithUncertainty point;
-    osg::ref_ptr<Uncertainty> m_uncertainty;
+    osg::ref_ptr<vizkit::Uncertainty> m_uncertainty;
 };
 }
 
 BOOST_AUTO_TEST_CASE( uncertainty_test ) 
 {
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::UncertaintyVisualization viz;
+    envire::UncertaintyVisualization viz;
     app.start();
     app.getWidget()->addDataHandler( &viz );
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
 BOOST_AUTO_TEST_CASE( uncertainty_test2 ) 
 {
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::UncertaintyVisualization viz;
+    envire::UncertaintyVisualization viz;
     app.start();
     app.getWidget()->addDataHandler( &viz );
 
@@ -141,7 +141,7 @@ std::ostream& operator<<( std::ostream &os, const envire::TransformWithUncertain
 BOOST_AUTO_TEST_CASE( mlsmerge_test ) 
 {
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::EnvireVisualization envViz;
+    envire::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addDataHandler( &envViz );
     
@@ -182,8 +182,8 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
 {
     const size_t uncertainty_points = 10;
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::EnvireVisualization envViz;
-    vizkit::UncertaintyVisualization viz[uncertainty_points];
+    envire::EnvireVisualization envViz;
+    envire::UncertaintyVisualization viz[uncertainty_points];
     app.start();
     app.getWidget()->addDataHandler( &envViz );
     for(size_t i=0;i<uncertainty_points;i++)

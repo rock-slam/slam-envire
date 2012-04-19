@@ -7,7 +7,7 @@
 #include <osg/Geode>
 #include <osg/Geometry>
 
-namespace vizkit {
+namespace envire {
 
 osg::Group* FrameNodeVisualization::getNodeForItem(envire::EnvironmentItem* item) const
 {

@@ -7,7 +7,7 @@
 #include <QObject>
 #include <QPoint>
 
-namespace vizkit {
+namespace envire {
 
 class ItemManipulator : public QObject
 {

@@ -17,7 +17,7 @@ using namespace envire;
 BOOST_AUTO_TEST_CASE( mlsviz_test ) 
 {
     // set up test environment
-    QtThreadedWidget<vizkit::EnvireWidget> app;
+    QtThreadedWidget<envire::EnvireWidget> app;
     app.start();
     Environment* env = app.getWidget()->getEnvironment();
 

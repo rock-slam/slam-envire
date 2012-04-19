@@ -6,8 +6,8 @@
 #include <osg/Geode>
 #include <osg/PositionAttitudeTransform>
 
-namespace vizkit {
-    
+using namespace envire;
+
 bool LaserScanVisualization::handlesItem(envire::EnvironmentItem *item) const
 {
     if(dynamic_cast<envire::LaserScan *>(item))
@@ -123,5 +123,3 @@ void LaserScanVisualization::updateNode ( envire::EnvironmentItem* item, osg::Gr
 
 }
 
-    
-}

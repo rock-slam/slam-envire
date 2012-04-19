@@ -1,8 +1,6 @@
 #include "EnvireEventListener.hpp"
 
-using namespace envire;
-
-namespace vizkit 
+namespace envire 
 {
 
 EnvireNode::EnvireNode( EnvironmentItem *item, EnvironmentItemVisualizer *viz )

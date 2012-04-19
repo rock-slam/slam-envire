@@ -5,7 +5,7 @@
 #include <vector>
 #include <osg/Node>
 
-namespace vizkit {
+namespace envire {
 
     
 class GridVisualizationBase : public EnvironmentItemVisualizer

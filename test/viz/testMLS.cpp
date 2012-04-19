@@ -16,7 +16,7 @@ using namespace envire;
 BOOST_AUTO_TEST_CASE( mlsmatch_test ) 
 {
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::EnvireVisualization envViz;
+    envire::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addDataHandler( &envViz );
 
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
 BOOST_AUTO_TEST_CASE( mlsnegative_test ) 
 {
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
-    vizkit::EnvireVisualization envViz;
+    envire::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addDataHandler( &envViz );
 
