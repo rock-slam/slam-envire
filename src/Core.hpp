@@ -16,6 +16,7 @@
 #include <envire/core/EventSource.hpp>
 #include <envire/core/EventTypes.hpp>
 #include <base/samples/rigid_body_state.h>
+#include <boost/noncopyable.hpp>
 
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
 const std::string _classname::className = "envire::" #_classname; \
@@ -70,6 +71,7 @@ namespace envire
         template <typename T> bool isOfType() const;
 	template <typename T> T& get();
     	template <typename T> const T& get() const;
+	virtual HolderBase* clone() const = 0;
     };
 
     /** Templated holder class, that will construct an object of type T,
@@ -77,7 +79,7 @@ namespace envire
      * destroyed.
      */
     template <typename T>
-	class Holder : public HolderBase 
+	class Holder : public HolderBase, boost::noncopyable 
     {
 	T* ptr;
 
@@ -87,6 +89,11 @@ namespace envire
 	    ptr = new T();
 	};
 
+	explicit Holder( T* ptr )
+	    : ptr( ptr )
+	{
+	}
+
 	~Holder()
 	{
 	    delete ptr;
@@ -95,6 +102,12 @@ namespace envire
 	T* getData() const
 	{
 	    return ptr;
+	}
+
+	Holder<T>* clone() const
+	{
+	    T* clone = new T(*ptr);
+	    return new Holder<T>(clone);
 	}
     };
 
@@ -509,6 +522,14 @@ namespace envire
     public:
 	static const std::string className;
 
+	/** @brief custom copy constructor required because of metadata handling.
+	 */
+	Layer(const Layer& other);
+
+	/** @brief custom assignment operator requried because of metadata.
+	 */
+	Layer& operator=(const Layer& other);
+
 	Layer(std::string const& id);
 	virtual ~Layer();
 
@@ -656,7 +677,13 @@ namespace envire
 	    */
 	};
 
+	/** @brief remove metadata with the specified identifier
+	 */
 	void removeData(const std::string& type);
+
+	/** @brief remove all metadata associated with this object
+	 */
+	void removeData();
     };
 
 

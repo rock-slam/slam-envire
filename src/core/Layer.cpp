@@ -13,8 +13,32 @@ namespace fs = boost::filesystem;
 const std::string Layer::className = "envire::Layer";
 
 Layer::Layer(std::string const& id) :
-    EnvironmentItem(id), immutable(false)
+    EnvironmentItem(id), immutable(false), dirty(false)
 {
+}
+
+Layer::Layer(const Layer& other) :
+    EnvironmentItem( other ),
+    immutable( other.immutable ),
+    dirty( other.dirty )
+{
+    // copy the data map, and clone the holders
+    for( DataMap::const_iterator it = other.data_map.begin(); it != other.data_map.end(); it++ )
+	data_map.insert( std::make_pair( it->first, it->second->clone() ) );
+}
+
+Layer& Layer::operator=(const Layer& other)
+{
+    if( this != &other )
+    {
+	EnvironmentItem::operator=( other );
+	immutable = other.immutable;
+	dirty = other.dirty;
+	removeData();
+	for( DataMap::const_iterator it = other.data_map.begin(); it != other.data_map.end(); it++ )
+	    data_map.insert( std::make_pair( it->first, it->second->clone() ) );
+    }
+    return *this;
 }
 
 void Layer::serialize(Serialization& so)
@@ -33,7 +57,7 @@ void Layer::unserialize(Serialization& so)
 
 Layer::~Layer()
 {
-    for( std::map<std::string, HolderBase*>::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
+    removeData();
 }
 
 void Layer::addChild( Layer* child ) 
@@ -126,7 +150,16 @@ bool Layer::hasData(const std::string& type) const
 
 void Layer::removeData(const std::string& type)
 {
-    data_map.erase( type );
+    if( data_map.count( type ) )
+    {
+	delete data_map[type];
+	data_map.erase( type );
+    }
+}
+
+void Layer::removeData()
+{
+    for( DataMap::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
 }
 
 const std::string CartesianMap::className = "envire::CartesianMap";
