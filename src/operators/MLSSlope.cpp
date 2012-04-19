@@ -98,6 +98,30 @@ bool MLSSlope::updateAll()
 
     double diagonal_scale = sqrt(scalex * scalex + scaley * scaley);
 
+    /** Compute the difference between neighbouring cells.
+     *
+     * It updates the angles, diffs and counts arrays in the following manner:
+     *
+     *  - angles[y][x] contains the sum of the algebraic gradient between the
+     *    heights of the cell and its neighbour. The difference is -abs(diff) if
+     *    x_neighbour < x || y_neighbour < y and abs(diff) otherwise. It gets
+     *    converted to angles later
+     *  - diffs[y][x][neighbour_index] contains the algebraic difference
+     *    between the heights of the cell and its neighbour. The difference is
+     *    -abs(diff) if x_neighbour < x || y_neighbour < y
+     *    and abs(diff) otherwise.
+     *  - counts[y][x] contains the count of valid neighbours that [y][x] has.
+     */
+    static const int
+        BOTTOM_CENTER = 0,
+        TOP_CENTER = 1,
+        TOP_RIGHT = 2,
+        BOTTOM_LEFT = 3,
+        CENTER_RIGHT = 4,
+        CENTER_LEFT = 5,
+        BOTTOM_RIGHT = 6,
+        TOP_LEFT = 7;
+
     for(size_t x=1;x<width;x++)
     {
         for(size_t y=1;y<height-1;y++)
@@ -107,18 +131,17 @@ bool MLSSlope::updateAll()
             if (this_cell == mls.endCell())
                 continue;
 
-            updateGradient(mls, angles, diffs, counts,
-                    scaley,
-                    0, x, y, 1, x, y + 1,
+            updateGradient(mls, angles, diffs, counts, scaley,
+                    BOTTOM_CENTER, x, y, TOP_CENTER, x, y + 1,
                     this_cell);
             updateGradient(mls, angles, diffs, counts, diagonal_scale,
-                    2, x, y, 3, x - 1, y - 1,
+                    TOP_RIGHT, x, y, BOTTOM_LEFT, x - 1, y - 1,
                     this_cell);
             updateGradient(mls, angles, diffs, counts, scalex,
-                    4, x, y, 5, x - 1, y,
+                    CENTER_RIGHT, x, y, CENTER_LEFT, x - 1, y,
                     this_cell);
             updateGradient(mls, angles, diffs, counts, diagonal_scale,
-                    6, x, y, 7, x - 1, y + 1,
+                    BOTTOM_RIGHT, x, y, TOP_LEFT, x - 1, y + 1,
                     this_cell);
         }
     }
