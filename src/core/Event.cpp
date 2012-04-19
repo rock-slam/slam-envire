@@ -59,27 +59,20 @@ Event::Event( event::Type type, event::Operation operation, EnvironmentItem::Ptr
 
 event::Result Event::merge( const Event& other )
 {
-    if( operation == event::UPDATE )
-    {
-	return (type == other.type && operation == other.operation && id_a == other.id_a && id_b == other.id_b) ? event::INVALIDATE : event::IGNORE;
-    }
-    if( operation == event::REMOVE )
-    {
-	switch( type )
-	{
-	    case event::FRAMENODE_TREE: 
-	    case event::FRAMENODE:
-	    case event::LAYER_TREE:
-		return (type == other.type && id_a == other.id_a && id_b == other.id_b) ? event::CANCEL : event::IGNORE;
-	    case event::ITEM: 
-		if( (id_a == other.id_a || id_a == other.id_b) && (other.operation == event::ADD || other.operation == event::UPDATE) )
-		    return (type == other.type && other.operation == event::ADD) ? event::CANCEL : event::INVALIDATE;
-		else
-		    return event::IGNORE;
-	    case event::ROOT:
-		return (type == other.type && id_a == other.id_a) ? event::CANCEL : event::IGNORE;
-	}
-    }
+    // overwrite event if its the same 
+    if(type == other.type && operation == other.operation && id_a == other.id_a && id_b == other.id_b) 
+	return event::INVALIDATE;
+
+    // adding and removing will cancel each other, if the events are otherwise the same
+    if( ((operation == event::REMOVE && other.operation == event::ADD)
+        || (operation == event::ADD && other.operation == event::REMOVE))
+	&& type == other.type && id_a == other.id_a && id_b == other.id_b )
+	return event::CANCEL;
+
+    // removing an item will also invalidate update events
+    if( (operation == event::REMOVE && other.operation == event::UPDATE)
+	&& type == other.type && id_a == other.id_a && id_b == other.id_b )
+	return event::INVALIDATE;
 
     return event::IGNORE;
 }
