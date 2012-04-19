@@ -10,6 +10,7 @@ ENVIRONMENT_ITEM_DEF( MLSSlope )
 static double const UNKNOWN = -std::numeric_limits<double>::infinity();
     
 static void updateGradient(MLSGrid const& mls,
+        bool use_stddev,
         boost::multi_array<double,2>& angles,
         boost::multi_array<double,3>& diffs,
         boost::multi_array<int, 2>& count,
@@ -24,9 +25,14 @@ static void updateGradient(MLSGrid const& mls,
     if( neighbour_cell != mls.endCell() )
     {
         double z0 = this_cell->mean;
-        double stdev0 = this_cell->stdev;
         double z1 = neighbour_cell->mean;
-        double stdev1 = neighbour_cell->stdev;
+        double stdev0 = 0;
+        double stdev1 = 0;
+        if (use_stddev)
+        {
+            stdev0 = this_cell->stdev;
+            stdev1 = neighbour_cell->stdev;
+        }
 
         double gradient_factor = 1;
         if (z0 > z1)
@@ -131,16 +137,16 @@ bool MLSSlope::updateAll()
             if (this_cell == mls.endCell())
                 continue;
 
-            updateGradient(mls, angles, diffs, counts, scaley,
+            updateGradient(mls, use_stddev, angles, diffs, counts, scaley,
                     BOTTOM_CENTER, x, y, TOP_CENTER, x, y + 1,
                     this_cell);
-            updateGradient(mls, angles, diffs, counts, diagonal_scale,
+            updateGradient(mls, use_stddev, angles, diffs, counts, diagonal_scale,
                     TOP_RIGHT, x, y, BOTTOM_LEFT, x - 1, y - 1,
                     this_cell);
-            updateGradient(mls, angles, diffs, counts, scalex,
+            updateGradient(mls, use_stddev, angles, diffs, counts, scalex,
                     CENTER_RIGHT, x, y, CENTER_LEFT, x - 1, y,
                     this_cell);
-            updateGradient(mls, angles, diffs, counts, diagonal_scale,
+            updateGradient(mls, use_stddev, angles, diffs, counts, diagonal_scale,
                     BOTTOM_RIGHT, x, y, TOP_LEFT, x - 1, y + 1,
                     this_cell);
         }

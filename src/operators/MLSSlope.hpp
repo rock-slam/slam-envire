@@ -21,12 +21,15 @@ namespace envire
     {
 	ENVIRONMENT_ITEM( MLSSlope )
         double corrected_step_threshold;
+        bool use_stddev;
 
     public:
         MLSSlope()
-            : corrected_step_threshold(0.25) {}
-        MLSSlope(double corrected_step_threshold) 
-            : corrected_step_threshold(corrected_step_threshold) {}
+            : corrected_step_threshold(0.25)
+            , use_stddev(false) {}
+        MLSSlope(double corrected_step_threshold, bool use_stddev) 
+            : corrected_step_threshold(corrected_step_threshold)
+            , use_stddev(use_stddev) {}
 	void serialize( Serialization &so ) { Operator::serialize( so ) ;}
 	void unserialize( Serialization &so ) { Operator::unserialize( so ) ;}
 
