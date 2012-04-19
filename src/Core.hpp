@@ -124,11 +124,13 @@ namespace envire
 
 	/** Creates a clone of this item. 
 	 */
-        virtual EnvironmentItem* clone() const { throw std::runtime_error("clone() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
+        virtual EnvironmentItem* clone() const { 
+	    throw std::runtime_error("clone() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
 
 	/** virtual assignemt of other value to this
 	 */
-	virtual void set( EnvironmentItem* other ) { throw std::runtime_error("set() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
+	virtual void set( EnvironmentItem* other ) { 
+	    throw std::runtime_error("set() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
 
 	/** will attach the newly created object to the given Environment.
 	 */ 
