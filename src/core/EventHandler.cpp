@@ -2,6 +2,11 @@
 
 using namespace envire;
 
+void EventFilter::handle( const Event& message )
+{
+    handler->handle( message );
+}
+
 void EventHandler::receive( const Event& message )
 {
     // if there is a filter apply and return if
@@ -32,12 +37,7 @@ void EventDispatcher::itemModified(EnvironmentItem *item) {}
 
 void EventListener::handle( const Event& event )
 {
-    bool res = true;
-    if( filter )
-	res = filter->filter( event );
-
-    if( res )
-	dispatch( event.type, event.operation, event.a.get(), event.b.get(), this );
+    dispatch( event.type, event.operation, event.a.get(), event.b.get(), this );
 }
 
 void EventDispatcher::dispatch( event::Type type, event::Operation operation, EnvironmentItem* a, EnvironmentItem* b, EventDispatcher* disp )

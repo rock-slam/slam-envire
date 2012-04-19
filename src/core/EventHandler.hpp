@@ -15,6 +15,10 @@ class EventFilter
 {
 public:
     EventFilter() : handler(NULL) {}
+
+    /** @brief callback for eventfilter
+     * Should return true if the message can be passed
+     */
     virtual bool filter( envire::Event const& ) = 0;
 
     /** @brief this function will get called 
@@ -23,6 +27,10 @@ public:
     void setHandler( EventHandler* handler ) { this->handler = handler; }
 
 protected:
+    /** @brief pass a message to the handler directly
+     */
+    void handle( const Event& message );
+
     EventHandler *handler;
 };
 
