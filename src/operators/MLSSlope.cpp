@@ -47,7 +47,7 @@ static void updateGradient(MLSGrid const& mls,
         count[this_y][this_x]++;
 
         diffs[other_y][other_x][other_index] = step;
-        angles[other_y][other_x] -= gradient;
+        angles[other_y][other_x] += gradient;
         count[other_y][other_x]++;
     }
     else
