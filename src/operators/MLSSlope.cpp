@@ -152,7 +152,7 @@ bool MLSSlope::updateAll()
         for(size_t y=1;y<(height - 1);y++)
         {
             int count = counts[y][x];
-            if (count == 0)
+            if (count < 5)
             {
                 angles[y][x] = UNKNOWN;
                 max_steps[y][x] = UNKNOWN;
@@ -175,17 +175,10 @@ bool MLSSlope::updateAll()
                 corrected_max_step = std::max(corrected_max_step, step0 - (step0 + step1) * 3 / 4);
             }
             max_steps[y][x] = max_step;
-            if (count < 8)
-            {
-                if (max_step < corrected_step_threshold)
-                    corrected_max_steps[y][x] = corrected_max_step;
-                else
-                    corrected_max_steps[y][x] = max_step;
-            }
+            if (max_step < corrected_step_threshold)
+                corrected_max_steps[y][x] = corrected_max_step;
             else
-            {
-                corrected_max_steps[y][x] = UNKNOWN;
-            }
+                corrected_max_steps[y][x] = max_step;
         }
     }
     // ... and mark the remaining of the border as UNKNOWN
