@@ -819,10 +819,12 @@ void SynchronizationEventHandler::process(const envire::Event& message)
     {
 	if( message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
 	{
+	    EnvironmentItem *item = message.a.get();
 	    // we might actually be working on a copy of the original item
 	    // in case the event got queued. For this reason, try to get the
 	    // original item back
-	    EnvironmentItem *item = m_env->getItem( message.id_a ).get();
+	    if( !item ) 
+		item = m_env->getItem( message.id_a ).get();
 
 	    // in case we have a cartesian map, also provide the full framenode
 	    // information for it
