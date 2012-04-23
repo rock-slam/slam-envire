@@ -79,18 +79,18 @@ void SimpleTraversability::unserialize(envire::Serialization& so)
     so.read<std::string>("output_band", output_band);
 }
 
-envire::Grid<double>* SimpleTraversability::getInputLayer(INPUT_DATA index) const
+envire::Grid<float>* SimpleTraversability::getInputLayer(INPUT_DATA index) const
 {
     if (input_layers_id[index] == "")
         return 0;
-    return getEnvironment()->getItem< Grid<double> >(input_layers_id[index]).get();
+    return getEnvironment()->getItem< Grid<float> >(input_layers_id[index]).get();
 }
 std::string SimpleTraversability::getInputBand(INPUT_DATA index) const
 { return input_bands[index]; }
 
-envire::Grid<double>* SimpleTraversability::getSlopeLayer() const { return getInputLayer(SLOPE); }
+envire::Grid<float>* SimpleTraversability::getSlopeLayer() const { return getInputLayer(SLOPE); }
 std::string SimpleTraversability::getSlopeBand() const { return getInputBand(SLOPE); }
-void SimpleTraversability::setSlope(Grid<double>* grid, std::string const& band_name)
+void SimpleTraversability::setSlope(Grid<float>* grid, std::string const& band_name)
 {
     addInput(grid);
     input_layers_id[SLOPE] = grid->getUniqueId();
@@ -98,18 +98,18 @@ void SimpleTraversability::setSlope(Grid<double>* grid, std::string const& band_
 
 }
 
-envire::Grid<double>* SimpleTraversability::getMaxStepLayer() const { return getInputLayer(MAX_STEP); }
+envire::Grid<float>* SimpleTraversability::getMaxStepLayer() const { return getInputLayer(MAX_STEP); }
 std::string SimpleTraversability::getMaxStepBand() const { return getInputBand(MAX_STEP); }
-void SimpleTraversability::setMaxStep(Grid<double>* grid, std::string const& band_name)
+void SimpleTraversability::setMaxStep(Grid<float>* grid, std::string const& band_name)
 {
     addInput(grid);
     input_layers_id[MAX_STEP] = grid->getUniqueId();
     input_bands[MAX_STEP] = band_name;
 }
 
-envire::Grid<double>* SimpleTraversability::getMaxForceLayer() const { return getInputLayer(MAX_FORCE); }
+envire::Grid<float>* SimpleTraversability::getMaxForceLayer() const { return getInputLayer(MAX_FORCE); }
 std::string SimpleTraversability::getMaxForceBand() const { return getInputBand(MAX_FORCE); }
-void SimpleTraversability::setMaxForce(Grid<double>* grid, std::string const& band_name)
+void SimpleTraversability::setMaxForce(Grid<float>* grid, std::string const& band_name)
 {
     addInput(grid);
     input_layers_id[MAX_FORCE] = grid->getUniqueId();
@@ -138,21 +138,21 @@ bool SimpleTraversability::updateAll()
     else
         output_layer->setNoData(output_band, CLASS_UNKNOWN);
 
-    static double const DEFAULT_UNKNOWN_INPUT = -std::numeric_limits<double>::infinity();
-    Grid<double> const* input_layers[3] = { 0, 0, 0 };
-    double input_unknown[3];
+    static float const DEFAULT_UNKNOWN_INPUT = -std::numeric_limits<float>::infinity();
+    Grid<float> const* input_layers[3] = { 0, 0, 0 };
+    float input_unknown[3];
 
-    boost::multi_array<double, 2> const* inputs[3] = { 0, 0, 0 };
+    boost::multi_array<float, 2> const* inputs[3] = { 0, 0, 0 };
     bool has_data = false;
     for (int i = 0; i < INPUT_COUNT; ++i)
     {
         if (input_layers_id[i] != "" && !input_bands[i].empty())
         {
-            input_layers[i] = getEnvironment()->getItem< Grid<double> >(input_layers_id[i]).get();
+            input_layers[i] = getEnvironment()->getItem< Grid<float> >(input_layers_id[i]).get();
             has_data = true;
             inputs[i] = &(input_layers[i]->getGridData(input_bands[i]));
 
-            std::pair<double, bool> no_data = input_layers[i]->getNoData(input_bands[i]);
+            std::pair<float, bool> no_data = input_layers[i]->getNoData(input_bands[i]);
             if (no_data.second)
             {
                 std::cout << "band " << i << " no_data=" << no_data.first << std::endl;

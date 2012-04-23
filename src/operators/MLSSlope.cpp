@@ -11,8 +11,8 @@ static double const UNKNOWN = -std::numeric_limits<double>::infinity();
     
 static void updateGradient(MLSGrid const& mls,
         bool use_stddev,
-        boost::multi_array<double,2>& angles,
-        boost::multi_array<double,3>& diffs,
+        boost::multi_array<float,2>& angles,
+        boost::multi_array<float,3>& diffs,
         boost::multi_array<int, 2>& count,
         double scale,
         int this_index, int this_x, int this_y,
@@ -70,7 +70,7 @@ bool MLSSlope::updateAll()
     if( env->getInputs(this).size() != 1 || env->getOutputs(this).size() != 1 )
         throw std::runtime_error("MLSSlope needs to have exactly 1 input and 1 output for now. Got " + boost::lexical_cast<std::string>(env->getInputs(this).size()) + " inputs and " + boost::lexical_cast<std::string>(env->getOutputs(this).size()) + "outputs");
     
-    Grid<double>& travGrid = *env->getOutput< Grid<double>* >(this);
+    Grid<float>& travGrid = *env->getOutput< Grid<float>* >(this);
     MLSGrid const& mls = *env->getInput< MLSGrid* >(this);
 
     if( mls.getWidth() != travGrid.getWidth() && mls.getHeight() != travGrid.getHeight() )
@@ -79,17 +79,17 @@ bool MLSSlope::updateAll()
         throw std::runtime_error("mismatching cell scale between MLSGradient input and output");
 
     // init traversibility grid
-    boost::multi_array<double,2>& angles(travGrid.getGridData("mean_slope"));
+    boost::multi_array<float,2>& angles(travGrid.getGridData("mean_slope"));
     std::fill(angles.data(), angles.data() + angles.num_elements(), 0);
-    boost::multi_array<double,2>& max_steps(travGrid.getGridData("max_step"));
+    boost::multi_array<float,2>& max_steps(travGrid.getGridData("max_step"));
     std::fill(max_steps.data(), max_steps.data() + max_steps.num_elements(), UNKNOWN);
-    boost::multi_array<double,2>& corrected_max_steps(travGrid.getGridData("corrected_max_step"));
+    boost::multi_array<float,2>& corrected_max_steps(travGrid.getGridData("corrected_max_step"));
     boost::multi_array<int,2> counts;
     counts.resize( boost::extents[mls.getHeight()][mls.getWidth()]);
     std::fill(counts.data(), counts.data() + counts.num_elements(), 0);
     travGrid.setNoData(UNKNOWN);
 
-    boost::multi_array<double,3> diffs;
+    boost::multi_array<float,3> diffs;
     diffs.resize( boost::extents[mls.getHeight()][mls.getWidth()][8]);
     std::fill(diffs.data(), diffs.data() + diffs.num_elements(), 0);
 

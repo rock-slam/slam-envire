@@ -7,7 +7,7 @@ namespace envire
 {
     /** This operator computes local slopes on a MLS map
      *
-     * It acts on an MLSGrid and updates a Grid<double> with the maximum local
+     * It acts on an MLSGrid and updates a Grid<float> with the maximum local
      * slope angles in radians
      *
      * The default operation will compute the maximum slope between the topmost

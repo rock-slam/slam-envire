@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
 
     // Check if there is already an output map and operator that match what is
     // asked
-    boost::intrusive_ptr< Grid<double> > input = env->getItem< Grid<double> >();
+    boost::intrusive_ptr< Grid<float> > input = env->getItem< Grid<float> >();
 
     env->updateOperators();
 
