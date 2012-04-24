@@ -100,6 +100,7 @@ void TreeViewListener::childRemoved(envire::FrameNode* parent, envire::FrameNode
 }
 
 TreeViewListener::TreeViewListener(QTreeWidget* tw)
+    : selected( NULL )
 {
     assert( tw );
     this->tw = tw;
