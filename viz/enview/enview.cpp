@@ -24,7 +24,14 @@ int main( int argc, char **argv )
     Application a( argc, argv );
     osg::ArgumentParser arguments(&argc, argv);
 
-    enview::ApplicationWindow appWindow;
+    envire::Environment *env = NULL;
+    if( argc > 1 )
+    {
+	std::string env_name = argv[1];
+	env = envire::Environment::unserialize( env_name );
+    }
+    enview::ApplicationWindow appWindow( env );
+
     a.connect( &a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()) );
 
     return a.exec();

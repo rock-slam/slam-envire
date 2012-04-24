@@ -16,7 +16,7 @@
 
 namespace enview {
 
-ApplicationWindow::ApplicationWindow() 
+ApplicationWindow::ApplicationWindow( envire::Environment* _env ) 
     : QMainWindow()
 {
     // connect menu items to functions
@@ -40,15 +40,17 @@ ApplicationWindow::ApplicationWindow()
     ui.vizkitWidget->addDataHandler( envViz.get() );
     envViz->attachTreeWidget( ui.treeWidget );
 
-    setEnvironment(new envire::Environment());
+    if( !_env )
+	_env = new envire::Environment();
+    setEnvironment( _env );
 
     this->show();
 }
 
 void ApplicationWindow::setEnvironment( envire::Environment* _env )
 {
-    envViz->updateData( _env );
     env = boost::shared_ptr<envire::Environment>( _env );
+    envViz->updateData( _env );
 }
 
 envire::Environment* ApplicationWindow::getEnvironment()

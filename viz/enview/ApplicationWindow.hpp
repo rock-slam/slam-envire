@@ -23,7 +23,7 @@ protected:
     std::string envFileName;
 
 public:
-    ApplicationWindow();
+    explicit ApplicationWindow( envire::Environment* _env = NULL );
     /*
     void addNode(osg::Node *node);
     void removeNode(osg::Node *node);
