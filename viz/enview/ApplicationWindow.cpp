@@ -111,11 +111,17 @@ void ApplicationWindow::addFromCsvDialog()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Add Csv File"),
             ".",
-            tr("Csv (*.txt)"));
+            tr("Csv (*.txt);;Leica (*.asc);;XYZ (*)"));
 
-    envire::FrameNode *fn = dynamic_cast<envire::FrameNode*>(getSelectedItem());
+    envire::FrameNode *fn = NULL;
+    if( getSelectedItem() )
+	fn = dynamic_cast<envire::FrameNode*>(getSelectedItem());
+
     if( !fn )
-	fn = env->getRootNode();
+    {
+	fn = new envire::FrameNode();
+	env->addChild( env->getRootNode(), fn );
+    }
 
     if(fileName != NULL) {
 	envire::Pointcloud::importCsv(fileName.toStdString(), fn);
