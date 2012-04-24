@@ -568,7 +568,10 @@ void Environment::detachFrameNode(CartesianMap* map, FrameNode* node)
 
 FrameNode* Environment::getFrameNode(CartesianMap* map)
 {
-    return cartesianMapGraph[map];
+    cartesianMapGraphType::iterator el = cartesianMapGraph.find( map );
+    if( el != cartesianMapGraph.end() )
+	return el->second;
+    else return NULL;
 }
 
 std::list<CartesianMap*> Environment::getMaps(FrameNode* node) 
