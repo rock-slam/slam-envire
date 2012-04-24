@@ -10,7 +10,6 @@ namespace envire {
 
 void TreeViewListener::itemClicked(QTreeWidgetItem* item, int column)
 {
-    std::cout << "set selectedItem " << item << std::endl;
     selected = getItemForWidget(item);
 }
 
@@ -87,7 +86,6 @@ void TreeViewListener::frameNodeDetached(envire::CartesianMap* map, envire::Fram
 
 void TreeViewListener::childRemoved(envire::FrameNode* parent, envire::FrameNode* child)
 {
-    std::cout << "Child removed called" << std::endl;
     QTreeWidgetItem *childW = getWidgetForEnvItem(child, FrameNode);
     QTreeWidgetItem *parentW = getWidgetForEnvItem(parent, FrameNode);
     
