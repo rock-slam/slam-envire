@@ -547,10 +547,23 @@ void Environment::setFrameNode(CartesianMap* map, FrameNode* node)
     if( !map->isAttached() )
 	attachItem(map);
 
-    // don't do anything if relationsship already present
-    if( map->getFrameNode() == node )
-	return;
+    cartesianMapGraphType::iterator el = cartesianMapGraph.find( map );
+    if( el != cartesianMapGraph.end() )
+    {
+	if( el->second == node )
+	{
+	    // relationship already present
+	    // no need to do anything
+	    return;
+	}
+	else
+	{
+	    // need to detach previous relation first
+	    detachFrameNode( el->first, el->second );
+	}
+    }
 
+    // insert relationship
     cartesianMapGraph[map] = node;
 
     handle( Event( event::FRAMENODE, event::ADD, map, node ) );
