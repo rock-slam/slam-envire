@@ -6,7 +6,6 @@ rock_vizkit_plugin(envire-viz
     EnvireEventListener.cpp
     EnvireVisualization.cpp
     FrameNodeManipulator.cpp
-    FrameNodeSelection.cpp
     FrameNodeVisualization.cpp
     GridVisualizationBase.cpp
     ImageRGB24Visualization.cpp

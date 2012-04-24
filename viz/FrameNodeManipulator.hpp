@@ -2,31 +2,25 @@
 #define FRAMENODEMANIPULATOR_H
 #include <envire/Core.hpp>
 #include <osg/Group>
-#include <osgManipulator/Selection>
-#include <osgManipulator/Dragger>
-#include <osgManipulator/CommandManager>
-#include "FrameNodeSelection.hpp"
 #include <osgManipulator/TranslateAxisDragger>
 #include <osgManipulator/TrackballDragger>
-#include <osg/PositionAttitudeTransform>
+#include <osg/MatrixTransform>
 
 namespace envire {
 
 class FrameNodeManipulator
 {
     public:
-	FrameNodeManipulator(envire::EnvironmentItem* item, osg::Group* parentNode, osg::Group* group);
+	FrameNodeManipulator( envire::EnvironmentItem* item, osg::Group* parentNode );
 	~FrameNodeManipulator();
 	
     private:
 	envire::FrameNode *fr;
-	osg::PositionAttitudeTransform *transform;
 	osg::Group *parentNode;
-	osgManipulator::CommandManager *cm;
-	osg::ref_ptr<osgManipulator::TranslateAxisDragger> translateDragger;
-	osg::ref_ptr<osgManipulator::TrackballDragger> rotateDragger;
-	osg::ref_ptr<osgManipulator::Selection> selectionForTrackball;
-	osg::ref_ptr<osgManipulator::Selection> selectionForFrameNode;
+
+	osg::ref_ptr<osg::Node> dragger;
+	osg::ref_ptr<osg::MatrixTransform> selection;
+	osg::ref_ptr<osgManipulator::DraggerCallback> draggerCallback;
 };
 
 }

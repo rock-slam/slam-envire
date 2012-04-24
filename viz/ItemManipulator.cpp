@@ -54,7 +54,7 @@ void ItemManipulator::itemActivated(QTreeWidgetItem* item, int column)
 		viz->highlightNode(activeItem, osgGroup);
 		
 		if(dynamic_cast<envire::FrameNode *>( activeItem))
-		    frameManipulator = new FrameNodeManipulator(activeItem, eel->getParentNodeForItem(activeItem), osgGroup);
+		    frameManipulator = new FrameNodeManipulator(activeItem, eel->getParentNodeForItem(activeItem));
 	    }
 	}
     }
