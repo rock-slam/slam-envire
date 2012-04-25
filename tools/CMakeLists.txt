@@ -46,3 +46,8 @@ rock_executable(env_traversability env_traversability.cpp
 
 rock_executable(env_mls_slopes env_mls_slopes.cpp
     DEPS envire)
+
+rock_executable(env_slam6d env_slam6d.cpp
+    DEPS envire
+    DEPS_PLAIN Boost_FILESYSTEM Boost_SYSTEM Boost_REGEX
+    )

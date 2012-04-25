@@ -13,7 +13,7 @@ rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
 # To make sure envire links to the default system libraries 
 # such as CGAL does, setting BOOST_ROOT here 
 set(BOOST_ROOT "/usr/")
-find_package(Boost REQUIRED COMPONENTS filesystem thread system)
+find_package(Boost REQUIRED COMPONENTS filesystem thread system regex)
 
 rock_add_source_dir(icp icp)
 rock_standard_layout()
