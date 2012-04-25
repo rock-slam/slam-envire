@@ -1,21 +1,64 @@
 #include "FrameNodeManipulator.hpp"
 #include <osg/Version>
+#include <envire/core/EventHandler.hpp>
 
 using namespace envire;
 
 #if OSG_MIN_VERSION_REQUIRED(3,0,0) 
-class FrameNodeUpdate : public osgManipulator::DraggerCallback
+class FrameNodeUpdate : public osgManipulator::DraggerCallback, public envire::EventHandler
 {
     osg::ref_ptr<osg::MatrixTransform> tf;
     envire::FrameNode::Ptr fn;
+    osg::ref_ptr<osgManipulator::Dragger> translate, rotate;
 
 public:
-    FrameNodeUpdate( osg::MatrixTransform* tf, envire::FrameNode* fn )
-	: tf( tf ), fn( fn )
+    FrameNodeUpdate( osg::MatrixTransform* tf, envire::FrameNode* fn, osgManipulator::Dragger* translate, osgManipulator::Dragger* rotate )
+	: tf( tf ), fn( fn ), translate( translate ), rotate( rotate )
     {
+	assert( fn && tf && translate && rotate );
+
+	// set initial transform from envire
+	updateOSG();
+	
+	// register callbacks
+	fn->getEnvironment()->addEventHandler( this );
+	translate->addDraggerCallback( this );
+	rotate->addDraggerCallback( this );
     }
 
+    ~FrameNodeUpdate()
+    {
+	// remove callbacks
+	fn->getEnvironment()->removeEventHandler( this );
+	translate->removeDraggerCallback( this );
+	rotate->removeDraggerCallback( this );
+    }
+
+    /** 
+     * callback for the osg side 
+     *
+     * CAUTION we are actually going over thread boundaries here.
+     * this implementation may lead to invalid matrices.
+     */
     bool receive( const osgManipulator::MotionCommand& cmd )
+    {
+	updateEnvire();
+	return true;
+    }
+
+    /** 
+     * callback for the envire side
+     *
+     * CAUTION we are actually going over thread boundaries here.
+     * this implementation may lead to invalid matrices.
+     */
+    void handle( const envire::Event& message )
+    {
+	if( message.a == fn.get() && message.operation == envire::event::UPDATE )
+	    updateOSG();
+    }
+
+    void updateEnvire()
     {
 	// read matrix from transform osgnode and write it to the
 	// transform of the framenode
@@ -23,7 +66,20 @@ public:
 		Eigen::Affine3d( 
 		    Eigen::Map<const Eigen::Matrix<osg::Matrix::value_type, 4, 4> >( 
 			tf->getMatrix().ptr() ) ) );
-	return true;
+    }
+
+    void updateOSG()
+    {
+	Eigen::Affine3d t = fn->getTransform();
+	// update the selection first
+	tf->setMatrix( 
+		osg::Matrixd( t.matrix().data() ) );
+
+	// and then the draggers
+	rotate->setMatrix( 
+		osg::Matrixd( Eigen::Affine3d( t.linear() ).matrix().data() ) );
+	translate->setMatrix( 
+		osg::Matrixd( Eigen::Affine3d( Eigen::Translation3d(t.translation()) ).matrix().data() ) );
     }
 };
 
@@ -97,20 +153,15 @@ FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::G
     selection = new osg::MatrixTransform;
     parentNode->addChild(selection);
 
-    // the draggercallback is responsible for writing the result
-    // from the selection matrix node to the framenode in envire
-    draggerCallback = new FrameNodeUpdate( selection, fr );
 
     // set up two different draggers
     osgManipulator::TranslateAxisDragger *translateDragger = new osgManipulator::TranslateAxisDragger();
     translateDragger->setupDefaultGeometry();
-    translateDragger->addDraggerCallback( draggerCallback );
     translateDragger->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_SHIFT);
     translateDragger->setHandleEvents(true);
 
     osgManipulator::TrackballDragger *rotateDragger = new osgManipulator::TrackballDragger();
     rotateDragger->setupDefaultGeometry();
-    rotateDragger->addDraggerCallback( draggerCallback );
     rotateDragger->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_SHIFT);
     rotateDragger->setHandleEvents(true);
 
@@ -124,11 +175,16 @@ FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::G
 
     // and add them to the parent node, so they are in the osg
     // tree
-    parentNode->addChild( draggerContainer );
+    parentNode->addChild( dragger );
 
     // and make them update the selection node
     translateDragger->addTransformUpdating( selection );
     rotateDragger->addTransformUpdating( selection );
+
+    // the draggercallback is responsible for writing the result
+    // from the selection matrix node to the framenode in envire
+    draggerCallback = new FrameNodeUpdate( selection, fr, translateDragger, rotateDragger );
+
 #endif
 }
 
