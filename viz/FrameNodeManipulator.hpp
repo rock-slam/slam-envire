@@ -5,6 +5,7 @@
 #include <osgManipulator/TranslateAxisDragger>
 #include <osgManipulator/TrackballDragger>
 #include <osg/MatrixTransform>
+#include <osg/Version>
 
 namespace envire {
 
