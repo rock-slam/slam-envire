@@ -9,6 +9,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 using namespace envire;
 using namespace std;
@@ -23,6 +24,11 @@ using boost::lexical_cast;
 void usage()
 {
     std::cout << "usage: env_slam6d <generate|update> env_dir slam6d_dat" << std::endl;
+}
+
+bool comp( const Pointcloud *pc1, const Pointcloud *pc2 )
+{
+    return pc1->getUniqueIdNumericalSuffix() < pc2->getUniqueIdNumericalSuffix();
 }
 
 int main( int argc, char* argv[] )
@@ -54,6 +60,15 @@ int main( int argc, char* argv[] )
 	    create_directories( slam6d_dir );
 
 	vector<Pointcloud*> pcs = env->getItems<Pointcloud>();
+	try
+	{
+	    sort( pcs.begin(), pcs.end(), comp );
+	}
+	catch( exception e )
+	{
+	    cout << "Could not sort by numerical id." << endl;
+	}
+
 	size_t map_idx = 0;
 	for( vector<Pointcloud*>::iterator it = pcs.begin(); it != pcs.end(); it++ )
 	{
