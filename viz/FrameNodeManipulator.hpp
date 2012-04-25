@@ -20,7 +20,9 @@ class FrameNodeManipulator
 
 	osg::ref_ptr<osg::Node> dragger;
 	osg::ref_ptr<osg::MatrixTransform> selection;
+#if OSG_MIN_VERSION_REQUIRED(3,0,0) 
 	osg::ref_ptr<osgManipulator::DraggerCallback> draggerCallback;
+#endif
 };
 
 }
