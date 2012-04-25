@@ -301,6 +301,8 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
     // the eventprocessor will queue events until flush is called,
     // then all events are applied to the given environment
     EventProcessor ep( env2.get() );
+    // copy the items
+    ep.allowMultithreading(true);
     env->addEventHandler( &ep );
 
     // create some child framenodes
