@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/version.hpp>
 
 #include <fstream>
 #include <sstream>
