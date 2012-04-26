@@ -78,7 +78,11 @@ int main( int argc, char* argv[] )
 
 	    // create symbolic link
 	    string scan_prefix = str(format("scan%03d") % map_idx);
+#if BOOST_VERSION >= 104600
 	    create_symlink( absolute(env_dir) / (pc->getMapFileName() + ".ply"), slam6d_dir / (scan_prefix + ".ply") );
+#else
+	    create_symlink( env_dir / (pc->getMapFileName() + ".ply"), slam6d_dir / (scan_prefix + ".ply") );
+#endif
 
 	    // create pose file
 	    ofstream pose_stream( (slam6d_dir / (scan_prefix + ".pose")).string().c_str() );
