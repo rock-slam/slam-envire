@@ -18,6 +18,12 @@ namespace envire {
 	static const std::string VERTEX_ATTRIBUTES;
 	static const std::string VERTEX_VARIANCE;
 
+	enum TextFormat
+	{
+	    XYZ = 0, // xyz 
+	    XYZR = 1 // xyz remission
+	};
+
 	enum attr_flag
 	{
 	    SCAN_EDGE = 0x01 // vertex point is at the edge of a laserscan
@@ -30,7 +36,7 @@ namespace envire {
     public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	static Pointcloud* importCsv(const std::string& file, FrameNode* fn);
+	static Pointcloud* importCsv(const std::string& file, FrameNode* fn, int sample = 1, TextFormat = XYZR);
 
 	template <typename T>
 	    std::vector<T>& getVertexData(const std::string& key)
@@ -60,7 +66,7 @@ namespace envire {
         void unserialize(Serialization& so, bool handleMap = true);
 
 	bool writeText(std::ostream& os);
-	bool readText(std::istream& is);
+	bool readText(std::istream& is, int sample = 1, TextFormat = XYZR );
 
 	bool writePly(const std::string& filename, std::ostream& os);
 	bool readPly(const std::string& filename, std::istream& is);
