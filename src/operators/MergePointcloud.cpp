@@ -58,6 +58,8 @@ bool MergePointcloud::updateAll(){
 	Pointcloud* cloud = dynamic_cast<envire::Pointcloud*>(*it);
 	hasNormal = hasNormal || cloud->hasData( Pointcloud::VERTEX_NORMAL );
 	hasColor = hasColor || cloud->hasData( Pointcloud::VERTEX_COLOR );
+
+	assert( cloud != targetcloud );
     }
 
     //for every cloud
