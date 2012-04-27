@@ -12,6 +12,7 @@
 #include <osg/Depth>
 
 #include "ICPHandler.hpp"
+#include "CsvDialog.hpp"
 #include <boost/bind.hpp>
 
 namespace enview {
@@ -111,22 +112,25 @@ void ApplicationWindow::addFromScanFileDialog()
 
 void ApplicationWindow::addFromCsvDialog()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Add Csv File"),
-            ".",
-            tr("Csv (*.txt);;Leica (*.asc);;XYZ (*)"));
-
-    envire::FrameNode *fn = NULL;
-    if( getSelectedItem() )
-	fn = dynamic_cast<envire::FrameNode*>(getSelectedItem());
-
-    if( !fn )
+    CsvDialog csv_dialog(this);
+    if(csv_dialog.exec())
     {
-	fn = new envire::FrameNode();
-	env->addChild( env->getRootNode(), fn );
-    }
+        QString fileName = csv_dialog.getFileName();
+        
+        if(fileName != NULL) {
+            envire::FrameNode *fn = NULL;
+            
+            if( getSelectedItem() )
+                fn = dynamic_cast<envire::FrameNode*>(getSelectedItem());
 
-    if(fileName != NULL) {
-	envire::Pointcloud::importCsv(fileName.toStdString(), fn);
+            if( !fn )
+            {
+                fn = new envire::FrameNode();
+                env->addChild( env->getRootNode(), fn );
+            }
+        
+            envire::Pointcloud::importCsv(fileName.toStdString(), fn, csv_dialog.getSampleRate(), csv_dialog.getFormat());
+        }
     }
 }
 

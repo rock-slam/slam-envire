@@ -1,6 +1,7 @@
 set(QT_HEADERS 
     ApplicationWindow.hpp
     ICPHandler.hpp
+    CsvDialog.hpp
     )
 QT4_WRAP_CPP(SOURCES_MOC ${QT_HEADERS})
 
@@ -16,6 +17,7 @@ set(TARGET_SRC
     ApplicationWindow.cpp
     ICPHandler.cpp
     enview.cpp
+    CsvDialog.cpp
     )
 
 add_executable(enview ${TARGET_SRC})
