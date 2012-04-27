@@ -159,7 +159,8 @@ void Layer::removeData(const std::string& type)
 
 void Layer::removeData()
 {
-    for( DataMap::iterator it = data_map.begin();it != data_map.end(); delete((it++)->second) );
+    for( DataMap::iterator it = data_map.begin();it != data_map.end(); it++)
+	delete it->second;
 }
 
 const std::string CartesianMap::className = "envire::CartesianMap";
