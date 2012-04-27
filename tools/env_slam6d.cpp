@@ -25,7 +25,7 @@ using boost::lexical_cast;
      
 void usage()
 {
-    std::cout << "usage: env_slam6d <generate|update> env_dir slam6d_dat" << std::endl;
+    std::cout << "usage: env_slam6d <generate|update> env_dir slam6d_dat [\"id1 id2 id3 ...\"]" << std::endl;
 }
 
 bool comp( const Pointcloud *pc1, const Pointcloud *pc2 )
@@ -44,6 +44,10 @@ int main( int argc, char* argv[] )
     string cmd = argv[1];
     string env_dat = argv[2];
     string slam6d_dat = argv[3];
+    string item_ids;
+    if( argc == 5 )
+	item_ids = argv[4];
+
 
     // Transform from envire to slam6d coordinate system
     Eigen::Matrix3d S = Eigen::Matrix3d::Zero();
@@ -61,14 +65,30 @@ int main( int argc, char* argv[] )
 	if( !is_directory( slam6d_dir ) )
 	    create_directories( slam6d_dir );
 
-	vector<Pointcloud*> pcs = env->getItems<Pointcloud>();
-	try
+	vector<Pointcloud*> pcs;
+	if( item_ids.empty() )
 	{
-	    sort( pcs.begin(), pcs.end(), comp );
+	    pcs = env->getItems<Pointcloud>();
+	    try
+	    {
+		sort( pcs.begin(), pcs.end(), comp );
+	    }
+	    catch( exception e )
+	    {
+		cout << "Could not sort by numerical id." << endl;
+	    }
 	}
-	catch( exception e )
+	else
 	{
-	    cout << "Could not sort by numerical id." << endl;
+	    istringstream iss( item_ids );
+	    for( istream_iterator<string> it(iss); it != istream_iterator<string>(); it++ )
+	    {
+		Pointcloud *pc = env->getItem<Pointcloud>( *it ).get();
+		if( !pc )
+		    cout << *it << " is not a pointcloud." << endl;
+		else
+		    pcs.push_back( pc );
+	    }
 	}
 
 	size_t map_idx = 0;
