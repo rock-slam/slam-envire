@@ -36,24 +36,25 @@ int main( int argc, char* argv[] )
     }
     env->updateOperators();
 
+    // get all available meshes
+    std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
 
     // create global pointcloud
     envire::MergePointcloud *merge = new envire::MergePointcloud();
     env->attachItem( merge );
-
-    std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
-    for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
-    {
-	std::cout << "adding trimesh to merge" << std::endl;
-	merge->addInput( *it );
-    }
-
     envire::Pointcloud *mpc = new envire::Pointcloud();
     env->attachItem( mpc );
     env->setFrameNode( mpc, env->getRootNode() );
     merge->addOutput( mpc );
 
-    merge->updateAll();
+    for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
+    {
+	std::cout << "adding trimesh to merge " << (*it)->getUniqueId() << std::endl;
+	merge->addInput( *it );
+	merge->updateAll();
+
+	env->detachItem( *it );
+    }
 
     std::cout << "merged pointcloud with " << mpc->vertices.size() << " points" << std::endl;
 
@@ -72,15 +73,8 @@ int main( int argc, char* argv[] )
 
     std::cout << "simplified pointcloud to " << mpcs->vertices.size() << " points" << std::endl;
 
-    // detach the resulting pointcloud from the existing environment, and place
-    // into a newly created one.
-    boost::scoped_ptr<Environment> env2( new Environment() );
-    envire::EnvironmentItem::Ptr mpcPtr = env->detachItem( mpcs );
-
-    env2->attachItem( mpcs );
-    env2->setFrameNode( mpcs, env2->getRootNode() );
-
     std::string path(argv[2]);
-    so.serialize(env2.get(), path);
+    env->serialize( path );
+
 } 
 
