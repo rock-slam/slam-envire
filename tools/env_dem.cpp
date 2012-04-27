@@ -49,5 +49,5 @@ int main( int argc, char* argv[] )
     proj->updateAll();
 
     std::string path(argv[2]);
-    so.serialize(env.get(), path);
+    env->serialize( path );
 } 
