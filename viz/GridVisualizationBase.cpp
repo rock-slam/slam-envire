@@ -51,11 +51,11 @@ namespace envire
     geom->setTexCoordArray(0, texture_coordinates.get());
     
     // Specify the vertices:
-    osg::ref_ptr<osg::Vec3dArray>  vertice_array = new osg::Vec3dArray;
-    vertice_array->push_back(osg::Vec3d(pos_x1,pos_y1,0));
-    vertice_array->push_back(osg::Vec3d(pos_x2,pos_y1,0));
-    vertice_array->push_back(osg::Vec3d(pos_x2,pos_y2,0));
-    vertice_array->push_back(osg::Vec3d(pos_x1,pos_y2,0));
+    osg::ref_ptr<osg::Vec3Array>  vertice_array = new osg::Vec3Array;
+    vertice_array->push_back(osg::Vec3(pos_x1,pos_y1,0));
+    vertice_array->push_back(osg::Vec3(pos_x2,pos_y1,0));
+    vertice_array->push_back(osg::Vec3(pos_x2,pos_y2,0));
+    vertice_array->push_back(osg::Vec3(pos_x1,pos_y2,0));
     // Associate this set of vertices with the geometry associated with the geode 
     geom->setVertexArray(vertice_array);
    
