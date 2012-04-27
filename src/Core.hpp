@@ -491,7 +491,11 @@ namespace envire
 	template <typename T>
 	const T& getData(const std::string& type) const
 	{
-	    return data_map.at(type)->get<T>();
+	    std::map <std::string, envire::HolderBase* >::const_iterator it = data_map.find(type);
+	    if(it == data_map.end())
+		throw std::runtime_error("No band with name " + type + " available ");
+	    
+	    return it->second->get<T>();
 	    /*
 	    if( typeid(*data_map[type]) != typeid(Holder<T>) )
 	    {
