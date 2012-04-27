@@ -114,6 +114,8 @@ struct ApplyEventHelper : public EventDispatcher
 	{
 	    // item already exists, but we can just overwrite it
 	    item->set( event.a.get() );
+
+	    env.itemModified( item );
 	}
 	else
 	{
