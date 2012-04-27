@@ -23,10 +23,18 @@ namespace envire {
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 
+	/** @brief set to true to clear output
+	 * before each merge operation
+	 */
+	void setClearOutput( bool clear );
+
     public:
 	void addInput(Pointcloud* pc);
 	void addOutput(Pointcloud* globalpc);
 	bool updateAll();
+
+    protected:
+	bool m_clearOutput;
     };
 }
 

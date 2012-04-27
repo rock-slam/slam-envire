@@ -14,15 +14,14 @@ namespace envire {
 
 ENVIRONMENT_ITEM_DEF( MergePointcloud )
 
-MergePointcloud::MergePointcloud() {
-    // TODO Auto-generated constructor stub
-
+MergePointcloud::MergePointcloud() 
+    : m_clearOutput( true )
+{
 }
 
-MergePointcloud::~MergePointcloud() {
-    // TODO Auto-generated destructor stub
+MergePointcloud::~MergePointcloud() 
+{
 }
-
 
 void MergePointcloud::serialize(Serialization& so){
     Operator::serialize(so);
@@ -44,10 +43,16 @@ void MergePointcloud::addOutput(Pointcloud* globalpc){
     Operator::addOutput(globalpc);
 }
 
+void MergePointcloud::setClearOutput( bool clear )
+{
+    m_clearOutput = clear;
+}
+
 bool MergePointcloud::updateAll(){
     Pointcloud* targetcloud = dynamic_cast<envire::Pointcloud*>(*env->getOutputs(this).begin());
     assert( targetcloud );
-    targetcloud->vertices.clear();
+    if( m_clearOutput )
+	targetcloud->clear();
 
     std::list<Layer*> inputs = env->getInputs(this);
 
