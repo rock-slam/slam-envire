@@ -161,6 +161,8 @@ void Layer::removeData()
 {
     for( DataMap::iterator it = data_map.begin();it != data_map.end(); it++)
 	delete it->second;
+    
+    data_map.clear();
 }
 
 const std::string CartesianMap::className = "envire::CartesianMap";
