@@ -70,17 +70,19 @@ bool Pointcloud::writeText(std::ostream& os)
 bool Pointcloud::readText(std::istream& is, int sample, TextFormat format)
 {
     const int max_line_length = 255;
-    std::vector<Eigen::Vector3d> &color = getVertexData<Eigen::Vector3d>( VERTEX_COLOR );
+    std::vector<Eigen::Vector3d> *color = 0;
+    if(format == XYZR )
+        color = &getVertexData<Eigen::Vector3d>( VERTEX_COLOR );
     while( !is.eof() )
     {
 	if( sample == 1 || (rand() % sample == 0) )
 	{
 	    double x, y, z, c;
 	    is >> x >> y >> z;
-	    if( format == XYZR )
+	    if( format == XYZR && color )
 	    {
 		is >> c;
-		color.push_back( Eigen::Vector3d::Identity() * c / 255.0 );
+		color->push_back( Eigen::Vector3d::Identity() * c / 255.0 );
 	    }
 	
 	    vertices.push_back( Eigen::Vector3d( x,y,z ) );
@@ -88,25 +90,27 @@ bool Pointcloud::readText(std::istream& is, int sample, TextFormat format)
 	}
 	else
 	    is.ignore( max_line_length, '\n' );
+        // check for eof bit, to avoid a copy of the last sample
+        is.peek();
     }
 
     return true;
 }
 
-Pointcloud* Pointcloud::importCsv(const std::string& path, FrameNode* fm, int sample, TextFormat format)
+Pointcloud* Pointcloud::importCsv(const std::string& file, FrameNode* fn, int sample, TextFormat format)
 {
-    std::ifstream data(path.c_str());
+    std::ifstream data(file.c_str());
     if( data.fail() )  
     {
-        throw std::runtime_error("Could not open file '" + path + "'.");
+        throw std::runtime_error("Could not open file '" + file + "'.");
     }
     Pointcloud* pc = new Pointcloud();
     pc->readText( data, sample, format );
     data.close();
 
-    Environment* env = fm->getEnvironment();
+    Environment* env = fn->getEnvironment();
     env->attachItem(pc);
-    pc->setFrameNode(fm);
+    pc->setFrameNode(fn);
 
     return pc;
 }
