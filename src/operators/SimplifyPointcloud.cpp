@@ -11,7 +11,7 @@
 using namespace envire;
 using namespace std;
 
-const std::string SimplifyPointcloud::className = "envire::SimplifyPointcloud";
+ENVIRONMENT_ITEM_DEF( SimplifyPointcloud )
 
 void SimplifyPointcloud::initDefaults()
 {

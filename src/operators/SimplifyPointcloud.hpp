@@ -7,15 +7,13 @@
 namespace envire {
     class SimplifyPointcloud : public Operator
     {
-    public:
-	static const std::string className;
+	ENVIRONMENT_ITEM( SimplifyPointcloud )
 
+    public:
 	SimplifyPointcloud();
 
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
-
-	const std::string& getClassName() const {return className;};
 
 	void addInput( Pointcloud* input ); 
 	void addOutput( Pointcloud* output ); 
