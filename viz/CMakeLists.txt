@@ -15,6 +15,7 @@ rock_vizkit_plugin(envire-viz
     TriMeshVisualization.cpp
     TreeViewListener.cpp
     ItemManipulator.cpp
+    TraversabilityGridVisualization.cpp
     MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp
     DEPS envire
     DEPS_CMAKE GDAL

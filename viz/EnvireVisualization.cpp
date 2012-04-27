@@ -8,6 +8,7 @@
 #include "ElevationGridVisualization.hpp"
 #include "MLSVisualization.hpp"
 #include "ImageRGB24Visualization.hpp"
+#include "TraversabilityGridVisualization.hpp"
 
 #include "ItemManipulator.hpp"
 
@@ -36,7 +37,8 @@ EnvireVisualization::EnvireVisualization()
     visualizers.push_back( boost::shared_ptr<ElevationGridVisualization>(new ElevationGridVisualization() ) );
     visualizers.push_back( boost::shared_ptr<MLSVisualization>(new MLSVisualization() ) );
     visualizers.push_back( boost::shared_ptr<ImageRGB24Visualization>(new ImageRGB24Visualization() ) );
-
+    visualizers.push_back( boost::shared_ptr<TraversabilityGridVisualization>(new TraversabilityGridVisualization()));
+    
     // attach visualizers
     for(std::vector<boost::shared_ptr<EnvironmentItemVisualizer> >::iterator it = visualizers.begin(); it != visualizers.end(); it++)
     {
