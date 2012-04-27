@@ -4,7 +4,7 @@
 
 using namespace envire;
 
-#if OSG_MIN_VERSION_REQUIRED(3,0,0) 
+#if OPENSCENEGRAPH_MAJOR_VERSION >= 3 
 class FrameNodeUpdate : public osgManipulator::DraggerCallback, public envire::EventHandler
 {
     osg::ref_ptr<osg::MatrixTransform> tf;
@@ -143,7 +143,7 @@ protected:
 
 FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::Group* pNode )
 {
-#if OSG_MIN_VERSION_REQUIRED(3,0,0) 
+#if OPENSCENEGRAPH_MAJOR_VERSION >= 3 
     parentNode = pNode;
     fr = dynamic_cast<envire::FrameNode *>(item);
 
@@ -190,7 +190,7 @@ FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::G
 
 FrameNodeManipulator::~FrameNodeManipulator()
 {
-#if OSG_MIN_VERSION_REQUIRED(3,0,0) 
+#if OPENSCENEGRAPH_MAJOR_VERSION >= 3 
     parentNode->removeChild(dragger);
     parentNode->removeChild(selection);
 #endif
