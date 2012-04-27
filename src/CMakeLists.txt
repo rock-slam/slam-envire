@@ -1,12 +1,15 @@
-include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
-if (USE_CGAL AND CGAL_FOUND)
-    list(APPEND ADDITIONAL_SOURCES 
-	operators/SimplifyPointcloud.cpp
-	operators/Projection.cpp)
+if ( USE_CGAL )
+    include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
+    if( CGAL_FOUND )
+	list(APPEND ADDITIONAL_SOURCES 
+	    operators/SimplifyPointcloud.cpp
+	    operators/Projection.cpp)
 
-    if( TAUCS_FOUND )
-	list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
-    endif( TAUCS_FOUND )
+	if( TAUCS_FOUND )
+	    list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
+	endif( TAUCS_FOUND )
+	add_definitions( -DENVIRE_USE_CGAL )
+    endif()
 endif()
 
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
