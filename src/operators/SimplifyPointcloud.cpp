@@ -72,8 +72,11 @@ bool SimplifyPointcloud::updateAll()
     std::vector<IndexedPoint> points;
     points.reserve( pc_in->vertices.size() );
 
+    bool use_normals = pc_in->hasData( Pointcloud::VERTEX_NORMAL );
+    bool use_color = pc_in->hasData( Pointcloud::VERTEX_COLOR );
+
     // copy to CGAL structure
-    if( pc_in->hasData( Pointcloud::VERTEX_NORMAL ) )
+    if( use_normals )
     {
 	std::vector<Eigen::Vector3d> &normals( pc_in->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
 	for( size_t i=0;i<pc_in->vertices.size();i++ )
@@ -142,14 +145,29 @@ bool SimplifyPointcloud::updateAll()
     }
 
     // copy back into pointcloud structure
-    std::vector<Eigen::Vector3d> &normals( pc_out->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL ) );
+    std::vector<Eigen::Vector3d> *normals = 0, *colors = 0, *colors_in = 0;
+    if( use_normals )
+	normals = &pc_out->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_NORMAL );
+    if( use_color )
+    {
+	colors = &pc_out->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_COLOR );
+	colors_in = &pc_in->getVertexData<Eigen::Vector3d>( Pointcloud::VERTEX_COLOR );
+    }
+
     for( size_t i=0;i<points.size();i++ )
     {
 	Point &vertex( points[i].get<1>() );
-	Vector &normal( points[i].get<2>() );
-
 	pc_out->vertices.push_back( Eigen::Vector3d( vertex.x(), vertex.y(), vertex.z() ) );
-	normals.push_back( Eigen::Vector3d( normal.x(), normal.y(), normal.z() ) );
+
+	if( use_normals )
+	{
+	    Vector &normal( points[i].get<2>() );
+	    normals->push_back( Eigen::Vector3d( normal.x(), normal.y(), normal.z() ) );
+	}
+	if( use_color )
+	{
+	    colors->push_back( colors_in->at( points[i].get<0>() ) );
+	}
     }
     std::cout << "copied points " << std::endl;
 
