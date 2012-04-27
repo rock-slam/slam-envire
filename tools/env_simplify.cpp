@@ -46,6 +46,7 @@ int main( int argc, char* argv[] )
     env->attachItem( mpc );
     env->setFrameNode( mpc, env->getRootNode() );
     merge->addOutput( mpc );
+    merge->setClearOutput( false );
 
     for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
@@ -70,6 +71,8 @@ int main( int argc, char* argv[] )
     simplify->setSimplifyCellSize( cell_size );
 
     simplify->updateAll();
+    env->detachItem( mpc );
+    env->detachItem( simplify );
 
     std::cout << "simplified pointcloud to " << mpcs->vertices.size() << " points" << std::endl;
 
