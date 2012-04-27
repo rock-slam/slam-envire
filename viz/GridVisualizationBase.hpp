@@ -4,6 +4,8 @@
 #include "EnvironmentItemVisualizer.hpp"
 #include <vector>
 #include <osg/Node>
+#include <envire/maps/GridBase.hpp>
+#include <boost/function.hpp>
 
 namespace envire {
 
@@ -17,10 +19,20 @@ class GridVisualizationBase : public EnvironmentItemVisualizer
 	virtual void highlightNode(envire::EnvironmentItem* item, osg::Group* group) const  {};
 	virtual void unHighlightNode(envire::EnvironmentItem* item, osg::Group* group) const  {};
 
+	class Color
+	{
+	public:
+	    unsigned char r;
+	    unsigned char g;
+	    unsigned char b;
+	};
+	
     protected:
 	void loadImageAsRectangle(osg::ref_ptr<osg::Geode> geode,
 			          osg::ref_ptr<osg::Image> image,
 			          float pos_x1,float pos_y1,float pos_x2,float pos_y2)const;
+				  
+	void showGridAsImage(osg::ref_ptr<osg::Geode> geode, envire::GridBase *grid, boost::function<bool (int x, int y, Color &ret)> colorForGridCoordinate) const;
 };
 
 }
