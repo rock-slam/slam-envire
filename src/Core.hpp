@@ -493,7 +493,7 @@ namespace envire
 	{
 	    std::map <std::string, envire::HolderBase* >::const_iterator it = data_map.find(type);
 	    if(it == data_map.end())
-		throw std::runtime_error("No band with name " + type + " available ");
+		throw std::runtime_error("No metadata with name " + type + " available ");
 	    
 	    return it->second->get<T>();
 	    /*
