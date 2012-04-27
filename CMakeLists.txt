@@ -4,8 +4,6 @@ include($ENV{ROCK_CMAKE_MACROS}/Rock.cmake)
 
 rock_init(envire 1.0)
 
-option( USE_CGAL "Switch on CGAL related functionality" OFF )
-
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
@@ -14,6 +12,14 @@ rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
 # such as CGAL does, setting BOOST_ROOT here 
 set(BOOST_ROOT "/usr/")
 find_package(Boost REQUIRED COMPONENTS filesystem thread system regex)
+
+option( USE_CGAL "Switch on CGAL related functionality" OFF )
+if ( USE_CGAL )
+    include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
+    if( CGAL_FOUND )
+	add_definitions( -DENVIRE_USE_CGAL )
+    endif()
+endif()
 
 rock_add_source_dir(icp icp)
 rock_standard_layout()
