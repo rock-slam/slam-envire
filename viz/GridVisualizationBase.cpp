@@ -15,7 +15,6 @@ namespace envire
 {
   osg::Group* GridVisualizationBase::getNodeForItem ( envire::EnvironmentItem* item ) const
   {
-    std::cout << "ElevationGridVisualization: getNodeForItem" << std::endl; 
     osg::ref_ptr<osg::Group> group = new osg::Group();
     osg::ref_ptr<osg::Geode> geode = new osg::Geode();
     group->addChild(geode.get());
@@ -93,8 +92,6 @@ void GridVisualizationBase::showGridAsImage(osg::ref_ptr< osg::Geode > geode, Gr
     int size = image_width*image_height*3;
     unsigned char* mydata = new unsigned char[size]; 
     Color c;
-    
-    std::cout << "Image size " << size << " width " << image_width << " height " << image_height << std::endl;
     
     for(size_t y = 0; y < image_height; y++)
     {
