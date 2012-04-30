@@ -36,7 +36,7 @@ bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret,
     assert(y < 1600);
     
     //sec color arcording to value of the field
-    uint8_t value = trGridData[x][y];
+    uint8_t value = trGridData[y][x];
     switch(value)
     {
 	case 0:
@@ -46,9 +46,9 @@ bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret,
 	    ret.b = 255;
 	    break;
 	case 1:
-	    //traversable
-	    ret.r = 0;
-	    ret.g = 255;
+	    //obstacle
+	    ret.r = 255;
+	    ret.g = 0;
 	    ret.b = 0;
 	    break;
 	default:
