@@ -90,6 +90,8 @@ install(FILES tools/GraphViz.hpp
     tools/GridAccess.hpp
     tools/Numeric.hpp
     tools/PlyFile.hpp
+    tools/GaussianMixture.hpp
+    tools/ExpectationMaximization.hpp
     DESTINATION include/envire/tools)
 
 if (USE_CGAL AND CGAL_FOUND)

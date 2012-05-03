@@ -15,3 +15,6 @@ rock_testsuite(testMLS testMLS.cpp
 rock_testsuite(testFeatures testFeatures.cpp
     DEPS envire-viz
     DEPS_PKGCONFIG vizkit)
+
+rock_testsuite(testGMMEM GMMEM.cpp
+    DEPS_PKGCONFIG vizkit)
