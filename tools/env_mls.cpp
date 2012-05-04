@@ -7,6 +7,7 @@
 #include "envire/operators/MLSProjection.hpp"
 
 #include "boost/scoped_ptr.hpp"
+#include <sstream>
 
 using namespace envire;
 using namespace std;
@@ -15,7 +16,7 @@ int main( int argc, char* argv[] )
 {
     if( argc < 3 ) 
     {
-	std::cout << "usage: env_mls input output [resolution] [variance] [gap_size] [patch_thickness]" << std::endl;
+	std::cout << "usage: env_mls input output [resolution] [variance] [gap_size] [patch_thickness] [\"min_x min_y max_x max_y\"]" << std::endl;
 	exit(0);
     }
     boost::scoped_ptr<Environment> env(Environment::unserialize( argv[1] ));
@@ -48,6 +49,19 @@ int main( int argc, char* argv[] )
 	patchThickness = boost::lexical_cast<double>( argv[6] );
 
     envire::Pointcloud::Extents extents;
+    string str_extends;
+    if( argc >= 8 )
+    {
+	str_extends = argv[7];
+	std::istringstream iss( str_extends );
+	iss >> extents.min().x()
+	    >> extents.min().y()
+	    >> extents.max().x()
+	    >> extents.max().y();
+	extents.min().z() = 0.0;
+	extents.max().z() = 1.0;
+    }
+
     std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
     for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
@@ -61,22 +75,27 @@ int main( int argc, char* argv[] )
 	}
 	proj->addInput( pc );
 
-	// rotate the extents to the grid frame, and extend the local grid 
-	// whith the extents corner
-	Eigen::Affine3d pc2grid = env->relativeTransform( pc->getFrameNode(), fm1 );
-	envire::Pointcloud::Extents pc_extents = pc->getExtents();
-	std::vector<Eigen::Vector3d> corners;
-	// go through all the permutations to get the corners
-	for( int i=0; i<8; i++ )
+	if( str_extends.empty() )
 	{
-	    Eigen::Vector3d corner;
-	    for( int j=0; j<3; j++ )
-		corner[j] = (i>>j)&1 ? pc_extents.min()[j] : pc_extents.max()[j];
-	    corners.push_back( corner );
-	}
+	    // when no extents are given, extract them from the pointcloud
 
-	for( std::vector<Eigen::Vector3d>::iterator it = corners.begin(); it != corners.end(); it++ )
-	    extents.extend( pc2grid * (*it) );
+	    // rotate the extents to the grid frame, and extend the local grid 
+	    // whith the extents corner
+	    Eigen::Affine3d pc2grid = env->relativeTransform( pc->getFrameNode(), fm1 );
+	    envire::Pointcloud::Extents pc_extents = pc->getExtents();
+	    std::vector<Eigen::Vector3d> corners;
+	    // go through all the permutations to get the corners
+	    for( int i=0; i<8; i++ )
+	    {
+		Eigen::Vector3d corner;
+		for( int j=0; j<3; j++ )
+		    corner[j] = (i>>j)&1 ? pc_extents.min()[j] : pc_extents.max()[j];
+		corners.push_back( corner );
+	    }
+
+	    for( std::vector<Eigen::Vector3d>::iterator it = corners.begin(); it != corners.end(); it++ )
+		extents.extend( pc2grid * (*it) );
+	}
     }
     if( extents.isNull() )
     {
