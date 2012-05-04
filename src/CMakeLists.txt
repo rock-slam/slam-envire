@@ -31,6 +31,7 @@ rock_library(envire
     maps/LaserScan.cpp
     maps/MLSGrid.cpp
     maps/MLSMap.cpp
+    maps/MapSegment.cpp
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
@@ -69,6 +70,7 @@ install(FILES maps/GridBase.hpp
     maps/Pointcloud.hpp
     maps/Featurecloud.hpp
     maps/TriMesh.hpp
+    maps/MapSegment.hpp
     DESTINATION include/envire/maps)
 
 install(FILES operators/MergeMLS.hpp

@@ -528,6 +528,9 @@ namespace envire
     class CartesianMap : public Layer
     {
     public:
+	typedef boost::intrusive_ptr<CartesianMap> Ptr; 
+
+    public:
 	static const std::string className;
 
 	CartesianMap(std::string const& id);
