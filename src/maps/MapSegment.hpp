@@ -20,7 +20,7 @@ public:
 
     /** @brief Add a map and its pose to the list of hypothesis stored by this map segment
      */
-    void addPart( const base::Affine3d& pose, CartesianMap* map );
+    void addPart( const base::Affine3d& pose, CartesianMap* map, double weight );
         
     /** @brief Update the gaussian mixture representation based on the poses in the
      * map segment
@@ -54,14 +54,20 @@ protected:
 	/** transform for the final pose of the hypothesis
 	 * to the origin of the segment.
 	 */
-	base::Affine3d pose;
+	base::Pose pose;
+
+	/** relative weight of the pose
+	 */
+	double weight;
     };
+
+    typedef GaussianMixture<double, 6> GMM;
 
     /** gaussian mixture representation of the pose distribution the individual
      * particles provide.
      * The representation is as 3d coordinates and rotation around z axis.
      */
-    GaussianMixture<double, 6> gmm;
+    GMM gmm;
 
     /** vector of map hypothesis of this segment
      */
