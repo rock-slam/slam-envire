@@ -2,6 +2,27 @@
 
 using namespace envire;
 
+void EventFilter::handle( const Event& message )
+{
+    handler->handle( message );
+}
+
+void EventHandler::receive( const Event& message )
+{
+    // if there is a filter apply and return if
+    // we are not allowed to pass the message
+    if( filter && !filter->filter( message ) )
+	return;
+
+    handle( message );
+}
+
+void EventHandler::setFilter( EventFilter* filter ) 
+{ 
+    this->filter = filter; 
+    filter->setHandler( this );
+}
+
 void EventDispatcher::itemAttached(EnvironmentItem *item) {}
 void EventDispatcher::itemDetached(EnvironmentItem *item) {}
 void EventDispatcher::childAdded(FrameNode* parent, FrameNode* child) {}
@@ -16,12 +37,7 @@ void EventDispatcher::itemModified(EnvironmentItem *item) {}
 
 void EventListener::handle( const Event& event )
 {
-    bool res = true;
-    if( filter )
-	res = filter->filter( event );
-
-    if( res )
-	dispatch( event.type, event.operation, event.a.get(), event.b.get(), this );
+    dispatch( event.type, event.operation, event.a.get(), event.b.get(), this );
 }
 
 void EventDispatcher::dispatch( event::Type type, event::Operation operation, EnvironmentItem* a, EnvironmentItem* b, EventDispatcher* disp )
@@ -58,13 +74,16 @@ void EventQueue::handle( const Event& message )
     std::list<Event>::iterator it = msgQueue.begin();
     // create a local copy of the event
     Event event(message);
-    event.ref();
+    event.ref( m_async );
+
     bool valid = true;
     while( it != msgQueue.end() )
     {
 	event::Result res = 
 	    event.merge( *it );
 
+	// either cancel or invalidate make the old event
+	// obsolete
 	if( res == event::CANCEL || res == event::INVALIDATE )
         {
 	    it = msgQueue.erase( it );
@@ -72,6 +91,7 @@ void EventQueue::handle( const Event& message )
         else
             ++it;
 
+	// cancel will also make the current event obsolete
 	if( res == event::CANCEL )
 	    valid = false;
     }

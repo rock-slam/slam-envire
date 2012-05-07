@@ -9,6 +9,8 @@
 
 #include <iostream>
 
+using namespace envire;
+
 osg::Group* TriMeshVisualization::getNodeForItem(envire::EnvironmentItem* item) const
 {
     osg::ref_ptr<osg::Group> group = new osg::Group();

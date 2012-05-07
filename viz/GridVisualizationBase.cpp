@@ -11,7 +11,7 @@
 #include <iostream>
 #include <osg/ShapeDrawable>
 
-namespace vizkit 
+namespace envire 
 {
   osg::Group* GridVisualizationBase::getNodeForItem ( envire::EnvironmentItem* item ) const
   {

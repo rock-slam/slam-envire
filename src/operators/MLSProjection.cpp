@@ -181,7 +181,7 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 	    const double stdev = sqrt(p_var);
 	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
 	    if( color )
-		patch.color = (*color)[i];
+		patch.setColor( (*color)[i] );
 	    grid->updateCell(xi, yi, patch);
 	}
     }

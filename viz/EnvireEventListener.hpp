@@ -11,7 +11,7 @@
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 
-namespace vizkit 
+namespace envire 
 {
 
 /** 
@@ -52,6 +52,7 @@ public:
     EnvireNode( envire::EnvironmentItem *item, EnvironmentItemVisualizer *viz );
     void addChildNode( osg::Group* child );
     void removeChildNode( osg::Group* child );
+    EnvironmentItemVisualizer* getVisualizer();
     void update();
     bool isDirty();
     void apply();
@@ -60,9 +61,12 @@ public:
     
 };
 
-class EnvireEventListener : public envire::EventListener
+class EnvireEventListener : public QObject, public envire::EventListener
 {
+    Q_OBJECT
+        
     typedef boost::function<void (osg::Node*)> nodeCallback;
+    typedef std::map<envire::EnvironmentItem*, osg::ref_ptr<EnvireNode> > mapType;
 
     public:
 	EnvireEventListener(nodeCallback add, nodeCallback remove);
@@ -93,6 +97,9 @@ class EnvireEventListener : public envire::EventListener
 	virtual void removeRootNode(envire::FrameNode* root);
 	
 	void apply();
+        
+    protected slots:
+        void propertyChangedInVizualization();
 
     protected:
 	boost::mutex mu;

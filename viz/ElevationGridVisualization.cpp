@@ -15,7 +15,7 @@
 static const double SCALING_MIN_VALUE = 0;	//in meters
 static const double SCALING_MAX_VALUE = 5;	//in meters
 
-namespace vizkit 
+namespace envire 
 {
     
   bool ElevationGridVisualization::handlesItem(envire::EnvironmentItem *item) const

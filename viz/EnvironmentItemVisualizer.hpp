@@ -15,9 +15,9 @@ namespace envire {
     class EnvironmentItem;
 }
 
-namespace vizkit {
+namespace envire {
     
-class EnvironmentItemVisualizer : public VizPluginBase
+class EnvironmentItemVisualizer : public vizkit::VizPluginBase
 {
     public:
         virtual void updateMainNode(osg::Node* node) {};

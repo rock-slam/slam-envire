@@ -59,32 +59,25 @@ Event::Event( event::Type type, event::Operation operation, EnvironmentItem::Ptr
 
 event::Result Event::merge( const Event& other )
 {
-    if( operation == event::UPDATE )
-    {
-	return (type == other.type && operation == other.operation && id_a == other.id_a && id_b == other.id_b) ? event::INVALIDATE : event::IGNORE;
-    }
-    if( operation == event::REMOVE )
-    {
-	switch( type )
-	{
-	    case event::FRAMENODE_TREE: 
-	    case event::FRAMENODE:
-	    case event::LAYER_TREE:
-		return (type == other.type && id_a == other.id_a && id_b == other.id_b) ? event::CANCEL : event::IGNORE;
-	    case event::ITEM: 
-		if( (id_a == other.id_a || id_a == other.id_b) && (other.operation == event::ADD || other.operation == event::UPDATE) )
-		    return (type == other.type && other.operation == event::ADD) ? event::CANCEL : event::INVALIDATE;
-		else
-		    return event::IGNORE;
-	    case event::ROOT:
-		return (type == other.type && id_a == other.id_a) ? event::CANCEL : event::IGNORE;
-	}
-    }
+    // overwrite event if its the same 
+    if(type == other.type && operation == other.operation && id_a == other.id_a && id_b == other.id_b) 
+	return event::INVALIDATE;
+
+    // adding and removing will cancel each other, if the events are otherwise the same
+    if( ((operation == event::REMOVE && other.operation == event::ADD)
+        || (operation == event::ADD && other.operation == event::REMOVE))
+	&& type == other.type && id_a == other.id_a && id_b == other.id_b )
+	return event::CANCEL;
+
+    // removing an item will also invalidate update events
+    if( (operation == event::REMOVE && other.operation == event::UPDATE)
+	&& type == other.type && id_a == other.id_a && id_b == other.id_b )
+	return event::INVALIDATE;
 
     return event::IGNORE;
 }
 
-void Event::ref()
+void Event::ref( bool clone )
 {
     // store unique id's
     if( a ) id_a = a->getUniqueId();
@@ -94,7 +87,9 @@ void Event::ref()
     {
 	// perform a copy of the EnvironmentItem in these cases
 	// and already set the unique_id to the source id
-	a = a->clone();
+	if( clone )
+	    a = a->clone();
+
 	a->unique_id = id_a;
 	b = 0;
     }
@@ -109,69 +104,133 @@ struct ApplyEventHelper : public EventDispatcher
 {
     const Event &event;
     Environment &env;
+    bool lenient;
 
-    ApplyEventHelper( const Event& event, Environment& env ) : event( event ), env( env ) {}
+    ApplyEventHelper( const Event& event, Environment& env ) : event( event ), env( env ), lenient( true ) {}
 
     void itemAttached(EnvironmentItem *item)
     {
-	// the root node is the only node to already exist
-	FrameNode* fn = dynamic_cast<FrameNode*>(item);
-	if( fn && fn->isRoot() )
+	if( item && (lenient || item == env.getRootNode()) )
+	{
+	    // item already exists, but we can just overwrite it
 	    item->set( event.a.get() );
+	}
 	else
 	{
+	    // doesn't exist yet, so attach it
 	    env.attachItem( event.a.get() );
 	}
     };
 
     void itemModified(EnvironmentItem *item)
     {
-	// for the time being copy the whole item
-	// TODO: implement partial updates
-	item->set( event.a.get() );
+	if( item )
+	{
+	    // for the time being copy the whole item
+	    // TODO: implement partial updates
+	    item->set( event.a.get() );
+	}
+	else if( lenient )
+	{
+	    // since it has not been present,
+	    // just add the map 
+	    env.attachItem( event.a.get() );
+	}
+	else
+	{
+	    throw std::runtime_error("Event could not be applied. Item does not exist in environment.");
+	}
 	
 	env.itemModified( item );
     }
 
     void itemDetached(EnvironmentItem *item)
     {
-        // the root node is the only node that should stay
-        FrameNode* fn = dynamic_cast<FrameNode*>(item);
-        if( fn && fn->isRoot() )
-            fn->setTransform(Eigen::Affine3d::Identity());
-        else
-        {
-            env.detachItem( item );
-        }
+	if( item && !(item == env.getRootNode()) )
+	{
+	    env.detachItem( item );
+	}
+	else if( !lenient )
+	{
+	    throw std::runtime_error("Event could not be applied. Item does not exist in environment.");
+	}
     }
 
     void childAdded(FrameNode* parent, FrameNode* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.addChild( parent, child );
     }
 
     void childAdded(Layer* parent, Layer* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.addChild( parent, child );
     }
 
     void frameNodeSet(CartesianMap* map, FrameNode* node)
     {
+	if( map == NULL || node == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.setFrameNode( map, node );
     }
 
     void frameNodeDetached(CartesianMap* map, FrameNode* node)
     {
+	if( map == NULL || node == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.detachFrameNode( map, node );
     }
 
     void childRemoved(FrameNode* parent, FrameNode* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.removeChild( parent, child );
     }
 
     void childRemoved(Layer* parent, Layer* child)
     {
+	if( parent == NULL || child == NULL )
+	{
+	    if( lenient )
+		return;
+	    else
+		throw std::runtime_error("Event could not be applied. Items missing for applying addChild relation.");
+	}
+
 	env.removeChild( parent, child );
     }
 

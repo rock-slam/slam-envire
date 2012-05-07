@@ -5,7 +5,7 @@
 #include <vector>
 #include <osg/Node>
 
-namespace vizkit 
+namespace envire 
 {
   class ImageRGB24Visualization : public GridVisualizationBase
   {

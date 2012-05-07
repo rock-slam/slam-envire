@@ -82,23 +82,23 @@ namespace envire
 	    };
 
 	    SurfacePatch() {};
-	    SurfacePatch( double mean, double stdev, double height = 0, TYPE type = HORIZONTAL )
+	    SurfacePatch( float mean, float stdev, float height = 0, TYPE type = HORIZONTAL )
 		: mean(mean), stdev(stdev), height(height), type(type), update_idx(0) {};
 
             /** Experimental code. Don't use it unless you know what you are
              * doing */
-	    double distance( const SurfacePatch& other ) const
+	    float distance( const SurfacePatch& other ) const
 	    {
 		if( !isHorizontal() && !other.isHorizontal() )
 		    return 0;
 		if( !isHorizontal() )
 		    return other.mean > mean ?
 			other.mean - mean :
-			std::max( 0.0, mean - height - other.mean);
+			std::max( 0.0f, mean - height - other.mean);
 		if( !other.isHorizontal() )
 		    return mean > other.mean ?
 			mean - other.mean :
-			std::max( 0.0, other.mean - other.height - mean);
+			std::max( 0.0f, other.mean - other.height - mean);
 		return std::abs( mean - other.mean );
 	    };
 
@@ -171,14 +171,26 @@ namespace envire
 		return type == NEGATIVE;
 	    }
 
+	    base::Vector3d getColor() const
+	    {
+		return base::Vector3d( color[0], color[1], color[2] ) / 255.0;
+	    }
+
+	    void setColor( const base::Vector3d& c )
+	    {
+		color[0] = c[0] * 255;
+		color[1] = c[1] * 255;
+		color[2] = c[2] * 255;
+	    }
+
             /** The mean Z value. This always represents the top of the patch,
              * regardless whether the patch is horizontal or vertical
              */
-	    double mean;
+	    float mean;
             /** The standard deviation in Z */
-	    double stdev;
+	    float stdev;
             /** For vertical patches, the height of the patch */
-	    double height;
+	    float height;
             /** Horizontal patches are just a mean and standard deviation.
              * Vertical patches also have a height, i.e. the patch is a vertical
              * block between z=(mean-height) and z
@@ -189,7 +201,7 @@ namespace envire
 
 	public:
 	    size_t update_idx;
-	    base::Vector3d color;
+	    uint8_t color[3];
 	};
 
     protected:

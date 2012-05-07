@@ -5,11 +5,11 @@
 #include <vizkit/EnvireVisualization.hpp>
 #include <envire/Core.hpp>
 
-namespace vizkit
+namespace envire
 {
 
 class EnvireWidget : 
-    public QVisualizationTestWidget<EnvireVisualization, envire::Environment*>
+    public vizkit::QVisualizationTestWidget<EnvireVisualization, envire::Environment*>
 {
     envire::Environment *env;
 

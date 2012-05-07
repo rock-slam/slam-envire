@@ -2,7 +2,7 @@
 #include <osg/Version>
 #include <Eigen/LU>
 
-namespace vizkit {
+namespace envire {
 
 FrameNodeSelection::FrameNodeSelection(envire::FrameNode *fn) :frameNode(fn)
 {

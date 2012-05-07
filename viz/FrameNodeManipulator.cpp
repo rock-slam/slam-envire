@@ -1,7 +1,9 @@
 #include "FrameNodeManipulator.hpp"
 
 
-vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::Group* pNode, osg::Group* group)
+using namespace envire;
+
+FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::Group* pNode, osg::Group* group)
 {
     parentNode = pNode;
     fr = dynamic_cast<envire::FrameNode *>(item);
@@ -9,7 +11,7 @@ vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item
 
     assert(fr && transform && parentNode);
     
-    selectionForFrameNode = new vizkit::FrameNodeSelection(fr);
+    selectionForFrameNode = new envire::FrameNodeSelection(fr);
     parentNode->addChild(selectionForFrameNode.get());
     
     translateDragger = new osgManipulator::TranslateAxisDragger();
@@ -45,7 +47,7 @@ vizkit::FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item
     cm->connect(*(translateDragger.get()), *(selectionForTrackball.get())); 
 }
 
-vizkit::FrameNodeManipulator::~FrameNodeManipulator()
+FrameNodeManipulator::~FrameNodeManipulator()
 {
     cm->disconnect(*(translateDragger.get()));
     cm->disconnect(*(rotateDragger.get()));

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 
-namespace vizkit {
+namespace envire {
 
 
 void TreeViewListener::itemClicked(QTreeWidgetItem* item, int column)

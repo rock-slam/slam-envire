@@ -339,5 +339,31 @@ BOOST_AUTO_TEST_CASE( env_eventsync )
     env->removeEventHandler( &ep );
 }
 
+BOOST_AUTO_TEST_CASE( env_metadata ) 
+{
+    Pointcloud::Ptr pout;
+
+    {
+	Pointcloud::Ptr pc = new Pointcloud();
+	std::vector<base::Vector3d> &vec = pc->getVertexData<base::Vector3d>("test");
+	BOOST_CHECK( pc->hasData("test") );
+	vec.push_back( base::Vector3d::Zero() );
+
+	pout = pc->clone();
+	BOOST_CHECK( pout->hasData("test") );
+
+	std::vector<base::Vector3d> &vec2 = pc->getVertexData<base::Vector3d>("test");
+	BOOST_CHECK( vec2.front() == base::Vector3d::Zero() );
+	pc->removeData("test");
+	BOOST_CHECK( !pc->hasData("test") );
+
+	std::vector<base::Vector3d> vec3 = pc->getVertexData<base::Vector3d>("test2");
+    }
+
+    BOOST_CHECK( pout->hasData("test") );
+    std::vector<base::Vector3d> &vec = pout->getVertexData<base::Vector3d>("test");
+    BOOST_CHECK( vec.front() == base::Vector3d::Zero() );
+}
+
 // EOF
 //

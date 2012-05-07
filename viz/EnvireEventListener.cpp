@@ -1,8 +1,6 @@
 #include "EnvireEventListener.hpp"
 
-using namespace envire;
-
-namespace vizkit 
+namespace envire 
 {
 
 EnvireNode::EnvireNode( EnvironmentItem *item, EnvironmentItemVisualizer *viz )
@@ -95,10 +93,14 @@ void EnvireNode::apply()
     }
 }
 
+EnvironmentItemVisualizer* EnvireNode::getVisualizer()
+{
+    return viz;
+}
+
 void EnvireEventListener::apply()
 {
     boost::mutex::scoped_lock lock(mu);
-    typedef std::map<envire::EnvironmentItem*, osg::ref_ptr<EnvireNode> > mapType;
     for( mapType::iterator it=environmentToNode.begin(); it!=environmentToNode.end(); it++ )
     {
 	// perform the swap between front and back if needed
@@ -258,6 +260,20 @@ void EnvireEventListener::itemModified ( envire::EnvironmentItem* item )
 	return;
 
     environmentToNode[item]->update();
-}    
+}  
+
+void EnvireEventListener::propertyChangedInVizualization()
+{
+    QObject* obj = QObject::sender();
+    EnvironmentItemVisualizer* visualizer = dynamic_cast<EnvironmentItemVisualizer*>(obj);
+    if(visualizer)
+    {
+        for( mapType::iterator it=environmentToNode.begin(); it!=environmentToNode.end(); it++ )
+        {
+            if(it->second->getVisualizer() == visualizer)
+                it->second->update();
+        }
+    }
+}
     
 }

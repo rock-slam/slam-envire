@@ -632,7 +632,7 @@ void BinarySerialization::applyEvents(envire::Environment* env,
         const std::vector<EnvireBinaryEvent>& events)
 {
     BinarySerialization serialization;
-    for (int i = 0; i < events.size(); ++i)
+    for (size_t i = 0; i < events.size(); ++i)
         serialization.applyEvent(env, events[i]);
 }
 
@@ -787,39 +787,95 @@ void BinarySerialization::cleanUp()
 
 void SynchronizationEventHandler::handle(const envire::Event& message)
 {
-    if(use_event_queue)
+    if(m_useEventQueue)
     {
+	// queue messages
         EventQueue::handle(message);
     }
     else
     {
+	// flush any remaining messages in the queue
         if(msgQueue.size())
             flush();
+
+	// process will add the relveant binary messages to the msg_buffer
         process(message);
+
+	// which is then passed to the callback
+	handle(msg_buffer);
+	msg_buffer.clear();
     }
 }
 
 void SynchronizationEventHandler::process(const envire::Event& message)
 {
-    // if there is a filter, see if the event gets filtered out
-    if( filter && !filter->filter( message ) )
-        return;
+    // add the event to the binary buffer 
+    addBinaryEvent( message );
 
+    // context updates provide additional and likely redundant information
+    // on the item and emit additional binary events, so that reconstruction
+    // from partial data is easier
+    if( m_useContextUpdates )
+    {
+	if( message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
+	{
+	    EnvironmentItem *item = message.a.get();
+	    // we might actually be working on a copy of the original item
+	    // in case the event got queued. For this reason, try to get the
+	    // original item back
+	    if( !item ) 
+		item = m_env->getItem( message.id_a ).get();
+
+	    // in case we have a cartesian map, also provide the full framenode
+	    // information for it
+	    CartesianMap *map = dynamic_cast<CartesianMap*>( item );
+	    if( map )
+	    {
+		// add all framenodes (as update events)
+		FrameNode *fn = map->getFrameNode(), *child = NULL;
+		while( fn )
+		{
+		    addBinaryEvent( Event( event::ITEM, event::UPDATE, fn ) );
+		    if( child )
+			addBinaryEvent( Event( event::FRAMENODE_TREE, event::ADD, fn, child ) );
+
+		    child = fn;
+		    fn = fn->getParent();
+		}
+		addBinaryEvent( Event( event::FRAMENODE, event::ADD, map, map->getFrameNode() ) );
+	    }
+	}
+    }
+}
+
+void SynchronizationEventHandler::flush()
+{
+    // flush event queue
+    EventQueue::flush();
+    // notify and clear buffer
+    handle( msg_buffer );
+    msg_buffer.clear();
+}
+
+void SynchronizationEventHandler::addBinaryEvent( const envire::Event& message )
+{
     std::string id_a = message.a ? message.a->getUniqueId() : message.id_a;
     std::string id_b = message.b ? message.b->getUniqueId() : message.id_b;
     
-    EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, id_a, id_b);
-    
+    msg_buffer.push_back( EnvireBinaryEvent(message.type, message.operation, id_a, id_b) );
     if(message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
-    {
-        serialization.serializeBinaryEvent(message.a.get(), *binary_event);
-    }
-    
-    handle(binary_event);
+        serialization.serializeBinaryEvent(message.a.get(), msg_buffer.back());
 }
+    
 
 void SynchronizationEventHandler::useEventQueue(bool b)
 {
-    use_event_queue = b;
+    m_useEventQueue = b;
+}
+
+void SynchronizationEventHandler::useContextUpdates(Environment* env)
+{
+    m_env = env;
+    m_useContextUpdates = env;
 }
 

@@ -5,7 +5,7 @@
 #include <osgManipulator/Command>
 #include <envire/Core.hpp>
 
-namespace vizkit {
+namespace envire {
 
     
 /**

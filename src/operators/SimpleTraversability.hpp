@@ -87,7 +87,7 @@ namespace envire {
         /** The bands that should be used in the input layers */
         std::string input_bands[INPUT_COUNT];
 
-        envire::Grid<double>* getInputLayer(INPUT_DATA index) const;
+        envire::Grid<float>* getInputLayer(INPUT_DATA index) const;
         std::string getInputBand(INPUT_DATA index) const;
 
         // Note: no need to store the output layer as it is accessible from the
@@ -108,17 +108,17 @@ namespace envire {
                 double min_width,
                 double ground_clearance);
 
-        envire::Grid<double>* getSlopeLayer() const;
+        envire::Grid<float>* getSlopeLayer() const;
         std::string getSlopeBand() const;
-        void setSlope(envire::Grid<double>* grid, std::string const& band_name);
+        void setSlope(envire::Grid<float>* grid, std::string const& band_name);
 
-        envire::Grid<double>* getMaxStepLayer() const;
+        envire::Grid<float>* getMaxStepLayer() const;
         std::string getMaxStepBand() const;
-        void setMaxStep(envire::Grid<double>* grid, std::string const& band_name);
+        void setMaxStep(envire::Grid<float>* grid, std::string const& band_name);
 
-        envire::Grid<double>* getMaxForceLayer() const;
+        envire::Grid<float>* getMaxForceLayer() const;
         std::string getMaxForceBand() const;
-        void setMaxForce(envire::Grid<double>* grid, std::string const& band_name);
+        void setMaxForce(envire::Grid<float>* grid, std::string const& band_name);
 
         std::string getOutputBand() const;
         void setOutput(OutputLayer* grid, std::string const& band_name);

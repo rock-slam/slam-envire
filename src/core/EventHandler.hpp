@@ -15,6 +15,10 @@ class EventFilter
 {
 public:
     EventFilter() : handler(NULL) {}
+
+    /** @brief callback for eventfilter
+     * Should return true if the message can be passed
+     */
     virtual bool filter( envire::Event const& ) = 0;
 
     /** @brief this function will get called 
@@ -23,6 +27,10 @@ public:
     void setHandler( EventHandler* handler ) { this->handler = handler; }
 
 protected:
+    /** @brief pass a message to the handler directly
+     */
+    void handle( const Event& message );
+
     EventHandler *handler;
 };
 
@@ -31,20 +39,24 @@ protected:
  */
 class EventHandler
 {
+    friend class EventFilter;
+
 public:
     EventHandler() : filter(NULL) {}
 
-    virtual void handle( const Event& message ) = 0;
+    /** @brief call this message to pass a message to the EventHandler
+     */
+    void receive( const Event& message );
 
     /** @brief set optional event filter
      */
-    void setFilter( EventFilter* filter ) 
-    { 
-	this->filter = filter; 
-	filter->setHandler( this );
-    }
+    void setFilter( EventFilter* filter );
 
 protected:
+    /** @brief callback method for possibly filtered events
+     */
+    virtual void handle( const Event& message ) = 0;
+    
     EventFilter* filter;
 };
 
@@ -87,13 +99,25 @@ class EventQueue : public EventHandler
 protected:
     std::list<Event> msgQueue;
     boost::mutex queueMutex;
+    bool m_async;
 
-public:
     /** Callback that is called by the environment as an event handler. You
      * should normally not reimplement this
      */
     void handle( const Event& message );
 
+public:
+    EventQueue() : m_async( false ) {}
+
+    /** @brief if set to true, the eventqueue will allow the
+     * messages to be processed in a different thread.
+     *
+     * Note: this does have a performance impact, since the messages
+     * need to create copies of the environment items, instead of 
+     * just referencing them. 
+     */
+    void allowMultithreading( bool allow ) { m_async = allow; }
+	
     /** Send all events currently stored in the queue to process
      */
     void flush();

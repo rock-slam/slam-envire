@@ -7,7 +7,6 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <Eigen/SVD>
 
 #include <boost/intrusive_ptr.hpp>
 #include <vector>
@@ -15,6 +14,8 @@
 
 #include <envire/core/EventSource.hpp>
 #include <envire/core/EventTypes.hpp>
+#include <envire/core/Transform.hpp>
+#include <envire/core/Holder.hpp>
 #include <base/samples/rigid_body_state.h>
 
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
@@ -30,18 +31,13 @@ static envire::SerializationPlugin<_classname> _classname ## factory;
 	    _classname* fn = dynamic_cast<_classname*>( other ); \
 	    if( fn ) \
 	    {\
-		_classname* t = dynamic_cast<_classname*>( this ); \
-		t->operator=( *fn );\
+		this->operator=( *fn );\
 	    }\
 	}\
 	typedef boost::intrusive_ptr<_classname> Ptr; \
 	_classname* clone() const \
 	{ \
-	    const _classname* fn = dynamic_cast<const _classname*>( this ); \
-	    if( fn )\
-		return new _classname( *fn );\
-	    else \
-		return NULL;\
+	    return new _classname( *this );\
 	}\
 	protected:\
 
@@ -57,62 +53,6 @@ namespace envire
     class EventHandler;
     class Event;
     class SerializationFactory;
-
-    /** Baseclass for generically holding pointer to objects, while still
-     * ensuring, that the destructor of that object is called, when the holder
-     * object is destructed.
-     */
-    class HolderBase
-    {
-    public:
-	virtual ~HolderBase() {};
-
-        template <typename T> bool isOfType() const;
-	template <typename T> T& get();
-    	template <typename T> const T& get() const;
-    };
-
-    /** Templated holder class, that will construct an object of type T,
-     * provide access to it, and also delete the object again when it is
-     * destroyed.
-     */
-    template <typename T>
-	class Holder : public HolderBase 
-    {
-	T* ptr;
-
-    public:
-	Holder()
-	{
-	    ptr = new T();
-	};
-
-	~Holder()
-	{
-	    delete ptr;
-	};
-
-	T* getData() const
-	{
-	    return ptr;
-	}
-    };
-
-    template <typename T> bool HolderBase::isOfType() const
-    {
-        Holder<T> const* myself = dynamic_cast< Holder<T> const* >(this);
-        return myself ? true : false;
-    }
-    template <typename T> T& HolderBase::get()
-    {
-        return *dynamic_cast< Holder<T>* >(this)->getData();
-    }
-
-    template <typename T> 
-    const T& HolderBase::get() const
-    {
-        return *dynamic_cast< Holder<T>* >(this)->getData();
-    }
 
     /** Base class for alle items that are defined in the envire framework.
      * Mainly handles the unique_id feature and the pointer to the environment
@@ -184,11 +124,13 @@ namespace envire
 
 	/** Creates a clone of this item. 
 	 */
-        virtual EnvironmentItem* clone() const { throw std::runtime_error("clone() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
+        virtual EnvironmentItem* clone() const { 
+	    throw std::runtime_error("clone() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
 
 	/** virtual assignemt of other value to this
 	 */
-	virtual void set( EnvironmentItem* other ) { throw std::runtime_error("set() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
+	virtual void set( EnvironmentItem* other ) { 
+	    throw std::runtime_error("set() not implemented. Did you forget to use the ENVIRONMENT_ITEM macro?."); }
 
 	/** will attach the newly created object to the given Environment.
 	 */ 
@@ -258,8 +200,6 @@ namespace envire
     void intrusive_ptr_add_ref( EnvironmentItem* item );
     void intrusive_ptr_release( EnvironmentItem* item );
     
-    typedef Eigen::Vector3d Point;
-    
     template<class T> EnvironmentItem* createItem(Serialization &so) 
     {
 	T* o = new T();
@@ -289,104 +229,6 @@ namespace envire
 	static void addClass( const std::string& className, Factory f );
     };
 
-    /** 
-     * Represents a point with associated uncertainty.
-     *
-     * The uncertainty is represented as a 3x3 covariance matrix.
-     */
-    class PointWithUncertainty
-    {
-    public:
-	typedef Eigen::Matrix<double,3,3> Covariance;
-
-    public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	PointWithUncertainty();
-	PointWithUncertainty( const Point& point );
-	PointWithUncertainty( const Point& point, const Covariance& cov );
-
-	const Covariance& getCovariance() const { return cov; }
-	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }
-	const Point& getPoint() const { return point; }
-	void setPoint( const Point& point ) { this->point = point; }
-
-	bool hasUncertainty() const { return uncertain; }
-
-    protected:
-	Point point;
-	Covariance cov;
-	bool uncertain;
-    };
-
-    /** 
-     * Class which is used to represent a 3D Transform.
-     *
-     * The transformation is represented as a 4x4 homogenous matrix. Both
-     * rotation and translation in 3D are represented.
-     */
-    typedef Eigen::Affine3d Transform;
-
-    /** 
-     * Class which represents a 3D Transform with associated uncertainty information.
-     *
-     * The uncertainty is represented as a 6x6 matrix, which is the covariance
-     * matrix of the [r t] representation of the error. Here r is the rotational
-     * part expressed as a scaled axis of rotation, and t the translational
-     * component.
-     *
-     * The uncertainty information is optional. The hasUncertainty() method can
-     * be used to see if uncertainty information is associated with the class.
-     */
-    class TransformWithUncertainty
-    {
-    public:
-	typedef Eigen::Matrix<double,6,6> Covariance;
-
-    public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	TransformWithUncertainty();
-	explicit TransformWithUncertainty( const base::samples::RigidBodyState& rbs );
-	explicit TransformWithUncertainty( const Transform& trans );
-	TransformWithUncertainty( const Transform& trans, const Covariance& cov );
-
-	static TransformWithUncertainty Identity();
-
-	/** performs a composition of this transform with the transform given.
-	 * The result is another transform with result = this * trans
-	 */
-	TransformWithUncertainty composition( const TransformWithUncertainty& trans ) const;
-
-	/** performs an inverse composition of two transformations.
-	 * The result is such that result * trans = this. Note that this is different from
-	 * calling result = this * inv(trans), in the way the uncertainties are handled.
-	 */
-	TransformWithUncertainty compositionInv( const TransformWithUncertainty& trans ) const;
-
-	/** Same as compositionInv, just that the trans * result = this.
-	 */
-	TransformWithUncertainty preCompositionInv( const TransformWithUncertainty& t2 ) const;
-
-	/** alias for the composition of two transforms
-	 */
-	TransformWithUncertainty operator*( const TransformWithUncertainty& trans ) const;
-	PointWithUncertainty operator*( const PointWithUncertainty& point ) const;
-	TransformWithUncertainty inverse() const;
-
-	TransformWithUncertainty& operator=( const base::samples::RigidBodyState& rbs );
-	void copyToRigidBodyState( base::samples::RigidBodyState& rbs ) const;
-
-	const Covariance& getCovariance() const { return cov; }
-	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }
-	const Transform& getTransform() const { return trans; }
-	void setTransform( const Transform& trans ) { this->trans = trans; }
-
-	bool hasUncertainty() const { return uncertain; }
-
-    protected:
-	Transform trans;
-	Covariance cov;
-	bool uncertain;
-    };
 
     /** An object of this class represents a node in the FrameTree. The
      * FrameTree has one root node (call to env->getRootNode()), which
@@ -508,6 +350,14 @@ namespace envire
 
     public:
 	static const std::string className;
+
+	/** @brief custom copy constructor required because of metadata handling.
+	 */
+	Layer(const Layer& other);
+
+	/** @brief custom assignment operator requried because of metadata.
+	 */
+	Layer& operator=(const Layer& other);
 
 	Layer(std::string const& id);
 	virtual ~Layer();
@@ -656,7 +506,13 @@ namespace envire
 	    */
 	};
 
+	/** @brief remove metadata with the specified identifier
+	 */
 	void removeData(const std::string& type);
+
+	/** @brief remove all metadata associated with this object
+	 */
+	void removeData();
     };
 
 

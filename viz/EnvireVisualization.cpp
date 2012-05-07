@@ -15,7 +15,7 @@
 #include <QString>
 #include <QAction>
 
-using namespace vizkit;
+using namespace envire;
 
 EnvireVisualization::EnvireVisualization()
     : m_handleDirty( true ), m_ownsEnvironment( false ), env( NULL )
@@ -42,9 +42,8 @@ EnvireVisualization::EnvireVisualization()
     {
         (*it)->setParent(this);
 	eventListener->addVisualizer( (*it).get() );
+        QObject::connect((*it).get(), SIGNAL(propertyChanged(QString)), eventListener.get(), SLOT(propertyChangedInVizualization()));
     }
-
-    VizPluginRubyConfig(EnvireVisualization, std::string, load);
 }
 
 EnvireVisualization::~EnvireVisualization()
@@ -104,7 +103,16 @@ void EnvireVisualization::updateMainNode(osg::Node* node)
     eventListener->apply();
 }
 
-void EnvireVisualization::updateBinaryEvent( envire::EnvireBinaryEvent const& binary_event )
+void EnvireVisualization::updateBinaryEvents( std::vector<envire::BinaryEvent> const& events )
+{
+    for( std::vector<envire::BinaryEvent>::const_iterator it = events.begin(); 
+	    it != events.end(); it++ )
+    {
+	updateBinaryEvent( *it );
+    }
+}
+
+void EnvireVisualization::updateBinaryEvent( envire::BinaryEvent const& binary_event )
 {
     // the only thing that needs to be locked against the osg thread
     // is the actual generation of the environment

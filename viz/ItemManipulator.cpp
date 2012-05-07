@@ -14,25 +14,27 @@
 
 #include <iostream>
 
-vizkit::ItemManipulator::ItemManipulator()
+using namespace envire;
+
+ItemManipulator::ItemManipulator()
 {
     activeItem = 0;
 }
 
-void vizkit::ItemManipulator::itemClicked(QTreeWidgetItem* item, int column)
+void ItemManipulator::itemClicked(QTreeWidgetItem* item, int column)
 {
     std::cout << "set selectedItem" << std::endl;
     //mw->getInstance()->selectedItem = tvl->getItemForWidget(item);
 }
 
-void vizkit::ItemManipulator::itemActivated(QTreeWidgetItem* item, int column)
+void ItemManipulator::itemActivated(QTreeWidgetItem* item, int column)
 {
     std::cout << "Got Activated " << item <<  std::endl;
-    static vizkit::FrameNodeManipulator *frameManipulator = NULL;
+    static FrameNodeManipulator *frameManipulator = NULL;
     
     
     if(activeItem) {
-	vizkit::EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(activeItem);
+	EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(activeItem);
 	if(viz) {
 	    osg::Group *osgGroup = eel->getNodeForItem(activeItem);
 	    viz->unHighlightNode(activeItem, osgGroup);
@@ -46,7 +48,7 @@ void vizkit::ItemManipulator::itemActivated(QTreeWidgetItem* item, int column)
     if(item) {
 	activeItem = tvl->getItemForWidget(item);
 	if(activeItem) {
-	    vizkit::EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(activeItem);
+	    EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(activeItem);
 	    if(viz) {
 		osg::Group *osgGroup = eel->getNodeForItem(activeItem);		
 		viz->highlightNode(activeItem, osgGroup);
@@ -58,7 +60,7 @@ void vizkit::ItemManipulator::itemActivated(QTreeWidgetItem* item, int column)
     }
 }
 
-void vizkit::ItemManipulator::itemChanged(QTreeWidgetItem* item, int column)
+void ItemManipulator::itemChanged(QTreeWidgetItem* item, int column)
 {
     if(column == 0) 
     {
@@ -76,7 +78,7 @@ void vizkit::ItemManipulator::itemChanged(QTreeWidgetItem* item, int column)
 /*
 * This function hides all in TreeWidget selectet items using the hideItem function.
 */
-void vizkit::ItemManipulator::hideSelectedItems()
+void ItemManipulator::hideSelectedItems()
 {
     QList<QTreeWidgetItem*> itemList = tvl->getSelectetWidgets();
     for(QList<QTreeWidgetItem*>::iterator it = itemList.begin(); it != itemList.end(); it++) 
@@ -88,7 +90,7 @@ void vizkit::ItemManipulator::hideSelectedItems()
 /*
 * This function unhides all in TreeWidget selectet items using the unhideItem function.
 */
-void vizkit::ItemManipulator::unhideSelectedItems()
+void ItemManipulator::unhideSelectedItems()
 {
     QList<QTreeWidgetItem*> itemList = tvl->getSelectetWidgets();
     for(QList<QTreeWidgetItem*>::iterator it = itemList.begin(); it != itemList.end(); it++) 
@@ -100,14 +102,14 @@ void vizkit::ItemManipulator::unhideSelectedItems()
 /*
 * Hides the osg representation of the given QTreeWidgetItem.
 */
-void vizkit::ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
+void ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
 {
     envire::EnvironmentItem* item = tvl->getItemForWidget(widgetItem);
     envire::FrameNode* frameNode = dynamic_cast<envire::FrameNode *>(item);
     if(frameNode) 
     {
         widgetItem->setCheckState(0,Qt::Unchecked);
-        vizkit::EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(item);
+        EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(item);
         if (viz) 
         {
             osg::Group *osgGroup = eel->getParentNodeForItem(item);
@@ -119,14 +121,14 @@ void vizkit::ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
 /*
 * Unhides the osg representation of the given QTreeWidgetItem.
 */
-void vizkit::ItemManipulator::unhideItem(QTreeWidgetItem* widgetItem)
+void ItemManipulator::unhideItem(QTreeWidgetItem* widgetItem)
 {
     envire::EnvironmentItem* item = tvl->getItemForWidget(widgetItem);
     envire::FrameNode* frameNode = dynamic_cast<envire::FrameNode *>(item);
     if(frameNode) 
     {
         widgetItem->setCheckState(0,Qt::Checked);
-        vizkit::EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(item);
+        EnvironmentItemVisualizer *viz = eel->getVisualizerForItem(item);
         if (viz) 
         {
             osg::Group *osgGroup = eel->getParentNodeForItem(item);
@@ -135,7 +137,7 @@ void vizkit::ItemManipulator::unhideItem(QTreeWidgetItem* widgetItem)
     }
 }
 
-void vizkit::ItemManipulator::removeSelectedItems()
+void ItemManipulator::removeSelectedItems()
 {
     QList<QTreeWidgetItem*> itemList = tvl->getSelectetWidgets();
     for(QList<QTreeWidgetItem*>::iterator it = itemList.begin(); it != itemList.end(); it++) 

@@ -4,7 +4,9 @@
 #include "EnvironmentItemVisualizer.hpp"
 #include <osg/Geometry>
 
-class MLSVisualization : public vizkit::EnvironmentItemVisualizer
+namespace envire
+{
+class MLSVisualization : public EnvironmentItemVisualizer
 {
     Q_OBJECT
 
@@ -58,5 +60,6 @@ class MLSVisualization : public vizkit::EnvironmentItemVisualizer
 	bool estimateNormals;
 	bool cycleHeightColor;
 };
+}
 
 #endif // POINTCLOUDVISUALIZATION_H

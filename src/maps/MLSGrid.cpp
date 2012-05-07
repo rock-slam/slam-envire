@@ -81,12 +81,12 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 		    insertTail( xi, yi, *it );
 	    }
 	}
-    }
 
-    gapSize = other.gapSize;
-    thickness = other.thickness;
-    cellcount = other.cellcount;
-    hasCellColor_ = other.hasCellColor_;
+	gapSize = other.gapSize;
+	thickness = other.thickness;
+	cellcount = other.cellcount;
+	hasCellColor_ = other.hasCellColor_;
+    }
 
     return *this;
 }
@@ -123,21 +123,25 @@ void MLSGrid::unserialize(Serialization& so)
 	hasCellColor_ = false;
 
     cells.resize( boost::extents[cellSizeX][cellSizeY] );
-    try { readMap( so.getBinaryInputStream(getMapFileName() + ".mls") ); }
-    catch(...)
+    std::string filename = getMapFileName() + ".mls";
+
+    std::istream *is;
+    try 
     {
-        // Try with MultiLevelSurfaceGrid (backward compatibility)
-        try {
-	    readMap( so.getBinaryInputStream(getMapFileName("envire::MultiLevelSurfaceGrid") + ".mls"));
-	    return;
-	}
-        catch(Serialization::NoSuchBinaryStream)
-        { 
-            // Assume that serialization is being used as a factory
-            return;
-        }
-        catch(...) { throw; }
+	is = &so.getBinaryInputStream(getMapFileName() + ".mls");
     }
+    catch(Serialization::NoSuchBinaryStream)
+    { 
+	try
+	{
+	    is = &so.getBinaryInputStream(getMapFileName("envire::MultiLevelSurfaceGrid") + ".mls");
+	}
+	catch(Serialization::NoSuchBinaryStream)
+	{
+	    throw std::runtime_error("Could not get input stream for MLS.");
+	}
+    }
+    readMap( *is );
 }
 
 // memory structure of version 1.0
@@ -177,7 +181,28 @@ struct SurfacePatchStore11
 	typedef envire::MLSGrid::SurfacePatch sp;
 	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
 	p.update_idx = update_idx;
-	p.color = color;
+	p.setColor( color );
+	return p;
+    }
+};
+
+struct SurfacePatchStore12
+{
+    float mean;
+    float stdev;
+    float height;
+    bool horizontal;
+    size_t update_idx;
+    uint8_t color[3];
+
+    size_t xi, yi;
+
+    MLSGrid::SurfacePatch toSurfacePatch()
+    {
+	typedef envire::MLSGrid::SurfacePatch sp;
+	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	p.update_idx = update_idx;
+	std::copy( color, color+3, p.color );
 	return p;
     }
 };
@@ -195,7 +220,7 @@ struct SurfacePatchStore : MLSGrid::SurfacePatch
 void MLSGrid::writeMap(std::ostream& os)
 {
     os << "mls" << std::endl;
-    os << "1.1" << std::endl;
+    os << "1.2" << std::endl;
     os << sizeof( SurfacePatchStore ) << std::endl;
     os << "bin" << std::endl;
 
@@ -221,7 +246,7 @@ void MLSGrid::readMap(std::istream& is)
 
     is.getline(c, 20);
     std::string version = std::string(c);
-    if( version != "1.0" && version != "1.1" )
+    if( version != "1.0" && version != "1.1" && version != "1.2" )
 	throw std::runtime_error("version not supported " + version );
 
     is.getline(c, 20);
@@ -233,6 +258,11 @@ void MLSGrid::readMap(std::istream& is)
     else if( version == "1.1" )
     {
 	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore11 ) )
+	    throw std::runtime_error("binary size mismatch");
+    }
+    else if( version == "1.2" )
+    {
+	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore12 ) )
 	    throw std::runtime_error("binary size mismatch");
     }
 
@@ -252,6 +282,14 @@ void MLSGrid::readMap(std::istream& is)
     {
 	SurfacePatchStore11 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore11 ) ) )
+	{
+	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
+	}
+    }
+    else if( version == "1.2" )
+    {
+	SurfacePatchStore12 d;
+	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore12 ) ) )
 	{
 	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
 	}
@@ -508,7 +546,7 @@ bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 	p.update_idx = std::max( p.update_idx, o.update_idx );
 
 	if( hasCellColor_ )
-	    p.color = (p.color + o.color)/2.0;
+	    p.setColor( (p.getColor() + o.getColor()) / 2.0 );
 
 	return true;
     }
