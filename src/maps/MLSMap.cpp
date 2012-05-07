@@ -6,7 +6,20 @@ ENVIRONMENT_ITEM_DEF( MLSMap )
 
 Eigen::AlignedBox<double, 2> MLSMap::getExtents() const 
 { 
-    throw std::runtime_error("not implemented"); 
+    // combine the extents of the children of this map
+    Eigen::AlignedBox<double, 2> extents;
+
+    std::list<const Layer*> children = env->getChildren( this );
+    for( std::list<const Layer*>::const_iterator it = children.begin(); it != children.end(); it++ )
+    {
+	const envire::MLSGrid *grid = dynamic_cast<const envire::MLSGrid*>( *it );
+	// currently this assumes that child grids are not rotated
+	// TODO handle rotated child grids here
+	Eigen::Affine3d g2m = grid->getFrameNode()->relativeTransform( this->getFrameNode() );
+	extents.extend( grid->getExtents().translate( g2m.translation().head<2>() ) );
+    }
+
+    return extents;
 }
 
 MLSMap::MLSMap()

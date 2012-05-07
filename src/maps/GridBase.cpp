@@ -5,12 +5,15 @@ using namespace envire;
 
 const std::string GridBase::className = "envire::GridBase";
 
-GridBase::GridBase()
-    : cellSizeX(0), cellSizeY(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
+GridBase::GridBase(std::string const& id)
+    : Map<2>(id)
+    , cellSizeX(0), cellSizeY(0), scalex(0), scaley(0), offsetx(0), offsety(0) {}
 
 GridBase::GridBase(size_t cellSizeX, size_t cellSizeY,
-        double scalex, double scaley, double offsetx, double offsety)
-    : cellSizeX(cellSizeX), cellSizeY(cellSizeY)
+        double scalex, double scaley, double offsetx, double offsety,
+        std::string const& id)
+    : Map<2>(id)
+    , cellSizeX(cellSizeX), cellSizeY(cellSizeY)
     , scalex(scalex), scaley(scaley)
     , offsetx(offsetx), offsety(offsety)
 {
@@ -125,8 +128,8 @@ bool GridBase::contains( const Position& pos ) const
         
 GridBase::Extents GridBase::getExtents() const
 {
-    // TODO provide proper extents
-    return Extents( Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
+    Eigen::Vector2d min( offsetx, offsety );
+    return Extents( min, min + Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
 }
 
 template<typename T>
@@ -224,6 +227,45 @@ GridBase::Ptr GridBase::create(std::string const& type_name,
     so.write("map_count", 0);
     EnvironmentItem::Ptr ptr = SerializationFactory::createObject(type_name, so);
     so.end();
+    ptr->setUniqueId("");
     return boost::dynamic_pointer_cast<GridBase>(ptr);
+}
+
+bool GridBase::isCellAlignedWith(GridBase const& grid) const
+{
+    if (getScaleX() != grid.getScaleX() ||
+        getScaleY() != grid.getScaleY() )
+	return false;
+
+    // see if the difference of the world position of the 0 grid cells is a
+    // multiple of the cell scale
+    Eigen::Vector3d rootDiff = 
+	fromGrid( 0, 0, getEnvironment()->getRootNode() )
+	 -grid.fromGrid( 0, 0, grid.getEnvironment()->getRootNode() );
+    Eigen::Vector3d cellDiff = 
+	(rootDiff.array() * Eigen::Array3d( 1.0/getScaleX(), 1.0/getScaleY(), 0 )).matrix();
+
+    if( !(cellDiff.cast<int>().cast<double>() - cellDiff).isZero() )
+	return false;
+
+    return true;
+}
+
+bool GridBase::isAlignedWith(GridBase const& grid) const
+{
+    if (getCellSizeX() != grid.getCellSizeX() ||
+        getCellSizeY() != grid.getCellSizeY() ||
+        getOffsetX() != grid.getOffsetX() ||
+        getOffsetY() != grid.getOffsetY())
+        return false;
+
+    FrameNode::TransformType tf = getEnvironment()->relativeTransform(this, &grid);
+    base::Vector3d p(grid.getCellSizeX(), grid.getCellSizeY(), 0);
+    p = tf * p;
+    if (rint(p.x()) != grid.getCellSizeX() ||
+            rint(p.y()) != grid.getCellSizeY())
+        return false;
+
+    return true;
 }
 

@@ -14,9 +14,6 @@ void EventDispatcher::setRootNode(FrameNode *root) {}
 void EventDispatcher::removeRootNode(FrameNode *root) {}
 void EventDispatcher::itemModified(EnvironmentItem *item) {}
 
-EventListener::EventListener()
-    : filter(NULL) {}
-
 void EventListener::handle( const Event& event )
 {
     bool res = true;
@@ -61,6 +58,7 @@ void EventQueue::handle( const Event& message )
     std::list<Event>::iterator it = msgQueue.begin();
     // create a local copy of the event
     Event event(message);
+    event.ref();
     bool valid = true;
     while( it != msgQueue.end() )
     {
@@ -68,17 +66,18 @@ void EventQueue::handle( const Event& message )
 	    event.merge( *it );
 
 	if( res == event::CANCEL || res == event::INVALIDATE )
+        {
 	    it = msgQueue.erase( it );
+        }
+        else
+            ++it;
 
 	if( res == event::CANCEL )
 	    valid = false;
-
-	++it;
     }
 
     if( valid )
     {
-	event.ref();
 	msgQueue.push_back( event );
     }
 }

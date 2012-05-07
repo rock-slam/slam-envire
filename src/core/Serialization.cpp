@@ -294,7 +294,7 @@ std::ostream& FileSerialization::getBinaryOutputStream(const std::string &filena
     std::ofstream *os = new std::ofstream(fileDir.string().c_str());
     if( !os->is_open() || os->fail() )
     {
-        throw std::runtime_error("could not open file " + filename);
+        throw NoSuchBinaryStream("could not open file " + filename);
     }
     ofstreams.push_back(os);
     return *os;
@@ -434,6 +434,19 @@ bool FileSerialization::writeToFile( Environment *env, const std::string &path )
     return result;
 }
 
+template<typename MapType>
+static MapType* getMap(YAMLSerializationImpl* yaml, Environment* env, const char* key)
+{
+    std::string map_id = yaml->getScalarInMap<std::string>(key);
+    if (*map_id.begin() != '/')
+        map_id = "/" + map_id;
+
+    MapType* map = env->getItem<MapType>(map_id).get();
+    if (!map)
+        throw std::runtime_error("cannot find map " + map_id + " in scene");
+    return map;
+}
+
 Environment* FileSerialization::readFromFile( const std::string& path )
 {
     Environment* env;
@@ -499,13 +512,22 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 
 			env->attachItem( envItem );
 			//hack to preserve root node
-			if(envItem->getUniqueId() == 0) {
+			if(envItem->getUniqueId() == "0" || envItem->getUniqueId() == "/0") {
 			    env->rootNode = dynamic_cast<FrameNode *>(envItem);
 			    assert(env->rootNode);
 			}
-
-			if(envItem->getUniqueId() > lastID)
-			    lastID = envItem->getUniqueId();
+			
+                        std::string currentID = envItem->getUniqueIdSuffix();
+                        // If this is a number, make sure that we update lastID
+                        // properly
+                        try
+                        {
+                            long id = boost::lexical_cast<long>(currentID);
+                            if(id > lastID)
+                                lastID = id;
+                        }
+                        catch(boost::bad_lexical_cast)
+                        { }
 		    }
 		    else if( key == "links" )
 		    {
@@ -514,36 +536,36 @@ Environment* FileSerialization::readFromFile( const std::string& path )
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "frameNodeTree" )
 			{
 			    env->frameNodeTree.insert( make_pair( 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<long>("child") ).get(), 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<long>("parent") ).get() ) );
+					getMap<FrameNode>(yamlSerialization, env, "child"), 
+					getMap<FrameNode>(yamlSerialization, env, "parent") ) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "layerTree" )
 			{
 			    env->layerTree.insert( make_pair( 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("child") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("parent") ).get() ) );
+                                        getMap<Layer>(yamlSerialization, env, "child"),
+                                        getMap<Layer>(yamlSerialization, env, "parent") ));
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "operatorGraphInput" )
 			{
 			    env->operatorGraphInput.insert( make_pair( 
-					env->getItem<Operator>( yamlSerialization->getScalarInMap<long>("operator") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("layer") ).get() ) );
+                                        getMap<Operator>(yamlSerialization, env, "operator"),
+                                        getMap<Layer>(yamlSerialization, env, "layer")) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "operatorGraphOutput" )
 			{
 			    env->operatorGraphOutput.insert( make_pair( 
-					env->getItem<Operator>( yamlSerialization->getScalarInMap<long>("operator") ).get(), 
-					env->getItem<Layer>( yamlSerialization->getScalarInMap<long>("layer") ).get() ) );
+                                        getMap<Operator>(yamlSerialization, env, "operator"),
+                                        getMap<Layer>(yamlSerialization, env, "layer")) );
 			}
 
 			if( yamlSerialization->getScalarInMap<std::string>("type") == "cartesianMapGraph" )
 			{
 			    env->cartesianMapGraph.insert( make_pair( 
-					env->getItem<CartesianMap>( yamlSerialization->getScalarInMap<long>("map") ).get(), 
-					env->getItem<FrameNode>( yamlSerialization->getScalarInMap<long>("node") ).get() ) );
+                                        getMap<CartesianMap>(yamlSerialization, env, "map"),
+                                        getMap<FrameNode>(yamlSerialization, env, "node")) );
 			}
 		    }
 		}
@@ -606,12 +628,39 @@ std::ostream& BinarySerialization::getBinaryOutputStream(const std::string &file
     return *ostream;
 }
 
-EnvironmentItem* BinarySerialization::unserializeBinaryEvent(EnvireBinaryEvent& bin_item)
+void BinarySerialization::applyEvents(envire::Environment* env,
+        const std::vector<EnvireBinaryEvent>& events)
+{
+    BinarySerialization serialization;
+    for (int i = 0; i < events.size(); ++i)
+        serialization.applyEvent(env, events[i]);
+}
+
+void BinarySerialization::applyEvent(envire::Environment* env, const EnvireBinaryEvent& binary_event)
+{
+    EnvironmentItem* item = 0;
+    if(binary_event.type == event::ITEM && (binary_event.operation == event::ADD || binary_event.operation == event::UPDATE ))
+    {
+        // unserialize item
+        item = unserializeBinaryEvent(binary_event);
+    }
+    
+    // set up event
+    EnvironmentItem::Ptr item_ptr(item);
+    envire::Event event(binary_event.type, binary_event.operation, item_ptr);
+    event.id_a = binary_event.id_a;
+    event.id_b = binary_event.id_b;
+    
+    // apply event
+    event.apply(env);
+}
+
+EnvironmentItem* BinarySerialization::unserializeBinaryEvent(const EnvireBinaryEvent& bin_item)
 {
     // set up yaml document
     yaml_parser_initialize(&yamlSerialization->parser);
     
-    yaml_parser_set_input_string(&yamlSerialization->parser, reinterpret_cast<unsigned char*>(bin_item.yamlProperties.data()), bin_item.yamlProperties.size());
+    yaml_parser_set_input_string(&yamlSerialization->parser, reinterpret_cast<const unsigned char*>(bin_item.yamlProperties.data()), bin_item.yamlProperties.size());
     if(!yaml_parser_load(&yamlSerialization->parser, &yamlSerialization->document))
     {
         yaml_parser_delete(&yamlSerialization->parser);
@@ -646,7 +695,7 @@ EnvironmentItem* BinarySerialization::unserializeBinaryEvent(EnvireBinaryEvent& 
         if(bin_item.binaryStreams.size() > i)
         {
             std::stringstream *istream = new std::stringstream();
-            std::vector<uint8_t> &bin_stream = bin_item.binaryStreams[i];
+            const std::vector<uint8_t> &bin_stream = bin_item.binaryStreams[i];
             std::copy(bin_stream.begin(), bin_stream.end(), ostream_iterator<uint8_t>(*istream));
             stringstreams[bin_item.binaryStreamNames[i]] = istream;
         }
@@ -665,6 +714,8 @@ EnvironmentItem* BinarySerialization::unserializeBinaryEvent(EnvireBinaryEvent& 
 
 bool BinarySerialization::serializeBinaryEvent(EnvironmentItem* item, EnvireBinaryEvent& bin_item)
 {
+    assert(item);
+    
     bin_item.className = item->getClassName();
     bin_item.yamlProperties.clear();
     bin_item.binaryStreamNames.clear();
@@ -736,8 +787,27 @@ void BinarySerialization::cleanUp()
 
 void SynchronizationEventHandler::handle(const envire::Event& message)
 {
-    long id_a = message.a ? message.a->getUniqueId() : message.id_a;
-    long id_b = message.b ? message.b->getUniqueId() : message.id_b;
+    if(use_event_queue)
+    {
+        EventQueue::handle(message);
+    }
+    else
+    {
+        if(msgQueue.size())
+            flush();
+        process(message);
+    }
+}
+
+void SynchronizationEventHandler::process(const envire::Event& message)
+{
+    // if there is a filter, see if the event gets filtered out
+    if( filter && !filter->filter( message ) )
+        return;
+
+    std::string id_a = message.a ? message.a->getUniqueId() : message.id_a;
+    std::string id_b = message.b ? message.b->getUniqueId() : message.id_b;
+    
     EnvireBinaryEvent* binary_event = new EnvireBinaryEvent(message.type, message.operation, id_a, id_b);
     
     if(message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
@@ -747,3 +817,9 @@ void SynchronizationEventHandler::handle(const envire::Event& message)
     
     handle(binary_event);
 }
+
+void SynchronizationEventHandler::useEventQueue(bool b)
+{
+    use_event_queue = b;
+}
+

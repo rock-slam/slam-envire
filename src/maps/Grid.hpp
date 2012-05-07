@@ -63,8 +63,6 @@ namespace envire
         std::map<std::string, T> nodata;
 
     protected:	
-	Grid(Serialization& so,const std::string &class_name);
-
         /** @deprecated
          *
          * This is used to re-read maps that were serialized before the Grid
@@ -82,10 +80,12 @@ namespace envire
     public:
         typedef boost::intrusive_ptr< Grid<T> > Ptr;
 
-	Grid() {}
+	Grid(std::string const& id = Environment::ITEM_NOT_ATTACHED)
+            : GridBase(id) {}
 	Grid(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
-                double offsetx = 0.0, double offsety = 0.0);
+                double offsetx = 0.0, double offsety = 0.0,
+                std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	~Grid();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
@@ -272,6 +272,15 @@ namespace envire
 	GDALDataType getGDALDataTypeOfArray();
 
     };
+
+    /* Explicit instanciations in Grids.cpp for the purpose of serialization */
+    extern template class Grid<double>;
+    extern template class Grid<float>;
+    extern template class Grid<uint8_t>;
+    extern template class Grid<int16_t>;
+    extern template class Grid<uint16_t>;
+    extern template class Grid<int32_t>;
+    extern template class Grid<uint32_t>;
     
     //set unique class name for each template type
     #define GRID_DATA_VALUE "grid_data"
@@ -287,8 +296,10 @@ namespace envire
     template <class T> const std::vector<std::string> & Grid<T>::bands = initbands<T>();
  
     
-    template<class T>Grid<T>::Grid(size_t cellSizeX, size_t cellSizeY, double scalex, double scaley, double offsetx, double offsety ) :
-	GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
+    template<class T>Grid<T>::Grid(size_t cellSizeX, size_t cellSizeY,
+            double scalex, double scaley, double offsetx, double offsety,
+            std::string const& id) :
+	GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety, id )
     {
       static bool initialized = false;
       if(!initialized)
@@ -304,11 +315,6 @@ namespace envire
       }
     }
     
-    //this is for initializing CartesianMap from a child class without loading GridData
-    template<class T>Grid<T>::Grid(Serialization& so,const std::string &class_name)
-      : GridBase(so)
-    {
-    }
     template<class T>Grid<T>::~Grid()
     {
       
@@ -462,6 +468,9 @@ namespace envire
 	poDstDS = poDriver->Create( path.c_str(), cellSizeX, cellSizeY,
                 keys.size(), data_type, 
 		papszOptions );
+
+        if (!poDstDS)
+            throw std::runtime_error("failed to create file " + path);
 
 	if(getEnvironment())
 	{

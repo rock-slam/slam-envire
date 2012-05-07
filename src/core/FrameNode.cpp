@@ -13,17 +13,20 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( FrameNode )
 
 FrameNode::FrameNode()
-    : frame( Transform( Eigen::Affine3d::Identity()) )
+    : EnvironmentItem(Environment::ITEM_NOT_ATTACHED)
+    , frame( Transform( Eigen::Affine3d::Identity()) )
 {
 }
 
 FrameNode::FrameNode(const TransformWithUncertainty& t)
-    : frame( t )
+    : EnvironmentItem(Environment::ITEM_NOT_ATTACHED)
+    , frame( t )
 {
 }
 
 FrameNode::FrameNode(const TransformType& t)
-    : frame( t )
+    : EnvironmentItem(Environment::ITEM_NOT_ATTACHED)
+    , frame( t )
 {
 }
 

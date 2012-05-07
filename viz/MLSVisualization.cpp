@@ -47,9 +47,11 @@ osg::Vec4 hslToRgb(float h, float s, float l)
 MLSVisualization::MLSVisualization()
     : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
+    negativeCellColor(osg::Vec4(0.1,0.5,0.9,0.2)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
     showUncertainty(false),
-    estimateNormals(true),
+    showNegative(false),
+    estimateNormals(false),
     cycleHeightColor(true)
 {
 }
@@ -276,7 +278,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		double xp = (x+0.5) * xs + xo;
 		double yp = (y+0.5) * ys + yo; 
 
-		if( p.horizontal == true )
+		if( p.isHorizontal() )
 		{
 		    osg::Vec4 col;
 		    if( mls->getHasCellColor() )
@@ -288,12 +290,18 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    
 		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), 
 			    col,
-			    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) );
+			    estimateNormals ? 
+				estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
+				osg::Vec3( 0, 0, 1.0 ) );
 		    hor++;
 		}
 		else
 		{
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), verticalCellColor, osg::Vec3(0, 0, 1.0) );
+		    if( p.isVertical() || showNegative )
+		    {	
+			osg::Vec4 col = p.isVertical() ? verticalCellColor : negativeCellColor;
+			drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), col, osg::Vec3(0, 0, 1.0) );
+		    }
 		}
 
 		if( showUncertainty )
@@ -332,4 +340,112 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
 	geode->addDrawable( var_geom.get() );
     }
+}
+
+bool MLSVisualization::isUncertaintyShown() const
+{
+    return showUncertainty;
+}
+
+void MLSVisualization::setShowUncertainty(bool enabled)
+{
+    showUncertainty = enabled;
+    emit propertyChanged("show_uncertainty");
+}
+
+bool MLSVisualization::isNegativeShown() const
+{
+    return showNegative;
+}
+
+void MLSVisualization::setShowNegative(bool enabled)
+{
+    showNegative = enabled;
+    emit propertyChanged("show_negative");
+}
+
+bool MLSVisualization::areNormalsEstimated() const
+{
+    return estimateNormals;
+}
+
+void MLSVisualization::setEstimateNormals(bool enabled)
+{
+    estimateNormals = enabled;
+    emit propertyChanged("estimate_normals");
+}
+
+bool MLSVisualization::isHeightColorCycled() const
+{
+    return cycleHeightColor;
+}
+
+void MLSVisualization::setCycleHeightColor(bool enabled)
+{
+    cycleHeightColor = enabled;
+    emit propertyChanged("cycle_height_color");
+}
+
+QColor MLSVisualization::getHorizontalCellColor() const
+{
+    QColor color;
+    color.setRgbF(horizontalCellColor.x(), horizontalCellColor.y(), horizontalCellColor.z(), horizontalCellColor.w());
+    return color;
+}
+
+void MLSVisualization::setHorizontalCellColor(QColor color)
+{
+    horizontalCellColor.x() = color.redF();
+    horizontalCellColor.y() = color.greenF();
+    horizontalCellColor.z() = color.blueF();
+    horizontalCellColor.w() = color.alphaF();
+    emit propertyChanged("horizontal_cell_color");
+}
+
+QColor MLSVisualization::getVerticalCellColor() const
+{
+    QColor color;
+    color.setRgbF(verticalCellColor.x(), verticalCellColor.y(), verticalCellColor.z(), verticalCellColor.w());
+    return color;
+}
+
+void MLSVisualization::setVerticalCellColor(QColor color)
+{
+    verticalCellColor.x() = color.redF();
+    verticalCellColor.y() = color.greenF();
+    verticalCellColor.z() = color.blueF();
+    verticalCellColor.w() = color.alphaF();
+    emit propertyChanged("vertical_cell_color");
+}
+
+QColor MLSVisualization::getNegativeCellColor() const
+{
+    QColor color;
+    color.setRgbF(negativeCellColor.x(), negativeCellColor.y(), negativeCellColor.z(), negativeCellColor.w());
+    return color;
+}
+
+void MLSVisualization::setNegativeCellColor(QColor color)
+{
+    negativeCellColor.x() = color.redF();
+    negativeCellColor.y() = color.greenF();
+    negativeCellColor.z() = color.blueF();
+    negativeCellColor.w() = color.alphaF();
+    emit propertyChanged("negative_cell_color");
+}
+
+QColor MLSVisualization::getUncertaintyColor() const
+{
+    QColor color;
+    color.setRgbF(uncertaintyColor.x(), uncertaintyColor.y(), uncertaintyColor.z(), uncertaintyColor.w());
+    return color;
+}
+
+void MLSVisualization::setUncertaintyColor(QColor color)
+{
+    uncertaintyColor.x() = color.redF();
+    uncertaintyColor.y() = color.greenF();
+    uncertaintyColor.z() = color.blueF();
+    uncertaintyColor.w() = color.alphaF();
+    emit propertyChanged("uncertainty_color");
 }

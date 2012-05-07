@@ -14,6 +14,7 @@
 #include <stdexcept>
 
 #include <envire/core/EventSource.hpp>
+#include <envire/core/EventTypes.hpp>
 #include <base/samples/rigid_body_state.h>
 
 #define ENVIRONMENT_ITEM_DEF( _classname ) \
@@ -117,6 +118,18 @@ namespace envire
      * Mainly handles the unique_id feature and the pointer to the environment
      * object.
      *
+     * The unique_id of an item is a string representation with an optional
+     * integer part. Ids given on construction of an EnvironmentItem based
+     * object are first prefixed by the environment prefix (which defaults to
+     * '/'), then the provided string is used to form an unique identifier. If
+     * this identifier is already in the environment, attaching it will throw.
+     * There is however the option to add a trailing '/' to the id. In this
+     * case, attaching the item in this case will not generate an exception,
+     * but will make the item unique by appending a number to make the complete
+     * id unique.
+     *
+     * [/<environment_prefix>]/<id>[/<numeric_id]
+     *
      * Ownership of objects is managed as follows: Objects are owned by the user
      * as long as they are not attached to the environment.
      *
@@ -148,7 +161,7 @@ namespace envire
 
 	/** each environment item must have a unique id.
 	 */
-	long unique_id;
+	std::string unique_id;
 
 	/** non-unique label which can be used for any purpose
 	 */
@@ -162,7 +175,7 @@ namespace envire
     public:
 	static const std::string className;
 	
-	EnvironmentItem();
+	EnvironmentItem(std::string const& id);
 
 	/** overide copy constructor, to allow copying, but remove environment
 	 * information for the copied item */
@@ -197,9 +210,33 @@ namespace envire
 	 */	
 	bool isAttached() const;
 
+	/** Sets all or part of the uniqe ID for this item.
+         *
+         * This is made unique by the environment when this item is attached to
+         * an environment. This method will raise logic_error if used after the
+         * item has been attached.
+	 */
+	void setUniqueId(std::string const& id);
+        
 	/** @return the unique id of this environmentitem
 	 */
-	long getUniqueId() const;
+	std::string getUniqueId() const;
+        
+        /** @return the environment prefix, which is part of the unique id
+         */
+        std::string getUniqueIdPrefix() const;
+        
+        /** @return the suffix (last part after the /) of the unique id
+         */
+        std::string getUniqueIdSuffix() const;
+
+	/** @return the suffix of the unique id and perform a conversion to
+	 * integer type
+	 *
+	 * will throw if suffix is not actually numerical, which happens, when
+	 * the original unique id given had a trailing slash.
+         */
+        long getUniqueIdNumericalSuffix() const;
 
 	/** marks this item as modified
 	 */
@@ -472,7 +509,7 @@ namespace envire
     public:
 	static const std::string className;
 
-	Layer();
+	Layer(std::string const& id);
 	virtual ~Layer();
 
 	void serialize(Serialization& so);
@@ -633,7 +670,7 @@ namespace envire
     public:
 	static const std::string className;
 
-	CartesianMap();
+	CartesianMap(std::string const& id);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -663,7 +700,12 @@ namespace envire
 	static const int DIMENSION = _DIMENSION;
 
     public:
-	Map() {};
+
+        // Defined later as it requires Environment
+        Map();
+
+        Map(std::string const& id)
+            : CartesianMap(id) {}
 
 	typedef Eigen::AlignedBox<double, DIMENSION> Extents;
 
@@ -723,6 +765,15 @@ namespace envire
     {
     public:
 	static const std::string className;
+
+        /** Constructs a new operator
+         *
+         * @arg inputArity if nonzero, this is the number of inputs that this
+         *                 operator requires
+         * @arg outputArity if nonzero, this is the number of outputs that this
+         *                  operator requires
+         */
+	Operator(std::string const& id, int inputArity = 0, int outputArity = 0);
 
         /** Constructs a new operator
          *
@@ -821,12 +872,12 @@ namespace envire
 
 	/** we track the last id given to an item, for assigning new id's.
 	 */
-	long last_id;
+        long last_id;
     public:
-	static const long ITEM_NOT_ATTACHED = -1;
+	static const std::string ITEM_NOT_ATTACHED;
 
     protected:
-	typedef std::map<long, EnvironmentItem::Ptr > itemListType;
+	typedef std::map<std::string, EnvironmentItem::Ptr > itemListType;
 	typedef std::map<FrameNode*, FrameNode*> frameNodeTreeType;
 	typedef std::multimap<Layer*, Layer*> layerTreeType;
 	typedef std::multimap<Operator*, Layer*> operatorGraphType;
@@ -840,6 +891,7 @@ namespace envire
 	cartesianMapGraphType cartesianMapGraph;
 	
 	FrameNode* rootNode;
+        std::string envPrefix;
 
 	EventSource eventHandlers;
 	void publishChilds(EventHandler* handler, FrameNode *parent);
@@ -853,6 +905,12 @@ namespace envire
 	 * Object ownership is passed to the environment in this way.
 	 */
 	void attachItem(EnvironmentItem* item);
+
+        /** Attaches a cartesian map to this environment. If the map does not
+         * yet have a frame node, and none is given in this call, it is
+         * automatically attached to the root node
+         */
+        void attachItem(CartesianMap* item, FrameNode* node = 0);
 
 	/** detaches an object from the environment. After this, the object is no longer owned by
 	 * by the environment. All links to this object from other objects in the environment are
@@ -872,7 +930,7 @@ namespace envire
 	**/
 	void itemModified(EnvironmentItem* item);
 	
-	EnvironmentItem::Ptr getItem(int uniqueId) const
+	EnvironmentItem::Ptr getItem(std::string uniqueId) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);
             if (it == items.end())
@@ -910,7 +968,7 @@ namespace envire
         }
 
 	template <class T>
-	boost::intrusive_ptr<T> getItem(int uniqueId) const
+	boost::intrusive_ptr<T> getItem(std::string uniqueId) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);
             if (it == items.end())
@@ -931,6 +989,7 @@ namespace envire
 	FrameNode* getRootNode();
 	std::list<FrameNode*> getChildren(FrameNode* parent);
 	std::list<Layer*> getChildren(Layer* parent);
+	std::list<const Layer*> getChildren(const Layer* parent) const;
 
 	void setFrameNode(CartesianMap* map, FrameNode* node);
 	void detachFrameNode(CartesianMap* map, FrameNode* node);
@@ -948,7 +1007,7 @@ namespace envire
 	bool removeOutputs(Operator* op);
 
 	std::list<Layer*> getInputs(Operator* op);
-
+        
         /** Returns the only layer that is an input of type LayerT for the given
          * operator
          *
@@ -1136,6 +1195,26 @@ namespace envire
          * the frames of two cartesian maps, 
          */
 	TransformWithUncertainty relativeTransformWithUncertainty(const CartesianMap* from, const CartesianMap* to);
+        
+        /** Sets the prefix for ID generation for this environment
+         *
+         * The prefix is normalized to start and end with the '/' separation
+         * marker. The prefix is used as a sort of namespace, so that
+	 * ids can be kept unique between different environments.
+         *
+         * The default prefix is /
+         */
+        void setEnvironmentPrefix(std::string envPrefix);
+        
+        /** Returns the prefix for ID generation on this environment
+         *
+         * The default prefix is /
+         */
+        std::string getEnvironmentPrefix() const { return envPrefix; }
+
+        /** Apply a set of serialized modifications to this environment
+         */
+        void applyEvents(std::vector<BinaryEvent> const& events);
     };
    
     template<typename LayerT>
@@ -1145,6 +1224,15 @@ namespace envire
     template<typename LayerT>
     LayerT Operator::getOutput()
     { return getEnvironment()->getOutput<LayerT>(this); }
+
+    /** This is defined here for backward compatibility reasons. The default
+     * constructor for Map should be removed in the long run, as we want to make
+     * sure that all map types define a constructor that allows to set the map
+     * ID
+     */
+    template<int _DIM>
+    Map<_DIM>::Map()
+        : CartesianMap(Environment::ITEM_NOT_ATTACHED) {}
 }
 
 #endif

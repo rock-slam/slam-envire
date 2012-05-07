@@ -15,11 +15,11 @@ static void updateGradient(MLSGrid const& mls,
         boost::multi_array<int, 2>& count,
         double scale,
         int this_index, int this_x, int this_y,
-        int other_index, int x, int y,
+        int other_index, int other_x, int other_y,
         MLSGrid::const_iterator this_cell)
 {
     MLSGrid::const_iterator neighbour_cell = 
-        std::max_element( mls.beginCell(x,y), mls.endCell() );
+        std::max_element( mls.beginCell(other_x,other_y), mls.endCell() );
 
     if( neighbour_cell != mls.endCell() )
     {
@@ -27,8 +27,11 @@ static void updateGradient(MLSGrid const& mls,
         double stdev0 = this_cell->stdev;
         double z1 = neighbour_cell->mean;
         double stdev1 = neighbour_cell->stdev;
+
+        double gradient_factor = 1;
         if (z0 > z1)
         {
+            gradient_factor = -1;
             std::swap(z0, z1);
             std::swap(stdev0, stdev1);
         }
@@ -37,20 +40,20 @@ static void updateGradient(MLSGrid const& mls,
         double max_z = z1 + stdev1;
 
         double step = max_z - min_z;
-        double gradient = step / scale;
+        double gradient = gradient_factor * step / scale;
 
         diffs[this_y][this_x][this_index] = step;
         angles[this_y][this_x] += gradient;
         count[this_y][this_x]++;
 
-        diffs[y][x][other_index] += step;
-        angles[y][x] -= gradient;
-        count[y][x]++;
+        diffs[other_y][other_x][other_index] += step;
+        angles[other_y][other_x] -= gradient;
+        count[other_y][other_x]++;
     }
     else
     {
-        diffs[y][x][this_index] = UNKNOWN;
-        diffs[y][x][other_index] = UNKNOWN;
+        diffs[other_y][other_x][this_index] = UNKNOWN;
+        diffs[other_y][other_x][other_index] = UNKNOWN;
     }
 }
 
@@ -59,7 +62,7 @@ bool MLSSlope::updateAll()
 {
     // this implementation can handle only one input at the moment
     if( env->getInputs(this).size() != 1 || env->getOutputs(this).size() != 1 )
-        throw std::runtime_error("MLSSlope needs to have exactly 1 input and 1 output for now.");
+        throw std::runtime_error("MLSSlope needs to have exactly 1 input and 1 output for now. Got " + boost::lexical_cast<std::string>(env->getInputs(this).size()) + " inputs and " + boost::lexical_cast<std::string>(env->getOutputs(this).size()) + "outputs");
     
     Grid<double>& travGrid = *env->getOutput< Grid<double>* >(this);
     MLSGrid const& mls = *env->getInput< MLSGrid* >(this);
@@ -87,13 +90,17 @@ bool MLSSlope::updateAll()
     size_t width = mls.getWidth(); 
     size_t height = mls.getHeight(); 
 
+    if( width == 0 || height == 0 )
+	throw std::runtime_error("MLSSlope needs a grid size greater zero for both width and height.");
+
     double scalex = mls.getScaleX();
     double scaley = mls.getScaleY();
 
     double diagonal_scale = sqrt(scalex * scalex + scaley * scaley);
+
     for(size_t x=1;x<width;x++)
     {
-        for(size_t y=1;y<height;y++)
+        for(size_t y=1;y<height-1;y++)
         {
             MLSGrid::const_iterator this_cell = 
                 std::max_element( mls.beginCell(x,y), mls.endCell() );
@@ -145,21 +152,34 @@ bool MLSSlope::updateAll()
                 corrected_max_step = std::max(corrected_max_step, step0 - (step0 + step1) * 3 / 4);
             }
             max_steps[y][x] = max_step;
-            if (max_step < corrected_step_threshold)
-                corrected_max_steps[y][x] = corrected_max_step;
+            if (count < 8)
+            {
+                if (max_step < corrected_step_threshold)
+                    corrected_max_steps[y][x] = corrected_max_step;
+                else
+                    corrected_max_steps[y][x] = max_step;
+            }
             else
-                corrected_max_steps[y][x] = max_step;
+            {
+                corrected_max_steps[y][x] = UNKNOWN;
+            }
         }
     }
     // ... and mark the remaining of the border as UNKNOWN
     for(size_t x=0; x < width; ++x)
     {
+        angles[0][x] = UNKNOWN;
+        max_steps[0][x] = UNKNOWN;
+        corrected_max_steps[0][x] = UNKNOWN;
         angles[height-1][x] = UNKNOWN;
         max_steps[height-1][x] = UNKNOWN;
         corrected_max_steps[height-1][x] = UNKNOWN;
     }
     for(size_t y=0; y < height; ++y)
     {
+        angles[y][0] = UNKNOWN;
+        max_steps[y][0] = UNKNOWN;
+        corrected_max_steps[y][0] = UNKNOWN;
         angles[y][width-1] = UNKNOWN;
         max_steps[y][width-1] = UNKNOWN;
         corrected_max_steps[y][width-1] = UNKNOWN;

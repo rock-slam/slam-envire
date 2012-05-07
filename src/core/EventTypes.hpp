@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
+#include <base/time.h>
 
 namespace envire
 {
@@ -37,10 +38,13 @@ namespace envire
      * Environment binary item, holds the data of an EnvironmentItem
      * in binary form. It is used to serialize one single EnvironmentItem.
      */
-    struct EnvireBinaryEvent
+    struct BinaryEvent
     {
+	// timestamp of the event
+	base::Time time;
+
         // event part
-        long id_a, id_b;
+        std::string id_a, id_b;
         event::Type type;
         event::Operation operation;
         
@@ -50,11 +54,30 @@ namespace envire
         std::vector<std::string> binaryStreamNames;
         std::vector< std::vector<uint8_t> > binaryStreams;
         
-        EnvireBinaryEvent()
-         : id_a(-1), id_b(-1), className("") {};
-        EnvireBinaryEvent(event::Type type, event::Operation operation, long id_a, long id_b)
+        BinaryEvent()
+         : id_a(""), id_b(""), className("") {};
+        BinaryEvent(event::Type type, event::Operation operation, std::string id_a, std::string id_b)
          : id_a(id_a), id_b(id_b), type(type), operation(operation), className("") {};
-    };
 
+        /** Sets values in @a this using the data in @a event, modifying @a
+         * event in the process
+         *
+         * In C++11, we would use a move constructor
+         */
+        void move(BinaryEvent& other_event)
+        {
+            time = other_event.time;
+            id_a = other_event.id_a;
+            id_b = other_event.id_b;
+            type = other_event.type;
+            operation = other_event.operation;
+
+            className = other_event.className;
+            std::swap(yamlProperties, other_event.yamlProperties);
+            std::swap(binaryStreamNames, other_event.binaryStreamNames);
+            std::swap(binaryStreams, other_event.binaryStreams);
+        }
+    };
+    typedef BinaryEvent EnvireBinaryEvent;
 }
 #endif

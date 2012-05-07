@@ -205,7 +205,18 @@ namespace envire
          * Unserializes a EnvironmentItem from a given EnvireBinaryEvent.
          * @return the EnvironmentItem
          */
-        EnvironmentItem* unserializeBinaryEvent(EnvireBinaryEvent& bin_item);
+        EnvironmentItem* unserializeBinaryEvent(const EnvireBinaryEvent& bin_item);
+        
+        /**
+         * Applies a single serialized modification to an environment
+         */
+        void applyEvent(envire::Environment* env, const EnvireBinaryEvent& bin_item);
+        
+        /**
+         * Applies a serialized set of environment modifications to a given
+         * environment
+         */
+        static void applyEvents(envire::Environment* env, const std::vector<EnvireBinaryEvent>& events);
         
         /**
          * Serializes a given EnvironmentItem to a given EnvireBinaryEvent.
@@ -237,14 +248,17 @@ namespace envire
     };
     
     
-    class SynchronizationEventHandler : public EventHandler
+    class SynchronizationEventHandler : public EventQueue
     {
     public:
-        void handle( const Event& message );
-        
+        SynchronizationEventHandler() : use_event_queue(false) {};
+        virtual void handle( const Event& message );
+        virtual void process( const Event& message );
         virtual void handle( EnvireBinaryEvent* binary_event ) = 0;
-        
+        void useEventQueue(bool b);
+
     protected:
+        bool use_event_queue;
         BinarySerialization serialization;
     };
 }

@@ -44,6 +44,14 @@ namespace envire
 		    else
 			return false;
 	    }
+	    bool operator==( const Position& other ) const
+	    {
+		return x == other.x && y == other.y;
+	    }
+	    bool operator!=( const Position& other ) const
+	    {
+		return x != other.x || y != other.y;
+	    }
 	};
 	typedef Eigen::Vector2d Point2D;
 
@@ -55,10 +63,11 @@ namespace envire
     public:
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
-        GridBase();
+        GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	GridBase(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
-                double offsetx = 0.0, double offsety = 0.0 );
+                double offsetx = 0.0, double offsety = 0.0,
+                std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	~GridBase();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
@@ -168,6 +177,20 @@ namespace envire
                 size_t cellSizeX, size_t cellSizeY,
                 double scalex = 1, double scaley = 1,
                 double offsetx = 0, double offsety = 0);
+
+        /** @brief Checks if two grids are approximately aligned
+         *
+	 * It returns true if both grids are of the same dimensions, and the
+	 * maximum misalignment error is less than a half cell. 
+         */
+        bool isAlignedWith(GridBase const& grid) const;
+
+	/** @brief checks if two grids are approximately aligned on the cell level
+	 *
+	 * @return true if both grids have the same scaling and are aligned on cell 
+	 * level. Grids can be of different size.
+	 */
+	bool isCellAlignedWith(GridBase const& grid) const;
     };
 }
 

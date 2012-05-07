@@ -1,6 +1,8 @@
 #ifndef EVIRONMENTITEMVIZALIZER_H
 #define EVIRONMENTITEMVIZALIZER_H
 
+#include <vizkit/Vizkit3DPlugin.hpp>
+
 #define INVISIBLE_MASK 0x0
 #define VISIBLE_MASK 0xffffffff
 
@@ -15,9 +17,10 @@ namespace envire {
 
 namespace vizkit {
     
-class EnvironmentItemVisualizer 
+class EnvironmentItemVisualizer : public VizPluginBase
 {
     public:
+        virtual void updateMainNode(osg::Node* node) {};
 	virtual bool handlesItem(envire::EnvironmentItem *item) const = 0;
 	virtual osg::Group *getNodeForItem(envire::EnvironmentItem *item) const = 0;
 	virtual void updateNode(envire::EnvironmentItem *item, osg::Group *group) const = 0; 

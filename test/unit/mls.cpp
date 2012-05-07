@@ -16,10 +16,10 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(10, 10, 0.1, 0.1);
     env->attachItem( mls );
 
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, true ) );
-    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, false ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 1.0, 0.1, 0, MLSGrid::SurfacePatch::HORIZONTAL ) );
+    mls->insertHead( 0,0, MultiLevelSurfaceGrid::SurfacePatch( 2.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL ) );
 
-    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, false ) );
+    mls->insertHead( 2,1, MultiLevelSurfaceGrid::SurfacePatch( 3.0, 0.1, 0.5, MLSGrid::SurfacePatch::VERTICAL ) );
 
     MultiLevelSurfaceGrid::iterator it = mls->beginCell(0,0);
     BOOST_CHECK_EQUAL( it->mean, 2.0 );
@@ -115,4 +115,32 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
     merge->addOutput( mls2 );
     merge->updateAll();
 
+}
+
+BOOST_AUTO_TEST_CASE( gridaligned_test ) 
+{
+    // set up test environment
+    boost::scoped_ptr<Environment> env( new Environment() );
+
+    MultiLevelSurfaceGrid *mls1 = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    FrameNode *fn1 = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    env->addChild( env->getRootNode(), fn1 ); 
+    env->setFrameNode( mls1, fn1 );
+
+    MultiLevelSurfaceGrid *mls2 = new MultiLevelSurfaceGrid(100, 100, 0.1, 0.1);
+    FrameNode *fn2 = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    env->addChild( env->getRootNode(), fn2 ); 
+    env->setFrameNode( mls2, fn2 );
+
+    MultiLevelSurfaceGrid *mls3 = new MultiLevelSurfaceGrid(200, 100, 0.1, 0.1);
+    FrameNode *fn3 = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0.1, 0, 0 ) ) );
+    env->addChild( env->getRootNode(), fn3 ); 
+    env->setFrameNode( mls3, fn3 );
+
+    BOOST_CHECK( mls1->isAlignedWith( *mls2 )  );
+    BOOST_CHECK( !mls2->isAlignedWith( *mls3 )  );
+    BOOST_CHECK( mls2->isCellAlignedWith( *mls3 )  );
+
+    fn3->setTransform( Eigen::Affine3d( Eigen::Translation3d( 0.15, 0, 0 ) ) );
+    BOOST_CHECK( !mls2->isCellAlignedWith( *mls3 ) );
 }

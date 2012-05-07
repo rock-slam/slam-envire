@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
             std::cerr << "too many or too little arguments provided" << std::endl;
             usage(1);
         }
-        int map_id = boost::lexical_cast<int>(argv[4]);
+        std::string map_id(argv[4]);
         boost::intrusive_ptr<GridBase> map = env->getItem<GridBase>(map_id);
         if (!map)
         {
@@ -70,8 +70,8 @@ int main(int argc, char* argv[])
         }
         width   = boost::lexical_cast<int>(argv[3]);
         height  = boost::lexical_cast<int>(argv[4]);
-        scale_x = boost::lexical_cast<int>(argv[5]);
-        scale_y = boost::lexical_cast<int>(argv[6]);
+        scale_x = boost::lexical_cast<double>(argv[5]);
+        scale_y = boost::lexical_cast<double>(argv[6]);
         if (argc > 7)
         {
             if (argc < 9)
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
                 usage(1);
             }
 
-            int frame_id = boost::lexical_cast<int>(argv[10]);
+            std::string frame_id(argv[10]);
             base_frame = env->getItem<FrameNode>(frame_id).get();
             if (!base_frame)
             {

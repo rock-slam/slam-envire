@@ -83,6 +83,7 @@ install(FILES operators/MergeMLS.hpp
     operators/ScanMeshing.hpp
     operators/SimplifyPointcloud.hpp
     operators/SurfaceReconstruction.hpp
+    operators/ClassGridProjection.hpp
     DESTINATION include/envire/operators)
 
 install(FILES tools/GraphViz.hpp

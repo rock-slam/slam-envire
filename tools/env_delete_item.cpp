@@ -21,7 +21,7 @@ int main( int argc, char* argv[] )
 
     for (int i = 2; i < argc; ++i)
     {
-        int item_id = boost::lexical_cast<int>(argv[i]);
+        std::string item_id(argv[i]);
         EnvironmentItem* item = env->getItem(item_id).get();
         if (!item)
             std::cerr << "cannot find an item with ID " << item_id << std::endl;

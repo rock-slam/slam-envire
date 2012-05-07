@@ -5,8 +5,42 @@
 #include <envire/maps/Grid.hpp>
 
 namespace envire {
-    /** Classification of terrain into symbolic traversability classes, based on
-     * different modalities.
+    /** @brief Configuration parameters for the SimpleTraversability operator
+     *
+     * See SimpleTraversability for more information on the use of these
+     * parameters.
+     */
+    struct SimpleTraversabilityConfig
+    {
+        /** Force (in N) due to system's mass */
+        double weight_force;
+
+        /** Force (in N) that constitutes the highest class */
+        double force_threshold;
+
+        /** Number of classes in the output map */
+        int class_count;
+
+        /** Traversable passages that are narrower (in m) than this will be
+         * closed */
+        double min_width;
+
+        /** Required ground clearance, in meters. A cell is classified as
+         * obstacle if the maximum step around that cell is higher than the
+         * ground clearance
+         */
+       double ground_clearance;
+
+       SimpleTraversabilityConfig()
+           : weight_force(0)
+           , force_threshold(0)
+           , class_count(0)
+           , min_width(0)
+           , ground_clearance(0) {}
+    };
+
+    /** @brief Classification of terrain into symbolic traversability classes, based on
+     * achievable traction force and geometric constraints
      *
      * For now, the modalities that are used are:
      *
@@ -16,8 +50,14 @@ namespace envire {
      * <li>maximum step size
      * </ul>
      *
+     * The (very simple) model computes the maximum local traction force and
+     * maps the result from [0, force_threshold] to [0, 1]. The resulting value
+     * is then quantified in @a class_count intervals.
+     *
      * It outputs a map in which each cell has an integer value, this integer
-     * value being the traversability class for the cell
+     * value being the traversability class for the cell. Since CLASS_UNKNOWN
+     * (=0) and CLASS_OBSTACLE (=1) are reserved, the resulting traversability
+     * class is in [2, * 2 + class_count[
      *
      * If one of the modality is missing, it is simply ignored
      */
@@ -43,7 +83,7 @@ namespace envire {
          * They are store as integers to support deserialization properly (we
          * have no way in unserialize() to get hold on our input layers)
          */
-        int input_layers_id[INPUT_COUNT];
+        std::string input_layers_id[INPUT_COUNT];
         /** The bands that should be used in the input layers */
         std::string input_bands[INPUT_COUNT];
 
@@ -54,21 +94,16 @@ namespace envire {
         // operation graph
         std::string output_band;
 
-        double weight_force;
-        double force_threshold;
-        double max_speed;
-        int class_count;
-        double min_width;
-        double ground_clearance;
+        SimpleTraversabilityConfig conf;
 
     public:
         typedef envire::Grid<uint8_t> OutputLayer;
 
         SimpleTraversability();
+        SimpleTraversability(SimpleTraversabilityConfig const& conf);
         SimpleTraversability(
                 double weight_force,
                 double force_threshold,
-                double max_speed,
                 int class_count,
                 double min_width,
                 double ground_clearance);

@@ -23,8 +23,8 @@ const std::string EnvironmentItem::className = "envire::EnvironmentItem";
 void envire::intrusive_ptr_add_ref( EnvironmentItem* item ) { item->ref_count++; }
 void envire::intrusive_ptr_release( EnvironmentItem* item ) { if(!--item->ref_count) delete item; }
 
-EnvironmentItem::EnvironmentItem()
-    : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+EnvironmentItem::EnvironmentItem(std::string const& unique_id)
+    : ref_count(0), unique_id(unique_id), env(NULL)
 {
 }
 
@@ -54,9 +54,49 @@ bool EnvironmentItem::isAttached() const
     return env;
 }
 
-long EnvironmentItem::getUniqueId() const
+void EnvironmentItem::setUniqueId(std::string const& id)
+{
+    if (isAttached())
+        throw std::logic_error("trying to change an item's ID after it was attached to an environment");
+
+    unique_id = id;
+}
+
+std::string EnvironmentItem::getUniqueId() const
 {
     return unique_id;
+}
+
+std::string EnvironmentItem::getUniqueIdPrefix() const
+{
+    size_t idpos = unique_id.rfind('/');
+    std::string prefix_str = "";
+    if(idpos != string::npos && idpos > 0)
+    {
+        prefix_str = unique_id.substr(0,idpos);
+    }
+    return prefix_str;
+}
+
+std::string EnvironmentItem::getUniqueIdSuffix() const
+{
+    size_t idpos = unique_id.rfind('/');
+    std::string idstr;
+    if(idpos != string::npos)
+    {
+        idstr = unique_id.substr(idpos+1);
+    }
+    else
+    {
+        // backward compatibility
+        idstr = unique_id;
+    }
+    return idstr;
+}
+
+long EnvironmentItem::getUniqueIdNumericalSuffix() const
+{
+    return boost::lexical_cast<long>(getUniqueIdSuffix());
 }
 
 Environment* EnvironmentItem::getEnvironment() const
@@ -73,6 +113,11 @@ void EnvironmentItem::serialize(Serialization &so)
 void EnvironmentItem::unserialize(Serialization &so)
 {
     so.read( "id", unique_id );
+
+    // For backward compatibility
+    if (*unique_id.begin() != '/')
+        unique_id = "/" + unique_id;
+
     so.read( "label", label );
 }
 
@@ -88,11 +133,14 @@ EnvironmentItem::Ptr EnvironmentItem::detach()
     return env->detachItem( this );
 }
 
-Environment::Environment() :
-    last_id(0)
+const std::string Environment::ITEM_NOT_ATTACHED = "";
+
+Environment::Environment() : last_id(0), envPrefix("/")
 {
     // each environment has a root node
     rootNode = new FrameNode();
+    rootNode->unique_id = "/0";
+    last_id++;
     // also put it in the same managed process
     attachItem( rootNode );
 }
@@ -189,12 +237,53 @@ void Environment::removeEventHandler(EventHandler *handler)
     eventHandlers.removeEventHandler( handler );
 }
 
+void Environment::setEnvironmentPrefix(std::string envPrefix)
+{
+    if (*envPrefix.begin() != '/')
+        envPrefix = "/" + envPrefix;
+    if (*envPrefix.rbegin() != '/')
+        envPrefix += "/";
+    this->envPrefix = envPrefix;
+}
+
+void Environment::attachItem(CartesianMap* item, FrameNode* node)
+{
+    attachItem(static_cast<EnvironmentItem*>(item));
+    if (!item->getFrameNode())
+    {
+        if (node)
+            item->setFrameNode(node);
+        else
+            item->setFrameNode(getRootNode());
+    }
+}
+
 void Environment::attachItem(EnvironmentItem* item)
 {
     assert( item );
 
-    if( item->getUniqueId() == ITEM_NOT_ATTACHED )
-	item->unique_id = last_id++;
+    if(!item->isAttached())
+    {
+        if(item->unique_id == ITEM_NOT_ATTACHED)
+            item->unique_id = envPrefix;
+
+        if(*item->unique_id.begin() != '/')
+            item->unique_id = envPrefix + item->unique_id;
+
+        if(*item->unique_id.rbegin() == '/')
+        {
+            int numeric_id = last_id++;
+            std::string candidate = item->unique_id + boost::lexical_cast<std::string>(numeric_id);
+            while( items.count(item->getUniqueId()) )
+            {
+                numeric_id++;
+                candidate = item->unique_id + boost::lexical_cast<std::string>(numeric_id);
+            }
+
+            last_id = numeric_id + 1;
+            item->unique_id = candidate;
+        }
+    }
 
     // make sure item not already present
     if( items.count(item->getUniqueId()) ) {
@@ -295,7 +384,6 @@ EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item, bool deep)
     
     EnvironmentItem::Ptr itemPtr = items[ item->getUniqueId() ];
     items.erase( item->getUniqueId() );
-    item->unique_id = ITEM_NOT_ATTACHED;
     item->env = NULL;
 
     return itemPtr;
@@ -308,6 +396,8 @@ void Environment::itemModified(EnvironmentItem* item)
 
 void Environment::addChild(FrameNode* parent, FrameNode* child)
 {
+    assert( parent != child );
+
     if( !child->isAttached() )
 	attachItem( child );
 
@@ -323,6 +413,8 @@ void Environment::addChild(FrameNode* parent, FrameNode* child)
 
 void Environment::addChild(Layer* parent, Layer* child)
 {
+    assert( parent != child );
+    
     if( !child->isAttached() )
 	attachItem( child );
 
@@ -406,6 +498,18 @@ std::list<FrameNode*> Environment::getChildren(FrameNode* parent)
 {
     std::list<FrameNode*> children;
     for(frameNodeTreeType::iterator it=frameNodeTree.begin();it != frameNodeTree.end(); ++it )
+    {
+	if( it->second == parent )
+	    children.push_back( it->first );
+    }
+
+    return children;
+}
+
+std::list<const Layer*> Environment::getChildren(const Layer* parent) const 
+{
+    std::list<const Layer*> children;
+    for(layerTreeType::const_iterator it=layerTree.begin();it != layerTree.end(); ++it )
     {
 	if( it->second == parent )
 	    children.push_back( it->first );
@@ -576,6 +680,7 @@ Operator* Environment::getGenerator(Layer* output)
 }
 
 void Environment::updateOperators(){
+    // TODO handle operator chains
     std::vector<envire::Operator*> ops = getItems<envire::Operator>();
 
     for(std::vector<envire::Operator*>::iterator it=ops.begin();it!=ops.end();it++)
@@ -612,6 +717,9 @@ std::pair<T, const FrameNode*> relativeFrameNodeRoot( const FrameNode* from )
 template <class T>
 T relativeTransform(const FrameNode* from, const FrameNode* to)
 {
+    if (from == to)
+        return T( Eigen::Affine3d::Identity() );
+
     std::pair<T, const FrameNode*> fg = relativeFrameNodeRoot<T>(from);
     std::pair<T, const FrameNode*> tg = relativeFrameNodeRoot<T>(to);
 
@@ -667,5 +775,11 @@ Environment* Environment::unserialize(std::string const& path)
 
     serialization.setSceneDir(sceneDir.string());
     return serialization.readFromFile( scene.string() );
+}
+
+
+void Environment::applyEvents(std::vector<BinaryEvent> const& events)
+{
+    BinarySerialization::applyEvents(this, events);
 }
 

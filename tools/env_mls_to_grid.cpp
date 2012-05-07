@@ -24,8 +24,8 @@ int main(int argc, char* argv[])
     }
 
     std::string env_path(argv[1]);
-    int mls_map_id  = boost::lexical_cast<int>(argv[2]);
-    int grid_map_id = boost::lexical_cast<int>(argv[3]);
+    std::string mls_map_id(argv[2]);
+    std::string grid_map_id(argv[3]);
     std::string grid_band_name = argv[4];
 
     boost::scoped_ptr<envire::Environment> env(Environment::unserialize(env_path));

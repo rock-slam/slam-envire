@@ -12,8 +12,8 @@ namespace fs = boost::filesystem;
 
 const std::string Layer::className = "envire::Layer";
 
-Layer::Layer() :
-    immutable(false)
+Layer::Layer(std::string const& id) :
+    EnvironmentItem(id), immutable(false)
 {
 }
 
@@ -38,11 +38,13 @@ Layer::~Layer()
 
 void Layer::addChild( Layer* child ) 
 {
+    assert( env );
     env->addChild(this, child);
 }
 
 std::list<Layer*> Layer::getParents()
 {
+    assert( env );
     return env->getParents(this);
 }
 
@@ -86,6 +88,7 @@ bool Layer::isGenerated() const
 
 Operator* Layer::getGenerator() const
 {
+    assert( env );
     return env->getGenerator(const_cast<Layer*>(this));
 }
 
@@ -102,7 +105,9 @@ const std::string Layer::getMapFileName() const
 
 const std::string Layer::getMapFileName(const std::string& className) const 
 {
-    return className + "_" + boost::lexical_cast<std::string>(getUniqueId());
+    std::string uniqueId = getUniqueId();
+    std::replace(uniqueId.begin(), uniqueId.end(), '/', '_');
+    return className + uniqueId;
 }
 
 const std::string Layer::getMapFileName(const std::string& path, const std::string& className) const 
@@ -126,7 +131,8 @@ void Layer::removeData(const std::string& type)
 
 const std::string CartesianMap::className = "envire::CartesianMap";
 
-CartesianMap::CartesianMap() 
+CartesianMap::CartesianMap(std::string const& id)
+    : Layer(id)
 {
 }
 
@@ -144,6 +150,7 @@ FrameNode* CartesianMap::getFrameNode()
 
 const FrameNode* CartesianMap::getFrameNode() const 
 {
+    assert( env );
     return env->getFrameNode(const_cast<CartesianMap*>(this));
 }
 

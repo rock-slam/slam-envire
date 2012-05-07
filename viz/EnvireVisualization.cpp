@@ -21,7 +21,6 @@ EnvireVisualization::EnvireVisualization()
     : m_handleDirty( true ), m_ownsEnvironment( false ), env( NULL )
 {
     ownNode = new osg::Group();
-    setMainNode( ownNode );
 
     // setup eventlistener
     eventListener = boost::shared_ptr<EnvireEventListener>(
@@ -41,6 +40,7 @@ EnvireVisualization::EnvireVisualization()
     // attach visualizers
     for(std::vector<boost::shared_ptr<EnvironmentItemVisualizer> >::iterator it = visualizers.begin(); it != visualizers.end(); it++)
     {
+        (*it)->setParent(this);
 	eventListener->addVisualizer( (*it).get() );
     }
 
@@ -96,12 +96,47 @@ bool EnvireVisualization::isDirty() const
 	return VizPluginBase::isDirty();
 }
     
-void EnvireVisualization::operatorIntern( osg::Node* node, osg::NodeVisitor* nv )
+void EnvireVisualization::updateMainNode(osg::Node* node)
 {
     // since we are in the update call here, we can modify the osg tree
     // we'll call the apply method of the eventlistener, to perform back/front
     // swapping on all nodes that have been modified since the last call.
     eventListener->apply();
+}
+
+void EnvireVisualization::updateBinaryEvent( envire::EnvireBinaryEvent const& binary_event )
+{
+    // the only thing that needs to be locked against the osg thread
+    // is the actual generation of the environment
+    // everything else can happen in the current thread, due
+    // to the double buffering mechanism in the visualization handler
+    if( !env )
+    {
+	updateData( new envire::Environment() );
+	m_ownsEnvironment = true;
+    }
+    else if( !m_ownsEnvironment )
+	throw std::runtime_error("BinaryEvents are only supported on environments owned by the visualization");
+
+
+    // see if we need to deserialize the binary event
+    envire::EnvironmentItem* item = 0;
+    if( binary_event.type == envire::event::ITEM 
+	    && (binary_event.operation == envire::event::ADD 
+		|| binary_event.operation == envire::event::UPDATE ))
+    {
+	// unserialize item
+	item = serialization.unserializeBinaryEvent( binary_event );
+    }
+
+    // set up event
+    envire::EnvironmentItem::Ptr item_ptr(item);
+    envire::Event event(binary_event.type, binary_event.operation, item_ptr);
+    event.id_a = binary_event.id_a;
+    event.id_b = binary_event.id_b;
+
+    // apply event
+    event.apply(env);
 }
 
 void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
@@ -120,6 +155,11 @@ void EnvireVisualization::updateDataIntern( envire::Environment* const& data )
     env->addEventHandler( eventListener.get() );
     if( twl )
 	env->addEventHandler( twl.get() );
+}
+
+osg::ref_ptr< osg::Node > EnvireVisualization::createMainNode()
+{
+    return ownNode;
 }
 
 VizkitQtPlugin(EnvireVisualization);
