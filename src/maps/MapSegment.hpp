@@ -2,7 +2,7 @@
 #define ENVIRE_MAPSEGMENT__
 
 #include <envire/Core.hpp>
-#include <tools/GaussianMixture.hpp>
+#include <envire/tools/GaussianMixture.hpp>
 
 namespace envire
 {
