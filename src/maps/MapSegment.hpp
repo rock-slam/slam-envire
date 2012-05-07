@@ -38,11 +38,16 @@ public:
      */
     TransformWithUncertainty getTransform() const;
 
-
     /** @brief Provide the stored map, for which the end pose is closest to the
      * provided pose.
      */
     CartesianMap* getMapForPose( const base::Affine3d& pose ) const;
+
+    /** @brief get the best map without any knowledge on a relative transformation
+     *
+     * @return the map with the highest weight
+     */
+    CartesianMap* getBestMap() const;
 
 protected:
     struct Part

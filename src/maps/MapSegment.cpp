@@ -106,7 +106,7 @@ CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
     {
 	// for now take the norm, this may need some different
 	// weighting of distance and angular values
-	double dist = (parts[i].pose.toVector6d() - pose6d).norm();
+	const double dist = (parts[i].pose.toVector6d() - pose6d).norm();
 	if( dist < best_dist )
 	{
 	    best_map = parts[i].map.get();
@@ -117,3 +117,19 @@ CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
     return best_map;
 }
 
+CartesianMap* MapSegment::getBestMap() const
+{
+    CartesianMap* best_map = NULL;
+    double best_weight = 0;
+    for( size_t i=0; i < parts.size(); i++ )
+    {
+	const double weight = parts[i].weight;
+	if( weight > best_weight )
+	{
+	    best_map = parts[i].map.get();
+	    best_weight = weight;
+	}
+    }
+
+    return best_map;
+}
