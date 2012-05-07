@@ -41,6 +41,7 @@ rock_library(envire
     operators/DistanceGridToPointcloud.cpp
     operators/GridFloatToMLS.cpp
     operators/MLSToGrid.cpp
+    operators/CutPointcloud.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
@@ -86,6 +87,7 @@ install(FILES operators/MergeMLS.hpp
     operators/SimplifyPointcloud.hpp
     operators/SurfaceReconstruction.hpp
     operators/ClassGridProjection.hpp
+    operators/CutPointcloud.hpp
     DESTINATION include/envire/operators)
 
 install(FILES tools/GraphViz.hpp
