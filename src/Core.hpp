@@ -627,6 +627,8 @@ namespace envire
     class Operator : public EnvironmentItem
     {
     public:
+	typedef boost::intrusive_ptr<Operator> Ptr; 
+
 	static const std::string className;
 
         /** Constructs a new operator
