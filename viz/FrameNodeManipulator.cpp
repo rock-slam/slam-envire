@@ -158,11 +158,13 @@ FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::G
     osgManipulator::TranslateAxisDragger *translateDragger = new osgManipulator::TranslateAxisDragger();
     translateDragger->setupDefaultGeometry();
     translateDragger->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_SHIFT);
+    translateDragger->setActivationKeyEvent(osgGA::GUIEventAdapter::KEY_M);
     translateDragger->setHandleEvents(true);
 
     osgManipulator::TrackballDragger *rotateDragger = new osgManipulator::TrackballDragger();
     rotateDragger->setupDefaultGeometry();
     rotateDragger->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_SHIFT);
+    rotateDragger->setActivationKeyEvent(osgGA::GUIEventAdapter::KEY_M);
     // change scaling of the rotation dragger
     rotateDragger->setMatrix( osg::Matrix::scale(rotateDragger->getMatrix().getScale() * 0.6) * osg::Matrix::translate(rotateDragger->getMatrix().getTrans()) );
     rotateDragger->setHandleEvents(true);
