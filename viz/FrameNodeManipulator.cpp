@@ -76,9 +76,9 @@ public:
 		osg::Matrixd( t.matrix().data() ) );
 
 	// and then the draggers
-	rotate->setMatrix( 
+	rotate->setMatrix( osg::Matrix::scale(rotate->getMatrix().getScale()) * 
 		osg::Matrixd( Eigen::Affine3d( t.linear() ).matrix().data() ) );
-	translate->setMatrix( 
+	translate->setMatrix( osg::Matrix::scale(translate->getMatrix().getScale()) * 
 		osg::Matrixd( Eigen::Affine3d( Eigen::Translation3d(t.translation()) ).matrix().data() ) );
     }
 };
@@ -163,6 +163,8 @@ FrameNodeManipulator::FrameNodeManipulator(envire::EnvironmentItem* item, osg::G
     osgManipulator::TrackballDragger *rotateDragger = new osgManipulator::TrackballDragger();
     rotateDragger->setupDefaultGeometry();
     rotateDragger->setActivationModKeyMask(osgGA::GUIEventAdapter::MODKEY_SHIFT);
+    // change scaling of the rotation dragger
+    rotateDragger->setMatrix( osg::Matrix::scale(rotateDragger->getMatrix().getScale() * 0.6) * osg::Matrix::translate(rotateDragger->getMatrix().getTrans()) );
     rotateDragger->setHandleEvents(true);
 
     // create a parent child relationship between the draggers
