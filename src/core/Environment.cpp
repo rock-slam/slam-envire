@@ -272,15 +272,15 @@ void Environment::attachItem(EnvironmentItem* item)
 
         if(*item->unique_id.rbegin() == '/')
         {
-            int numeric_id = last_id++;
+            int numeric_id = ++last_id;
             std::string candidate = item->unique_id + boost::lexical_cast<std::string>(numeric_id);
-            while( items.count(item->getUniqueId()) )
+            while( items.count( candidate ) )
             {
                 numeric_id++;
                 candidate = item->unique_id + boost::lexical_cast<std::string>(numeric_id);
             }
 
-            last_id = numeric_id + 1;
+            last_id = numeric_id;
             item->unique_id = candidate;
         }
     }

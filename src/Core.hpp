@@ -39,7 +39,7 @@ static envire::SerializationPlugin<_classname> _classname ## factory;
 	{ \
 	    return new _classname( *this );\
 	}\
-	protected:\
+	private:\
 
 namespace envire
 {
@@ -115,7 +115,7 @@ namespace envire
     public:
 	static const std::string className;
 	
-	EnvironmentItem(std::string const& id);
+	explicit EnvironmentItem(std::string const& id);
 
 	/** overide copy constructor, to allow copying, but remove environment
 	 * information for the copied item */
@@ -256,8 +256,8 @@ namespace envire
 
         /** default constructor */
         FrameNode();
-        FrameNode(const TransformType &t);
-        FrameNode(const TransformWithUncertainty &t);
+        explicit FrameNode(const TransformType &t);
+        explicit FrameNode(const TransformWithUncertainty &t);
 
 	virtual void serialize(Serialization &so);
         virtual void unserialize(Serialization &so);
@@ -359,7 +359,7 @@ namespace envire
 	 */
 	Layer& operator=(const Layer& other);
 
-	Layer(std::string const& id);
+	explicit Layer(std::string const& id);
 	virtual ~Layer();
 
 	void serialize(Serialization& so);
@@ -533,7 +533,7 @@ namespace envire
     public:
 	static const std::string className;
 
-	CartesianMap(std::string const& id);
+	explicit CartesianMap(std::string const& id);
 
 	virtual const std::string& getClassName() const {return className;};
 
@@ -567,7 +567,7 @@ namespace envire
         // Defined later as it requires Environment
         Map();
 
-        Map(std::string const& id)
+        explicit Map(std::string const& id)
             : CartesianMap(id) {}
 
 	typedef Eigen::AlignedBox<double, DIMENSION> Extents;
@@ -638,7 +638,7 @@ namespace envire
          * @arg outputArity if nonzero, this is the number of outputs that this
          *                  operator requires
          */
-	Operator(std::string const& id, int inputArity = 0, int outputArity = 0);
+	explicit Operator(std::string const& id, int inputArity = 0, int outputArity = 0);
 
         /** Constructs a new operator
          *
@@ -647,7 +647,7 @@ namespace envire
          * @arg outputArity if nonzero, this is the number of outputs that this
          *                  operator requires
          */
-	Operator(int inputArity = 0, int outputArity = 0);
+	explicit Operator(int inputArity = 0, int outputArity = 0);
 
         /** Update the output layer(s) according to the defined operation.
          */
@@ -795,7 +795,7 @@ namespace envire
 	**/
 	void itemModified(EnvironmentItem* item);
 	
-	EnvironmentItem::Ptr getItem(std::string uniqueId) const
+	EnvironmentItem::Ptr getItem( const std::string& uniqueId ) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);
             if (it == items.end())
@@ -833,7 +833,7 @@ namespace envire
         }
 
 	template <class T>
-	boost::intrusive_ptr<T> getItem(std::string uniqueId) const
+	boost::intrusive_ptr<T> getItem( const std::string& uniqueId ) const
 	{
             itemListType::const_iterator it = items.find(uniqueId);
             if (it == items.end())
