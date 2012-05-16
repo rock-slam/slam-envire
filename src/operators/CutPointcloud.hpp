@@ -36,9 +36,11 @@ namespace envire {
         
     protected:
         bool isIncluded(const Eigen::Vector3d &vector);
+        void copyVertexData(Pointcloud* source, Pointcloud* target, bool do_transform = true, bool filter = true);
 
     protected:
         std::list<ExclusionBox*> exclusion_boxes;
+        boost::shared_ptr<Pointcloud> vertex_data_source;
     };
 }
 

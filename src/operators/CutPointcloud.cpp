@@ -7,6 +7,7 @@ ENVIRONMENT_ITEM_DEF( CutPointcloud )
 CutPointcloud::CutPointcloud() 
     : Operator(1,1)
 {
+    vertex_data_source.reset();
 }
 
 CutPointcloud::~CutPointcloud() 
@@ -68,15 +69,10 @@ bool CutPointcloud::isIncluded(const Eigen::Vector3d &vector)
     return true;
 }
 
-bool CutPointcloud::updateAll(){
-    Pointcloud* targetcloud = dynamic_cast<envire::Pointcloud*>(env->getOutputs(this).front());
-    assert( targetcloud );
+void CutPointcloud::copyVertexData(Pointcloud* sourcecloud, Pointcloud* targetcloud, bool do_transform, bool filter)
+{
     targetcloud->clear();
-
-    Pointcloud* sourcecloud = dynamic_cast<envire::Pointcloud*>(env->getInputs(this).front());
-    assert( sourcecloud );
-    assert( sourcecloud != targetcloud );
-
+    
     // get meta data
     std::vector<Eigen::Vector3d> *source_vertex_normal_data = NULL;
     std::vector<Eigen::Vector3d> *source_vertex_color_data = NULL;
@@ -108,26 +104,64 @@ bool CutPointcloud::updateAll(){
     }
     
     // get transformation
-    FrameNode::TransformType trans = 
-        env->relativeTransform( sourcecloud->getFrameNode(), targetcloud->getFrameNode() );
-    Eigen::Quaterniond normal_rot(trans.linear());
-
+    FrameNode::TransformType trans;
+    Eigen::Quaterniond normal_rot;
+    if(do_transform)
+    {
+        trans = env->relativeTransform( sourcecloud->getFrameNode(), targetcloud->getFrameNode() );
+        normal_rot = trans.linear();
+    }
+    
     for (unsigned i = 0; i < sourcecloud->vertices.size(); i++)
     {
-        if(isIncluded(sourcecloud->vertices[i]))
+        if(!filter || isIncluded(sourcecloud->vertices[i]))
         {
-            targetcloud->vertices.push_back(trans * sourcecloud->vertices[i]);
+            if(do_transform)
+            {
+                targetcloud->vertices.push_back(trans * sourcecloud->vertices[i]);
+                
+                if(source_vertex_normal_data && source_vertex_normal_data->size() > i)
+                    target_vertex_normal_data->push_back( normal_rot * source_vertex_normal_data->at(i) );
+            }
+            else
+            {
+                targetcloud->vertices.push_back(sourcecloud->vertices[i]);
+                
+                if(source_vertex_normal_data && source_vertex_normal_data->size() > i)
+                    target_vertex_normal_data->push_back(source_vertex_normal_data->at(i) );
+            }
             
-            if(source_vertex_normal_data && source_vertex_normal_data->size() > i)
-                target_vertex_normal_data->push_back( normal_rot * source_vertex_normal_data->at(i) );
             if(source_vertex_color_data && source_vertex_color_data->size() > i)
                 target_vertex_color_data->push_back( source_vertex_color_data->at(i) );
+            
             if(source_vertex_attributes_data && source_vertex_variance_data->size() > i)
                 target_vertex_attributes_data->push_back( source_vertex_attributes_data->at(i) );
+            
             if(source_vertex_variance_data && source_vertex_variance_data->size() > i)
                 target_vertex_variance_data->push_back( source_vertex_variance_data->at(i) );
         }
     }
+}
+
+bool CutPointcloud::updateAll()
+{    
+    Pointcloud* sourcecloud = dynamic_cast<envire::Pointcloud*>(env->getInputs(this).front());
+    Pointcloud* targetcloud = dynamic_cast<envire::Pointcloud*>(env->getOutputs(this).front());
+    assert( targetcloud && sourcecloud );
+    
+    bool do_transform = true;
+    if(targetcloud == sourcecloud)
+    {
+        do_transform = false;
+        if(!vertex_data_source.get())
+        {
+            vertex_data_source.reset(new Pointcloud);
+            copyVertexData(sourcecloud, vertex_data_source.get(), do_transform, false);
+        }
+        sourcecloud = vertex_data_source.get();
+    }
+    
+    copyVertexData(sourcecloud, targetcloud, do_transform);
 
     env->itemModified( targetcloud );
     return true;
