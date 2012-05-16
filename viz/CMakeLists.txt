@@ -16,10 +16,11 @@ rock_vizkit_plugin(envire-viz
     TreeViewListener.cpp
     ItemManipulator.cpp
     TraversabilityGridVisualization.cpp
+    PointcloudManipulator.cpp
     MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp
     DEPS envire
     DEPS_CMAKE GDAL
-    HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp
+    HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp PointcloudManipulator.hpp
     EnvironmentItemVisualizer.hpp)
 target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
 

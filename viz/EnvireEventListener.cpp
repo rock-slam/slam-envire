@@ -1,4 +1,6 @@
 #include "EnvireEventListener.hpp"
+#include "PointcloudManipulator.hpp"
+#include <envire/maps/Pointcloud.hpp>
 
 namespace envire 
 {
@@ -190,6 +192,13 @@ void EnvireEventListener::frameNodeSet(envire::CartesianMap* map, envire::FrameN
  
 void EnvireEventListener::frameNodeDetached(envire::CartesianMap* map, envire::FrameNode* node)
 {
+    if(pointcloudToManipulator[map])
+    {
+        PointcloudManipulator* manipulator = pointcloudToManipulator[map];
+        pointcloudToManipulator.erase(map);
+        delete manipulator;
+    }
+        
     removeChild(node, map);
 }
 
@@ -274,6 +283,15 @@ void EnvireEventListener::propertyChangedInVizualization()
                 it->second->update();
         }
     }
+}
+
+PointcloudManipulator* EnvireEventListener::getManipulatorForPointcloud(Pointcloud *pointcloud)
+{
+    if(!pointcloudToManipulator[pointcloud])
+    {
+        pointcloudToManipulator[pointcloud] = new PointcloudManipulator(pointcloud, getParentNodeForItem(pointcloud));
+    }
+    return pointcloudToManipulator[pointcloud];
 }
     
 }

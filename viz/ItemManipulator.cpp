@@ -11,6 +11,8 @@
 #include <osgManipulator/CommandManager>
 #include <osgManipulator/TrackballDragger>
 #include "FrameNodeManipulator.hpp"
+#include <envire/maps/Pointcloud.hpp>
+#include "PointcloudManipulator.hpp"
 
 #include <iostream>
 
@@ -151,5 +153,35 @@ void ItemManipulator::removeSelectedItems()
         envire::FrameNode* fn = dynamic_cast<envire::FrameNode*>(item);
         if(item && !(fn && fn->isRoot()))
             item->getEnvironment()->detachItem(item, true);
+    }
+}
+
+void ItemManipulator::createNewCutPCBox()
+{
+    QList<QTreeWidgetItem*> itemList = tvl->getSelectetWidgets();
+    if(!itemList.empty())
+    {
+        envire::EnvironmentItem* item = tvl->getItemForWidget(itemList.front());
+        envire::Pointcloud* pointcloud = dynamic_cast<envire::Pointcloud *>(item);
+        if(pointcloud)
+        {
+            PointcloudManipulator* manipulator = eel->getManipulatorForPointcloud(pointcloud);
+            manipulator->addManipulationBox();
+        }
+    }
+}
+
+void ItemManipulator::removeCutPCBox()
+{
+    QList<QTreeWidgetItem*> itemList = tvl->getSelectetWidgets();
+    if(!itemList.empty())
+    {
+        envire::EnvironmentItem* item = tvl->getItemForWidget(itemList.front());
+        envire::Pointcloud* pointcloud = dynamic_cast<envire::Pointcloud *>(item);
+        if(pointcloud)
+        {
+            PointcloudManipulator* manipulator = eel->getManipulatorForPointcloud(pointcloud);
+            manipulator->removeManipulationBox();
+        }
     }
 }

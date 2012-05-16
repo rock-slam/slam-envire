@@ -13,6 +13,9 @@
 
 namespace envire 
 {
+    
+class PointcloudManipulator;
+class Pointcloud;
 
 /** 
  * Implements a front/back buffering method for structural changes to 
@@ -83,6 +86,8 @@ class EnvireEventListener : public QObject, public envire::EventListener
 	osg::Group *getParentNodeForItem(envire::EnvironmentItem* item);
 	
 	EnvironmentItemVisualizer *getVisualizerForItem(envire::EnvironmentItem* item);
+        
+        PointcloudManipulator* getManipulatorForPointcloud(Pointcloud *pointcloud);
 	
 	virtual void childAdded( envire::FrameNode* parent, envire::FrameNode* child );    
 	virtual void childRemoved( envire::FrameNode* parent, envire::FrameNode* child );
@@ -111,6 +116,8 @@ class EnvireEventListener : public QObject, public envire::EventListener
 	std::map<envire::EnvironmentItem*, osg::ref_ptr<EnvireNode> > environmentToNode;
 
 	nodeCallback osgAddNode, osgRemoveNode;
+        
+        std::map<envire::CartesianMap*, PointcloudManipulator*> pointcloudToManipulator;
 };
 
 }

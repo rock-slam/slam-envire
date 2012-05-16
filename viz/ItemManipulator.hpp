@@ -22,6 +22,9 @@ class ItemManipulator : public QObject
         void hideSelectedItems();
         void unhideSelectedItems();
         void removeSelectedItems();
+        
+        void createNewCutPCBox();
+        void removeCutPCBox();
         /*
         void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 	void itemCollapsed ( QTreeWidgetItem * item );

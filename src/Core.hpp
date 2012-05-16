@@ -945,6 +945,10 @@ namespace envire
          * Note that a layer can be output of a single operator only
          */
 	Operator* getGenerator(Layer* output);
+        
+        /** Returns the operators that has \c input in its input.
+         */
+        std::list<Operator*> getGenerators(Layer* input);
 
         /** Returns the layers that are generated from \c input
          *

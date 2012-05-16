@@ -707,6 +707,20 @@ std::list<Layer*> Environment::getLayersGeneratedFrom(Layer* input)
     return result;
 }
 
+std::list<Operator*> Environment::getGenerators(Layer* input)
+{
+    std::list<Operator*> result;
+    for(operatorGraphType::iterator it=operatorGraphInput.begin();it != operatorGraphInput.end();++it)
+    {
+        if( it->second == input )
+        {
+            result.push_back(it->first);
+        }
+    }
+
+    return result;
+}
+
 Operator* Environment::getGenerator(Layer* output) 
 {
     for(operatorGraphType::iterator it=operatorGraphOutput.begin();it != operatorGraphOutput.end();++it)

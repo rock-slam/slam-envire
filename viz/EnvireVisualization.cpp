@@ -69,9 +69,13 @@ void EnvireVisualization::attachTreeWidget( QTreeWidget *treeWidget )
     QAction* hideItem = new QAction(QString("hide item"), treeWidget);
     QAction* unhideItem = new QAction(QString("unhide item"), treeWidget);
     QAction* removeItem = new QAction(QString("remove item"), treeWidget);
+    QAction* createNewBox = new QAction(QString("create new exclusion box"), treeWidget);
+    QAction* removeBox = new QAction(QString("remove first exclusion box"), treeWidget);
     treeWidget->addAction(hideItem);
     treeWidget->addAction(unhideItem);
     treeWidget->addAction(removeItem);
+    treeWidget->addAction(createNewBox);
+    treeWidget->addAction(removeBox);
     
     twl = boost::shared_ptr<TreeViewListener>(new TreeViewListener(treeWidget));
     ItemManipulator *im = new ItemManipulator(eventListener.get(), twl.get());
@@ -81,6 +85,8 @@ void EnvireVisualization::attachTreeWidget( QTreeWidget *treeWidget )
     QObject::connect(unhideItem, SIGNAL(triggered()), im, SLOT(unhideSelectedItems()));
     QObject::connect(treeWidget, SIGNAL(itemChanged ( QTreeWidgetItem *, int )), im, SLOT(itemChanged ( QTreeWidgetItem *, int)));
     QObject::connect(removeItem, SIGNAL(triggered()), im, SLOT(removeSelectedItems()));
+    QObject::connect(createNewBox, SIGNAL(triggered()), im, SLOT(createNewCutPCBox()));
+    QObject::connect(removeBox, SIGNAL(triggered()), im, SLOT(removeCutPCBox()));
     //view->installEventFilter(im);
     if( env )
 	env->addEventHandler(twl.get());
