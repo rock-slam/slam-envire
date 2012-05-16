@@ -75,7 +75,7 @@ void ItemManipulator::itemChanged(QTreeWidgetItem* item, int column)
     }
 }
 
-/*
+/**
 * This function hides all in TreeWidget selectet items using the hideItem function.
 */
 void ItemManipulator::hideSelectedItems()
@@ -87,7 +87,7 @@ void ItemManipulator::hideSelectedItems()
     }
 }
 
-/*
+/**
 * This function unhides all in TreeWidget selectet items using the unhideItem function.
 */
 void ItemManipulator::unhideSelectedItems()
@@ -99,7 +99,7 @@ void ItemManipulator::unhideSelectedItems()
     }
 }
 
-/*
+/**
 * Hides the osg representation of the given QTreeWidgetItem.
 */
 void ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
@@ -118,7 +118,7 @@ void ItemManipulator::hideItem(QTreeWidgetItem* widgetItem)
     }
 }
 
-/*
+/**
 * Unhides the osg representation of the given QTreeWidgetItem.
 */
 void ItemManipulator::unhideItem(QTreeWidgetItem* widgetItem)
@@ -137,11 +137,19 @@ void ItemManipulator::unhideItem(QTreeWidgetItem* widgetItem)
     }
 }
 
+
+/**
+ * Detaches the selected item and all its childs from the environment.
+ * The root node can't be removed.
+ */
 void ItemManipulator::removeSelectedItems()
 {
     QList<QTreeWidgetItem*> itemList = tvl->getSelectetWidgets();
     for(QList<QTreeWidgetItem*>::iterator it = itemList.begin(); it != itemList.end(); it++) 
     {
-        
+        envire::EnvironmentItem* item = tvl->getItemForWidget(*it);
+        envire::FrameNode* fn = dynamic_cast<envire::FrameNode*>(item);
+        if(item && !(fn && fn->isRoot()))
+            item->getEnvironment()->detachItem(item, true);
     }
 }
