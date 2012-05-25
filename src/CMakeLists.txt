@@ -32,6 +32,7 @@ rock_library(envire
     maps/MLSGrid.cpp
     maps/MLSMap.cpp
     maps/MapSegment.cpp
+    maps/OccupancyGrid.cpp
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
@@ -67,6 +68,7 @@ install(FILES maps/GridBase.hpp
     maps/LaserScan.hpp
     maps/MLSGrid.hpp
     maps/MLSMap.hpp
+    maps/OccupancyGrid.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
     maps/Featurecloud.hpp

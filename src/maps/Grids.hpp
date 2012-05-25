@@ -88,20 +88,6 @@ namespace envire
       };*/
   };
   
-  class OccupancyGrid : public Grid<unsigned char>
-  {
-      ENVIRONMENT_ITEM( OccupancyGrid )
-    public:
-      static const std::string OCCUPANCY;
-    private:
-      const static std::vector<std::string> &bands;  
-    public:
-      OccupancyGrid() : Grid<unsigned char>() {};
-      OccupancyGrid(size_t width, size_t height, double scalex, double scaley):Grid<unsigned char>::Grid(width,height,scalex,scaley){};
-      ~OccupancyGrid(){};
-      virtual const std::vector<std::string>& getBands() const {return bands;};
-  };
-  
   class ImageRGB24 : public Grid<unsigned char>
   {
       ENVIRONMENT_ITEM( ImageRGB24 )

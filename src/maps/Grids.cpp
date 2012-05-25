@@ -97,18 +97,6 @@ static const std::vector<std::string> &initElevationBands()
 const std::vector<std::string> &ElevationGrid::bands = initElevationBands();
 
 
-ENVIRONMENT_ITEM_DEF( OccupancyGrid )
-const std::string OccupancyGrid::OCCUPANCY = "occupancy";
-static const std::vector<std::string> &initOccupancyBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(OccupancyGrid::OCCUPANCY);
-  }
-  return bands;
-}
-const std::vector<std::string> &OccupancyGrid::bands = initOccupancyBands();
 
 ENVIRONMENT_ITEM_DEF( ImageRGB24 )
 const std::string ImageRGB24::R = "r";

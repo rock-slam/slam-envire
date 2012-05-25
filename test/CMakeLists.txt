@@ -10,6 +10,10 @@ rock_testsuite(test_mls unit/mls.cpp
     DEPS envire
     DEPS_CMAKE GDAL)
 
+rock_testsuite(test_occupancy unit/occupancy.cpp
+    DEPS envire
+    DEPS_CMAKE GDAL)
+
 rock_testsuite(test_uncertainty unit/uncertainty.cpp
     DEPS envire
     DEPS_CMAKE GDAL)
