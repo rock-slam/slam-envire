@@ -300,6 +300,18 @@ TransformWithUncertainty& TransformWithUncertainty::operator=( const base::sampl
     return *this;
 }
 
+
+std::ostream& envire::operator<<(std::ostream &out, const  TransformWithUncertainty& trans)
+{
+    out << trans.getTransform().matrix() << "\n";
+    if (trans.hasUncertainty())
+    {
+	out << trans.getCovariance().topLeftCorner<3,3>() << "\n";
+	out << trans.getCovariance().bottomRightCorner<3,3>() << "\n";
+    }
+    return out;
+}
+
 void TransformWithUncertainty::copyToRigidBodyState( base::samples::RigidBodyState& rbs ) const
 {
     base::Pose pose( getTransform() );

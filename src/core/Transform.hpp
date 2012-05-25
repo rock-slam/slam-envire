@@ -58,6 +58,7 @@ namespace envire
      */
     class TransformWithUncertainty
     {
+
     public:
 	typedef Eigen::Matrix<double,6,6> Covariance;
 
@@ -93,7 +94,8 @@ namespace envire
 
 	TransformWithUncertainty& operator=( const base::samples::RigidBodyState& rbs );
 	void copyToRigidBodyState( base::samples::RigidBodyState& rbs ) const;
-
+	
+	
 	const Covariance& getCovariance() const { return cov; }
 	void setCovariance( const Covariance& cov ) { this->cov = cov; uncertain = true; }
 	const Transform& getTransform() const { return trans; }
@@ -106,6 +108,10 @@ namespace envire
 	Covariance cov;
 	bool uncertain;
     };
+    
+    /** Default std::cout function
+     */
+    std::ostream & operator<<(std::ostream &out, const  TransformWithUncertainty& trans);
 }
 
 #endif
