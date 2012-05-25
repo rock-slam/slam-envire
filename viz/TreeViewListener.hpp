@@ -18,7 +18,8 @@ class TreeViewListener : public QObject, public envire::EventListener
 	TreeViewListener(QTreeWidget *tw);
 	virtual void childAdded(envire::FrameNode* parent, envire::FrameNode* child);
 	virtual void childRemoved(envire::FrameNode* parent, envire::FrameNode* child);
-	
+	virtual void itemDetached( envire::EnvironmentItem* item );
+        
 	virtual void frameNodeSet(envire::CartesianMap* map, envire::FrameNode* node);
 	virtual void frameNodeDetached(envire::CartesianMap* map, envire::FrameNode* node);
 

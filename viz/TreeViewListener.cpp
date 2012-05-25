@@ -1,5 +1,4 @@
 #include "TreeViewListener.hpp"
-#include "ItemManipulator.hpp"
 
 #include <string>
 #include <iostream>
@@ -95,6 +94,14 @@ void TreeViewListener::childRemoved(envire::FrameNode* parent, envire::FrameNode
     widgetToNode.erase(childW);
     
     delete childW;
+}
+
+void TreeViewListener::itemDetached(EnvironmentItem* item)
+{
+    // for the case that the root node gets replaced
+    envire::FrameNode* fn = dynamic_cast<envire::FrameNode*>(item);
+    if(fn && fn->isRoot())
+        removeRootNode(fn);
 }
 
 TreeViewListener::TreeViewListener(QTreeWidget* tw)
