@@ -122,6 +122,7 @@ void MLSMap::createGrid( const Transform& trans )
 
     MLSGrid* grid_clone = active->cloneShallow(); 
     FrameNode* fn = new FrameNode( trans );
+    fn->setUniqueId( getUniqueIdPrefix() + "/" );
     env->addChild( active->getFrameNode(), fn );
     env->setFrameNode( grid_clone, fn );
 
@@ -131,12 +132,14 @@ void MLSMap::createGrid( const Transform& trans )
 MLSMap* MLSMap::cloneDeep()
 {
     MLSMap* res = clone();
+    res->setUniqueId( getUniqueIdPrefix() + "/" );
     // copy the layer structure as well
     if( env )
     {
 	// create a copy of the currently active map
 	// and reference the others
 	MLSGrid* active_clone = active->clone();
+	active_clone->setUniqueId( getUniqueIdPrefix() + "/" );
 	res->grids.back() = active_clone;
 	res->active = active_clone;
 
