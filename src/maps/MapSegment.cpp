@@ -3,6 +3,7 @@
 #include <envire/tools/ExpectationMaximization.hpp>
 
 #include <limits>
+#include <numeric/stats.hpp>
 
 using namespace envire;
 using namespace std;
@@ -10,7 +11,7 @@ using namespace std;
 ENVIRONMENT_ITEM_DEF( MapSegment )
 
 MapSegment::MapSegment()
-    : zVar(0)
+    : m_zVar(0)
 {
 }
 
@@ -48,37 +49,26 @@ void MapSegment::addPart( const base::Affine3d& pose, CartesianMap* map, double 
 {
     Part p = { map, base::Pose( pose ), weight };
     parts.push_back( p );
-    this->zVar += zVar;
+    m_zVar += weight * zVar;
 }
 
 void MapSegment::update()
 {
-    // run the full ExpectationMinimization algorithm 
-    // on the parts already stored
-    
-    const int gmm_size = 2;
-    const int gmm_offset = 3;
+    // simplified version:
+    // instead of using a full GMM model,
+    // for now we just use a single gaussian.
 
-    vector<Eigen::Matrix<double,gmm_size,1,Eigen::DontAlign> > em_pars;
-    vector<double> em_weights;
-    typedef GaussianMixture<double, gmm_size> GMMR;
-    envire::ExpectationMaximization<GMMR> em;
+    base::Stats< base::Vector6d > stats;
     for( size_t i=0; i<parts.size(); i++ )
     {
-	em_pars.push_back( parts[i].pose.toVector6d().segment<gmm_size>(gmm_offset) );
-	em_weights.push_back( parts[i].weight );
-
-	std::cout 
-	    << em_weights.back() << ": " 
-	    << em_pars.back().transpose()
-	    << std::endl;
+	stats.update(
+	    parts[i].pose.toVector6d(),
+	    parts[i].weight );
     }
-    em.initialize( 3, em_pars, em_weights );
-    em.run( 1e-5, 50 );
+    double zVar = m_zVar / stats.sumWeights();
 
     // HACK !!!
     // augment the covariance with some uncertainties
-    double zVar = this->zVar / parts.size();
     double 
 	xrotVar = pow((1.0/180)*M_PI, 2),
 	yrotVar = pow((1.0/180)*M_PI, 2);
@@ -88,23 +78,10 @@ void MapSegment::update()
 
     // copy to gmm
     gmm.params.clear();
-    for( size_t i=0; i < em.gmm.params.size(); i++ )
-    {
-	envire::Gaussian<double,6> gaussian;
-	gaussian.mean.setZero();
-	gaussian.mean.segment<gmm_size>(gmm_offset) = em.gmm.params[i].dist.mean;
-	gaussian.cov.setZero();
-	gaussian.cov.block<gmm_size,gmm_size>(gmm_offset,gmm_offset) = em.gmm.params[i].dist.cov;
-
-	gaussian.cov += diag.asDiagonal();
-
-	std::cout << "mean" << std::endl;
-	std::cout << gaussian.mean.transpose() << std::endl;
-	std::cout << "Covariance" << std::endl;
-	std::cout << gaussian.cov << std::endl;
-
-	gmm.params.push_back( GMM::Parameter( em.gmm.params[i].weight, gaussian ) );
-    }
+    envire::Gaussian<double,6> gaussian( 
+	    stats.mean(), 
+	    base::Matrix6d(stats.var()) + base::Matrix6d(diag.asDiagonal()) );
+    gmm.params.push_back( GMM::Parameter( 1.0, gaussian ) );
 }
 
 TransformWithUncertainty MapSegment::getTransform() const
@@ -149,6 +126,8 @@ CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
     {
 	// for now take the norm, this may need some different
 	// weighting of distance and angular values
+	
+	// TODO need to ignore the z (and probably pitch and roll) part!
 	const double dist = (parts[i].pose.toVector6d() - pose6d).norm();
 	if( dist < best_dist )
 	{

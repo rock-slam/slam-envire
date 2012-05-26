@@ -70,7 +70,7 @@ protected:
     /** 
      * HACK variance of z value of pose
     */
-    double zVar;
+    double m_zVar;
 
     typedef GaussianMixture<double, 6> GMM;
 
