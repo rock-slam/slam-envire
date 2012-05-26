@@ -18,10 +18,11 @@ public:
     envire::Map<3>::Extents getExtents() const;
 
 public:
+    MapSegment();
 
     /** @brief Add a map and its pose to the list of hypothesis stored by this map segment
      */
-    void addPart( const base::Affine3d& pose, CartesianMap* map, double weight );
+    void addPart( const base::Affine3d& pose, CartesianMap* map, double weight, double zVar = 0 );
         
     /** @brief Update the gaussian mixture representation based on the poses in the
      * map segment
@@ -66,6 +67,10 @@ protected:
 	 */
 	double weight;
     };
+    /** 
+     * HACK variance of z value of pose
+    */
+    double zVar;
 
     typedef GaussianMixture<double, 6> GMM;
 

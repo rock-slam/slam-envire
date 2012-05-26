@@ -9,6 +9,11 @@ using namespace std;
 
 ENVIRONMENT_ITEM_DEF( MapSegment )
 
+MapSegment::MapSegment()
+    : zVar(0)
+{
+}
+
 envire::Map<3>::Extents MapSegment::getExtents() const
 {
     // combine the extents of the children of this map
@@ -39,29 +44,67 @@ envire::Map<3>::Extents MapSegment::getExtents() const
     return extents;
 }
 
-void MapSegment::addPart( const base::Affine3d& pose, CartesianMap* map, double weight )
+void MapSegment::addPart( const base::Affine3d& pose, CartesianMap* map, double weight, double zVar )
 {
     Part p = { map, base::Pose( pose ), weight };
     parts.push_back( p );
+    this->zVar += zVar;
 }
 
 void MapSegment::update()
 {
     // run the full ExpectationMinimization algorithm 
     // on the parts already stored
-    vector<base::Vector6d> em_pars;
+    
+    const int gmm_size = 2;
+    const int gmm_offset = 3;
+
+    vector<Eigen::Matrix<double,gmm_size,1,Eigen::DontAlign> > em_pars;
     vector<double> em_weights;
-    envire::ExpectationMaximization<GMM> em;
+    typedef GaussianMixture<double, gmm_size> GMMR;
+    envire::ExpectationMaximization<GMMR> em;
     for( size_t i=0; i<parts.size(); i++ )
     {
-	em_pars.push_back( parts[i].pose.toVector6d() );
+	em_pars.push_back( parts[i].pose.toVector6d().segment<gmm_size>(gmm_offset) );
 	em_weights.push_back( parts[i].weight );
-    }
-    em.initialize( 5, em_pars, em_weights );
-    em.run( 1e-5, 10 );
 
-    // and store the resulting gmm
-    gmm.params.swap( em.gmm.params );
+	std::cout 
+	    << em_weights.back() << ": " 
+	    << em_pars.back().transpose()
+	    << std::endl;
+    }
+    em.initialize( 3, em_pars, em_weights );
+    em.run( 1e-5, 50 );
+
+    // HACK !!!
+    // augment the covariance with some uncertainties
+    double zVar = this->zVar / parts.size();
+    double 
+	xrotVar = pow((1.0/180)*M_PI, 2),
+	yrotVar = pow((1.0/180)*M_PI, 2);
+
+    base::Vector6d diag;
+    diag << xrotVar, yrotVar, 0, 0, 0, zVar;
+
+    // copy to gmm
+    gmm.params.clear();
+    for( size_t i=0; i < em.gmm.params.size(); i++ )
+    {
+	envire::Gaussian<double,6> gaussian;
+	gaussian.mean.setZero();
+	gaussian.mean.segment<gmm_size>(gmm_offset) = em.gmm.params[i].dist.mean;
+	gaussian.cov.setZero();
+	gaussian.cov.block<gmm_size,gmm_size>(gmm_offset,gmm_offset) = em.gmm.params[i].dist.cov;
+
+	gaussian.cov += diag.asDiagonal();
+
+	std::cout << "mean" << std::endl;
+	std::cout << gaussian.mean.transpose() << std::endl;
+	std::cout << "Covariance" << std::endl;
+	std::cout << gaussian.cov << std::endl;
+
+	gmm.params.push_back( GMM::Parameter( em.gmm.params[i].weight, gaussian ) );
+    }
 }
 
 TransformWithUncertainty MapSegment::getTransform() const
