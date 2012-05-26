@@ -12,6 +12,7 @@ namespace envire
 class MapSegment : public Map<3>
 {
     ENVIRONMENT_ITEM( MapSegment )
+    friend class MapSegmentVisualization;
 
 public:
     envire::Map<3>::Extents getExtents() const;
@@ -77,6 +78,11 @@ protected:
     /** vector of map hypothesis of this segment
      */
     std::vector<Part> parts;
+
+public:
+    /** vector of trajectories, which may record the position of parts over time
+     */
+    std::vector<std::vector<base::Vector3d> > trajectories;
 };
 }
 
