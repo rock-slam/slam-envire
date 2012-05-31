@@ -25,6 +25,8 @@ envire::Map<3>::Extents MapSegment::getExtents() const
 	const envire::CartesianMap *map = it->map.get();
 	const Map<2>* map2 = dynamic_cast<const Map<2>*>( map );
 	const Map<3>* map3 = dynamic_cast<const Map<3>*>( map );
+	assert( this->isAttached() );
+	assert( map->isAttached() );
 	Eigen::Affine3d g2m = map->getFrameNode()->relativeTransform( this->getFrameNode() );
 
 	// currently this assumes that child grids are not rotated
@@ -111,7 +113,7 @@ TransformWithUncertainty MapSegment::getTransform() const
     throw std::runtime_error("MapSegment does not have a pose distribution.");
 }
 
-CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
+CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose, base::Affine3d& map_pose, size_t &traj_size ) const
 {
     // find the pose in the parts, which has the smallest distance to 
     // the provided pose
@@ -132,7 +134,10 @@ CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
 	if( dist < best_dist )
 	{
 	    best_map = parts[i].map.get();
+	    map_pose = parts[i].pose.toTransform();
 	    best_dist = dist;
+	    if( trajectories.size() > i )
+		traj_size = trajectories[i].size();
 	}
     }
 

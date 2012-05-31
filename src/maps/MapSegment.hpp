@@ -43,7 +43,7 @@ public:
     /** @brief Provide the stored map, for which the end pose is closest to the
      * provided pose.
      */
-    CartesianMap* getMapForPose( const base::Affine3d& pose ) const;
+    CartesianMap* getMapForPose( const base::Affine3d& pose, base::Affine3d& map_pose, size_t &traj_size ) const;
 
     /** @brief get the best map without any knowledge on a relative transformation
      *
