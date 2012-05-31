@@ -140,7 +140,8 @@ MLSMap* MLSMap::cloneDeep()
 	// and reference the others
 	MLSGrid* active_clone = active->clone();
 	active_clone->setUniqueId( getUniqueIdPrefix() + "/" );
-	res->grids.back() = active_clone;
+	if( res->grids.size() )
+	    res->grids.back() = active_clone;
 	res->active = active_clone;
 
 	env->setFrameNode( active_clone, active->getFrameNode() );
