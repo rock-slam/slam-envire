@@ -603,7 +603,7 @@ namespace envire
          */
         Eigen::Vector3d fromMap(Eigen::Vector3d const& point) const
         {
-            return toMap(point, *getFrameNode()->getRoot());
+            return fromMap(point, *getFrameNode()->getRoot());
         }
 
         /** Transforms a point from the map's own frame to an arbitrary frame
