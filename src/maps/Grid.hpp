@@ -550,7 +550,9 @@ namespace envire
       if (getScaleX() == 0 || getScaleY() == 0)
       {
           double adfGeoTransform[6];
-          poDataset->GetGeoTransform(adfGeoTransform);  
+          if( poDataset->GetGeoTransform(adfGeoTransform) == CE_Failure )  
+	      throw std::runtime_error("file has no geotransform information");
+
           scalex = fabs(adfGeoTransform[1]);
           scaley = fabs(adfGeoTransform[5]);
           if (fabs(adfGeoTransform[4] * cellSizeY) > scaley * 1e-2  || fabs(adfGeoTransform[2]) > scalex * 1e-2)
