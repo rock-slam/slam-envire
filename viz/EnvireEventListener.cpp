@@ -228,7 +228,8 @@ EnvironmentItemVisualizer* EnvireEventListener::getVisualizerForItem(envire::Env
 void EnvireEventListener::itemAttached ( envire::EnvironmentItem* item )
 {
     //an item should never be attached twice !
-    assert(environmentToNode.count(item) == 0);    
+    if( environmentToNode.count(item) )
+	throw std::runtime_error( "Item " + item->getClassName() + " with id " + item->getUniqueId() + " is already attached." );
 
     EnvironmentItemVisualizer *viz = getVisualizerForItem(item);
     //item not handled
