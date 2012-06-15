@@ -188,6 +188,14 @@ namespace envire
             return getFromRaster(band, raster_x, raster_y);
         } 
 
+        T& get(std::string const& band, double x, double y)
+	{
+            size_t raster_x, raster_y;
+            if (!toGrid(x, y, raster_x, raster_y))
+                throw std::runtime_error("provided coordinates are out of the grid");
+            return getFromRaster(band, raster_x, raster_y);
+	}
+
 	bool inGrid( double x, double y) const
 	{
 	    return (x >= 0) && (x < cellSizeX) && (y >= 0) && (y < cellSizeY); 

@@ -72,6 +72,7 @@ bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
 {
     size_t am = floor((x-offsetx)/scalex);
     size_t an = floor((y-offsety)/scaley);
+
     if( 0 <= am && am < cellSizeX && 0 <= an && an < cellSizeY )
     {
 	xi = am;

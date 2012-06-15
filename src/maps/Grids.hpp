@@ -62,6 +62,7 @@ namespace envire
       static const std::string ELEVATION_MAX;
     private:
       const static std::vector<std::string> &bands;
+
     public:
       ElevationGrid() : Grid<double>() {};
       ElevationGrid(size_t width, size_t height, double scalex, double scaley):Grid<double>::Grid(width,height,scalex,scaley){};
@@ -73,19 +74,57 @@ namespace envire
         Grid<double>::convertToFrame(ElevationGrid::ELEVATION,frame);
       }
 
+      double& get(double x, double y)
+      { return Grid<double>::get(ELEVATION, x, y); }
+
       double get(double x, double y) const
       { return Grid<double>::get(ELEVATION, x, y); }
-      
-      //read all bands from one file
-    /*  virtual void readMap(const std::string& path)
+
+      /** @brief get the normal vector at the given position
+       */
+      Eigen::Vector3d getNormal( const Point2D& pos ) const
       {
-	std::cout << "loading all GridData for " << getClassName() << " disabled" <<std::endl;
-	std::cout << "create empty grid " << getClassName() <<std::endl;
-	width = 120;
-	height = 850;
-	scalex = 0.125;
-	scaley = 0.125;
-      };*/
+	  size_t m, n;
+	  if (!toGrid(pos.x(), pos.y(), m, n ))
+	      throw std::runtime_error("provided coordinates are out of the grid");
+
+	  const ArrayType &grid( getGridData( ELEVATION ) );
+	  double slope_x = (grid[n][m-1] - grid[n][m+1]) / (getScaleX()*2.0);
+	  double slope_y = (grid[n-1][m] - grid[n+1][m]) / (getScaleY()*2.0);
+
+	  return Eigen::Vector3d( slope_x, slope_y, 1.0 ).normalized();
+      }
+
+      /** @brief get the elevation at the given point 
+       *
+       * The underlying model assumes the height value to be at
+       * the center of the cell, and a surface is approximated
+       * using the getNormal. The Height value is the value of the
+       * plane at that point.
+       */
+      double getElevation( const Point2D& pos ) const
+      {
+	  size_t m, n;
+	  if (!toGrid(pos.x(), pos.y(), m, n ))
+	      throw std::runtime_error("provided coordinates are out of the grid");
+
+	  double x, y;
+	  fromGrid( m, n, x, y );
+
+	  x -= pos.x();
+	  y -= pos.y();
+
+	  Eigen::Vector3d normal = getNormal( pos );
+	  double slope_x = normal.x() / normal.z();
+	  double slope_y = normal.y() / normal.z();
+
+	  double height = 
+	      getFromRaster( ELEVATION, m, n ) +
+	      x * slope_x +
+	      y * slope_y;
+
+	  return height;
+      }
   };
   
   class OccupancyGrid : public Grid<unsigned char>
