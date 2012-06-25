@@ -58,5 +58,5 @@ module RasterMapView
         super
     end
 end
-
+Vizkit.default_loader
 Vizkit::UiLoader.register_ruby_widget 'RasterMapView', RasterMapView.method(:new)
