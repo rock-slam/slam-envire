@@ -319,11 +319,11 @@ struct RadialLUT
             int map_x = centerx + x - this->centerx;
             int map_y = centery + y - this->centery;
             uint8_t& current = result[map_y][map_x];
-            if (current == mark_value || current == expected_value)
-                return;
-
-            current = mark_value;
-            LOG_DEBUG("  marking %i %i", map_x, map_y);
+            if (current != expected_value)
+	    {
+		current = mark_value;
+		LOG_DEBUG("  marking %i %i", map_x, map_y);
+	    }
             boost::tie(x, y) = parents[y][x];
         }
     }
