@@ -14,6 +14,7 @@ static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
 MLSGrid::MLSGrid()
     : GridBase()
+    , cells(0)
     , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
     , hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
 {
@@ -22,7 +23,7 @@ MLSGrid::MLSGrid()
 
 MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scaley, double offsetx, double offsety)
     : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
-    , cells( boost::extents[cellSizeX][cellSizeY] )
+    , cells( new SurfacePatch_ptr[cellSizeX * cellSizeY] )
     , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
     , hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
 {
@@ -31,11 +32,12 @@ MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scale
 
 void MLSGrid::clear()
 {
-    for(size_t xi=0;xi<cellSizeX;xi++)
+    
+    for(size_t yi=0;yi<cellSizeY;yi++)
     {
-	for(size_t yi=0;yi<cellSizeY;yi++)
+	for(size_t xi=0;xi<cellSizeX;xi++)
 	{
-	    cells[xi][yi] = NULL;
+	    cells[xi + yi*cellSizeX] = NULL;
 	}
     }
     mem_pool.purge_memory();
@@ -47,15 +49,15 @@ void MLSGrid::clear()
 
 MLSGrid::MLSGrid(const MLSGrid& other)
     : GridBase( other )
-    , cells( boost::extents[other.cellSizeX][other.cellSizeY] )
+    , cells( new SurfacePatch_ptr[cellSizeX * cellSizeY]  )
     , gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount )
     , hasCellColor_( other.hasCellColor_), mem_pool( sizeof( SurfacePatchItem ) )
 {
     clear();
     hasCellColor_ = other.hasCellColor_;
-    for(size_t xi=0;xi<cellSizeX;xi++)
+    for(size_t yi=0;yi<cellSizeY;yi++)
     {
-	for(size_t yi=0;yi<cellSizeY;yi++)
+	for(size_t xi=0;xi<cellSizeX;xi++)
 	{
 	    for( const_iterator it = other.beginCell( xi,yi ); it != other.endCell(); it++ )
 		insertTail( xi, yi, *it );
@@ -70,13 +72,15 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 	GridBase::operator=(other);
 
 	mem_pool.purge_memory();
-	cells.resize( boost::extents[cellSizeX][cellSizeY] );
+	
+	delete[] cells;
+	cells = new SurfacePatch_ptr[cellSizeX * cellSizeY];
 
-	for(size_t xi=0;xi<cellSizeX;xi++)
+	for(size_t yi=0;yi<cellSizeY;yi++)
 	{
-	    for(size_t yi=0;yi<cellSizeY;yi++)
+	    for(size_t xi=0;xi<cellSizeX;xi++)
 	    {
-		cells[xi][yi] = NULL;
+		cells[xi + yi * cellSizeX] = NULL;
 		for( const_iterator it = other.beginCell( xi,yi ); it != endCell(); it++ )
 		    insertTail( xi, yi, *it );
 	    }
@@ -103,6 +107,7 @@ envire::MLSGrid* MLSGrid::cloneShallow() const
 
 MLSGrid::~MLSGrid()
 {
+    delete[] cells;
 }
 
 void MLSGrid::serialize(Serialization& so)
@@ -122,7 +127,16 @@ void MLSGrid::unserialize(Serialization& so)
     else
 	hasCellColor_ = false;
 
-    cells.resize( boost::extents[cellSizeX][cellSizeY] );
+    delete[] cells;
+    cells = new SurfacePatch_ptr[cellSizeX * cellSizeY];
+    for(size_t yi=0;yi<cellSizeY;yi++)
+    {
+	for(size_t xi=0;xi<cellSizeX;xi++)
+	{
+	    cells[xi + yi * cellSizeX] = NULL;
+	}
+    }
+    
     std::string filename = getMapFileName() + ".mls";
 
     std::istream *is;
@@ -298,12 +312,12 @@ void MLSGrid::readMap(std::istream& is)
 
 MLSGrid::iterator MLSGrid::beginCell( size_t xi, size_t yi )
 {
-    return iterator( cells[xi][yi] );
+    return iterator( cells[xi + yi * cellSizeX] );
 }
 
 MLSGrid::const_iterator MLSGrid::beginCell( size_t xi, size_t yi ) const
 {
-    return const_iterator( cells[xi][yi] );
+    return const_iterator( cells[xi + yi * cellSizeX] );
 }
 
 MLSGrid::iterator MLSGrid::endCell()
@@ -320,10 +334,11 @@ void MLSGrid::insertHead( size_t xi, size_t yi, const SurfacePatch& value )
 {
     SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
     static_cast<SurfacePatch&>(*n_item).operator=(value);
-    n_item->next = cells[xi][yi];
-    n_item->pthis = &cells[xi][yi];
+    SurfacePatchItem *ptr = cells[xi + yi * cellSizeX];
+    n_item->next = ptr;
+    n_item->pthis = &cells[xi + yi * cellSizeX];
 
-    cells[xi][yi] = n_item;
+    ptr = n_item;
     addCell( Position( xi, yi ) );
 }
 
@@ -348,8 +363,8 @@ void MLSGrid::insertTail( size_t xi, size_t yi, const SurfacePatch& value )
     }
     else
     {
-	cells[xi][yi] = n_item;
-	n_item->pthis = &cells[xi][yi];
+	cells[xi + yi * cellSizeX] = n_item;
+	n_item->pthis = &cells[xi + yi * cellSizeX];
     }
 
     addCell( Position( xi, yi ) );
@@ -580,11 +595,11 @@ std::pair<double, double> MLSGrid::matchHeight( const MLSGrid& other )
 
     double d1=0, d2=0;
 
-    for(size_t xi=0;xi<cellSizeX;xi++)
+    for(size_t yi=0;yi<cellSizeY;yi++)
     {
-	for(size_t yi=0;yi<cellSizeY;yi++)
+	for(size_t xi=0;xi<cellSizeX;xi++)
 	{
-	    if( other.cells[xi][yi] && cells[xi][yi] )
+	    if( other.cells[xi + yi * cellSizeX] &&  cells[xi + yi * cellSizeX])
 	    {
 		for( const_iterator it = other.beginCell(xi,yi); it != other.endCell(); it++ )
 		{

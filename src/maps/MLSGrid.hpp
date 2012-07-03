@@ -381,7 +381,9 @@ namespace envire
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
-	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
+	typedef SurfacePatchItem * SurfacePatch_ptr; 
+	
+	typedef SurfacePatch_ptr* ArrayType; 
 	ArrayType cells;
 
 	double gapSize;
