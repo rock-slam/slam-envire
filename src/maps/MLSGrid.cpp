@@ -334,11 +334,11 @@ void MLSGrid::insertHead( size_t xi, size_t yi, const SurfacePatch& value )
 {
     SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
     static_cast<SurfacePatch&>(*n_item).operator=(value);
-    SurfacePatchItem *ptr = cells[xi + yi * cellSizeX];
-    n_item->next = ptr;
-    n_item->pthis = &cells[xi + yi * cellSizeX];
+    SurfacePatchItem **ptr = &cells[xi + yi * cellSizeX];
+    n_item->next = *ptr;
+    n_item->pthis = ptr;
 
-    ptr = n_item;
+    *ptr = n_item;
     addCell( Position( xi, yi ) );
 }
 
