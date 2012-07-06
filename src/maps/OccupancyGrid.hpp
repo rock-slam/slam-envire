@@ -26,6 +26,14 @@ class OccupancyGrid : public Grid<float>
     virtual void clear(float initial_prob = 0.5);
 
     virtual bool updateProbability(int x,int y,float propability);
+
+    //***EgoOccupancyGrid***
+    //updateVehiclePosition
+    //updateVehicleOrientation
+    //getVehiclePositon
+    //getVehicleCellPositon
+    //getVehicleOrientation
+    //getImage
 };
 
 };
