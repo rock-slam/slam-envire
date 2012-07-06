@@ -21,11 +21,11 @@ class OccupancyGrid : public Grid<float>
     OccupancyGrid(size_t width, size_t height, double scalex, double scaley);
     ~OccupancyGrid(){};
 
-    float getProbability(double posX, double posY);
+    bool getProbability(int x, int y,float &probability) const;
     virtual const std::vector<std::string>& getBands() const {return bands;};
     virtual void clear(float initial_prob = 0.5);
 
-    virtual bool updateProbability(double posX, double posY, double propability);
+    virtual bool updateProbability(int x,int y,float propability);
 };
 
 };

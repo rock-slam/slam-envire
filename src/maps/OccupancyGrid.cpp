@@ -21,15 +21,13 @@ OccupancyGrid::OccupancyGrid(size_t width, size_t height, double scalex, double 
         clear();
 }
 
-bool OccupancyGrid::updateProbability(double posX, double posY, double propability){
-    size_t x,y;
-    if(!toGrid(posX,posY,x,y)){
+bool OccupancyGrid::updateProbability(int x, int y, float propability){
+    if(!inGrid(x,y))
         return false;
-    }
     
     //See Probailistic robotics Page 226 (Chapter 9 Algorithm occupancy grid mapping)
     float &value = getGridData()[x][y];
-    value = value + log10f(propability/(1.0-propability)) - l_0;
+    value = value + log10f(propability/std::max(1e-6,1.0-propability)) - l_0;
     return true; 
 };
 
@@ -45,17 +43,13 @@ void OccupancyGrid::clear(float initial_prob)
     }
 }
 
-float OccupancyGrid::getProbability(double posX, double posY)
+bool OccupancyGrid::getProbability(int x, int y,float &probability) const
 {
-    size_t x,y;
-    if(!toGrid(posX,posY,x,y)){
-        return std::numeric_limits<float>::signaling_NaN();
-    }
+    if(!inGrid(x,y))
+        return false;
+
     float value = powf(10,getGridData()[x][y]);
     //convert from odd-log to probability
-    float result =  value/(1.0+value);
-    return result;
+    probability =  value/(1.0+value);
+    return true;
 }
-
-
-
