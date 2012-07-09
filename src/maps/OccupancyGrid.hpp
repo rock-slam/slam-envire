@@ -11,29 +11,70 @@ class OccupancyGrid : public Grid<float>
     ENVIRONMENT_ITEM( OccupancyGrid )
   public:
     static const std::string OCCUPANCY;
+
   private:
     const static std::vector<std::string> &bands; 
 
-    //Initial probabiliity in odd-log form
-    float l_0;
+    Point2D vehicle_pos;          // position [in cells] of the vehicle inside the grid
+    float vehicle_orientation;    // orientation/heading [in rad] of the vehicle in
+                                  // respect to the grid
+    float ego_radius;             // current radius of the ego centered occupancy grid
+                                  // this is only used for display
+    float l_0;                    // Initial probability in odd-log form
+
   public:
     OccupancyGrid() : Grid<float>() {};
     OccupancyGrid(size_t width, size_t height, double scalex, double scaley);
     ~OccupancyGrid(){};
 
-    bool getProbability(int x, int y,float &probability) const;
     virtual const std::vector<std::string>& getBands() const {return bands;};
+    void serialize(Serialization& so);
+    void unserialize(Serialization& so);
     virtual void clear(float initial_prob = 0.5);
 
-    virtual bool updateProbability(int x,int y,float propability);
+    //updates the probability of the given cell
+    virtual bool updateCellProbability(int x,int y,float propability);
 
-    //***EgoOccupancyGrid***
-    //updateVehiclePosition
-    //updateVehicleOrientation
-    //getVehiclePositon
-    //getVehicleCellPositon
-    //getVehicleOrientation
-    //getImage
+    //returns the probability of the given cell [cells]
+    float getCellProbability(int x, int y) const;
+
+    // updates the probability relative to the current vehicle position
+    // x is always in the direction of the vehicle [m]
+    void updateProbability(float x,float y,float propability);
+
+    // gets the probability relative to the current vehicle position
+    // x is always in the direction of the vehicle [m]
+    float getProbability(float x, float y) const;
+
+    // updates the vehicle position relative to the current vehicle
+    // position and orientation [m]
+    // x is always in the direction of the vehicle
+    void updateVehiclePosition(float x,float y);
+
+    // updates the vehicle position relative to the grid frame [cells]
+    void updateVehicleCellPosition(float x,float y);
+
+    // updates the orientation of the vehicle relative to the grid frame [rad]
+    void updateVehilceOrientation(float heading);
+
+    // getter for the vehicle position relative to the grid frame [cells]
+    Point2D getVehicleCellPosition() const;
+
+    // getter for the orientation of the vehicle relative to the grid frame [rad]
+    float getVehilceOrientation() const;
+    
+    // moves the content of the grid according to the current vehicle position
+    // so that the vehicle is located on a virtual circle (radius [m]) around
+    // the center of the grid and is pointing to the center
+    //
+    // This operation can be used after updateVehilceOrientation or updateVehilcePosition
+    // was called to normalize the grid to an ego centered occupancy grid
+    void normalizeEgoGrid(float radius = 0.0F);
+
+  private:
+    //moves each cell value to the new cell given by delta_x and delta_y
+    //all cells which were not overwritten are set to the value of empty 
+    void moveCellValues(int delta_x,int delta_y,float empty = 0);
 };
 
 };
