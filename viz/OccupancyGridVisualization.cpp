@@ -41,7 +41,7 @@ namespace envire
 	for(size_t x = 0; x < (unsigned int) image_width; x++)
 	{
 	    unsigned char* pos = mydata + (y * image_width * 3 + x * 3);
-            grid->getProbability(x,y,val);
+            val = 255*grid->getProbability(x,y);
             val = 255*val;
 	    *pos = val;
 	    pos++;
