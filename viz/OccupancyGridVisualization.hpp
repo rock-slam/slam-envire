@@ -12,6 +12,7 @@ namespace envire
       public:
 	  virtual bool handlesItem(envire::EnvironmentItem *item) const;
 	  virtual void updateNode(envire::EnvironmentItem *item, osg::Group *node) const;
+          void setColor(const osg::Vec4d& color, osg::Geode* geode);
   };
 }
 

@@ -34,7 +34,7 @@ OccupancyGrid::OccupancyGrid(size_t width, size_t height, double scalex, double 
 
 void OccupancyGrid::serialize(Serialization& so)
 {
-    GridBase::serialize(so);
+    Grid::serialize(so);
 
     so.write("vehicle_position_x", vehicle_position.x());
     so.write("vehicle_position_y", vehicle_position.y());
@@ -45,14 +45,29 @@ void OccupancyGrid::serialize(Serialization& so)
 
 void OccupancyGrid::unserialize(Serialization& so)
 {
-    GridBase::unserialize(so);
+    std::cout << "loading grid" << std::endl;
+    Grid::unserialize(so);
     so.read("vehicle_position_x", vehicle_position.x());
+    std::cout << "position " << vehicle_position.x() << std::endl;
     so.read("vehicle_position_y", vehicle_position.y());
+    std::cout << "position " << vehicle_position.y() << std::endl;
     so.read("vehicle_orientation", vehicle_orientation);
     so.read("ego_radius", ego_radius);
     so.read("l_0", l_0);
+    std::cout << "l_0 " << l_0<< std::endl;
+    std::cout << "size " << cellSizeX << "/" << cellSizeY << std::endl;
+    std::cout << "end" << std::endl;
 }
+
     
+GridBase::Point2D OccupancyGrid::fromVehicle(double x, double y)const
+{
+    GridBase::Point2D point;
+    point.x() = vehicle_position.x()+x*cos(-vehicle_orientation)/scalex-y*sin(-vehicle_orientation)/scaley;
+    point.y() = vehicle_position.y()+x*sin(-vehicle_orientation)/scalex+y*cos(-vehicle_orientation)/scaley;
+    return point;
+}
+
 void OccupancyGrid::clear(float initial_prob)
 {
     if(initial_prob < 0 || initial_prob > 1)
@@ -63,11 +78,15 @@ void OccupancyGrid::clear(float initial_prob)
     Point2D center = getCenterPoint();
     updateVehicleCellPosition(center.x()/scalex, center.y()/scaley);
     l_0 = log10f(initial_prob/std::max(1e-6,1.0-initial_prob));  //prevent division by zero!
+    clearCellValues(l_0);
+}
 
+void OccupancyGrid::clearCellValues(float val)
+{
     ArrayType array = getGridData();
     for(size_t xi=0;xi<cellSizeX;++xi)
 	for(size_t yi=0;yi<cellSizeY;++yi)
-	    array[xi][yi] = l_0;
+	    array[xi][yi] = val;
 }
 
 void OccupancyGrid::updateCellProbability(int x, int y, float probability)
@@ -80,7 +99,6 @@ void OccupancyGrid::updateCellProbability(int x, int y, float probability)
     //See Probabilistic robotics Page 226 (Chapter 9 Algorithm occupancy grid mapping)
     float &value = getGridData()[x][y];
     value = value + log10f(probability/std::max(1e-6,1.0-probability))-l_0; //prevent division by zero!
-    std::cout << "update cell " << x << "/" << y << " = " << value << std::endl;
 }
 
 float OccupancyGrid::getCellProbability(int x, int y) const
@@ -96,12 +114,11 @@ float OccupancyGrid::getCellProbability(int x, int y) const
 
 void OccupancyGrid::updateProbability(float x, float y, float probability)
 {
-    float fx = vehicle_position.x()+x*cos(-vehicle_orientation)/scalex-y*sin(-vehicle_orientation)/scaley;
-    float fy = vehicle_position.y()+x*sin(-vehicle_orientation)/scalex+y*cos(-vehicle_orientation)/scaley;
-    int ix = (int) fx;
-    int iy = (int) fy;
-    float factor_x = fx-ix;
-    float factor_y = fy-iy;
+    GridBase::Point2D point = fromVehicle(x,y);
+    int ix = (int) point.x();
+    int iy = (int) point.y();
+    float factor_x = point.x()-ix;
+    float factor_y = point.y()-iy;
 
     updateCellProbability(ix,iy,probability);
 
@@ -117,12 +134,11 @@ void OccupancyGrid::updateProbability(float x, float y, float probability)
 
 float OccupancyGrid::getProbability(float x, float y) const
 {
-    float fx = vehicle_position.x()+x*cos(-vehicle_orientation)/scalex-y*sin(-vehicle_orientation)/scaley;
-    float fy = vehicle_position.y()+x*sin(-vehicle_orientation)/scalex+y*cos(-vehicle_orientation)/scaley;
-    int ix = (int) fx;
-    int iy = (int) fy;
-    float factor_x = fx-ix;
-    float factor_y = fy-iy;
+    GridBase::Point2D point = fromVehicle(x,y);
+    int ix = (int) point.x();
+    int iy = (int) point.y();
+    float factor_x = point.x()-ix;
+    float factor_y = point.y()-iy;
 
     // bi linear interpolation across several cells if 
     // the position is 10% away from the cell center
@@ -138,15 +154,12 @@ float OccupancyGrid::getProbability(float x, float y) const
 
 void OccupancyGrid::updateVehiclePosition(float x,float y)
 {
-    //TODO use to grid from grid methods ???
-    float fx = vehicle_position.x()+x*cos(-vehicle_orientation)/scalex-y*sin(-vehicle_orientation)/scaley;
-    float fy = vehicle_position.y()+x*sin(-vehicle_orientation)/scalex+y*cos(-vehicle_orientation)/scaley;
-    updateVehicleCellPosition(fx,fy);
+    GridBase::Point2D point = fromVehicle(x,y);
+    updateVehicleCellPosition(point.x(),point.y());
 }
 
 void OccupancyGrid::updateVehicleCellPosition(float x,float y)
 {
-    std::cout << "update " << x << " " << y << std::endl;
     vehicle_position.x() = x;
     vehicle_position.y() = y;
 }
@@ -168,9 +181,11 @@ float OccupancyGrid::getVehicleOrientation() const
     return vehicle_orientation;
 }
 
-void OccupancyGrid::normalizeEgoGrid(float radius)
+void OccupancyGrid::normalizeVehilcePosition(float radius)
 {
-    ego_radius = radius/scalex;         //TODO what happend if scalex differes from scaley
+    if(scalex != scaley)
+        throw std::domain_error("normalizeVehilcePosition: scalex and scaley must have the same value");
+    ego_radius = radius/scalex;
 
     // calculate desired vehicle position 
     // the orientation determines the position on the circle
@@ -189,8 +204,13 @@ void OccupancyGrid::normalizeEgoGrid(float radius)
 
 void OccupancyGrid::moveCellValues(int delta_x,int delta_y, float empty)
 {
-    //TODO check if the delta is to big and just clear all fields in this case
-    //calculate array views
+    // delta is too big no old vales have to be copied
+    if(delta_x >(int) getCellSizeX() || delta_y >(int) getCellSizeY())
+    {
+        clearCellValues(l_0);
+        return;
+    }
+
     typedef ArrayType::index_range range_t;
     ArrayType &array = getGridData();
     range_t new_range_x(std::max(0,delta_x),std::min(getCellSizeX(),delta_x+getCellSizeX()));
@@ -202,7 +222,6 @@ void OccupancyGrid::moveCellValues(int delta_x,int delta_y, float empty)
     int dim_x = new_view.shape()[0]; 
     int dim_y = new_view.shape()[1]; 
 
-    std::cout << "move cell values " << delta_x << " / " << delta_y << " dim: " << dim_x << "/" << dim_y << std::endl;
 
     //check if we have to copy from top to bottom or vice versa to not 
     //overwrite values before they got copied
@@ -263,3 +282,9 @@ void OccupancyGrid::moveCellValues(int delta_x,int delta_y, float empty)
                 array[i][j] = empty;
     }
 }
+
+float OccupancyGrid::getEgoRadius()
+{
+    return ego_radius;
+}
+

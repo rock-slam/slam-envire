@@ -31,6 +31,7 @@ class OccupancyGrid : public Grid<float>
     void serialize(Serialization& so);
     void unserialize(Serialization& so);
     virtual void clear(float initial_prob = 0.5);
+    virtual void clearCellValues(float initial_prob = 0.5);
 
     //updates the probability of the given cell
     virtual void updateCellProbability(int x,int y,float probability);
@@ -69,7 +70,14 @@ class OccupancyGrid : public Grid<float>
     //
     // This operation can be used after updateVehicleOrientation or updateVehiclePosition
     // was called to normalize the grid to an ego centered occupancy grid
-    void normalizeEgoGrid(float radius = 0.0F);
+    //
+    // Note: scalex and scaley must have the same value otherwise an domain error is thrown
+    void normalizeVehilcePosition(float radius = 0.0F);
+
+    // convertes x,y expressed relative to the vehicle to grid coordinates
+    Point2D fromVehicle(double x, double y)const;
+
+    float getEgoRadius();
 
   private:
     //moves each cell value to the new cell given by delta_x and delta_y
