@@ -18,7 +18,7 @@ public:
     /**
      * Adds an eventHandler that gets called whenever there
      * are modifications to the evironment.
-     * Note, the handler gets called from the evire thread context.
+     * Note, the handler gets called from the envire thread context.
      */
     void addEventHandler(EventHandler *handler);
 
