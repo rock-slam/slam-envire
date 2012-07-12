@@ -181,7 +181,7 @@ float OccupancyGrid::getVehicleOrientation() const
     return vehicle_orientation;
 }
 
-void OccupancyGrid::normalizeVehilcePosition(float radius)
+void OccupancyGrid::normalizeVehiclePosition(float radius)
 {
     if(scalex != scaley)
         throw std::domain_error("normalizeVehilcePosition: scalex and scaley must have the same value");

@@ -21,7 +21,6 @@ BOOST_AUTO_TEST_CASE( BaseOccupancyGridTest )
     BOOST_CHECK_CLOSE(point.y(),50,1e-6);
 }
 
-
 BOOST_AUTO_TEST_CASE( OccupancyGrid_NORMALIZEEGO ) 
 {
     boost::scoped_ptr<Environment> env( new Environment() );
@@ -43,7 +42,7 @@ BOOST_AUTO_TEST_CASE( OccupancyGrid_NORMALIZEEGO )
 
     //move vehicle from the center to the circle of a radius of one
     //all cell values are moved accordingly
-    map->normalizeVehilcePosition(1);
+    map->normalizeVehiclePosition(1);
     BOOST_CHECK_CLOSE(map->getProbability(2,2), 1.0, 1e-3);
     BOOST_CHECK_CLOSE(map->getProbability(4,2), 1.0, 1e-3);
     BOOST_CHECK_CLOSE(map->getCellProbability(101,102), 1.0, 1e-3);
@@ -57,7 +56,7 @@ BOOST_AUTO_TEST_CASE( OccupancyGrid_NORMALIZEEGO )
     //to stay on the circle and pointing to the center
     //the values are now behind the vehicle
     map->updateVehicleOrientation(M_PI);
-    map->normalizeVehilcePosition(1);
+    map->normalizeVehiclePosition(1);
     BOOST_CHECK_CLOSE(map->getProbability(-2,-2), 1.0, 1e-3);
     BOOST_CHECK_CLOSE(map->getProbability(-4,-2), 1.0, 1e-3);
     BOOST_CHECK_CLOSE(map->getCellProbability(103,102), 1.0, 1e-3);
@@ -70,7 +69,7 @@ BOOST_AUTO_TEST_CASE( OccupancyGrid_NORMALIZEEGO )
 
     // turn 90°
     map->updateVehicleOrientation(M_PI*0.5);
-    map->normalizeVehilcePosition(1);
+    map->normalizeVehiclePosition(1);
     BOOST_CHECK_CLOSE(map->getProbability(-2,2), 1.0, 1e-3);
     BOOST_CHECK_CLOSE(map->getProbability(-2,4), 1.0, 1e-3);
     BOOST_CHECK_CLOSE(map->getCellProbability(102,101), 1.0, 1e-3);
@@ -84,12 +83,12 @@ BOOST_AUTO_TEST_CASE( OccupancyGrid_NORMALIZEEGO )
     map->updateVehicleOrientation(0);
     map->updateVehicleCellPosition(100,100);
     map->updateVehiclePosition(10.5,10.5);
-    map->normalizeVehilcePosition(0);
+    map->normalizeVehiclePosition(0);
     point = map->getVehicleCellPosition();
     BOOST_CHECK_EQUAL(point.x(),100.5);
     BOOST_CHECK_EQUAL(point.y(),100.5);
 
-    map->normalizeVehilcePosition(10);
+    map->normalizeVehiclePosition(10);
 
     env->serialize("/home/aduda/dev/environment");
 }

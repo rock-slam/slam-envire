@@ -41,6 +41,7 @@ class OccupancyGrid : public Grid<float>
 
     // updates the probability relative to the current vehicle position
     // x is always in the direction of the vehicle [m]
+    // TODO add way to set footprint 
     void updateProbability(float x,float y,float propability);
 
     // gets the probability relative to the current vehicle position
@@ -72,7 +73,7 @@ class OccupancyGrid : public Grid<float>
     // was called to normalize the grid to an ego centered occupancy grid
     //
     // Note: scalex and scaley must have the same value otherwise an domain error is thrown
-    void normalizeVehilcePosition(float radius = 0.0F);
+    void normalizeVehiclePosition(float radius = 0.0F);
 
     // convertes x,y expressed relative to the vehicle to grid coordinates
     Point2D fromVehicle(double x, double y)const;
