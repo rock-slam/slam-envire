@@ -59,7 +59,6 @@ void OccupancyGrid::unserialize(Serialization& so)
     std::cout << "end" << std::endl;
 }
 
-    
 GridBase::Point2D OccupancyGrid::fromVehicle(double x, double y)const
 {
     GridBase::Point2D point;
@@ -72,6 +71,10 @@ void OccupancyGrid::clear(float initial_prob)
 {
     if(initial_prob < 0 || initial_prob > 1)
         throw std::out_of_range("the given probability must lie insight the interval [0..1]!");
+
+    //prevents log(0)
+    if(initial_prob < 1e-6)
+        initial_prob = 1e-6;
 
     ego_radius = 0;
     vehicle_orientation = 0;
@@ -110,7 +113,6 @@ float OccupancyGrid::getCellProbability(int x, int y) const
     //convert from odd-log to probability
     return value/(1.0+value);
 }
-
 
 void OccupancyGrid::updateProbability(float x, float y, float probability)
 {
@@ -285,6 +287,6 @@ void OccupancyGrid::moveCellValues(int delta_x,int delta_y, float empty)
 
 float OccupancyGrid::getEgoRadius()
 {
-    return ego_radius;
+    return ego_radius*scalex;
 }
 

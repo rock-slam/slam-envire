@@ -81,6 +81,10 @@ namespace envire
               image_width*grid->getScaleX() + grid->getOffsetX(),
               image_height*grid->getScaleY() + grid->getOffsetY());
 
+      // switch off lighting for this node
+      osg::StateSet* stategeode = geode->getOrCreateStateSet();
+      stategeode->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+
       // draw circle 
       osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
       osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
@@ -103,10 +107,10 @@ namespace envire
       // draw vehicle 
       osg::ref_ptr<osg::Geode> c2g = new osg::Geode();
       GridBase::Point2D position = grid->getVehicleCellPosition();
-      osg::ref_ptr<osg::Cone> c2 = new osg::Cone(osg::Vec3f(position.x(),position.y(),0.0), 0.30, 1.0);
+      osg::ref_ptr<osg::Cone> c2 = new osg::Cone(osg::Vec3f(position.x()*grid->getScaleX(),position.y()*grid->getScaleY(),0.0), 0.30, 1.0);
       c2->setRotation(osg::Quat(0.5*M_PI, osg::Vec3d(0,1,0))*
                       osg::Quat(grid->getVehicleOrientation(), osg::Vec3d(0,0,1)));
       osg::ref_ptr<osg::ShapeDrawable> c2d = new osg::ShapeDrawable(c2);
-      geode->addDrawable(c2d.get());    
+      geode->addDrawable(c2d.get());
   }
 }

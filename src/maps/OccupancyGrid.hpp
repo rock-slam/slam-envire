@@ -19,7 +19,7 @@ class OccupancyGrid : public Grid<float>
     float vehicle_orientation;    // orientation/heading [in rad] of the vehicle in
                                   // respect to the grid
     float ego_radius;             // current radius of the ego centered occupancy grid
-                                  // this is only used for display
+                                  // this is only used for display [in cells]
     float l_0;                    // Initial probability in odd-log form
 
   public:
@@ -78,6 +78,7 @@ class OccupancyGrid : public Grid<float>
     // convertes x,y expressed relative to the vehicle to grid coordinates
     Point2D fromVehicle(double x, double y)const;
 
+    // returns the radius [m]
     float getEgoRadius();
 
   private:
