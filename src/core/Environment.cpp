@@ -135,7 +135,7 @@ EnvironmentItem::Ptr EnvironmentItem::detach()
 
 const std::string Environment::ITEM_NOT_ATTACHED = "";
 
-Environment::Environment() : last_id(0), envPrefix("/")
+Environment::Environment() : last_id(0), synchronizationEventQueue(NULL),envPrefix("/")
 {
     // each environment has a root node
     rootNode = new FrameNode();
@@ -153,6 +153,7 @@ Environment::~Environment()
     {
 	it->second->detach();
     }
+    delete synchronizationEventQueue;
 }
 
 void Environment::publishChilds(EventHandler *evl, FrameNode *parent)
@@ -820,5 +821,24 @@ Environment* Environment::unserialize(std::string const& path)
 void Environment::applyEvents(std::vector<BinaryEvent> const& events)
 {
     BinarySerialization::applyEvents(this, events);
+}
+
+void Environment::pullEvents(std::vector<BinaryEvent> &events,bool all)
+{
+    std::cout << "pull events" << std::endl;
+    if(synchronizationEventQueue && all)
+    {
+        std::cout << "reset" << std::endl;
+        eventHandlers.removeEventHandler(synchronizationEventQueue);
+        addEventHandler(synchronizationEventQueue);
+    }
+    if(synchronizationEventQueue == NULL)
+    {
+        std::cout << "create queue" << std::endl;
+        synchronizationEventQueue = new SynchronizationEventQueue();
+        addEventHandler(synchronizationEventQueue);
+    }
+    std::cout << "pop" << std::endl;
+    synchronizationEventQueue->popEvents(events);
 }
 
