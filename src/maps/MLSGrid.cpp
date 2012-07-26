@@ -669,7 +669,10 @@ float MLSGrid::match( const MLSGrid& other, const Eigen::Affine3d& other2this, c
 	}
     }
 
-    return (float)match / (float)count;
+    if( count )
+	return (float)match / (float)count;
+    else
+	return 1.0;
 }
 
 std::pair<double, double> MLSGrid::matchHeight( const MLSGrid& other )
