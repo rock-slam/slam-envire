@@ -63,7 +63,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
     // go through all the cells that have been touched
     typedef MultiLevelSurfaceGrid::Position position;
-    std::set<position> &cells = t_grid->getIndex()->cells;
+    const std::set<position> &cells = t_grid->getIndex()->cells;
 
     for(std::set<position>::iterator it = cells.begin(); it != cells.end(); it++)
     {

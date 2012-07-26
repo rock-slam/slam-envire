@@ -372,7 +372,7 @@ namespace envire
 	/** returns a pointer to the index. The pointer is only valid
 	 * if the index has been initialized through initIndex()
 	 */
-	Index* getIndex() { return index.get(); }
+	const Index* getIndex() const { return index.get(); }
 
 	/** return the extents of the subset of the grid, which 
 	 * contains cells.
