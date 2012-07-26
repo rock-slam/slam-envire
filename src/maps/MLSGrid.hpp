@@ -372,6 +372,21 @@ namespace envire
 	 */
 	void merge( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset );
 
+	/** 
+	 * see how well the other MLSGrid matches into this one 
+	 *
+	 * effectively this function calculates the ratio of patches which
+	 * match for cells that have at least one patch.
+	 *
+	 * @param other grid to match 
+	 * @param other2this transformation from other grid to this grid
+	 * @param offset mean, stdev well be added to the other cells before
+	 *        merging. Also update_idx will be used from offset
+	 * @param sampling only take a subset of 1/sampling cells to match
+	 * @param sigma value to use for the matching
+	 */
+	float match( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset, size_t sampling, float sigma );
+
 	/** mark a cell of the grid as being used. Adds it to the index if
 	 * available and updates the extents of the grid.
 	 */

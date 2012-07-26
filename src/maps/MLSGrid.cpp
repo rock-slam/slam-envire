@@ -620,6 +620,58 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
 	setHasCellColor( hadCellColor );
 }
 
+float MLSGrid::match( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset, size_t sampling, float sigma )
+{
+    if( !other.getIndex() )
+	throw std::runtime_error("MLSGrid::merge() currently only indexed sources are supported.");
+    const std::set<Position> &cells = other.getIndex()->cells;
+
+    // go through the index and match each cell  
+    size_t idx = 0;
+    size_t count = 0;
+    size_t match = 0;
+    for(std::set<Position>::iterator it = cells.begin(); it != cells.end(); it++)
+    {
+	if( idx++ % sampling == 0 )
+	{
+	    // get center of cell and transform position
+	    // to this grid
+	    Eigen::Vector3d pos( Eigen::Vector3d::Zero() );
+	    other.fromGrid( it->x, it->y, pos.x(), pos.y() );
+	    pos = other2this * pos;
+
+	    // if it is still valid in this grid get cell position
+	    size_t m, n;
+	    if( toGrid( pos.x(), pos.y(), m, n ) )
+	    {
+		Position pos(m, n);
+		// iterate through cells in source map
+		envire::MLSGrid::const_iterator cit = other.beginCell(it->x,it->y); 
+		if( cit != other.endCell() )
+		{
+		    while( cit != other.endCell() )
+		    {
+			SurfacePatch meas_patch( *cit );
+			meas_patch.mean += offset.mean;
+			meas_patch.stdev = sqrt( pow( meas_patch.stdev, 2 ) + pow( offset.stdev, 2 ) );
+			meas_patch.update_idx = offset.update_idx;
+
+			if( get( pos, meas_patch, sigma ) )
+			{
+			    ++match;
+			    break;
+			}
+			++cit;
+		    }
+		    ++count;
+		}
+	    }
+	}
+    }
+
+    return (float)match / (float)count;
+}
+
 std::pair<double, double> MLSGrid::matchHeight( const MLSGrid& other )
 {
     assert( other.getWidth() == getWidth() && other.getHeight() == getHeight() );
