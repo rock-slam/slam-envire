@@ -357,7 +357,20 @@ namespace envire
 	bool getHasCellColor() const { return hasCellColor_; }
 
     public:
+	/** @deprecated
+	 */
 	std::pair<double, double> matchHeight( const MLSGrid& other );
+
+	/** 
+	 * merge another MLSGrid into this grid applying a transform
+	 * if necessary.
+	 *
+	 * @param other grid to merge into this
+	 * @param other2this transformation from other grid to this grid
+	 * @param offset mean, stdev well be added to the other cells before
+	 *        merging. Also update_idx will be used from offset
+	 */
+	void merge( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset );
 
 	/** mark a cell of the grid as being used. Adds it to the index if
 	 * available and updates the extents of the grid.
