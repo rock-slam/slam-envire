@@ -347,7 +347,9 @@ void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer
         std::cout << std::endl;
     }
 
-    boost::multi_array<uint8_t, 2>& data = map.getGridData(band_name);
+    OutputLayer::ArrayType& data = band_name.empty() ?
+        map.getGridData() :
+        map.getGridData(output_band);
     for (unsigned int y = 0; y < map.getHeight(); ++y)
     {
         for (unsigned int x = 0; x < map.getWidth(); ++x)
