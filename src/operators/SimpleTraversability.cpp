@@ -235,7 +235,13 @@ bool SimpleTraversability::updateAll()
         }
     }
 
-    closeNarrowPassages(*output_layer, output_band, conf.min_width);
+    // perform some post processing if required
+    if( conf.min_width > 0 )
+	closeNarrowPassages(*output_layer, output_band, conf.min_width);
+
+    if( conf.obstacle_clearance > 0 )
+	growObstacles(*output_layer, output_band, conf.obstacle_clearance);
+
     return true;
 }
 
@@ -328,6 +334,51 @@ struct RadialLUT
         }
     }
 };
+
+void SimpleTraversability::growObstacles(OutputLayer& map, std::string const& band_name, double width)
+{
+    const double width_square = pow(width,2);
+    const int 
+	wx = width / map.getScaleX(), 
+	wy = width / map.getScaleY();
+    const double 
+	sx = map.getScaleX(),
+	sy = map.getScaleY();
+
+
+    OutputLayer::ArrayType& orig_data = band_name.empty() ?
+        map.getGridData() :
+        map.getGridData(output_band);
+
+    OutputLayer::ArrayType data( orig_data );
+
+    for (unsigned int y = 0; y < map.getHeight(); ++y)
+    {
+        for (unsigned int x = 0; x < map.getWidth(); ++x)
+        {
+            int value = orig_data[y][x];
+            if (value == CLASS_OBSTACLE)
+            {
+		// make everything with radius width around the obstacle also
+		// an obstacle
+		for( int oy = -wy; oy <= wy; ++oy )
+		{
+		    for( int ox = -wx; ox <= wx; ++ox )
+		    {
+			const int tx = x+ox;
+			const int ty = y+oy;
+			if( (pow(ox*sx,2) + pow(oy*sy,2) < width_square )
+				&& tx >= 0 && tx < (int)map.getWidth()
+				&& ty >= 0 && ty < (int)map.getWidth() )
+			    data[ty][tx] = CLASS_OBSTACLE;
+		    }
+		}
+	    }
+	}
+    }
+
+    std::swap( data, orig_data );
+}
 
 void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer& map, std::string const& band_name, double min_width)
 {

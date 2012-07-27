@@ -31,12 +31,18 @@ namespace envire {
          */
        double ground_clearance;
 
+       /** Clearance in (m) around obstacles. When set to a value larger than
+	* 0, all obstacles will be grown by a border of given width.
+	*/
+       double obstacle_clearance;
+
        SimpleTraversabilityConfig()
            : weight_force(0)
            , force_threshold(0)
            , class_count(0)
            , min_width(0)
-           , ground_clearance(0) {}
+           , ground_clearance(0)
+	   , obstacle_clearance(0) {}
     };
 
     /** @brief Classification of terrain into symbolic traversability classes, based on
@@ -125,6 +131,7 @@ namespace envire {
 
         bool updateAll();
         void closeNarrowPassages(OutputLayer& map, std::string const& band_name, double min_width);
+        void growObstacles(OutputLayer& map, std::string const& band_name, double width);
 
         void serialize(envire::Serialization& so);
         void unserialize(envire::Serialization& so);
