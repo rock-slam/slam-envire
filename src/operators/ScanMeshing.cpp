@@ -19,6 +19,7 @@ void ScanMeshing::setDefaultConfiguration()
     remissionScaleFactor = 10000; 
     remissionMarkerThreshold = 16000;
     minRange = 0.1;
+    maxRange = 1e9;
     extractMarkers = false;
 }
 
@@ -60,6 +61,11 @@ void ScanMeshing::setMaxEdgeLength( double value )
 void ScanMeshing::setMinRange( double value ) 
 {
     minRange = value;
+}
+
+void ScanMeshing::setMaxRange( double value ) 
+{
+    maxRange = value;
 }
 
 void ScanMeshing::setRemissionScaleFactor( double value ) 
@@ -153,7 +159,7 @@ bool ScanMeshing::updateAll()
 		fabs(prev_edgeAngle-M_PI*0.5) < maxEdgeAngle;
 	    prev_edgeAngle = edgeAngle;
 
-            if( range > minRange && pass ) 
+            if( range > minRange && range < maxRange && pass ) 
 	    {
                 float xx = std::cos( psi ) * range;
 

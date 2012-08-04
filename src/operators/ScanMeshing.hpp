@@ -16,6 +16,7 @@ namespace envire
 	double remissionScaleFactor;
 	long remissionMarkerThreshold;
 	double minRange;
+	double maxRange;
 
 	bool extractMarkers;
 
@@ -32,6 +33,7 @@ namespace envire
 	void setRemissionScaleFactor( double value );
 	void setRemissionMarkerThreshold( long value );
 	void setMinRange( double value );
+	void setMaxRange( double value );
 	void setExtractMarkers( bool value );
 	bool updateAll();
 
