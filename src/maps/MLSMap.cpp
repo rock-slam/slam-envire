@@ -114,7 +114,7 @@ void MLSMap::addGrid( MLSGrid::Ptr grid )
     active = grid;
 }
 
-void MLSMap::selectActiveGrid( const FrameNode* fn, double threshold  )
+void MLSMap::selectActiveGrid( const FrameNode* fn, double threshold, bool aligned  )
 {
     // go through the grids, and store the ones where the center is within threshold
     MLSGrid* best_grid = NULL;
@@ -138,6 +138,12 @@ void MLSMap::selectActiveGrid( const FrameNode* fn, double threshold  )
     else
     {
 	Transform t = fn->relativeTransform( getActiveGrid()->getFrameNode() );
+	if( aligned )
+	{
+	    // remove rotation
+	    t.linear().setIdentity();
+	    // TODO align to grid size
+	}
 	createGrid( t );
     }
 }

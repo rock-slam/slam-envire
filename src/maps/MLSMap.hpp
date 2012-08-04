@@ -48,7 +48,7 @@ public:
      * @param double threshold - if t is within threshold of grid center, that
      *        grid is made active
      */
-    void selectActiveGrid( const FrameNode* fn, double threshold  );
+    void selectActiveGrid( const FrameNode* fn, double threshold, bool aligned = true );
 
     /** @return the currently active grid
      */
