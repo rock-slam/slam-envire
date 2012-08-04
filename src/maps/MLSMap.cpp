@@ -114,6 +114,34 @@ void MLSMap::addGrid( MLSGrid::Ptr grid )
     active = grid;
 }
 
+void MLSMap::selectActiveGrid( const FrameNode* fn, double threshold  )
+{
+    // go through the grids, and store the ones where the center is within threshold
+    MLSGrid* best_grid = NULL;
+    double best_dist = threshold; 
+
+    for( size_t i=0; i<grids.size(); ++i )
+    {
+	Transform t = fn->relativeTransform( grids[i]->getFrameNode() );
+	double dist = std::max( fabs(t.translation().x()), fabs(t.translation().y() ) );
+	if( dist < best_dist )
+	{
+	    best_grid = grids[i].get();
+	    best_dist = dist;
+	}
+    }
+
+    if( best_grid )
+    {
+	active = best_grid;
+    }
+    else
+    {
+	Transform t = fn->relativeTransform( getActiveGrid()->getFrameNode() );
+	createGrid( t );
+    }
+}
+
 void MLSMap::createGrid( const Transform& trans )
 {
     // don't do anything if there is no template 
@@ -137,7 +165,11 @@ MLSMap* MLSMap::cloneDeep()
 	// create a copy of the currently active map
 	// and reference the others
 	MLSGrid* active_clone = active->clone();
-	res->grids.back() = active_clone;
+	std::vector<MLSGrid::Ptr>::iterator it = 
+	    std::find( res->grids.begin(), res->grids.end(), active );
+
+	assert( it != res->grids.end() );
+	*it = active_clone;
 	res->active = active_clone;
 
 	env->setFrameNode( active_clone, active->getFrameNode() );

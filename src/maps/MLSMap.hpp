@@ -39,6 +39,17 @@ public:
      */
     void createGrid( const Transform& trans );
 
+    /** 
+     * based on the transform this function will set the active grid to a
+     * previous grid, which is within range, or create a new grid. In both
+     * cases, the resulting grid is made active.
+     *
+     * @param fn - center of this framenode is used for distance measurement 
+     * @param double threshold - if t is within threshold of grid center, that
+     *        grid is made active
+     */
+    void selectActiveGrid( const FrameNode* fn, double threshold  );
+
     /** @return the currently active grid
      */
     MLSGrid::Ptr getActiveGrid() const { return active; }
