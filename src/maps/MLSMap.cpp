@@ -142,7 +142,9 @@ void MLSMap::selectActiveGrid( const FrameNode* fn, double threshold, bool align
 	{
 	    // remove rotation
 	    t.linear().setIdentity();
-	    // TODO align to grid size
+	    // align to grid size
+	    t.translation().x() = floor(t.translation().x() / active->getScaleX()) * active->getScaleX();
+	    t.translation().y() = floor(t.translation().y() / active->getScaleY()) * active->getScaleY();
 	}
 	createGrid( t );
     }
