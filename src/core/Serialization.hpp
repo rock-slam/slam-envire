@@ -305,5 +305,24 @@ namespace envire
 
 	void addBinaryEvent( const envire::Event& message );
     };
+
+    /**
+     * @brief Used for conversion of Events into Binary events.
+     *
+     * Use this class if you are interested in converting envire events into
+     * binary events without implementing your own handler class. All
+     * binary events are stored insight a vector until pop is called.
+     */
+    class SynchronizationEventQueue: public SynchronizationEventHandler
+    {
+    public:
+        SynchronizationEventQueue();
+
+	/** @brief pops all events and clears the internal queue
+	 */
+        void popEvents(std::vector<BinaryEvent>& msgs);
+    private:
+        void handle( std::vector<BinaryEvent>& msgs){};
+    };
 }
 #endif

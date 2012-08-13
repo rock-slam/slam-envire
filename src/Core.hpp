@@ -51,6 +51,7 @@ namespace envire
     class EnvironmentItem;
     class Serialization;
     class EventHandler;
+    class SynchronizationEventQueue;
     class Event;
     class SerializationFactory;
 
@@ -754,6 +755,10 @@ namespace envire
 	operatorGraphType operatorGraphInput;
 	operatorGraphType operatorGraphOutput;
 	cartesianMapGraphType cartesianMapGraph;
+
+        // handler to keep track of all changes to synchronize this environment
+        // with other environments
+        SynchronizationEventQueue *synchronizationEventQueue;
 	
 	FrameNode* rootNode;
         std::string envPrefix;
@@ -1080,6 +1085,13 @@ namespace envire
         /** Apply a set of serialized modifications to this environment
          */
         void applyEvents(std::vector<BinaryEvent> const& events);
+
+        /** Pulls all binary events from the environment 
+         *  (serialiaze all items as binary events)
+         *  If all is set to false only the modifications since the last pull
+         *  are regarded
+         */
+        void pullEvents(std::vector<BinaryEvent> &events,bool all = false);
     };
    
     template<typename LayerT>

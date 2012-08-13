@@ -866,7 +866,6 @@ void SynchronizationEventHandler::addBinaryEvent( const envire::Event& message )
     if(message.type == event::ITEM && ( message.operation == event::ADD || message.operation == event::UPDATE ))
         serialization.serializeBinaryEvent(message.a.get(), msg_buffer.back());
 }
-    
 
 void SynchronizationEventHandler::useEventQueue(bool b)
 {
@@ -879,3 +878,14 @@ void SynchronizationEventHandler::useContextUpdates(Environment* env)
     m_useContextUpdates = env;
 }
 
+SynchronizationEventQueue::SynchronizationEventQueue()
+{
+    useEventQueue(true);
+}
+
+void SynchronizationEventQueue::popEvents(std::vector<BinaryEvent>& msgs)
+{
+    EventQueue::flush();
+    msgs.swap(msg_buffer);
+    msg_buffer.clear();
+}
