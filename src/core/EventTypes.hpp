@@ -79,5 +79,6 @@ namespace envire
         }
     };
     typedef BinaryEvent EnvireBinaryEvent;
+    typedef std::vector<BinaryEvent> BinaryEvents;
 }
 #endif
