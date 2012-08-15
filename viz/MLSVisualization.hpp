@@ -14,6 +14,7 @@ class MLSVisualization : public EnvironmentItemVisualizer
     Q_PROPERTY(bool show_negative READ isNegativeShown WRITE setShowNegative)
     Q_PROPERTY(bool estimate_normals READ areNormalsEstimated WRITE setEstimateNormals)
     Q_PROPERTY(bool cycle_height_color READ isHeightColorCycled WRITE setCycleHeightColor)
+    Q_PROPERTY(double cycle_color_interval READ getCycleColorInterval WRITE setCycleColorInterval)
     Q_PROPERTY(QColor horizontal_cell_color READ getHorizontalCellColor WRITE setHorizontalCellColor)
     Q_PROPERTY(QColor vertical_cell_color READ getVerticalCellColor WRITE setVerticalCellColor)
     Q_PROPERTY(QColor negative_cell_color READ getNegativeCellColor WRITE setNegativeCellColor)
@@ -38,6 +39,8 @@ class MLSVisualization : public EnvironmentItemVisualizer
         void setEstimateNormals(bool enabled);
         bool isHeightColorCycled() const;
         void setCycleHeightColor(bool enabled);
+        double getCycleColorInterval() const;
+        void setCycleColorInterval(double interval);
         QColor getHorizontalCellColor() const;
         void setHorizontalCellColor(QColor color);
         QColor getVerticalCellColor() const;
@@ -59,6 +62,7 @@ class MLSVisualization : public EnvironmentItemVisualizer
 	bool showNegative;
 	bool estimateNormals;
 	bool cycleHeightColor;
+        double cycleColorInterval;
 };
 }
 

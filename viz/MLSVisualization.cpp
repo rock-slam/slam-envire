@@ -49,6 +49,7 @@ MLSVisualization::MLSVisualization()
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
     negativeCellColor(osg::Vec4(0.1,0.5,0.9,0.2)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
+    cycleColorInterval(1.0),
     showUncertainty(false),
     showNegative(false),
     estimateNormals(false),
@@ -287,7 +288,10 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 			col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
 		    }
 		    else if( cycleHeightColor )
-			col = hslToRgb( p.mean - std::floor(p.mean), 1.0, 0.6 );
+                    {
+                       double hue = (p.mean - std::floor(p.mean)) / cycleColorInterval;
+			col = hslToRgb( hue - std::floor(hue), 1.0, 0.6 );
+                    }
 		    else
 			col = horizontalCellColor;
 		    
@@ -387,6 +391,20 @@ void MLSVisualization::setCycleHeightColor(bool enabled)
 {
     cycleHeightColor = enabled;
     emit propertyChanged("cycle_height_color");
+}
+
+double MLSVisualization::getCycleColorInterval() const
+{
+    return cycleColorInterval;
+}
+
+void MLSVisualization::setCycleColorInterval(double interval)
+{
+    if(interval == 0.0)
+        cycleColorInterval = 1.0;
+    else
+        cycleColorInterval = interval;
+    emit propertyChanged("cycle_color_interval");
 }
 
 QColor MLSVisualization::getHorizontalCellColor() const
