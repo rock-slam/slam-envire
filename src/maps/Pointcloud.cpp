@@ -45,10 +45,10 @@ void Pointcloud::unserialize(Serialization& so, bool handleMap)
     }
 }
 
-bool Pointcloud::writePly(const std::string& filename, std::ostream& os)
+bool Pointcloud::writePly(const std::string& filename, std::ostream& os, bool const doublePrecision /* = true */)
 {
     PlyFile ply(filename);
-    return ply.serialize( this, os );
+    return ply.serialize( this, os, doublePrecision );
 }
 
 bool Pointcloud::readPly(const std::string& filename, std::istream& is)

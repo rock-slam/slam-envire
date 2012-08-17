@@ -17,7 +17,7 @@ namespace envire
 	/** performs a serialization of the given pointcloud object.
 	 * Note, that this will also work for derived classes like e.g. TriMesh
 	 */
-	bool serialize( Pointcloud *pointcloud , std::ostream& os );
+	bool serialize(Pointcloud *pointcloud, std::ostream& os , bool const doublePrecision = true);
 
 	/** similar to serialize this will also work for derived classes */
 	bool unserialize( Pointcloud *pointcloud, std::istream& is );

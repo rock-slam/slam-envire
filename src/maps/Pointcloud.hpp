@@ -68,7 +68,7 @@ namespace envire {
 	bool writeText(std::ostream& os);
 	bool readText(std::istream& is, int sample = 1, TextFormat = XYZR );
 
-	bool writePly(const std::string& filename, std::ostream& os);
+	bool writePly(const std::string& filename, std::ostream& os, bool const doublePrecision = true);
 	bool readPly(const std::string& filename, std::istream& is);
 
 	Extents getExtents() const;
