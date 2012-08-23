@@ -1,4 +1,6 @@
 #include "MLSVisualization.hpp"
+#include "ColorConversion.hpp"
+
 #include <osg/Group>
 #include <osg/Geode>
 #include <osg/Point>
@@ -10,39 +12,6 @@
 #include <osg/LineWidth>
 
 using namespace envire;
-
-//
-// adapted from http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-// 
-float hue2rgb(float p, float q, float t)
-{
-    if(t < 0.0) t += 1.0;
-    if(t > 1.0) t -= 1.0;
-    if(t < 1.0/6.0) return p + (q - p) * 6.0 * t;
-    if(t < 1.0/2.0) return q;
-    if(t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
-    return p;
-}
-
-osg::Vec4 hslToRgb(float h, float s, float l)
-{
-    float r, b, g;
-
-    if(s == 0)
-    {
-	r = g = b = l; // achromatic
-    } 
-    else 
-    {
-	float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
-	float p = 2.0 * l - q;
-	r = hue2rgb(p, q, h + 1.0/3.0);
-	g = hue2rgb(p, q, h);
-	b = hue2rgb(p, q, h - 1.0/3.0);
-    }
-
-    return osg::Vec4( r, g, b, 1.0 );
-}
 
 MLSVisualization::MLSVisualization()
     : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
@@ -290,7 +259,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    else if( cycleHeightColor )
                     {
                        double hue = (p.mean - std::floor(p.mean)) / cycleColorInterval;
-			col = hslToRgb( hue - std::floor(hue), 1.0, 0.6 );
+			ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, 0.6 , col.x(), col.y(), col.z());
+                       col.w() = 1.0;
                     }
 		    else
 			col = horizontalCellColor;
