@@ -1,4 +1,5 @@
 #include "ElevationGridVisualization.hpp"
+#include "ColorConversion.hpp"
 
 #include <osg/Point>
 #include <osg/Geometry>
@@ -18,6 +19,10 @@ static const double SCALING_MAX_VALUE = 5;	//in meters
 namespace envire 
 {
     
+ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true)
+{
+}
+    
   bool ElevationGridVisualization::handlesItem(envire::EnvironmentItem *item) const
   {
       if(dynamic_cast<envire::ElevationGrid *>(item))
@@ -32,70 +37,83 @@ namespace envire
     
     //Load the texture image
     osg::ref_ptr<osg::Image> image = new osg::Image();
+    
     envire::ElevationGrid::ArrayType &data = eg->getGridData(envire::ElevationGrid::ELEVATION);
 
     double min_z = std::numeric_limits<double>::max(), max_z = std::numeric_limits<double>::min();
     for (size_t yi = 0; yi < eg->getCellSizeY(); ++yi)
-      for (size_t xi = 0; xi < eg->getCellSizeX(); ++xi)
-      {
-        min_z = std::min(min_z, data[yi][xi]);
-        max_z = std::max(max_z, data[yi][xi]);
-      }
-   
-    //convert double to uint16 
-    int size = eg->getWidth()*eg->getHeight()*3;
-    unsigned char* data2 = new unsigned char[size];
-    unsigned char* pos = data2;
-    unsigned char* end_pos = &data2[size];
-    double* pos2 = data.data();
-    
-    //scaling between SCALING_MIN_VALUE and SCALING_MAX_VALUE meters 
-    double maxValue = (1<<24)-1.0;
-    double scaling = maxValue/(max_z - min_z);
-    union
     {
-       uint32_t ivalue;
-       unsigned char cvalue[4];
-    };
-    while(pos!= end_pos)
-    {
-       ivalue = (uint32_t)(std::max(0.0,std::min(((*pos2++)-min_z)*scaling,maxValue)));
-       *pos++ = cvalue[0];
-       *pos++ = cvalue[1];
-       *pos++ = cvalue[2];
+        for (size_t xi = 0; xi < eg->getCellSizeX(); ++xi)
+        {
+            if(fabs(data[yi][xi]) != std::numeric_limits<double>::infinity())
+            {
+                min_z = std::min(min_z, data[yi][xi]);
+                max_z = std::max(max_z, data[yi][xi]);
+            }
+        }
     }
-    image->setImage(
-	    eg->getWidth(),
-	    eg->getHeight(),
-	    1, // datadepth per channel
-	    GL_RGB, //GL_RGB,//GL_LUMINANCE16, 
-	    GL_RGB, 
-	    GL_UNSIGNED_BYTE, // GLenum type, (GL_UNSIGNED_BYTE, 0x1401)
-	    (unsigned char*)(data2), // unsigned char* data
-	    osg::Image::USE_NEW_DELETE, // USE_NEW_DELETE, //osg::Image::NO_DELETE,// AllocationMode mode (shallow copy)
-	    1);
-	    
-    loadElevationGridAsHeightMap(geode,*eg,image);
-			
-	//		loadElevationGridAsHightMap(geode,image,eg,0,0,
-	//		eg->getWidth()*eg->getScaleX(),
-	//		eg->getHeight()*eg->getScaleY());
+   
+   // setup height color image
+   if(cycleHeightColor)
+   {
+        //convert double to uint16 
+        int size = eg->getWidth()*eg->getHeight()*3;
+        unsigned char* image_raw_data = new unsigned char[size];
+        unsigned char* pos = image_raw_data;
+        unsigned char* end_pos = &image_raw_data[size];
+        double* pos2 = data.data();
+
+        //scaling between SCALING_MIN_VALUE and SCALING_MAX_VALUE meters 
+        double scaling = std::abs(max_z - min_z);
+        if(scaling == 0)
+            scaling = 1.0;
+
+        // fill image with color
+        while(pos!= end_pos)
+        {
+            double hue = (*pos2 - std::floor(*pos2)) / scaling;
+            pos2++;
+            osg::Vec4f col(0.0,0.0,0.0,1.0);
+            ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, 0.6, col.x(), col.y(), col.z());
+        *pos++ = (unsigned char)(col.x() * 255.0);
+        *pos++ = (unsigned char)(col.y() * 255.0);
+        *pos++ = (unsigned char)(col.z() * 255.0);
+        }
+        
+        image->setImage(
+                eg->getWidth(),
+                eg->getHeight(),
+                1, // datadepth per channel
+                GL_RGB, //GL_RGB,//GL_LUMINANCE16, 
+                GL_RGB, 
+                GL_UNSIGNED_BYTE, // GLenum type, (GL_UNSIGNED_BYTE, 0x1401)
+                (unsigned char*)(image_raw_data), // unsigned char* data
+                osg::Image::USE_NEW_DELETE, // USE_NEW_DELETE, //osg::Image::NO_DELETE,// AllocationMode mode (shallow copy)
+                1);
+   }
+    
+    loadElevationGridAsHeightMap(geode,*eg,image, min_z > 0.0 ? 0.0 : min_z);
   }   
   
    void ElevationGridVisualization::loadElevationGridAsHeightMap(const osg::ref_ptr<osg::Geode> geode,
 							        envire::ElevationGrid &elevation_grid,
-								const osg::ref_ptr<osg::Image> texture)const
+								const osg::ref_ptr<osg::Image> texture,
+                                                                double z_offset
+                                                                )const
   {
     envire::ElevationGrid::ArrayType &data = elevation_grid.getGridData(envire::ElevationGrid::ELEVATION);
     osg::HeightField* heightField = new osg::HeightField();
-    heightField->allocate(elevation_grid.getWidth(), elevation_grid.getHeight());
+    heightField->allocate(elevation_grid.getCellSizeY(), elevation_grid.getCellSizeX());
     heightField->setXInterval(elevation_grid.getScaleX());
     heightField->setYInterval(elevation_grid.getScaleY());
     heightField->setSkirtHeight(0.0f);
     for (unsigned int r = 0; r < heightField->getNumRows(); r++) {
         for (unsigned int c = 0; c < heightField->getNumColumns(); c++) 
 	{
-	    heightField->setHeight(c, r, data[r][c]);
+            if( fabs( data[r][c] ) != std::numeric_limits<double>::infinity() )
+                heightField->setHeight(c, r, data[r][c]);
+            else
+                heightField->setHeight(c, r, z_offset);
         }
     }
     
@@ -117,15 +135,32 @@ namespace envire
 //	        osg::Vec4( 1.f, 1.f, 1.f, 1.0f ) );
 
     state->setAttribute( mat.get() );
-
-    /*
-    osg::Texture2D* tex = new osg::Texture2D(texture);
-    tex->setFilter(osg::Texture2D::MIN_FILTER,osg::Texture2D::LINEAR_MIPMAP_LINEAR);
-    tex->setFilter(osg::Texture2D::MAG_FILTER,osg::Texture2D::LINEAR);
-    tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-    tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
-    geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex);
-    */
+    
+    // apply texture
+    if(cycleHeightColor)
+    {
+        osg::Texture2D* tex = new osg::Texture2D(texture);
+        tex->setFilter(osg::Texture2D::MIN_FILTER,osg::Texture2D::LINEAR_MIPMAP_LINEAR);
+        tex->setFilter(osg::Texture2D::MAG_FILTER,osg::Texture2D::LINEAR);
+        tex->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
+        tex->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+        state->setTextureAttributeAndModes(0, tex);
+    }
+    else
+    {
+        state->removeTextureAttribute(0, osg::StateAttribute::TEXTURE);
+    }
   }
+
+bool ElevationGridVisualization::isHeightColorCycled() const
+{
+    return cycleHeightColor;
+}
+
+void ElevationGridVisualization::setCycleHeightColor(bool enabled)
+{
+    cycleHeightColor = enabled;
+    emit propertyChanged("cycle_height_color");
+}
   
 }
