@@ -106,9 +106,14 @@ bool Projection::interpolateMap(const std::string& type)
 
     Delaunay dt;
 
-    size_t width = data.shape()[0]; 
-    size_t height = data.shape()[1]; 
+    size_t width = grid->getCellSizeY();
+    size_t height = grid->getCellSizeX();
     
+    size_t min_width = grid->getCellSizeY() - 1;
+    size_t max_width = 0;
+    size_t min_height = grid->getCellSizeX() - 1;
+    size_t max_height = 0;
+
     for(size_t x=0;x<width;x++)
     {
 	for(size_t y=0;y<height;y++)
@@ -117,13 +122,18 @@ bool Projection::interpolateMap(const std::string& type)
 	    {
 		Point p(x,y,data[x][y] );
 		dt.insert( p );
+                
+                min_width = std::min(min_width, x);
+                max_width = std::max(max_width, x);
+                min_height = std::min(min_height, y);
+                max_height = std::max(max_height, y);
 	    }
 	}
     }
 
-    for(size_t x=0;x<width;x++)
+    for(size_t x=min_width;x<max_width;x++)
     {
-	for(size_t y=0;y<height;y++)
+	for(size_t y=min_height;y<max_height;y++)
 	{
 	    if( fabs( data[x][y] ) == std::numeric_limits<double>::infinity() )
 	    {
@@ -135,7 +145,7 @@ bool Projection::interpolateMap(const std::string& type)
 		Eigen::Vector3d b;
 		
 		Delaunay::Face_handle face = dt.locate( Point(x,y,0) );
-		if( face == NULL )
+		if( face == NULL || face->vertex(0) == NULL || face->vertex(1) == NULL || face->vertex(2) == NULL)
 		    continue;
 
 		for(int i=0;i<3;i++)
