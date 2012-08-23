@@ -106,6 +106,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
     heightField->allocate(elevation_grid.getCellSizeY(), elevation_grid.getCellSizeX());
     heightField->setXInterval(elevation_grid.getScaleX());
     heightField->setYInterval(elevation_grid.getScaleY());
+    heightField->setOrigin(osg::Vec3d(elevation_grid.getOffsetX(), elevation_grid.getOffsetY(), 0.0));
     heightField->setSkirtHeight(0.0f);
     for (unsigned int r = 0; r < heightField->getNumRows(); r++) {
         for (unsigned int c = 0; c < heightField->getNumColumns(); c++) 

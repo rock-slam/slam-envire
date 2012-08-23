@@ -65,7 +65,7 @@ namespace envire
 
     public:
       ElevationGrid() : Grid<double>() {};
-      ElevationGrid(size_t width, size_t height, double scalex, double scaley):Grid<double>::Grid(width,height,scalex,scaley){};
+      ElevationGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0):Grid<double>::Grid(width,height,scalex,scaley,offsetx,offsety){};
       ~ElevationGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
 
