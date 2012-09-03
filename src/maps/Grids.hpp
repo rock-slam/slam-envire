@@ -80,6 +80,22 @@ namespace envire
       double get(double x, double y) const
       { return Grid<double>::get(ELEVATION, x, y); }
 
+      double& get( const Position& pos )
+      { return Grid<double>::get(ELEVATION, pos.x, pos.y); }
+
+      double get( const Position& pos ) const
+      { return Grid<double>::get(ELEVATION, pos.x, pos.y); }
+
+      Eigen::Vector3d getNormal( const Position& pos ) const
+      {
+	  size_t m = pos.x, n = pos.y;
+
+	  const ArrayType &grid( getGridData( ELEVATION ) );
+	  double slope_x = (grid[n][m-1] - grid[n][m+1]) / (getScaleX()*2.0);
+	  double slope_y = (grid[n-1][m] - grid[n+1][m]) / (getScaleY()*2.0);
+
+	  return Eigen::Vector3d( slope_x, slope_y, 1.0 ).normalized();
+      }
       /** @brief get the normal vector at the given position
        */
       Eigen::Vector3d getNormal( const Point2D& pos ) const
@@ -88,11 +104,7 @@ namespace envire
 	  if (!toGrid(pos.x(), pos.y(), m, n ))
 	      throw std::runtime_error("provided coordinates are out of the grid");
 
-	  const ArrayType &grid( getGridData( ELEVATION ) );
-	  double slope_x = (grid[n][m-1] - grid[n][m+1]) / (getScaleX()*2.0);
-	  double slope_y = (grid[n-1][m] - grid[n+1][m]) / (getScaleY()*2.0);
-
-	  return Eigen::Vector3d( slope_x, slope_y, 1.0 ).normalized();
+	  return getNormal( Position( m, n ) );
       }
 
       /** @brief get the elevation at the given point 
