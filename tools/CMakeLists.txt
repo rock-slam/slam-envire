@@ -18,6 +18,10 @@ rock_executable(env_grid_to_mls env_grid_to_mls.cpp
     DEPS envire)
 rock_executable(env_mls_to_grid env_mls_to_grid.cpp
     DEPS envire)
+rock_executable(env_mls_to_pointcloud env_mls_to_pointcloud.cpp
+    DEPS envire)
+rock_executable(env_mls_trajectory env_mls_trajectory.cpp
+    DEPS envire)
 
 if( USE_CGAL )
     rock_executable(env_dem env_dem.cpp

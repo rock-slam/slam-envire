@@ -3,11 +3,17 @@
 #include <envire/tools/ExpectationMaximization.hpp>
 
 #include <limits>
+#include <numeric/stats.hpp>
 
 using namespace envire;
 using namespace std;
 
 ENVIRONMENT_ITEM_DEF( MapSegment )
+
+MapSegment::MapSegment()
+    : m_zVar(0)
+{
+}
 
 envire::Map<3>::Extents MapSegment::getExtents() const
 {
@@ -19,6 +25,8 @@ envire::Map<3>::Extents MapSegment::getExtents() const
 	const envire::CartesianMap *map = it->map.get();
 	const Map<2>* map2 = dynamic_cast<const Map<2>*>( map );
 	const Map<3>* map3 = dynamic_cast<const Map<3>*>( map );
+	assert( this->isAttached() );
+	assert( map->isAttached() );
 	Eigen::Affine3d g2m = map->getFrameNode()->relativeTransform( this->getFrameNode() );
 
 	// currently this assumes that child grids are not rotated
@@ -39,29 +47,43 @@ envire::Map<3>::Extents MapSegment::getExtents() const
     return extents;
 }
 
-void MapSegment::addPart( const base::Affine3d& pose, CartesianMap* map, double weight )
+void MapSegment::addPart( const base::Affine3d& pose, CartesianMap* map, double weight, double zVar )
 {
     Part p = { map, base::Pose( pose ), weight };
     parts.push_back( p );
+    m_zVar += weight * zVar;
 }
 
 void MapSegment::update()
 {
-    // run the full ExpectationMinimization algorithm 
-    // on the parts already stored
-    vector<base::Vector6d> em_pars;
-    vector<double> em_weights;
-    envire::ExpectationMaximization<GMM> em;
+    // simplified version:
+    // instead of using a full GMM model,
+    // for now we just use a single gaussian.
+
+    base::Stats< base::Vector6d > stats;
     for( size_t i=0; i<parts.size(); i++ )
     {
-	em_pars.push_back( parts[i].pose.toVector6d() );
-	em_weights.push_back( parts[i].weight );
+	stats.update(
+	    parts[i].pose.toVector6d(),
+	    parts[i].weight );
     }
-    em.initialize( 5, em_pars, em_weights );
-    em.run( 1e-5, 10 );
+    double zVar = m_zVar / stats.sumWeights();
 
-    // and store the resulting gmm
-    gmm.params.swap( em.gmm.params );
+    // HACK !!!
+    // augment the covariance with some uncertainties
+    double 
+	xrotVar = pow((1.0/180)*M_PI, 2),
+	yrotVar = pow((1.0/180)*M_PI, 2);
+
+    base::Vector6d diag;
+    diag << xrotVar, yrotVar, 0, 0, 0, zVar;
+
+    // copy to gmm
+    gmm.params.clear();
+    envire::Gaussian<double,6> gaussian( 
+	    stats.mean(), 
+	    base::Matrix6d(stats.var()) + base::Matrix6d(diag.asDiagonal()) );
+    gmm.params.push_back( GMM::Parameter( 1.0, gaussian ) );
 }
 
 TransformWithUncertainty MapSegment::getTransform() const
@@ -91,7 +113,7 @@ TransformWithUncertainty MapSegment::getTransform() const
     throw std::runtime_error("MapSegment does not have a pose distribution.");
 }
 
-CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
+CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose, base::Affine3d& map_pose, size_t &traj_size ) const
 {
     // find the pose in the parts, which has the smallest distance to 
     // the provided pose
@@ -106,11 +128,16 @@ CartesianMap* MapSegment::getMapForPose( const base::Affine3d& pose ) const
     {
 	// for now take the norm, this may need some different
 	// weighting of distance and angular values
+	
+	// TODO need to ignore the z (and probably pitch and roll) part!
 	const double dist = (parts[i].pose.toVector6d() - pose6d).norm();
 	if( dist < best_dist )
 	{
 	    best_map = parts[i].map.get();
+	    map_pose = parts[i].pose.toTransform();
 	    best_dist = dist;
+	    if( trajectories.size() > i )
+		traj_size = trajectories[i].size();
 	}
     }
 

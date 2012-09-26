@@ -10,13 +10,14 @@ rock_vizkit_plugin(envire-viz
     GridVisualizationBase.cpp
     ImageRGB24Visualization.cpp
     LaserScanVisualization.cpp
+    MapSegmentVisualization.cpp
     MLSVisualization.cpp
     PointcloudVisualization.cpp
     TriMeshVisualization.cpp
     TreeViewListener.cpp
     ItemManipulator.cpp
     TraversabilityGridVisualization.cpp
-    MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp ElevationGridVisualization.hpp
+    MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp ElevationGridVisualization.hpp MapSegmentVisualization.hpp
     DEPS envire
     DEPS_CMAKE GDAL
     HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp ColorConversion.hpp

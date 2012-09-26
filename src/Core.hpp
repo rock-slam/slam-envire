@@ -196,6 +196,10 @@ namespace envire
 	/** set the non-unique label attached to this item
 	 */
 	void setLabel( const std::string& label ) { this->label = label; }
+
+	/** @return how many objects have a reference on this item
+	 */
+	long getRefCount() const { return ref_count; }
     };
 
     void intrusive_ptr_add_ref( EnvironmentItem* item );

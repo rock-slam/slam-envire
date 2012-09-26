@@ -12,15 +12,17 @@ namespace envire
 class MapSegment : public Map<3>
 {
     ENVIRONMENT_ITEM( MapSegment )
+    friend class MapSegmentVisualization;
 
 public:
     envire::Map<3>::Extents getExtents() const;
 
 public:
+    MapSegment();
 
     /** @brief Add a map and its pose to the list of hypothesis stored by this map segment
      */
-    void addPart( const base::Affine3d& pose, CartesianMap* map, double weight );
+    void addPart( const base::Affine3d& pose, CartesianMap* map, double weight, double zVar = 0 );
         
     /** @brief Update the gaussian mixture representation based on the poses in the
      * map segment
@@ -41,7 +43,7 @@ public:
     /** @brief Provide the stored map, for which the end pose is closest to the
      * provided pose.
      */
-    CartesianMap* getMapForPose( const base::Affine3d& pose ) const;
+    CartesianMap* getMapForPose( const base::Affine3d& pose, base::Affine3d& map_pose, size_t &traj_size ) const;
 
     /** @brief get the best map without any knowledge on a relative transformation
      *
@@ -65,6 +67,10 @@ protected:
 	 */
 	double weight;
     };
+    /** 
+     * HACK variance of z value of pose
+    */
+    double m_zVar;
 
     typedef GaussianMixture<double, 6> GMM;
 
@@ -77,6 +83,11 @@ protected:
     /** vector of map hypothesis of this segment
      */
     std::vector<Part> parts;
+
+public:
+    /** vector of trajectories, which may record the position of parts over time
+     */
+    std::vector<std::vector<base::Vector3d> > trajectories;
 };
 }
 
