@@ -12,8 +12,9 @@ enum DESCRIPTOR
     DESCRIPTOR_PSURF = 2,
 };
 
-struct KeyPoint
+class KeyPoint
 {
+public:
     typedef float Scalar;
 
     /** the original image point */
@@ -24,6 +25,24 @@ struct KeyPoint
 
     Scalar angle;
     Scalar response;
+    void store(std::ostream& os) const
+    {
+      os << point[0] << " " << point[1] << " ";
+      os << size << " ";
+      os << angle << " ";
+      os << response << " ";
+    }
+    void load(std::istream& is)
+    {
+      double d1, d2;
+      is >> d1;
+      is >> d2;
+      point = base::Vector2d(d1, d2);
+      is >> size;
+      is >> angle;
+      is >> response;
+    }
+
 };
 
 }
