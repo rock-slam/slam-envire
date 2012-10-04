@@ -7,6 +7,7 @@
 
 # TODO: support MacOSX
 
+include(FindPackageHandleStandardArgs)
 #include(CGAL_FindPackageHandleStandardArgs)
 #include(CGAL_GeneratorSpecificSettings)
 
