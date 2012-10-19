@@ -3,7 +3,7 @@
 #include <envire/tools/ExpectationMaximization.hpp>
 
 #include <limits>
-#include <numeric/stats.hpp>
+#include <numeric/Stats.hpp>
 
 using namespace envire;
 using namespace std;
