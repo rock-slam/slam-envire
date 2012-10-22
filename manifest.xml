@@ -11,6 +11,7 @@
     <depend package="gui/vizkit" optional="1" />
     <depend package="external/libply" />
     <depend package="base/types" />
+    <depend package="base/numeric" />
     <rosdep name="libkdtree" />
     <rosdep name="yaml" />
     <rosdep name="gdal" />
