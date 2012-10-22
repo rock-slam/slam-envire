@@ -5,6 +5,7 @@
 #include "envire/maps/MLSGrid.hpp"
 
 #include "boost/scoped_ptr.hpp"
+#include <iostream>
 #include <sstream>
 #include <fstream>
 
