@@ -98,13 +98,15 @@ install(FILES tools/GraphViz.hpp
     tools/ExpectationMaximization.hpp
     DESTINATION include/envire/tools)
 
+message(Boost_LIBRARIES ${Boost_LIBRARIES})
+
 if (USE_CGAL AND CGAL_FOUND)
+    message(WARNING "Using boost system libraries, this may lead to conflicting boost versions!")
     target_link_libraries(envire 
 	${CGAL_LIBRARIES}
 	${Boost_FILESYSTEM_LIBRARY}
 	${Boost_THREAD_LIBRARY})
 else() 
     target_link_libraries(envire 
-	${Boost_FILESYSTEM_LIBRARY}
-	${Boost_THREAD_LIBRARY})
+	${Boost_LIBRARIES})
 endif()
