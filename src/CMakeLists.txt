@@ -5,7 +5,7 @@ if( USE_CGAL AND CGAL_FOUND )
 	operators/Projection.cpp)
 
     if( TAUCS_FOUND )
-	list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
+	    list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
     endif( TAUCS_FOUND )
 endif()
 
@@ -98,15 +98,16 @@ install(FILES tools/GraphViz.hpp
     tools/ExpectationMaximization.hpp
     DESTINATION include/envire/tools)
 
-message(Boost_LIBRARIES ${Boost_LIBRARIES})
-
 if (USE_CGAL AND CGAL_FOUND)
-    message(WARNING "Using boost system libraries, this may lead to conflicting boost versions!")
+    message(WARNING "Linking boost system libraries to envire, this may lead to conflicting boost versions!")
     target_link_libraries(envire 
-	${CGAL_LIBRARIES}
-	${Boost_FILESYSTEM_LIBRARY}
-	${Boost_THREAD_LIBRARY})
+	    ${CGAL_LIBRARIES}
+	    ${Boost_FILESYSTEM_LIBRARY}
+	    ${Boost_THREAD_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_THREAD_LIBRARY}
+    )
 else() 
     target_link_libraries(envire 
-	${Boost_LIBRARIES})
+	    ${Boost_LIBRARIES})
 endif()
