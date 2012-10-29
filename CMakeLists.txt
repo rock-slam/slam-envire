@@ -21,7 +21,6 @@ if ( USE_CGAL AND CGAL_FOUND )
     message ("-- CGAL will be used, change BOOST_ROOT to /usr")
     # To make sure envire links to the default system libraries 
     # such as CGAL does, setting BOOST_ROOT here 
-    set(BOOST_ROOT "/usr/")
 	add_definitions( -DENVIRE_USE_CGAL )    
 else()
     include_directories(${Boost_INCLUDE_DIRS})
