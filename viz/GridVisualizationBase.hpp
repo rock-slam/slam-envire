@@ -5,7 +5,10 @@
 #include <vector>
 #include <osg/Node>
 #include <envire/maps/GridBase.hpp>
+// Workaround MOC not being able to expand macros properly
+#ifndef Q_MOC_RUN
 #include <boost/function.hpp>
+#endif
 
 namespace envire {
 
