@@ -64,6 +64,28 @@ namespace envire
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
         GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
+	/** @brief Constructor of the abstract GridBase class
+	 * 
+	 * Defines the extends and positioning of the grid. The grid is assumed
+	 * to be on the x-y plane of the reference frame. The number of grid
+	 * cells is given by the cellSizeX and cellSizeY params. Each dimension
+	 * also has an scaling and offset parameter, such that the origin of the
+	 * grid can be moved around and the grid scaled.
+	 *
+	 * The relation between the grid cell index xi and the value for the
+	 * dimension x is:
+	 * @verbatim
+	 * x = xi * scale_x + offset_x
+	 * @endverbatim
+	 * This is of course the same for the y axis as well.
+	 *  
+	 * @param cellSizeX - number of cells in x direction
+	 * @param cellSizeY - number of cells in y direction
+	 * @param scalex - scaling of the x axis (size in x per cell)
+	 * @param scaley - scaling of the y axis (size in y per cell)
+	 * @param offsetx - x-position of the [0,0] cell
+	 * @param offsety - y-position of the [0,0] cell
+	 */
 	GridBase(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0,
@@ -127,6 +149,14 @@ namespace envire
         /** Returns the size of the grid, in cells, along the Y direction
          */
         size_t getCellSizeY() const { return cellSizeY; }
+
+        /** Returns the world size of the grid along the X direction
+         */
+        size_t getSizeX() const { return cellSizeX * scalex; }
+
+        /** Returns the world size of the grid along the Y direction
+         */
+        size_t getSizeY() const { return cellSizeY * scaley; }
 
         /** Returns the world size of a cell along the X direction
          */
