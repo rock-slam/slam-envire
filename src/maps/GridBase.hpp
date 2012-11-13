@@ -147,7 +147,10 @@ namespace envire
         /** Returns the position of the center of the grid, in world
          * coordinates, w.r.t. the position of the (0, 0) cell
          */
-	Point2D getCenterPoint() const { return Point2D( cellSizeX * scalex, cellSizeY * scaley ) * 0.5; };
+	Point2D getCenterPoint() const { 
+	    return Point2D( cellSizeX * scalex, cellSizeY * scaley ) * 0.5
+		+ Point2D( offsetx, offsety );
+	};
 
         /** Returns the size of the grid, in world units
          */
