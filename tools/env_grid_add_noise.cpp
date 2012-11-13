@@ -5,7 +5,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/math/distributions/normal.hpp>
-
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
 #include <iostream>
 
 using namespace envire;
@@ -13,17 +15,17 @@ using namespace std;
 namespace po = boost::program_options;
 using boost::lexical_cast;
 
-struct window
+struct position
 {
-    window() {}
-    window( float x, float y, float width, float height ) 
-	: x(x), y(y), width(width), height(height) {}
-    float x, y, width, height;
+    position() : x(0), y(0) {}
+    position( float x, float y )
+	: x(x), y(y) {}
+    float x, y;
 };
 
 void validate(boost::any& v, 
               const std::vector<std::string>& values,
-	      window*, int)
+	      position*, int)
 {
     po::validators::check_first_occurrence(v);
     const string& s = po::validators::get_single_string(values);
@@ -31,14 +33,12 @@ void validate(boost::any& v,
     vector<std::string> strs;
     boost::split(strs, s, boost::is_any_of(","));
 
-    if( strs.size() != 4 )
+    if( strs.size() != 2 )
         throw po::validation_error(po::validation_error::invalid_option_value);
 
-    v = boost::any( window( 
+    v = boost::any( position( 
 		lexical_cast<float>( strs[0] ),
-		lexical_cast<float>( strs[1] ),
-		lexical_cast<float>( strs[2] ),
-		lexical_cast<float>( strs[3] ) ) );
+		lexical_cast<float>( strs[1] ) ) );
 }
 
 void validate(boost::any& v, 
@@ -54,7 +54,7 @@ void validate(boost::any& v,
 int main(int argc, char* argv[])
 {
     string input_env, output_env;
-    window win;
+    position center, win;
     float scale, angle, sigma, radius;
 
     po::options_description desc("Allowed options");
@@ -67,7 +67,9 @@ int main(int argc, char* argv[])
 	("normal", po::value<float>(&sigma), "normal distribution with <sigma>")
 	("sphere", po::value<float>(&radius), "sphere with <radius>")
 	("const", "constant offset of 1.0 (use scaling to change)")
-	("window", po::value<window>(&win), "<x,y,width,height> window parameters")
+	("noise", "add gaussian noise with sigma 1.0")
+	("center", po::value<position>(&center), "<x,y> center of origin")
+	("window", po::value<position>(&win), "<width,height> window parameters")
 	;
     
     po::variables_map vm;
@@ -92,18 +94,16 @@ int main(int argc, char* argv[])
     grid = grids.front();
     cerr << "using ElevationGrid with id: " << grid->getUniqueId() << endl;
 
-    // get some default options
     if( !vm.count("window") )
     {
-	win.x = grid->getCenterPoint().x(); 
-	win.y = grid->getCenterPoint().y();
-	win.width = grid->getSizeX();
-	win.height = grid->getSizeY();
+	win.x = grid->getSizeX();
+	win.y = grid->getSizeY();
     }
 
     bool useSlope = vm.count("slope"),
 	useConst = vm.count("const"),
 	useNormal = vm.count("normal"),
+	useNoise = vm.count("noise"),
 	useSphere = vm.count("sphere"),
 	useFractal = vm.count("fractal");
 
@@ -111,11 +111,23 @@ int main(int argc, char* argv[])
     float slopeAngle = angle / 180.0 * M_PI;
     boost::math::normal normal( 0, sigma );
 
-    for( float x = win.x-win.width/2 + grid->getScaleX()*.5; x < win.x+win.width/2; x+= grid->getScaleX() )
+    // generate random number generator
+    boost::mt19937 eng;
+    boost::variate_generator<boost::mt19937,boost::normal_distribution<float> > 
+	gen( eng, boost::normal_distribution<float>(0,1) );
+
+    // calculate window on which to operate
+    float 
+	minx = std::max( grid->getOffsetX(), center.x - win.x/2.0 ),
+	maxx = std::min( grid->getOffsetX() + grid->getSizeX(), center.x + win.x/2.0 ),
+	miny = std::max( grid->getOffsetY(), center.y - win.y/2.0 ),
+	maxy = std::min( grid->getOffsetY() + grid->getSizeY(), center.y + win.y/2.0 );
+
+    for( float x = minx + grid->getScaleX()*.5; x < maxx; x+= grid->getScaleX() )
     {
-	for( float y = win.y-win.height/2 + grid->getScaleY()*.5; y < win.y+win.height/2; y+= grid->getScaleY() )
+	for( float y = miny + grid->getScaleY()*.5; y < maxy; y+= grid->getScaleY() )
 	{
-	    const float r = sqrt( pow(x,2) + pow(y,2) );
+	    const float r = sqrt( pow(x-center.x,2) + pow(y-center.y,2) );
 
 	    // get reference to height value
 	    double &height( grid->get( x, y ) );
@@ -127,10 +139,13 @@ int main(int argc, char* argv[])
 		height += (cos( slopeAngle ) * x + sin( slopeAngle ) * y) * scale;
 	    
 	    if( useNormal )
-		height += pdf( normal, r ) * scale; 
+		height += pdf( normal, r ) * scale / pdf( normal, 0 ); 
 
 	    if( useSphere && r < radius )
 		height += sqrt( pow(radius,2) - pow(r,2) ) * scale;
+
+	    if( useNoise )
+		height += gen() * scale;
 	}
     }	
 
