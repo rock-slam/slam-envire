@@ -480,30 +480,45 @@ namespace envire
         if (!poDstDS)
             throw std::runtime_error("failed to create file " + path);
 
+	// get the scale and transform value so that they can be 
+	// added as a geotransform
+	Eigen::Affine2d gridTransform = Eigen::Affine2d::Identity();
+	gridTransform.translate( Eigen::Vector2d( offsetx, offsety ) );
+	gridTransform.scale( Eigen::Vector2d( scalex, scaley ) );
+
 	if(getEnvironment())
 	{
-	  envire::FrameNode::TransformType t = getEnvironment()->relativeTransform(
-		  getFrameNode(),
-		  getEnvironment()->getRootNode() );
+	    // get the frame transformation to the root frame 
+	    envire::FrameNode::TransformType t = getEnvironment()->relativeTransform(
+		    getFrameNode(),
+		    getEnvironment()->getRootNode() );
 
-	  //calc GeoTransform	
-	  Eigen::Matrix4d m = (t * Eigen::DiagonalMatrix<double,3>(scalex, scaley,0)).matrix();
-	  double adfGeoTransform[6] = { m(0,3), m(0,0), m(0,1), m(1,3), m(1,0), m(1,1) };
-	  
-	  OGRSpatialReference oSRS;
-	  char *pszSRS_WKT = NULL;
-	  poDstDS->SetGeoTransform( adfGeoTransform );
+	    // and flatten it to 2d
+	    Eigen::Affine2d frameTransform = Eigen::Affine2d::Identity();
+	    frameTransform.matrix().topLeftCorner<2,2>() = t.matrix().topLeftCorner<2,2>();
+	    frameTransform.matrix().topRightCorner<2,1>() = t.matrix().topRightCorner<2,1>();
 
-	  oSRS.SetUTM( 32, TRUE );
-	  oSRS.SetWellKnownGeogCS( "WGS84" );
-	  oSRS.exportToWkt( &pszSRS_WKT );
-	  poDstDS->SetProjection( pszSRS_WKT );
-	  CPLFree( pszSRS_WKT );
+	    // apply transform to the grid transform
+	    gridTransform = frameTransform * gridTransform;
 	}
 	else
 	{
-	  LOG_DEBUG_S << className << " has no environment!!!";
+	    LOG_DEBUG_S << className << " has no environment!!!";
 	}
+
+	//calc GeoTransform	
+	Eigen::Matrix3d m( gridTransform.matrix() );
+	double adfGeoTransform[6] = { m(0,2), m(0,0), m(0,1), m(1,2), m(1,0), m(1,1) };
+
+	OGRSpatialReference oSRS;
+	char *pszSRS_WKT = NULL;
+	poDstDS->SetGeoTransform( adfGeoTransform );
+
+	oSRS.SetUTM( 32, TRUE );
+	oSRS.SetWellKnownGeogCS( "WGS84" );
+	oSRS.exportToWkt( &pszSRS_WKT );
+	poDstDS->SetProjection( pszSRS_WKT );
+	CPLFree( pszSRS_WKT );
 
 	GDALRasterBand *poBand;
 	std::vector<std::string>::const_iterator iter = keys.begin();
