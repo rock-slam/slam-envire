@@ -86,8 +86,8 @@ void GridVisualizationBase::showGridAsImage(osg::ref_ptr< osg::Geode > geode, Gr
     //Load the texture image
     osg::ref_ptr<osg::Image> image = new osg::Image();
     
-    int image_width = grid->getCellSizeX();
-    int image_height = grid->getCellSizeY();
+    size_t image_width = grid->getCellSizeX();
+    size_t image_height = grid->getCellSizeY();
     
     int size = image_width*image_height*3;
     unsigned char* mydata = new unsigned char[size]; 
