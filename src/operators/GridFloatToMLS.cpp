@@ -11,6 +11,7 @@ GridFloatToMLS::GridFloatToMLS()
 
 void GridFloatToMLS::unserialize(Serialization& so)
 {
+    Operator::unserialize(so);
     so.read<std::string>("band_name", band);
 }
 
