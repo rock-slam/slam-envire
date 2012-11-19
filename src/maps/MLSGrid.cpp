@@ -123,7 +123,17 @@ void MLSGrid::unserialize(Serialization& so)
 	hasCellColor_ = false;
 
     cells.resize( boost::extents[cellSizeX][cellSizeY] );
-    std::string filename = getMapFileName() + ".mls";
+
+    // this is a workaround to make the MLS generatable by 
+    // the GridBase::create method, which sets the map_count
+    // to 0 to indicate that no map data needs to be loaded
+    if( so.hasKey( "map_count" ) )
+    {
+	int map_count = 1;
+	so.read( "map_count", map_count );
+	if( map_count == 0 )
+	    return;
+    }
 
     std::istream *is;
     try 
