@@ -280,6 +280,12 @@ namespace envire
 	typedef iterator_base<const SurfacePatchItem> const_iterator;
 
     public:
+        /**
+         * Creates the grid with the specified parameters.\n
+         * width,height: Number of horizontal and vertical patches.\n
+         * scalex, scaley: Size of each patch.\n
+         * offsetx, offsety: Describing the world_to_mls transformation.
+         */
         MLSGrid();
 	MLSGrid(const MLSGrid& other);
 	MLSGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0);

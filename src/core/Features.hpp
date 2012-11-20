@@ -15,6 +15,8 @@ enum DESCRIPTOR
 class KeyPoint
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef float Scalar;
 
     /** the original image point */

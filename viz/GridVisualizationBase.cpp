@@ -81,7 +81,7 @@ namespace envire
   
 void GridVisualizationBase::showGridAsImage(osg::ref_ptr< osg::Geode > geode, GridBase* grid, boost::function<bool (int x, int y, Color &ret)> colorForGridCoordinate) const
 {
-    std::cout << "showGridAsImage: Update" << std::endl;
+    //std::cout << "showGridAsImage: Update" << std::endl;
     
     //Load the texture image
     osg::ref_ptr<osg::Image> image = new osg::Image();

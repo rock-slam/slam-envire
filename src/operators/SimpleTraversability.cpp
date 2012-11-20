@@ -1,5 +1,6 @@
 #include "SimpleTraversability.hpp"
 #include <base/logging.h>
+#include <sstream>
 
 using namespace envire;
 using envire::Grid;
@@ -384,19 +385,24 @@ void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer
 {
     RadialLUT lut;
     lut.precompute(min_width, map.getScaleX(), map.getScaleY());
+    std::stringstream oss;
+    oss << std::endl;
     for (unsigned int y = 0; y < lut.height; ++y)
     {
-        for (unsigned int x = 0; x < lut.width; ++x)
-            std::cout << "(" << lut.parents[y][x].first << " " << lut.parents[y][x].second << ") ";
-        std::cout << std::endl;
+        for (unsigned int x = 0; x < lut.width; ++x) {
+            oss << "(" << lut.parents[y][x].first << " " << lut.parents[y][x].second << ") ";
+        }
+        oss << std::endl;
     }
-    std::cout << std::endl;
+    oss << std::endl;
     for (unsigned int y = 0; y < lut.height; ++y)
     {
-        for (unsigned int x = 0; x < lut.width; ++x)
-            std::cout << "(" << lut.in_distance[y][x] << " ";
-        std::cout << std::endl;
+        for (unsigned int x = 0; x < lut.width; ++x) {
+            oss << "(" << lut.in_distance[y][x] << " ";
+        }
+        oss << std::endl;
     }
+    LOG_DEBUG(oss.str().c_str());
 
     OutputLayer::ArrayType& data = band_name.empty() ?
         map.getGridData() :
