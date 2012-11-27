@@ -165,10 +165,9 @@ struct SurfacePatchStore10
 
     size_t xi, yi;
 
-    MLSGrid::SurfacePatch toSurfacePatch()
+    SurfacePatch toSurfacePatch()
     {
-	typedef envire::MLSGrid::SurfacePatch sp;
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
 	p.update_idx = update_idx;
 	return p;
     }
@@ -186,10 +185,9 @@ struct SurfacePatchStore11
 
     size_t xi, yi;
 
-    MLSGrid::SurfacePatch toSurfacePatch()
+    SurfacePatch toSurfacePatch()
     {
-	typedef envire::MLSGrid::SurfacePatch sp;
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
 	p.update_idx = update_idx;
 	p.setColor( color );
 	return p;
@@ -207,21 +205,20 @@ struct SurfacePatchStore12
 
     size_t xi, yi;
 
-    MLSGrid::SurfacePatch toSurfacePatch()
+    SurfacePatch toSurfacePatch()
     {
-	typedef envire::MLSGrid::SurfacePatch sp;
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
 	p.update_idx = update_idx;
 	std::copy( color, color+3, p.color );
 	return p;
     }
 };
 
-struct SurfacePatchStore : MLSGrid::SurfacePatch
+struct SurfacePatchStore : SurfacePatch
 {
     SurfacePatchStore() {};
 
-    SurfacePatchStore( const MLSGrid::SurfacePatch& data, size_t xi, size_t yi )
+    SurfacePatchStore( const SurfacePatch& data, size_t xi, size_t yi )
 	: SurfacePatch(data), xi(xi), yi(yi) {}
 
     size_t xi, yi;
@@ -382,12 +379,12 @@ MLSGrid::iterator MLSGrid::erase( iterator position )
     return res; 
 }
 
-MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
+SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
 {
     MLSGrid::iterator it = beginCell(position.x, position.y);
     while( it != endCell() )
     {
-	MLSGrid::SurfacePatch &p(*it);
+	SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
 	if( p.distance( patch ) < interval && (!ignore_negative || !p.isNegative()) )
 	{
@@ -565,10 +562,10 @@ bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
     return false;
 }
 
-std::pair<MLSGrid::SurfacePatch*, double> 
-    getNearestPatch( const MLSGrid::SurfacePatch& p, MLSGrid::iterator begin, MLSGrid::iterator end )
+std::pair<SurfacePatch*, double> 
+    getNearestPatch( const SurfacePatch& p, MLSGrid::iterator begin, MLSGrid::iterator end )
 {
-    MLSGrid::SurfacePatch* min = NULL;
+    SurfacePatch* min = NULL;
     double dist = std::numeric_limits<double>::infinity();
 
     // find the cell with the smallest z-diff
