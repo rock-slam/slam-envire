@@ -123,14 +123,19 @@ int main(int argc, char* argv[])
 	miny = std::max( grid->getOffsetY(), center.y - win.y/2.0 ),
 	maxy = std::min( grid->getOffsetY() + grid->getSizeY(), center.y + win.y/2.0 );
 
-    for( float x = minx + grid->getScaleX()*.5; x < maxx; x+= grid->getScaleX() )
+    const float sx = grid->getScaleX(), sy = grid->getScaleY();
+    const float normalScale = 1.0 / pdf( normal, 0 );
+    ElevationGrid::ArrayType &raster = grid->getGridData( ElevationGrid::ELEVATION );
+    for( float x = minx + grid->getScaleX()*.5; x < maxx; x+= sx )
     {
-	for( float y = miny + grid->getScaleY()*.5; y < maxy; y+= grid->getScaleY() )
+	for( float y = miny + grid->getScaleY()*.5; y < maxy; y+= sy )
 	{
-	    const float r = sqrt( pow(x-center.x,2) + pow(y-center.y,2) );
-
 	    // get reference to height value
-	    double &height( grid->get( x, y ) );
+            size_t raster_x, raster_y;
+            grid->toGrid(x, y, raster_x, raster_y);
+	    double &height( raster[raster_y][raster_x] );
+
+	    const float r = sqrt( pow(x-center.x,2) + pow(y-center.y,2) );
 
 	    if( useConst )
 		height += scale;
@@ -139,7 +144,7 @@ int main(int argc, char* argv[])
 		height += (cos( slopeAngle ) * x + sin( slopeAngle ) * y) * scale;
 	    
 	    if( useNormal )
-		height += pdf( normal, r ) * scale / pdf( normal, 0 ); 
+		height += pdf( normal, r ) * scale * normalScale; 
 
 	    if( useSphere && r < radius )
 		height += sqrt( pow(radius,2) - pow(r,2) ) * scale;
