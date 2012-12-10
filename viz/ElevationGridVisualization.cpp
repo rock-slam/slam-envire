@@ -36,7 +36,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
     envire::ElevationGrid *eg = dynamic_cast<envire::ElevationGrid *>(item);
     
     //Load the texture image
-    osg::ref_ptr<osg::Image> image = new osg::Image();
+    osg::ref_ptr<osg::Image> image; 
     
     envire::ElevationGrid::ArrayType &data = eg->getGridData(envire::ElevationGrid::ELEVATION);
 
@@ -63,6 +63,8 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
    // setup height color image
    if(cycleHeightColor || illumination || visibility)
    {
+	image = new osg::Image();
+
         //convert double to uint16 
         int size = eg->getWidth()*eg->getHeight()*4;
         unsigned char* image_raw_data = new unsigned char[size];
@@ -80,7 +82,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
         {
             double hue = (*pos2 - std::floor(*pos2)) / scaling;
             pos2++;
-            osg::Vec4f col(.5,.5,.3,1.0);
+            osg::Vec4f col(1.0,1.0,0.6,1.0);
 	    double luminance = 0.6;
 	    if( illumination )
 		luminance *= *(illumination++);
@@ -88,6 +90,8 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
 		col.a() = *(visibility++);
 	    if( cycleHeightColor )
 		ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, luminance, col.r(), col.g(), col.b());
+	    else
+		col = osg::Vec4f( col.r() * luminance, col.g() * luminance, col.b() * luminance, col.a() );
 	    *pos++ = (unsigned char)(col.r() * 255.0);
 	    *pos++ = (unsigned char)(col.g() * 255.0);
 	    *pos++ = (unsigned char)(col.b() * 255.0);
@@ -152,7 +156,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
     state->setAttribute( mat.get() );
     
     // apply texture
-    if(cycleHeightColor)
+    if(texture)
     {
         osg::Texture2D* tex = new osg::Texture2D(texture);
         tex->setFilter(osg::Texture2D::MIN_FILTER,osg::Texture2D::LINEAR_MIPMAP_LINEAR);

@@ -37,8 +37,8 @@ bool GridIllumination::updateAll()
 
 	    // min/max height at 1m distance where the light is visible
 	    double 
-		lightMin = (dir3.z() - lightDiameter) / dir.norm(),
-		lightMax = (dir3.z() + lightDiameter) / dir.norm();
+		lightMin = (dir3.z() - .5*lightDiameter) / dir.norm(),
+		lightMax = (dir3.z() + .5*lightDiameter) / dir.norm();
 
 	    // starting from the current cell, we want to advance towards the
 	    // light source until either the cell of the light source is
@@ -65,7 +65,7 @@ bool GridIllumination::updateAll()
 		maxx = deltax * 0.5,
 		maxy = deltay * 0.5; 
 
-	    double maxLight = 1.0; 
+	    double maxLight = 0.0; 
 	    while( true )
 	    {
 		// advance to next cell
@@ -88,18 +88,18 @@ bool GridIllumination::updateAll()
 		    break;
 
 		// get distance value on x/y plane
-		double dist = sqrt( pow( cx - x, 2 ) + pow( cy - y, 2 ) );
+		double dist = (grid->fromGrid( cx, cy ).head<2>() - cell.head<2>()).norm();
 
 		// now get the elevationvalue from the grid relative to the
 		// current cell
 		double zDiff = harray[cy][cx] - cell.z();
 		// z height normalized to dist and mapped to min/max light
 		double zRel = (zDiff / dist - lightMin ) / (lightMax - lightMin); 
-		maxLight = std::min( maxLight, zRel );
+		maxLight = std::max( maxLight, zRel );
 	    }
 
 	    // set the light value in the illumination band
-	    iarray[y][x] = std::max( maxLight, 0.0 );
+	    iarray[y][x] = 1.0 - std::min( maxLight, 1.0 );
 	}
     }
 
