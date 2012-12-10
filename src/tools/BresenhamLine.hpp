@@ -19,6 +19,8 @@ namespace envire
  * Author: Woon Khang Tang
  * url: http://www.codekeep.net/snippets/e39b2d9e-0843-4405-8e31-44e212ca1c45.aspx
  * (c) All public snippets in CodeKeep may be freely used, copied, and distributed. 
+ *
+ * @todo update to iterator like accessor
  */
 void lineBresenham(const envire::GridBase::Position& p1, const envire::GridBase::Position& p2, std::vector<envire::GridBase::Position>& positions )
 {

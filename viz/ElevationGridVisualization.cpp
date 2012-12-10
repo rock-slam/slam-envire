@@ -52,12 +52,19 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
             }
         }
     }
+
+    // see if we want to visualize illumination and or visibility
+    double *illumination = NULL, *visibility = NULL;
+    if( eg->hasData( envire::ElevationGrid::ILLUMINATION ) )
+	illumination = eg->getGridData(envire::ElevationGrid::ILLUMINATION).data();
+    if( eg->hasData( envire::ElevationGrid::VISIBILITY ) )
+	visibility = eg->getGridData(envire::ElevationGrid::VISIBILITY).data();
    
    // setup height color image
-   if(cycleHeightColor)
+   if(cycleHeightColor || illumination || visibility)
    {
         //convert double to uint16 
-        int size = eg->getWidth()*eg->getHeight()*3;
+        int size = eg->getWidth()*eg->getHeight()*4;
         unsigned char* image_raw_data = new unsigned char[size];
         unsigned char* pos = image_raw_data;
         unsigned char* end_pos = &image_raw_data[size];
@@ -73,19 +80,26 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
         {
             double hue = (*pos2 - std::floor(*pos2)) / scaling;
             pos2++;
-            osg::Vec4f col(0.0,0.0,0.0,1.0);
-            ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, 0.6, col.x(), col.y(), col.z());
-        *pos++ = (unsigned char)(col.x() * 255.0);
-        *pos++ = (unsigned char)(col.y() * 255.0);
-        *pos++ = (unsigned char)(col.z() * 255.0);
+            osg::Vec4f col(.5,.5,.3,1.0);
+	    double luminance = 0.6;
+	    if( illumination )
+		luminance *= *(illumination++);
+	    if( visibility )
+		col.a() = *(visibility++);
+	    if( cycleHeightColor )
+		ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, luminance, col.r(), col.g(), col.b());
+	    *pos++ = (unsigned char)(col.r() * 255.0);
+	    *pos++ = (unsigned char)(col.g() * 255.0);
+	    *pos++ = (unsigned char)(col.b() * 255.0);
+	    *pos++ = (unsigned char)(col.a() * 255.0);
         }
         
         image->setImage(
                 eg->getWidth(),
                 eg->getHeight(),
                 1, // datadepth per channel
-                GL_RGB, //GL_RGB,//GL_LUMINANCE16, 
-                GL_RGB, 
+                GL_RGBA, 
+                GL_RGBA, 
                 GL_UNSIGNED_BYTE, // GLenum type, (GL_UNSIGNED_BYTE, 0x1401)
                 (unsigned char*)(image_raw_data), // unsigned char* data
                 osg::Image::USE_NEW_DELETE, // USE_NEW_DELETE, //osg::Image::NO_DELETE,// AllocationMode mode (shallow copy)

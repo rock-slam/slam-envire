@@ -42,6 +42,7 @@ rock_library(envire
     operators/GridFloatToMLS.cpp
     operators/MLSToGrid.cpp
     operators/CutPointcloud.cpp
+    operators/GridIllumination.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
@@ -88,6 +89,7 @@ install(FILES operators/MergeMLS.hpp
     operators/SurfaceReconstruction.hpp
     operators/ClassGridProjection.hpp
     operators/CutPointcloud.hpp
+    operators/GridIllumination.hpp
     DESTINATION include/envire/operators)
 
 install(FILES tools/GraphViz.hpp

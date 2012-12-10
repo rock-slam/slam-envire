@@ -16,6 +16,8 @@ rock_executable(env_add_grid env_add_grid.cpp
     DEPS envire)
 rock_executable(env_grid_to_mls env_grid_to_mls.cpp
     DEPS envire)
+rock_executable(env_grid_illumination env_grid_illumination.cpp
+    DEPS envire)
 rock_executable(env_grid_add_noise env_grid_add_noise.cpp
     DEPS envire
     DEPS_PLAIN Boost_PROGRAM_OPTIONS

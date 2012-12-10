@@ -60,6 +60,8 @@ namespace envire
       static const std::string ELEVATION;
       static const std::string ELEVATION_MIN;
       static const std::string ELEVATION_MAX;
+      static const std::string ILLUMINATION;
+      static const std::string VISIBILITY;
     private:
       const static std::vector<std::string> &bands;
 
