@@ -385,7 +385,7 @@ namespace envire
 
 	// get layers vector first
 	// base it on the bands and see if there additional layers available
-	std::vector<std::string> layers = getBands();
+	std::vector<std::string> layers; 
         for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)
             if (it->second->isOfType<ArrayType>() && find( layers.begin(), layers.end(), it->first ) == layers.end() )
 		layers.push_back( it->first );
