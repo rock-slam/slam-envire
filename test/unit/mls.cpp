@@ -8,6 +8,8 @@
 #include "envire/operators/MLSProjection.hpp"
 #include "envire/operators/MergeMLS.hpp"
 
+#include <base/timemark.h>
+
 using namespace envire;
 
 BOOST_AUTO_TEST_CASE( multilevelsurfacegrid ) 
@@ -143,4 +145,39 @@ BOOST_AUTO_TEST_CASE( gridaligned_test )
 
     fn3->setTransform( Eigen::Affine3d( Eigen::Translation3d( 0.15, 0, 0 ) ) );
     BOOST_CHECK( !mls2->isCellAlignedWith( *mls3 ) );
+}
+
+inline void populateRandom( envire::MLSGrid::Ptr grid, const size_t count )
+{
+    const size_t gridsize_x = grid->getCellSizeX();
+    const size_t gridsize_y = grid->getCellSizeY();
+
+    for( size_t n=0; n<count; n++ )
+    {
+	size_t x = rand() % gridsize_x;
+	size_t y = rand() % gridsize_y;
+	MLSGrid::SurfacePatch p( rand()%100 / 100.0, rand()%100 / 100.0 );
+	grid->updateCell( x, y, p );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( profiling_test ) 
+{
+    // randomly populate the grid
+    srand(0);
+
+    size_t grid_size = 1000;
+    MLSGrid::Ptr mls( new MLSGrid(grid_size, grid_size, 0.1, 0.1) );
+
+    base::TimeMark tmls("Populate MLS 10 x 1000000");
+    for( int i=0; i<10; i++ )
+    {
+	mls->clear();
+	populateRandom( mls, 1000000 );
+    }
+    std::cout 
+	<< "cellcount: " << mls->getCellCount() 
+	<< " " << tmls 
+	<< std::endl;
+
 }
