@@ -1,7 +1,6 @@
 #include "MLSGrid.hpp"
 #include <fstream>
 #include <limits>
-#include "tools/Numeric.hpp"
 #include <algorithm>
 
 using namespace envire;
@@ -466,100 +465,7 @@ void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& co )
 
 bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
-    const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
-
-    // see if the distance between the patches is small enough
-    if( (p.mean - p.height - gapSize - delta_dev) < o.mean 
-	    && (p.mean + gapSize + delta_dev) > (o.mean - o.height) )
-    {
-	// if both patches are horizontal, we see if we can merge them
-	if( p.isHorizontal() && o.isHorizontal() ) 
-	{
-	    if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
-		    (p.mean + thickness + delta_dev) > o.mean )
-	    {
-		kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-	    }
-	    else
-	    {
-		// convert into a vertical patch element
-		//p.mean += p.stdev;
-		//p.height = 2 * p.stdev; 
-		p.setVertical();
-	    }
-	}
-
-	// if either of the patches is vertical, the result is also going
-	// to be vertical
-	if( !p.isHorizontal() || !o.isHorizontal())
-	{
-	    if( p.isVertical() && o.isVertical() )
-		p.setVertical();
-	    else if( p.isNegative() && o.isNegative() )
-		p.setNegative();
-	    else if( p.isNegative() || o.isNegative() )
-	    {
-		// in this case (one negative one non negative)
-		// its a bit hard to decide, since we have to remove
-		// something somewhere to make it compatible
-		//
-		// best is to decide on age (based on update_idx) 
-		// of the patch. Newer patches will be preferred
-
-		if( p.update_idx == o.update_idx )
-		    return false;
-
-		SurfacePatch &rp( p.update_idx < o.update_idx ? p : o );
-		SurfacePatch &ro( p.update_idx < o.update_idx ? o : p );
-
-		if( rp.update_idx < ro.update_idx )
-		{
-		    // the new patch fully encloses the old one, 
-		    // so will overwrite it
-		    if( ro.mean > rp.mean && ro.mean - ro.height < rp.mean - rp.height )
-		    {
-			p = ro;
-			return true; 
-		    } 
-
-		    // the other patch is occupied, so cut
-		    // the free patch accordingly
-		    if( ro.mean < rp.mean )
-			rp.height = rp.mean - ro.mean;
-		    else if( ro.mean - ro.height < rp.mean )
-		    {
-			double new_mean = ro.mean - ro.height;
-			rp.height -= rp.mean - new_mean;
-			rp.mean = new_mean;
-		    }
-
-		    // both patches can live 
-		    return false;
-		}
-	    }
-
-	    if( o.mean > p.mean )
-	    {
-		p.height += ( o.mean - p.mean );
-		p.mean = o.mean;
-		p.stdev = o.stdev;
-	    }
-
-	    const double o_min = o.mean - o.height;
-	    const double p_min = p.mean - p.height;
-	    if( o_min < p_min )
-	    {
-		p.height = p.mean - o_min;
-	    }
-	}
-	p.update_idx = std::max( p.update_idx, o.update_idx );
-
-	if( hasCellColor_ )
-	    p.setColor( (p.getColor() + o.getColor()) / 2.0 );
-
-	return true;
-    }
-    return false;
+    return p.merge( o, gapSize, thickness );
 }
 
 std::pair<SurfacePatch*, double> 
