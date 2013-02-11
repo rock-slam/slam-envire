@@ -322,6 +322,8 @@ void MLSGrid::insertHead( size_t xi, size_t yi, const SurfacePatch& value )
     static_cast<SurfacePatch&>(*n_item).operator=(value);
     n_item->next = cells[xi][yi];
     n_item->pthis = &cells[xi][yi];
+    if( n_item->next )
+	n_item->next->pthis = &n_item->next;
 
     cells[xi][yi] = n_item;
     addCell( Position( xi, yi ) );
