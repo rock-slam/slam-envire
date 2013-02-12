@@ -8,6 +8,8 @@
 #include "envire/operators/MLSProjection.hpp"
 #include "envire/operators/MergeMLS.hpp"
 
+#include "envire/tools/ListGrid.hpp"
+
 #include <base/timemark.h>
 
 using namespace envire;
@@ -181,3 +183,18 @@ BOOST_AUTO_TEST_CASE( profiling_test )
 	<< std::endl;
 
 }
+
+BOOST_AUTO_TEST_CASE( list_grid )
+{
+    ListGrid<int> lg( 10, 10 );
+
+    lg.insertHead( 1, 1, 10 );
+    lg.insertTail( 1, 1, 20 );
+
+    ListGrid<int>::iterator it = lg.beginCell( 1, 1 );
+    BOOST_CHECK_EQUAL( *(it++), 10 );
+    BOOST_CHECK_EQUAL( *(it++), 20 );
+    BOOST_CHECK_EQUAL( *it, lg.endCell() );
+}
+
+
