@@ -5,24 +5,32 @@
 #include <boost/multi_array.hpp>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/pool/pool.hpp>
+#include <boost/array.hpp>
 
 namespace envire
 {
 
+/**
+ * Implementation of a grid structure, where each grid element is a list.
+ * The class is templated for the element type of the list.
+ */
 template <class C>
 class ListGrid
 {
     struct Item : public C
     {
+	Item() {};
+	explicit Item( const C& c ) : C( c ) {}
+
 	Item* next;
 	Item** pthis;
     };
 
 public:
-    template <class T>
+    template <class T, class TV>
     class iterator_base : public boost::iterator_facade<
-	iterator_base<T>,
-	T,
+	iterator_base<T,TV>,
+	TV,
 	boost::forward_traversal_tag
 	>
     {
@@ -30,36 +38,90 @@ public:
 	friend class ListGrid<C>;
 	T* m_item;
 
-	iterator_base(T* item) : m_item(item) {}
+	explicit iterator_base(T* item) : m_item(item) {}
 
 	void increment() 
 	{ 
 	    m_item = m_item->next; 
 	}
-	bool equal( iterator_base<T> const& other ) const 
+	bool equal( iterator_base<T,TV> const& other ) const 
 	{ 
 	    return m_item == other.m_item; 
 	}
-	T& dereference() const 
+	TV& dereference() const 
 	{ 
 	    return *m_item; 
 	}
 
     public:
-	iterator_base<T>() : m_item(NULL) {}
+	iterator_base<T,TV>() : m_item(NULL) {}
 
-	iterator_base(iterator_base<T> const& other)
+	iterator_base(iterator_base<T,TV> const& other)
 	    : m_item(other.m_item) {}
     };
 
-    typedef iterator_base<Item> iterator;
-    typedef iterator_base<const Item> const_iterator;
+    typedef iterator_base<Item, C> iterator;
+    typedef iterator_base<const Item, const C> const_iterator;
 
 public:
+    ListGrid()
+	: mem_pool( sizeof( Item ) )
+    {
+    }
+
     ListGrid( size_t sizeX, size_t sizeY )
 	: cells( boost::extents[sizeX][sizeY] ),
 	mem_pool( sizeof( Item ) )
     {
+    }
+
+    ListGrid( const ListGrid<C>& other )
+	: mem_pool( sizeof( Item ) )
+    {
+	// use the assignment operator 
+	this->operator=( other );
+    }
+
+    ListGrid& operator=( const ListGrid<C>& other )
+    {
+	if( &other != this )
+	{
+	    // assert same dimension for grids
+	    assert( other.cells.num_dimensions() == cells.num_dimensions() );
+
+	    // test if shape of cells is the same
+	    // and reshape our cell structure if necessary
+	    if( !std::equal( other.cells.shape(), other.cells.shape() + other.cells.num_dimensions(), cells.shape() ) )
+	    {
+		boost::array<typename ArrayType::index, 2> shape;
+		std::copy( other.cells.shape(), other.cells.shape() + 2, shape.begin() ); 
+		cells.resize( shape );
+	    }
+
+	    // clear cell array of this 
+	    clear();
+
+	    // and for each cell perform a copy
+	    for(size_t xi=0;xi<cells.shape()[0];xi++)
+	    {
+		for(size_t yi=0;yi<cells.shape()[1];yi++)
+		{
+		    cells[xi][yi] = NULL;
+		    for( const_iterator it = other.beginCell( xi,yi ); it != other.endCell(); it++ )
+			insertTail( xi, yi, *it );
+		}
+	    }
+	}
+
+	return *this;
+    }
+
+    /** resize the grid. This will also clear all content
+     */
+    void resize( size_t sizeX, size_t sizeY )
+    {
+	clear();
+	cells.resize( boost::extents[sizeX][sizeY] );
     }
 
     /** Returns the iterator on the first registered patch at \c xi and \c
@@ -150,12 +212,13 @@ public:
 
     void clear()
     {
-	std::fill( cells.begin(), cells.end(), NULL );
+	std::fill( cells.data(), cells.data() + cells.num_elements(), (Item*)NULL );
 	mem_pool.purge_memory();
     }
 
 protected:
-    boost::multi_array<Item*,2> cells; 
+    typedef boost::multi_array<Item*,2> ArrayType; 
+    ArrayType cells;
     boost::pool<> mem_pool;
 };
 

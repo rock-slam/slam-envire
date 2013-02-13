@@ -242,7 +242,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     {
 	for(size_t y=0;y<mls->getHeight();y++)
 	{
-	    for( envire::MultiLevelSurfaceGrid::const_iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
+	    for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
 	    {
 		const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
 		double xp = (x+0.5) * xs + xo;

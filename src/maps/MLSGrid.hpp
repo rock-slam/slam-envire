@@ -15,6 +15,7 @@
 #include <base/eigen.h>
 
 #include <envire/maps/MLSPatch.hpp>
+#include <envire/tools/ListGrid.hpp>
 
 namespace envire
 {  
@@ -56,81 +57,12 @@ namespace envire
 	};
 
     protected:
-	/** For each of the grid cells, there is a list of items.
-	 * These items are organised as a double linked list
-	 */
-	struct SurfacePatchItem : public SurfacePatch
-	{
-	    typedef SurfacePatchItem Item;
-	    typedef SurfacePatch Value;
-
-	    SurfacePatchItem() {};
-	    explicit SurfacePatchItem( const SurfacePatch& data ) : SurfacePatch( data ) {};
-
-	    SurfacePatchItem* next;
-	    SurfacePatchItem** pthis;
-	};
-
-	template <class T>
-	struct traits 
-	{
-	    typedef typename T::Item Item;
-	    typedef typename T::Value Value;
-	    typedef T* pItem;
-	};
-
-	template <class T>
-	struct traits<const T>
-	{
-	    typedef const typename T::Item Item;
-	    typedef const typename T::Value Value;
-	    typedef const typename T::Item* const pItem;
-	};
+	ListGrid<SurfacePatch> cells;
 
     public:
-	template <class T>
-	class iterator_base :
-	    public boost::iterator_facade<
-		iterator_base<T>,
-		typename traits<T>::Value,
-		boost::forward_traversal_tag
-		>
-	{
-	    template <class T1>
-		friend std::ostream& operator <<( std::ostream& os, const MLSGrid::iterator_base<T1> it );
-            template <typename> friend class iterator_base;
+	typedef	ListGrid<SurfacePatch>::iterator iterator;
+	typedef ListGrid<SurfacePatch>::const_iterator const_iterator;
 
-	    friend class boost::iterator_core_access;
-	    friend class MLSGrid;
-
-	    typedef typename traits<T>::Item Data;
-	    typedef typename traits<T>::pItem pData;
-	    typedef typename traits<T>::Value Value;
-
-	    Data* m_item;
-
-	    iterator_base(Data* item) : m_item(item) {}
-
-	    void increment() 
-	    { 
-		m_item = m_item->next; 
-	    }
-            template<typename OtherT>
-	    bool equal( iterator_base<OtherT> const& other ) const { return m_item == other.m_item; }
-	    Value& dereference() const { return *m_item; }
-
-	public:
-	    iterator_base() : m_item(NULL) {}
-
-            template<typename OtherValue>
-            iterator_base(iterator_base<OtherValue> const& other)
-                : m_item(other.m_item) {}
-	};
-
-	typedef	iterator_base<SurfacePatchItem> iterator;
-	typedef iterator_base<const SurfacePatchItem> const_iterator;
-
-    public:
         /**
          * Creates the grid with the specified parameters.\n
          * width,height: Number of horizontal and vertical patches.\n
@@ -266,8 +198,6 @@ namespace envire
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
-	typedef boost::multi_array<SurfacePatchItem*,2> ArrayType; 
-	ArrayType cells;
 
 	double gapSize;
 	double thickness;
@@ -277,15 +207,7 @@ namespace envire
 	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;
 	Extents extents;
-	boost::pool<> mem_pool;
     };
-
-    template <class T>
-    std::ostream& operator <<( std::ostream& os, const MLSGrid::iterator_base<T> it )
-    {
-	os << it.m_item;
-	return os;
-    }
 
     /** For backward compatibility. Use MLSGrid instead. */
     typedef MLSGrid MultiLevelSurfaceGrid;
