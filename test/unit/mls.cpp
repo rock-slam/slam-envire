@@ -184,17 +184,35 @@ BOOST_AUTO_TEST_CASE( profiling_test )
 
 }
 
+struct Integer
+{
+    int v;
+    Integer(int i) : v(i) {};
+    operator int() const { return v; }
+};
+
 BOOST_AUTO_TEST_CASE( list_grid )
 {
-    ListGrid<int> lg( 10, 10 );
+    ListGrid<Integer> lg( 10, 10 );
 
     lg.insertHead( 1, 1, 10 );
     lg.insertTail( 1, 1, 20 );
 
-    ListGrid<int>::iterator it = lg.beginCell( 1, 1 );
-    BOOST_CHECK_EQUAL( *(it++), 10 );
-    BOOST_CHECK_EQUAL( *(it++), 20 );
-    BOOST_CHECK_EQUAL( *it, lg.endCell() );
+    {
+	ListGrid<Integer>::iterator it = lg.beginCell( 1, 1 );
+	BOOST_CHECK_EQUAL( *(it++), 10 );
+	BOOST_CHECK_EQUAL( *(it++), 20 );
+	BOOST_CHECK( it == lg.endCell() );
+    }
+
+    {
+	const ListGrid<Integer>& clg( lg );
+	// and the same thing for const
+	ListGrid<Integer>::const_iterator it = clg.beginCell( 1, 1 );
+	BOOST_CHECK_EQUAL( *(it++), 10 );
+	BOOST_CHECK_EQUAL( *(it++), 20 );
+	BOOST_CHECK( it == clg.endCell() );
+    }
 }
 
 

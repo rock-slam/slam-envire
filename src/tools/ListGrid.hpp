@@ -26,6 +26,8 @@ public:
 	boost::forward_traversal_tag
 	>
     {
+	friend class boost::iterator_core_access;
+	friend class ListGrid<C>;
 	T* m_item;
 
 	iterator_base(T* item) : m_item(item) {}
@@ -153,7 +155,7 @@ public:
     }
 
 protected:
-    typedef boost::multi_array<Item*,2> cells; 
+    boost::multi_array<Item*,2> cells; 
     boost::pool<> mem_pool;
 };
 
