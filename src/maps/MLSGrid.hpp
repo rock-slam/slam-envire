@@ -15,6 +15,7 @@
 #include <base/eigen.h>
 
 #include <envire/maps/MLSPatch.hpp>
+#include <envire/maps/MLSConfiguration.hpp>
 #include <envire/tools/ListGrid.hpp>
 
 namespace envire
@@ -44,7 +45,13 @@ namespace envire
 
     public:
 	typedef envire::SurfacePatch SurfacePatch;
+	typedef envire::MLSConfiguration Configuration;
 
+	/** 
+	 * index class stores a list of cell positions that are occupied in the
+	 * grid.  By default the index in the mls is switched off. You have to
+	 * call initIndex on the mls to activate.
+	 */
 	struct Index 
 	{
 	    std::set<Position> cells;
@@ -134,16 +141,25 @@ namespace envire
 	void updateCell( size_t xi, size_t yi, const SurfacePatch& patch );
 	void updateCell( const Position& pos, const SurfacePatch& patch );
 
-	void setGapSize( double gapsize ) { this->gapSize = gapsize; }
-	double getGapSize() const { return gapSize; }
-	void setHorizontalPatchThickness( double thickness ) { this->thickness = thickness; }
-	double getHorizontalPatchThickness() const { return thickness; }
 
 	size_t getCellCount() const { return cellcount; }
 	bool empty() const { return cellcount == 0; }
 
-	void setHasCellColor( bool use ) { hasCellColor_ = use; }
-	bool getHasCellColor() const { return hasCellColor_; }
+	Configuration& getConfig() { return config; }
+	const Configuration& getConfig() const { return config; }
+
+	/** @deprecated use getConfig()...() instead */
+	void setGapSize( double gapsize ) { config.gapSize = gapsize; }
+	/** @deprecated use getConfig()...() instead */
+	double getGapSize() const { return config.gapSize; }
+	/** @deprecated use getConfig()...() instead */
+	void setHorizontalPatchThickness( double thickness ) { config.thickness = thickness; }
+	/** @deprecated use getConfig()...() instead */
+	double getHorizontalPatchThickness() const { return config.thickness; }
+	/** @deprecated use getConfig()...() instead */
+	void setHasCellColor( bool use ) { config.useColor = use; }
+	/** @deprecated use getConfig()...() instead */
+	bool getHasCellColor() const { return config.useColor; }
 
     public:
 	/** @deprecated
@@ -199,10 +215,11 @@ namespace envire
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
 
-	double gapSize;
-	double thickness;
+	/// configuration of the mls
+	Configuration config;
+
+	/// holds the number of patches in the grid 
 	size_t cellcount;
-	bool hasCellColor_;
 
 	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;

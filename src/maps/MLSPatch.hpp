@@ -2,6 +2,7 @@
 #define __MULTILEVELSURFACEPATCH_HPP__
 
 #include <envire/tools/Numeric.hpp>
+#include <envire/maps/MLSConfiguration.hpp>
 
 namespace envire
 {
@@ -138,7 +139,7 @@ struct SurfacePatch
 	color[2] = c[2] * 255;
     }
 
-    bool merge( SurfacePatch& o, double thickness, double gapSize )
+    bool merge( SurfacePatch& o, double thickness, double gapSize, MLSConfiguration::update_model updateModel )
     {
 	SurfacePatch &p(*this);
 	const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
@@ -153,7 +154,18 @@ struct SurfacePatch
 		if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
 			(p.mean + thickness + delta_dev) > o.mean )
 		{
-		    kalman_update( p.mean, p.stdev, o.mean, o.stdev );
+		    if( updateModel == MLSConfiguration::KALMAN )
+		    {
+			kalman_update( p.mean, p.stdev, o.mean, o.stdev );
+		    }
+		    else if( updateModel == MLSConfiguration::SUM )
+		    {
+
+		    }
+		    else
+		    {
+			throw std::runtime_error("MLS update model not implemented.");
+		    }
 		}
 		else
 		{

@@ -13,8 +13,7 @@ static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
 MLSGrid::MLSGrid()
     : GridBase()
-    , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
-    , hasCellColor_(false) 
+    , cellcount( 0 )
 {
     clear();
 }
@@ -22,8 +21,7 @@ MLSGrid::MLSGrid()
 MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scaley, double offsetx, double offsety)
     : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
     , cells( cellSizeX, cellSizeY )
-    , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
-    , hasCellColor_(false)
+    , cellcount( 0 )
 {
     clear();
 }
@@ -34,14 +32,14 @@ void MLSGrid::clear()
     cellcount = 0;
     if(index) index->reset();
     extents = Extents();
-    hasCellColor_ = false;
+    config.useColor = false;
 }
 
 MLSGrid::MLSGrid(const MLSGrid& other)
     : GridBase( other )
     , cells( other.cells )
-    , gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount )
-    , hasCellColor_( other.hasCellColor_)
+    , config( other.config )
+    , cellcount( other.cellcount )
     , extents( other.extents )
 {
 }
@@ -54,10 +52,8 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 
 	cells = other.cells;
 	extents = other.extents;
-	gapSize = other.gapSize;
-	thickness = other.thickness;
+	config = other.config;
 	cellcount = other.cellcount;
-	hasCellColor_ = other.hasCellColor_;
     }
 
     return *this;
@@ -66,10 +62,7 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 envire::MLSGrid* MLSGrid::cloneShallow() const
 {
     MLSGrid* res = new MLSGrid( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety );
-    res->gapSize = gapSize;
-    res->thickness = thickness;
-    res->cellcount = cellcount;
-    res->hasCellColor_ = hasCellColor_;
+    res->config = config;
     return res;
 }
 
@@ -81,7 +74,7 @@ void MLSGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
 
-    so.write( "hasCellColor", hasCellColor_ );
+    so.write( "hasCellColor", config.useColor );
     writeMap( so.getBinaryOutputStream(getMapFileName() + ".mls") );
 }
 
@@ -90,9 +83,9 @@ void MLSGrid::unserialize(Serialization& so)
     GridBase::unserialize(so);
 
     if( so.hasKey( "hasCellColor" ) )
-	so.read( "hasCellColor", hasCellColor_ );
+	so.read( "hasCellColor", config.useColor );
     else
-	hasCellColor_ = false;
+	config.useColor = false;
 
     cells.resize( cellSizeX, cellSizeY );
 
@@ -401,7 +394,7 @@ void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& co )
 
 bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
-    return p.merge( o, gapSize, thickness );
+    return p.merge( o, config.gapSize, config.thickness, config.updateModel );
 }
 
 std::pair<SurfacePatch*, double> 
@@ -435,8 +428,8 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
     // that of the scanmap for the update. Afterwards, we set it 
     // to its original value, if it previously had one.
     // if the other has cell color, also use it in the target grid
-    bool hadCellColor = getHasCellColor();
-    setHasCellColor( other.getHasCellColor() );
+    bool hadCellColor = config.useColor;
+    config.useColor = other.config.useColor;
 
     const std::set<Position> &cells = other.getIndex()->cells;
 
@@ -468,7 +461,7 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
     }
 
     if( hadCellColor )
-	setHasCellColor( hadCellColor );
+	config.useColor = hadCellColor;
 }
 
 float MLSGrid::match( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset, size_t sampling, float sigma )
