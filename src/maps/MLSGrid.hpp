@@ -105,16 +105,10 @@ namespace envire
          * xi and \c yi
          */
 	const_iterator beginCell( size_t xi, size_t yi ) const;
-        /** @deprecated */
-	const_iterator beginCell_const( size_t xi, size_t yi ) const
-        { return beginCell(xi, yi); }
         /** Returns the past-the-end iterator for cell iteration */
 	iterator endCell();
         /** Returns the const past-the-end iterator for cell iteration */
 	const_iterator endCell() const;
-        /** @deprecated */
-	const_iterator endCell_const() const
-        { return endCell(); }
 
         /** Inserts a new surface patch at the beginning of the patch list at
          * the given position
