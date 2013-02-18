@@ -39,7 +39,8 @@ struct SurfacePatch
 
     SurfacePatch() {};
     SurfacePatch( float mean, float stdev, float height = 0, TYPE type = HORIZONTAL )
-	: mean(mean), stdev(stdev), height(height), type(type), update_idx(0) {};
+	: mean(mean), stdev(stdev), height(height), norm_sum(1.0/stdev),
+	update_idx(0), type(type) {};
 
     /** Experimental code. Don't use it unless you know what you are
      * doing */
@@ -257,17 +258,21 @@ struct SurfacePatch
     float stdev;
     /** For vertical patches, the height of the patch */
     float height;
+    /** sum of normalization factors used to construct this patch. */
+    float norm_sum;
+
+public:
+    size_t update_idx;
+    uint8_t color[3];
+
+protected:
     /** Horizontal patches are just a mean and standard deviation.
      * Vertical patches also have a height, i.e. the patch is a vertical
      * block between z=(mean-height) and z
      */
 
-    protected:
     TYPE type;
 
-    public:
-    size_t update_idx;
-    uint8_t color[3];
 };
 
 }

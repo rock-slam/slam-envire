@@ -68,6 +68,7 @@ install(FILES maps/GridBase.hpp
     maps/LaserScan.hpp
     maps/MLSGrid.hpp
     maps/MLSPatch.hpp
+    maps/MLSConfiguration.hpp
     maps/MLSMap.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp

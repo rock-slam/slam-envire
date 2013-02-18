@@ -129,12 +129,12 @@ namespace envire
          * patch.sigma of sigma.mean
          */
 	SurfacePatch* get( const Position& position, const SurfacePatch& patch, double sigma_threshold = 3.0, bool ignore_negative = true );
-	/** @deprecated */
-	bool get(const Eigen::Vector3d& position, double& zpos, double& zstdev);
+	SurfacePatch* get(const Eigen::Vector2d& position, double& zpos, double& zstdev );
 	void updateCell( size_t xi, size_t yi, double mean, double stdev );
 	void updateCell( size_t xi, size_t yi, const SurfacePatch& patch );
 	void updateCell( const Position& pos, const SurfacePatch& patch );
 
+	bool update( const Eigen::Vector2d& pos, const SurfacePatch& patch );
 
 	size_t getCellCount() const { return cellcount; }
 	bool empty() const { return cellcount == 0; }

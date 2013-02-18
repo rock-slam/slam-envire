@@ -179,6 +179,28 @@ struct SurfacePatchStore12
     }
 };
 
+struct SurfacePatchStore13
+{
+    float mean;
+    float stdev;
+    float height;
+    float norm_sum;
+    size_t update_idx;
+    uint8_t color[3];
+    SurfacePatch::TYPE type;
+
+    size_t xi, yi;
+
+    SurfacePatch toSurfacePatch()
+    {
+	SurfacePatch p( mean, stdev, height, type );
+	p.update_idx = update_idx;
+	p.norm_sum = norm_sum;
+	std::copy( color, color+3, p.color );
+	return p;
+    }
+};
+
 struct SurfacePatchStore : SurfacePatch
 {
     SurfacePatchStore() {};
@@ -192,7 +214,7 @@ struct SurfacePatchStore : SurfacePatch
 void MLSGrid::writeMap(std::ostream& os)
 {
     os << "mls" << std::endl;
-    os << "1.2" << std::endl;
+    os << "1.3" << std::endl;
     os << sizeof( SurfacePatchStore ) << std::endl;
     os << "bin" << std::endl;
 
@@ -218,32 +240,19 @@ void MLSGrid::readMap(std::istream& is)
 
     is.getline(c, 20);
     std::string version = std::string(c);
-    if( version != "1.0" && version != "1.1" && version != "1.2" )
+    if( version != "1.0" && version != "1.1" && version != "1.2" && version != "1.3" )
 	throw std::runtime_error("version not supported " + version );
 
     is.getline(c, 20);
-    if( version == "1.0" )
-    {
-	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore10 ) )
-	    throw std::runtime_error("binary size mismatch");
-    }
-    else if( version == "1.1" )
-    {
-	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore11 ) )
-	    throw std::runtime_error("binary size mismatch");
-    }
-    else if( version == "1.2" )
-    {
-	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore12 ) )
-	    throw std::runtime_error("binary size mismatch");
-    }
-
+    int struct_size = boost::lexical_cast<int>(std::string(c)); 
     is.getline(c, 20);
     if( std::string(c) != "bin" )
 	throw std::runtime_error("missing bin identifier" + std::string(c));
 
     if( version == "1.0" )
     {
+	if( struct_size != sizeof( SurfacePatchStore10 ) )
+	    throw std::runtime_error("binary size mismatch");
 	SurfacePatchStore10 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore10 ) ) )
 	{
@@ -252,6 +261,8 @@ void MLSGrid::readMap(std::istream& is)
     }
     else if( version == "1.1" )
     {
+	if( struct_size != sizeof( SurfacePatchStore11 ) )
+	    throw std::runtime_error("binary size mismatch");
 	SurfacePatchStore11 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore11 ) ) )
 	{
@@ -260,8 +271,20 @@ void MLSGrid::readMap(std::istream& is)
     }
     else if( version == "1.2" )
     {
+	if( struct_size != sizeof( SurfacePatchStore12 ) )
+	    throw std::runtime_error("binary size mismatch");
 	SurfacePatchStore12 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore12 ) ) )
+	{
+	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
+	}
+    }
+    else if( version == "1.3" )
+    {
+	if( struct_size != sizeof( SurfacePatchStore13 ) )
+	    throw std::runtime_error("binary size mismatch");
+	SurfacePatchStore13 d;
+	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore13 ) ) )
 	{
 	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
 	}
@@ -324,21 +347,22 @@ SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch,
 }
 
 
-bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev )
+SurfacePatch* MLSGrid::get(const Eigen::Vector2d& position, double& zpos, double& zstdev )
 {
     size_t xi, yi;
-    if( toGrid(position.x(), position.y(), xi, yi) )
+    double xmod, ymod;
+    if( toGrid(position.x(), position.y(), xi, yi, xmod, ymod) )
     {
-	SurfacePatch patch( position.z(), zstdev ); 
+	SurfacePatch patch( zpos, zstdev ); 
 	SurfacePatch *p = get( Position(xi, yi), patch );
 	if( p )
 	{
 	    zpos = p->mean;
 	    zstdev = p->stdev;
-	    return true;
+	    return p;
 	}
     }
-    return false;
+    return NULL;
 }
 
 void MLSGrid::updateCell( size_t xi, size_t yi, double mean, double stdev )
@@ -392,9 +416,21 @@ void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& co )
     }
 }
 
+bool MLSGrid::update( const Eigen::Vector2d& pos, const SurfacePatch& patch )
+{
+    size_t xi, yi;
+    double xmod, ymod;
+    if( toGrid(pos.x(), pos.y(), xi, yi, xmod, ymod) )
+    {
+	updateCell( xi, yi, patch );
+	return true;
+    }
+    return false;
+}
+
 bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
-    return p.merge( o, config.gapSize, config.thickness, config.updateModel );
+    return p.merge( o, config.thickness, config.gapSize, config.updateModel );
 }
 
 std::pair<SurfacePatch*, double> 

@@ -208,7 +208,9 @@ struct MLSAccess::MLSAccessImpl
 	// and see try that one first on the next call
 	if( grid )
 	{
-	    if( grid->get( t*position, zpos, zstdev ) )
+	    Eigen::Vector3d v = t * position;
+	    zpos = v.z();
+	    if( grid->get( v.head<2>(), zpos, zstdev ) )
 		return true;
 
 	    // this is a shortcut, which will only allow one
@@ -231,7 +233,9 @@ struct MLSAccess::MLSAccessImpl
 	    grid = lgrid;
 	    t = lt;
 
-	    if( grid->get( t*position, zpos, zstdev ) )
+	    Eigen::Vector3d v = t * position;
+	    zpos = v.z();
+	    if( grid->get( (v).head<2>(), zpos, zstdev ) )
 		return true;
 	}
 
