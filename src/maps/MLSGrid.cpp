@@ -75,6 +75,7 @@ void MLSGrid::serialize(Serialization& so)
     GridBase::serialize(so);
 
     so.write( "hasCellColor", config.useColor );
+    so.write( "updateModel", (int&)config.updateModel );
     writeMap( so.getBinaryOutputStream(getMapFileName() + ".mls") );
 }
 
@@ -82,6 +83,8 @@ void MLSGrid::unserialize(Serialization& so)
 {
     GridBase::unserialize(so);
 
+    if( so.hasKey( "updateModel" ) )
+	so.read( "updateModel", (int&)config.updateModel );
     if( so.hasKey( "hasCellColor" ) )
 	so.read( "hasCellColor", config.useColor );
     else
@@ -188,6 +191,7 @@ struct SurfacePatchStore13
     float sum_mean;
     float sum_meansq;
     float sum_var;
+    base::PlaneFitting<float> plane;
     size_t update_idx;
     uint8_t color[3];
     SurfacePatch::TYPE type;
@@ -199,6 +203,7 @@ struct SurfacePatchStore13
 	SurfacePatch p( mean, stdev, height, type );
 	p.update_idx = update_idx;
 	p.sum_norm = sum_norm;
+	p.plane = plane;
 	std::copy( color, color+3, p.color );
 	return p;
     }
@@ -360,8 +365,16 @@ SurfacePatch* MLSGrid::get(const Eigen::Vector2d& position, double& zpos, double
 	SurfacePatch *p = get( Position(xi, yi), patch );
 	if( p )
 	{
-	    zpos = p->mean;
-	    zstdev = p->stdev;
+	    if( config.updateModel == MLSConfiguration::SLOPE )
+	    {
+		zpos = Eigen::Vector3f( xmod, ymod, 1.0 ).dot( p->plane.getCoeffs() );
+		zstdev = p->stdev;
+	    }
+	    else
+	    {
+		zpos = p->mean;
+		zstdev = p->stdev;
+	    }
 	    return p;
 	}
     }
@@ -425,7 +438,18 @@ bool MLSGrid::update( const Eigen::Vector2d& pos, const SurfacePatch& patch )
     double xmod, ymod;
     if( toGrid(pos.x(), pos.y(), xi, yi, xmod, ymod) )
     {
-	updateCell( xi, yi, patch );
+	if( config.updateModel == MLSConfiguration::SLOPE )
+	{
+	    // todo refactor
+	    SurfacePatch p( patch );
+	    Eigen::Vector3f point( xmod, ymod, patch.mean );
+	    // todo update weight
+	    p.plane.update( point );
+	    updateCell( xi, yi, p );
+	}
+	else
+	    updateCell( xi, yi, patch );
+
 	return true;
     }
     return false;

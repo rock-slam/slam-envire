@@ -3,6 +3,7 @@
 
 #include <envire/tools/Numeric.hpp>
 #include <envire/maps/MLSConfiguration.hpp>
+#include <numeric/PlaneFitting.hpp>
 
 namespace envire
 {
@@ -156,24 +157,32 @@ struct SurfacePatch
 		if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
 			(p.mean + thickness + delta_dev) > o.mean )
 		{
-		    if( updateModel == MLSConfiguration::KALMAN )
+		    switch( updateModel )
 		    {
+		    case MLSConfiguration::KALMAN:
 			kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-		    }
-		    else if( updateModel == MLSConfiguration::SUM )
-		    {
-			// todo seriously check model
-			p.sum_norm += o.sum_norm;
-			p.sum_mean += o.sum_mean;
-			p.sum_meansq += o.sum_meansq;
-			p.sum_var += o.sum_var;
-			p.mean = p.sum_mean / p.sum_norm;
-			float var = p.sum_var / p.sum_norm + 
-			   p.sum_meansq / p.sum_norm - pow(p.mean,2);
-			p.stdev = sqrt(var);
-		    }
-		    else
-		    {
+			break;
+
+		    case MLSConfiguration::SUM:
+			{
+			    // todo seriously check model
+			    p.sum_norm += o.sum_norm;
+			    p.sum_mean += o.sum_mean;
+			    p.sum_meansq += o.sum_meansq;
+			    p.sum_var += o.sum_var;
+			    p.mean = p.sum_mean / p.sum_norm;
+			    float var = p.sum_var / p.sum_norm + 
+				p.sum_meansq / p.sum_norm - pow(p.mean,2);
+			    p.stdev = sqrt(var);
+			}
+			break;
+
+		    case MLSConfiguration::SLOPE:
+			    // sum the plane between the two
+			    p.plane.update( o.plane );
+			break;
+
+		    default:
 			throw std::runtime_error("MLS update model not implemented.");
 		    }
 		}
@@ -272,6 +281,8 @@ struct SurfacePatch
     float sum_mean;
     float sum_meansq;
     float sum_var;
+
+    base::PlaneFitting<float> plane;
 
 public:
     size_t update_idx;
