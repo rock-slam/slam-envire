@@ -83,11 +83,23 @@ struct MLSTest
 
 int main(int argc, char* argv[])
 {
+    {
     MLSTest test;
     test.init(5);
     test.learnModel( 1000 );
     ofstream of("samples.dat");
     test.evaluateModel( 1000, of );
     test.saveEnv("/tmp/test.env");
+    }
+
+    {
+    MLSTest test;
+    test.init(5);
+    test.grid->getConfig().updateModel = MLSConfiguration::SUM;
+    test.learnModel( 1000 );
+    ofstream of("samples2.dat");
+    test.evaluateModel( 1000, of );
+    test.saveEnv("/tmp/test2.env");
+    }
 }
 

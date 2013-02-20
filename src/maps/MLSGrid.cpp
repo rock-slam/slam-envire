@@ -184,7 +184,10 @@ struct SurfacePatchStore13
     float mean;
     float stdev;
     float height;
-    float norm_sum;
+    float sum_norm;
+    float sum_mean;
+    float sum_meansq;
+    float sum_var;
     size_t update_idx;
     uint8_t color[3];
     SurfacePatch::TYPE type;
@@ -195,7 +198,7 @@ struct SurfacePatchStore13
     {
 	SurfacePatch p( mean, stdev, height, type );
 	p.update_idx = update_idx;
-	p.norm_sum = norm_sum;
+	p.sum_norm = sum_norm;
 	std::copy( color, color+3, p.color );
 	return p;
     }

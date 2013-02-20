@@ -39,7 +39,8 @@ struct SurfacePatch
 
     SurfacePatch() {};
     SurfacePatch( float mean, float stdev, float height = 0, TYPE type = HORIZONTAL )
-	: mean(mean), stdev(stdev), height(height), norm_sum(1.0/stdev),
+	: mean(mean), stdev(stdev), height(height), 
+	sum_norm(1), sum_mean(mean), sum_meansq(mean*mean), sum_var(stdev*stdev),
 	update_idx(0), type(type) {};
 
     /** Experimental code. Don't use it unless you know what you are
@@ -161,7 +162,15 @@ struct SurfacePatch
 		    }
 		    else if( updateModel == MLSConfiguration::SUM )
 		    {
-
+			// todo seriously check model
+			p.sum_norm += o.sum_norm;
+			p.sum_mean += o.sum_mean;
+			p.sum_meansq += o.sum_meansq;
+			p.sum_var += o.sum_var;
+			p.mean = p.sum_mean / p.sum_norm;
+			float var = p.sum_var / p.sum_norm + 
+			   p.sum_meansq / p.sum_norm - pow(p.mean,2);
+			p.stdev = sqrt(var);
 		    }
 		    else
 		    {
@@ -259,7 +268,10 @@ struct SurfacePatch
     /** For vertical patches, the height of the patch */
     float height;
     /** sum of normalization factors used to construct this patch. */
-    float norm_sum;
+    float sum_norm;
+    float sum_mean;
+    float sum_meansq;
+    float sum_var;
 
 public:
     size_t update_idx;
