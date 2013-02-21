@@ -99,8 +99,18 @@ void MLSVisualization::unHighlightNode(envire::EnvironmentItem* item, osg::Group
     // TODO handle highlight and unhighlight
 }
 
-void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array> normals, osg::ref_ptr<osg::Vec4Array> colors,  const osg::Vec3& position, const osg::Vec3& extents, const osg::Vec4& color, const osg::Vec3& normal )
+void drawBox(
+	osg::ref_ptr<osg::Vec3Array> vertices, 
+	osg::ref_ptr<osg::Vec3Array> normals, 
+	osg::ref_ptr<osg::Vec4Array> colors,  
+	const osg::Vec3& position, 
+	const osg::Vec4& heights,
+	const osg::Vec3& extents, 
+	const osg::Vec4& color, 
+	const osg::Vec3& normal )
 {
+    const osg::Vec4 &h( heights );
+
     const double xp = position.x();
     const double yp = position.y();
     const double zp = position.z();
@@ -109,10 +119,10 @@ void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array>
     const double ys = extents.y();
     const double zs = extents.z();
 
-    vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, zp+zs*0.5));
-    vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, zp+zs*0.5));
-    vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, zp+zs*0.5));
-    vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp+zs*0.5));
+    vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
+    vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
+    vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]+zs*0.5));
+    vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]+zs*0.5));
     for(size_t i=0;i<4;i++)
     {
 	normals->push_back(normal);
@@ -121,50 +131,50 @@ void drawBox(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::Vec3Array>
 
     if( zs > 0.0 )
     {
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, zp-zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[2]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[3]-zs*0.5));
 	for(size_t i=0;i<4;i++)
 	{
 	    normals->push_back(osg::Vec3(0,-1.0,0));
 	    colors->push_back(color);
 	}
 
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, zp-zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[1]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[3]-zs*0.5));
 	for(size_t i=0;i<4;i++)
 	{
 	    normals->push_back(osg::Vec3(1.0,0,0));
 	    colors->push_back(color);
 	}
 
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, zp-zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[0]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[1]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[2]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[3]-zs*0.5));
 	for(size_t i=0;i<4;i++)
 	{
 	    normals->push_back(osg::Vec3(0,1.0,0));
 	    colors->push_back(color);
 	}
 
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, zp+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp-zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[0]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[2]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]-zs*0.5));
 	for(size_t i=0;i<4;i++)
 	{
 	    normals->push_back(osg::Vec3(-1.0,0,0));
 	    colors->push_back(color);
 	}
 
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, zp-zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, zp-zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]-zs*0.5));
+	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]-zs*0.5));
 	for(size_t i=0;i<4;i++)
 	{
 	    normals->push_back(osg::Vec3(0,0,-1.0));
@@ -248,6 +258,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		double xp = (x+0.5) * xs + xo;
 		double yp = (y+0.5) * ys + yo; 
 
+		osg::Vec4 heights( p.mean, p.mean, p.mean, p.mean );
+
 		if( p.isHorizontal() )
 		{
 		    osg::Vec4 col;
@@ -265,7 +277,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    else
 			col = horizontalCellColor;
 		    
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), osg::Vec3( xs, ys, 0.0 ), 
+		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), heights, osg::Vec3( xs, ys, 0.0 ), 
 			    col,
 			    estimateNormals ? 
 				estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
@@ -277,7 +289,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    if( p.isVertical() || showNegative )
 		    {	
 			osg::Vec4 col = p.isVertical() ? verticalCellColor : negativeCellColor;
-			drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), osg::Vec3( xs, ys, p.height ), col, osg::Vec3(0, 0, 1.0) );
+			drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), heights, osg::Vec3( xs, ys, p.height ), col, osg::Vec3(0, 0, 1.0) );
 		    }
 		}
 
