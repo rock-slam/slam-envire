@@ -367,7 +367,7 @@ SurfacePatch* MLSGrid::get(const Eigen::Vector2d& position, double& zpos, double
 	{
 	    if( config.updateModel == MLSConfiguration::SLOPE )
 	    {
-		zpos = Eigen::Vector3f( xmod, ymod, 1.0 ).dot( p->plane.getCoeffs() );
+		zpos = p->getHeight( Eigen::Vector2f( xmod, ymod ) );
 		zstdev = p->stdev;
 	    }
 	    else
@@ -444,7 +444,7 @@ bool MLSGrid::update( const Eigen::Vector2d& pos, const SurfacePatch& patch )
 	    SurfacePatch p( patch );
 	    Eigen::Vector3f point( xmod, ymod, patch.mean );
 	    // todo update weight
-	    p.plane.update( point );
+	    p.plane.update( point, 1.0/pow(patch.stdev,2) );
 	    updateCell( xi, yi, p );
 	}
 	else

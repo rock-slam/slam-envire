@@ -101,5 +101,15 @@ int main(int argc, char* argv[])
     test.evaluateModel( 1000, of );
     test.saveEnv("/tmp/test2.env");
     }
+
+    {
+    MLSTest test;
+    test.init(5);
+    test.grid->getConfig().updateModel = MLSConfiguration::SLOPE;
+    test.learnModel( 1000 );
+    ofstream of("samples3.dat");
+    test.evaluateModel( 1000, of );
+    test.saveEnv("/tmp/test3.env");
+    }
 }
 

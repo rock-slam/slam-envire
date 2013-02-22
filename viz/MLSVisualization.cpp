@@ -109,8 +109,6 @@ void drawBox(
 	const osg::Vec4& color, 
 	const osg::Vec3& normal )
 {
-    const osg::Vec4 &h( heights );
-
     const double xp = position.x();
     const double yp = position.y();
     const double zp = position.z();
@@ -118,6 +116,8 @@ void drawBox(
     const double xs = extents.x();
     const double ys = extents.y();
     const double zs = extents.z();
+
+    const osg::Vec4 h( heights + osg::Vec4(zp,zp,zp,zp) );
 
     vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
     vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
@@ -258,7 +258,14 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		double xp = (x+0.5) * xs + xo;
 		double yp = (y+0.5) * ys + yo; 
 
-		osg::Vec4 heights( p.mean, p.mean, p.mean, p.mean );
+		osg::Vec4 heights(0,0,0,0);
+		if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
+		{
+		    heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) ) - p.mean;
+		    heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) ) - p.mean;
+		    heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) ) - p.mean;
+		    heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) ) - p.mean;
+		}
 
 		if( p.isHorizontal() )
 		{

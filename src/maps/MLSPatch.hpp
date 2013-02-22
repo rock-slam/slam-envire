@@ -145,6 +145,13 @@ struct SurfacePatch
 	color[2] = c[2] * 255;
     }
 
+    float getHeight( const Eigen::Vector2f& pos ) const
+    {
+	// todo do some caching
+	float zpos = Eigen::Vector3f( pos.x(), pos.y(), 1.0 ).dot( plane.getCoeffs() );
+	return zpos;
+    }
+
     bool merge( SurfacePatch& o, double thickness, double gapSize, MLSConfiguration::update_model updateModel )
     {
 	SurfacePatch &p(*this);
@@ -284,9 +291,9 @@ struct SurfacePatch
     float height;
     /** sum of normalization factors used to construct this patch. */
     float sum_norm;
+    float sum_normsq;
     float sum_mean;
     float sum_meansq;
-    float sum_var;
 
     base::PlaneFitting<float> plane;
 
