@@ -73,18 +73,16 @@ struct SurfacePatch
     void updateSum() 
     {
 	mean = plane.z / plane.n;
-	float var = 
-	    std::max(.0f, (plane.zz - (float)pow(mean,2)*plane.n - n) / plane.n);
+	double var = 
+	    std::max(1e-6f, (plane.zz - (float)pow(mean,2)*plane.n - n) / plane.n);
 	stdev = sqrt(var);
     }
 
     void updatePlane()
     {
-	Eigen::Vector3f coeffs;
-	Eigen::Matrix3f cov;
-	plane.solve( coeffs, &cov );
-	mean = coeffs[2];
-	float var = std::max(.0f, cov(2,2) - n / plane.n);
+	base::PlaneFitting<float>::Result res = plane.solve();
+	mean = res.getCoeffs()[2];
+	double var = std::max(1e-6f, (res.getResiduals() - n) / plane.n);
 	stdev = sqrt(var);
     }
 
