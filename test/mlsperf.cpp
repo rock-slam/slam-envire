@@ -27,7 +27,8 @@ struct MLSTest
     void init( size_t cell_count )
     {
 	grid = new MLSGrid( cell_count, cell_count, 1.0 / cell_count, 1.0 / cell_count );
-	grid->getConfig().thickness = 0.5;
+	grid->getConfig().thickness = 1.0;
+	grid->getConfig().gapSize = 1.5;
     }
 
     void learnModel( size_t iterations, float var_range = 0.1 )
@@ -38,7 +39,7 @@ struct MLSTest
 	    const float y = uni();
 	    const float z = func( x, y );
 
-	    const float stdev = uni() * var_range;
+	    const float stdev = uni() * var_range + 0.01;
 	    const float z_meas = z + norm() * stdev;
 
 	    MLSGrid::SurfacePatch patch( z_meas, stdev );
@@ -77,38 +78,41 @@ struct MLSTest
     /** underlying function that is learned */
     virtual float func( float x, float y )
     {
-	return sin( x ) + cos( y ) - 1.0;
+	return (sin( x ) + cos( y ) - 1.0)*1.0;
     }
 };
 
 int main(int argc, char* argv[])
 {
+    const int grid_size = 5;
+    const int learn_steps = 10000;
+    const int eval_steps = 10000;
     {
     MLSTest test;
-    test.init(5);
-    test.learnModel( 1000 );
+    test.init(grid_size);
+    test.learnModel( learn_steps );
     ofstream of("samples.dat");
-    test.evaluateModel( 1000, of );
+    test.evaluateModel( eval_steps, of );
     test.saveEnv("/tmp/test.env");
     }
 
     {
     MLSTest test;
-    test.init(5);
+    test.init(grid_size);
     test.grid->getConfig().updateModel = MLSConfiguration::SUM;
-    test.learnModel( 1000 );
+    test.learnModel( learn_steps );
     ofstream of("samples2.dat");
-    test.evaluateModel( 1000, of );
+    test.evaluateModel( eval_steps, of );
     test.saveEnv("/tmp/test2.env");
     }
 
     {
     MLSTest test;
-    test.init(5);
+    test.init(grid_size);
     test.grid->getConfig().updateModel = MLSConfiguration::SLOPE;
-    test.learnModel( 1000 );
+    test.learnModel( learn_steps );
     ofstream of("samples3.dat");
-    test.evaluateModel( 1000, of );
+    test.evaluateModel( eval_steps, of );
     test.saveEnv("/tmp/test3.env");
     }
 }

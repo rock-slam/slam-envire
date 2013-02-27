@@ -43,9 +43,13 @@ struct SurfacePatch
 	: mean(mean), stdev(stdev), height(height), 
 	sum_norm(1.0/pow(stdev,2)), 
 	sum_normsq(1.0/pow(stdev,4)), 
-	sum_mean(mean * sum_norm), 
-	sum_meansq( mean*mean * sum_norm), 
-	update_idx(0), type(type) {};
+	sum_mean(mean * (1.0/pow(stdev,2))), 
+	sum_meansq(mean*mean * (1.0/pow(stdev,2))), 
+	sum_var(pow(stdev,2)),
+	n(1.0),
+	update_idx(0), type(type) 
+	{
+	};
 
     /** Experimental code. Don't use it unless you know what you are
      * doing */
@@ -183,9 +187,12 @@ struct SurfacePatch
 			    p.sum_normsq += o.sum_normsq;
 			    p.sum_mean += o.sum_mean;
 			    p.sum_meansq += o.sum_meansq;
+			    p.sum_var += o.sum_var;
+			    p.n += o.n;
 			    p.mean = p.sum_mean / p.sum_norm;
-			    float var = p.sum_mean / (pow(p.sum_mean,2) - p.sum_meansq) *
-			       (p.sum_meansq - p.sum_mean);
+//			    float var = p.sum_meansq / p.sum_norm - pow(p.mean,2);
+			    float var = p.sum_norm / (pow(p.sum_norm,2) - p.sum_normsq) *
+			       (p.sum_meansq - pow(p.mean,2)*p.sum_norm) - p.n / p.sum_norm;
 			    p.stdev = sqrt(var);
 			}
 			break;
@@ -294,6 +301,9 @@ struct SurfacePatch
     float sum_normsq;
     float sum_mean;
     float sum_meansq;
+
+    float sum_var;
+    float n;
 
     base::PlaneFitting<float> plane;
 
