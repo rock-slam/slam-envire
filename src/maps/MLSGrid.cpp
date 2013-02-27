@@ -187,11 +187,9 @@ struct SurfacePatchStore13
     float mean;
     float stdev;
     float height;
-    float sum_norm;
-    float sum_mean;
-    float sum_meansq;
-    float sum_var;
     base::PlaneFitting<float> plane;
+    float n;
+    float min, max;
     size_t update_idx;
     uint8_t color[3];
     SurfacePatch::TYPE type;
@@ -202,8 +200,10 @@ struct SurfacePatchStore13
     {
 	SurfacePatch p( mean, stdev, height, type );
 	p.update_idx = update_idx;
-	p.sum_norm = sum_norm;
 	p.plane = plane;
+	p.n = n;
+	p.min = min;
+	p.max = max;
 	std::copy( color, color+3, p.color );
 	return p;
     }
@@ -440,11 +440,9 @@ bool MLSGrid::update( const Eigen::Vector2d& pos, const SurfacePatch& patch )
     {
 	if( config.updateModel == MLSConfiguration::SLOPE )
 	{
-	    // todo refactor
-	    SurfacePatch p( patch );
-	    Eigen::Vector3f point( xmod, ymod, patch.mean );
-	    // todo update weight
-	    p.plane.update( point, 1.0/pow(patch.stdev,2) );
+	    SurfacePatch p( 
+		    Eigen::Vector3f( xmod, ymod, patch.mean ),
+		    patch.stdev );
 	    updateCell( xi, yi, p );
 	}
 	else

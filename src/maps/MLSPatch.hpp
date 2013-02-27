@@ -8,6 +8,15 @@
 namespace envire
 {
 
+template <class T>
+inline bool overlap( T a1, T a2, T b1, T b2 )
+{
+    return 
+	((a1 < b2) && (a2 > b2)) ||
+	((a1 < b1) && (a2 > b1));
+}
+
+
 /** The representation of one surface in a cell
  *
  * This data structure either represents a surface or a vertical block,
@@ -41,15 +50,43 @@ struct SurfacePatch
     SurfacePatch() {};
     SurfacePatch( float mean, float stdev, float height = 0, TYPE type = HORIZONTAL )
 	: mean(mean), stdev(stdev), height(height), 
-	sum_norm(1.0/pow(stdev,2)), 
-	sum_normsq(1.0/pow(stdev,4)), 
-	sum_mean(mean * (1.0/pow(stdev,2))), 
-	sum_meansq(mean*mean * (1.0/pow(stdev,2))), 
-	sum_var(pow(stdev,2)),
+	min(mean), max(mean),
 	n(1.0),
-	update_idx(0), type(type) 
+	update_idx(0), 
+	type(type) 
 	{
+	    plane.n = 1.0/pow(stdev,2);
+	    plane.z = mean * plane.n;
+	    plane.zz = pow(mean,2) * plane.n;
 	};
+
+    SurfacePatch( const Eigen::Vector3f &p, float stdev )
+	: plane( p, 1.0f/pow(stdev,2)), 
+	min(mean), max(mean),
+	n(1.0), 
+	update_idx(0),
+	type( HORIZONTAL )
+	{
+	    updatePlane();
+	};
+
+    void updateSum() 
+    {
+	mean = plane.z / plane.n;
+	float var = 
+	    std::max(.0f, (plane.zz - (float)pow(mean,2)*plane.n - n) / plane.n);
+	stdev = sqrt(var);
+    }
+
+    void updatePlane()
+    {
+	Eigen::Vector3f coeffs;
+	Eigen::Matrix3f cov;
+	plane.solve( coeffs, &cov );
+	mean = coeffs[2];
+	float var = std::max(.0f, cov(2,2) - n / plane.n);
+	stdev = sqrt(var);
+    }
 
     /** Experimental code. Don't use it unless you know what you are
      * doing */
@@ -156,7 +193,52 @@ struct SurfacePatch
 	return zpos;
     }
 
-    bool merge( SurfacePatch& o, double thickness, double gapSize, MLSConfiguration::update_model updateModel )
+    bool mergeSum( SurfacePatch& o, float gapSize )
+    {
+	SurfacePatch &p(*this);
+
+	if( overlap( min-gapSize, max+gapSize, o.min, o.max ) )
+	{
+	    // use the weighted formulas for calculating 
+	    // mean and var of occupied space distribution
+	    // in the patch
+
+	    p.plane.z += o.plane.z;
+	    p.plane.zz += o.plane.zz;
+	    p.plane.n += o.plane.n;
+	    p.n += o.n;
+	    p.min = std::min( p.min, p.min );
+	    p.max = std::max( p.max, p.max );
+
+	    p.updateSum();
+
+	    return true;
+	}
+
+	return false;
+    }
+
+    bool mergePlane( SurfacePatch& o, float gapSize )
+    {
+	SurfacePatch &p(*this);
+
+	if( overlap( min-gapSize, max+gapSize, o.min, o.max ) )
+	{
+	    p.n += o.n;
+	    p.min = std::min( p.min, p.min );
+	    p.max = std::max( p.max, p.max );
+
+	    // sum the plane between the two
+	    p.plane.update( o.plane );
+	    p.updatePlane();
+	    
+	    return true;
+	}
+	
+	return false;
+    }
+
+    bool mergeMLS( SurfacePatch& o, double thickness, double gapSize )
     {
 	SurfacePatch &p(*this);
 	const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
@@ -171,40 +253,7 @@ struct SurfacePatch
 		if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
 			(p.mean + thickness + delta_dev) > o.mean )
 		{
-		    switch( updateModel )
-		    {
-		    case MLSConfiguration::KALMAN:
-			kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-			break;
-
-		    case MLSConfiguration::SUM:
-			{
-			    // use the weighted formulas for calculating 
-			    // mean and var of occupied space distribution
-			    // in the patch
-
-			    p.sum_norm += o.sum_norm;
-			    p.sum_normsq += o.sum_normsq;
-			    p.sum_mean += o.sum_mean;
-			    p.sum_meansq += o.sum_meansq;
-			    p.sum_var += o.sum_var;
-			    p.n += o.n;
-			    p.mean = p.sum_mean / p.sum_norm;
-//			    float var = p.sum_meansq / p.sum_norm - pow(p.mean,2);
-			    float var = p.sum_norm / (pow(p.sum_norm,2) - p.sum_normsq) *
-			       (p.sum_meansq - pow(p.mean,2)*p.sum_norm) - p.n / p.sum_norm;
-			    p.stdev = sqrt(var);
-			}
-			break;
-
-		    case MLSConfiguration::SLOPE:
-			    // sum the plane between the two
-			    p.plane.update( o.plane );
-			break;
-
-		    default:
-			throw std::runtime_error("MLS update model not implemented.");
-		    }
+		    kalman_update( p.mean, p.stdev, o.mean, o.stdev );
 		}
 		else
 		{
@@ -278,16 +327,61 @@ struct SurfacePatch
 		    p.height = p.mean - o_min;
 		}
 	    }
-	    p.update_idx = std::max( p.update_idx, o.update_idx );
-
-	    // update cell color
-	    p.setColor( (p.getColor() + o.getColor()) / 2.0 );
-
-	    return true;
 	}
+
 	return false;
     }
 
+    bool merge( SurfacePatch& o, double thickness, double gapSize, MLSConfiguration::update_model updateModel )
+    {
+	bool merge = false;
+
+	switch( updateModel )
+	{
+	    case MLSConfiguration::KALMAN:
+		merge = mergeMLS( o, thickness, gapSize );
+		break;
+
+	    case MLSConfiguration::SUM:
+		merge = mergeSum( o, gapSize );
+		break;
+
+	    case MLSConfiguration::SLOPE:
+		merge = mergePlane( o, gapSize );
+		break;
+
+	    default:
+		throw std::runtime_error("MLS update model not implemented.");
+	}
+
+	if( merge )
+	{
+	    update_idx = std::max( update_idx, o.update_idx );
+	    // update cell color
+	    setColor( (getColor() + o.getColor()) / 2.0 );
+
+	    return true;
+	}
+	
+	return false;
+    }
+
+    float getMean() const
+    {
+	return mean;
+    }
+
+    float getStdev() const
+    {
+	return stdev;
+    }
+
+    float getHeight() const
+    {
+	return height;
+    }
+
+public:
     /** The mean Z value. This always represents the top of the patch,
      * regardless whether the patch is horizontal or vertical
      */
@@ -296,18 +390,11 @@ struct SurfacePatch
     float stdev;
     /** For vertical patches, the height of the patch */
     float height;
-    /** sum of normalization factors used to construct this patch. */
-    float sum_norm;
-    float sum_normsq;
-    float sum_mean;
-    float sum_meansq;
-
-    float sum_var;
-    float n;
 
     base::PlaneFitting<float> plane;
+    float min, max;
+    float n;
 
-public:
     size_t update_idx;
     uint8_t color[3];
 
@@ -316,9 +403,7 @@ protected:
      * Vertical patches also have a height, i.e. the patch is a vertical
      * block between z=(mean-height) and z
      */
-
     TYPE type;
-
 };
 
 }
