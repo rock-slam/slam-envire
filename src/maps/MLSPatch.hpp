@@ -52,6 +52,7 @@ struct SurfacePatch
 	: mean(mean), stdev(stdev), height(height), 
 	min(mean), max(mean),
 	n(1.0),
+	normsq(1.0/pow(stdev,4)),
 	update_idx(0), 
 	type(type) 
 	{
@@ -64,6 +65,7 @@ struct SurfacePatch
 	: plane( p, 1.0f/pow(stdev,2)), 
 	min(mean), max(mean),
 	n(1.0), 
+	normsq(1.0/pow(stdev,4)),
 	update_idx(0),
 	type( HORIZONTAL )
 	{
@@ -73,16 +75,23 @@ struct SurfacePatch
     void updateSum() 
     {
 	mean = plane.z / plane.n;
-	double var = 
-	    std::max(1e-6f, (plane.zz - (float)pow(mean,2)*plane.n - n) / plane.n);
+	float norm = plane.n / ( pow(plane.n,2) - normsq );
+	float var = 
+	    std::max(1e-6f, (float)((plane.zz - (pow(mean,2)*(plane.n - 2.0))) * norm - n/plane.n));
 	stdev = sqrt(var);
     }
 
     void updatePlane()
     {
+	if( n <=3 )
+	{
+	    updateSum();
+	    return;
+	}
 	base::PlaneFitting<float>::Result res = plane.solve();
 	mean = res.getCoeffs()[2];
-	double var = std::max(1e-6f, (res.getResiduals() - n) / plane.n);
+	float norm = plane.n / ( pow(plane.n,2) - 3.0*normsq );
+	float var = std::max(1e-6f, (float)((res.getResiduals()) * norm));
 	stdev = sqrt(var);
     }
 
@@ -205,6 +214,7 @@ struct SurfacePatch
 	    p.plane.zz += o.plane.zz;
 	    p.plane.n += o.plane.n;
 	    p.n += o.n;
+	    p.normsq += o.normsq;
 	    p.min = std::min( p.min, p.min );
 	    p.max = std::max( p.max, p.max );
 
@@ -393,7 +403,7 @@ public:
 
     base::PlaneFitting<float> plane;
     float min, max;
-    float n;
+    float n, normsq;
 
     size_t update_idx;
     uint8_t color[3];

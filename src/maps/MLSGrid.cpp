@@ -264,7 +264,7 @@ struct SurfacePatchStore13
     float stdev;
     float height;
     base::PlaneFitting<float> plane;
-    float n;
+    float n, normsq;
     float min, max;
     size_t update_idx;
     uint8_t color[3];
@@ -278,6 +278,7 @@ struct SurfacePatchStore13
 	p.update_idx = update_idx;
 	p.plane = plane;
 	p.n = n;
+	p.normsq = normsq;
 	p.min = min;
 	p.max = max;
 	std::copy( color, color+3, p.color );
