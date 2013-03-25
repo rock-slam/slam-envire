@@ -327,6 +327,8 @@ struct SurfacePatch
 		    p.height = p.mean - o_min;
 		}
 	    }
+
+	    return true;
 	}
 
 	return false;
