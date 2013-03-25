@@ -578,7 +578,46 @@ namespace envire
 	typedef Eigen::AlignedBox<double, DIMENSION> Extents;
 
 	int getDimension() const { return DIMENSION; }
+
+	/** 
+	 * @brief provide the bounding box of the content of the layer in local frame coordinates
+	 *
+	 * @return the bounding box of all the content in the layer
+	 */
 	virtual Extents getExtents() const = 0;
+
+	/** 
+	 * @brief provide the bounding box given in the provided framenode
+	 *
+	 * This method will take the bounding box from getExtents() and fit the
+	 * box into another box in the given reference frame.
+	 *
+	 * @return bounding box of the layer expressed in the given framenode
+	 *  and not in the local frame
+	 */
+	virtual Extents getExtentsTransformed( FrameNode const& frame ) const
+	{
+	    Extents res;
+
+	    // rotate the extents to the grid frame, and extend the local grid 
+	    // whith the extents corner
+	    Eigen::Affine3d pc2grid = getFrameNode()->relativeTransform( &frame );
+	    Extents pc_extents = getExtents();
+	    std::vector<Eigen::Vector3d> corners;
+	    // go through all the permutations to get the corners
+	    for( int i=0; i<pow(2,DIMENSION); i++ )
+	    {
+		Eigen::Vector3d corner;
+		for( int j=0; j<DIMENSION; j++ )
+		    corner[j] = (i>>j)&1 ? pc_extents.min()[j] : pc_extents.max()[j];
+		corners.push_back( corner );
+	    }
+
+	    for( std::vector<Eigen::Vector3d>::iterator it = corners.begin(); it != corners.end(); it++ )
+		res.extend( (pc2grid * (*it)).head<DIMENSION>() );
+
+	    return res;
+	} 
 
         /** @overload
          *
