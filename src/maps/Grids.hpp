@@ -15,7 +15,10 @@ namespace envire
       const static std::vector<std::string> &bands;
     public:
       TraversabilityGrid() : Grid<uint8_t>() {};
-      TraversabilityGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
+      TraversabilityGrid(size_t width, size_t height, 
+			 double scalex, double scaley, 
+			 double offsetx = 0.0, double offsety = 0.0,
+			 std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(width,height,scalex,scaley,offsetx, offsety, id){};
       ~TraversabilityGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
