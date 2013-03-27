@@ -67,11 +67,11 @@ bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret,
 void TraversabilityGridVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* node) const
 {
     osg::ref_ptr<osg::Geode> geode = node->getChild(0)->asGeode();
-    envire::Grid<uint8_t> *trGrid = dynamic_cast<envire::Grid<uint8_t> *>(item);
+    envire::TraversabilityGrid *trGrid = dynamic_cast<envire::TraversabilityGrid *>(item);
     
     assert(trGrid);
     
-    const std::string bandName("grid_data");
+    const std::string bandName(envire::TraversabilityGrid::TRAVERSABILITY);
 
     const envire::TraversabilityGrid::ArrayType &trGridData = trGrid->getGridData(bandName);
 
