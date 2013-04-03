@@ -9,6 +9,8 @@
 #include <boost/pool/pool.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <base/geometry/spline.h>
+
 #include <algorithm>
 #include <set>
 
@@ -307,6 +309,20 @@ namespace envire
         /** Clears the whole map */
 	void clear();
 
+	/**
+	 * This function expects a spline in world coordinates that
+	 * get's projected on top of the surface of the mls grid.
+	 * */
+	base::geometry::Spline3 projectSplineOnSurface(double startHeight, const base::geometry::Spline3 &spline, const double zOffset = 0.0);
+
+	/**
+	 * This function expects an array of local 
+	 * grid positions and returns an array
+	 * of local grid coordinates with Z positions 
+	 * on top of surface of the mls grid. 
+	 * */
+	std::vector<Eigen::Vector3d> projectPointsOnSurface(double startHeight, const std::vector<Position> &gridPoints, const double zOffset = 0.0);
+	
         /** Returns the iterator on the first registered patch at \c xi and \c
          * yi
          */

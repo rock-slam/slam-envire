@@ -105,6 +105,77 @@ MLSGrid::~MLSGrid()
 {
 }
 
+std::vector< Eigen::Vector3d > MLSGrid::projectPointsOnSurface(double startHeight, const std::vector< GridBase::Position >& gridPoints, const double zOffset)
+{
+    // Add z values if available, otherwise 0.
+    double lastHeight = startHeight;
+    std::vector< Eigen::Vector3d > ret;
+    std::vector< GridBase::Position>::const_iterator it = gridPoints.begin();
+    for(; it != gridPoints.end(); ++it) {
+	envire::MLSGrid::const_iterator cIt = beginCell(it->x, it->y);
+	
+	double minDiff = std::numeric_limits< double >::max();
+	double closestZ = base::unset<double>();
+	for(;cIt != endCell_const(); cIt++)
+	{
+	    double diff = fabs(lastHeight - cIt->getMaxZ());
+	    if(diff < minDiff)
+	    {
+		minDiff = diff;
+		closestZ = cIt->getMaxZ();
+	    }
+	}
+	
+	if(!base::isUnset<double>(closestZ))
+	{
+	    lastHeight = closestZ;
+        }
+        ret.push_back(Eigen::Vector3d(it->x, it->y, lastHeight + zOffset));
+    }
+    return ret;
+}
+
+base::geometry::Spline3 MLSGrid::projectSplineOnSurface(double startHeight, const base::geometry::Spline3& spline, const double zOffset)
+{
+    //sample the spline in a resolution four times higher than the
+    //cell size.
+    std::vector<base::Vector3d> points = spline.sample(this->getCellSizeX()/4.0);
+    double lastHeight = startHeight;
+    size_t x, y;
+    for(std::vector<base::Vector3d>::iterator it = points.begin(); it != points.end(); it++)
+    {
+	const Eigen::Vector3d p(*it);
+	if(toGrid(p, x, y))
+	{
+	    envire::MLSGrid::const_iterator cIt = beginCell(x, y);
+	    
+	    double minDiff = std::numeric_limits< double >::max();
+	    double closestZ = base::unset<double>();
+	    for(;cIt != endCell_const(); cIt++)
+	    {
+		double diff = fabs(lastHeight - cIt->getMaxZ());
+		if(diff < minDiff)
+		{
+		    minDiff = diff;
+		    closestZ = cIt->getMaxZ();
+		}
+	    }
+	    
+	    if(!base::isUnset<double>(closestZ))
+	    {
+		lastHeight = closestZ;
+            }
+            it->z() = lastHeight + zOffset;
+	}
+    }
+    
+    base::geometry::Spline3 ret;
+    ret.interpolate(points);
+    
+    return ret;
+}
+
+
 void MLSGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
