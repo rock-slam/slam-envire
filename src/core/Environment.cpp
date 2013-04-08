@@ -2,6 +2,7 @@
 #include "Event.hpp"
 #include "EventHandler.hpp"
 #include "Serialization.hpp"
+#include "Operator.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -769,12 +770,12 @@ T relativeTransform(const FrameNode* from, const FrameNode* to)
     return T( tg.first.inverse() * fg.first );
 }
 
-FrameNode::TransformType Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
+Transform Environment::relativeTransform(const FrameNode* from, const FrameNode* to)
 {
-    return ::relativeTransform<FrameNode::TransformType>( from, to );
+    return ::relativeTransform<Transform>( from, to );
 }
 
-FrameNode::TransformType Environment::relativeTransform(const CartesianMap* from, const CartesianMap* to)
+Transform Environment::relativeTransform(const CartesianMap* from, const CartesianMap* to)
 {
     return relativeTransform( from->getFrameNode(), to->getFrameNode() );
 }

@@ -1,17 +1,29 @@
 #ifndef __ENVIRE_SERIALIZATION_HPP__
 #define __ENVIRE_SERIALIZATION_HPP__
 
-#include <envire/Core.hpp>
-#include <envire/core/EventHandler.hpp>
-#include <envire/core/EventTypes.hpp>
 
 #include <vector>
 #include <string>
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
+#include "EventTypes.hpp"
+#include "EventHandler.hpp"
+#include "SerializationFactory.hpp"
+#include "Transform.hpp"
+
 namespace envire
 {
+    class Environment;
+    class EnvironmentItem;
+    
+    template<class T> EnvironmentItem* createItem(Serialization &so) 
+    {
+        T* o = new T();
+        o->unserialize(so);
+        return o;
+    }
+    
     /* Generic implementation for registering new types in the serialization
      * system
      *
@@ -65,7 +77,7 @@ namespace envire
          */
         template <class T> void write(const std::string &key, const T& value);
         virtual void write(const std::string &key, const std::string &value);
-        virtual void write(const std::string &key, const FrameNode::TransformType &value);
+        virtual void write(const std::string &key, const Transform &value);
 
         /**
          * Reads the value at the key position from a yaml map node.
@@ -78,7 +90,7 @@ namespace envire
             return value;
         }
         virtual bool read(const std::string &key, std::string &value);
-        virtual bool read(const std::string &key, FrameNode::TransformType &value);
+        virtual bool read(const std::string &key, Transform &value);
 
         /**
          * @return true if the key is available in the current map node

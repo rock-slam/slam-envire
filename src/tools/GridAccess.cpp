@@ -19,7 +19,7 @@ struct GridAccess::GridAccessImpl
 
     ElevationGrid* grid;
     ElevationGrid::ArrayType* gridData;
-    FrameNode::TransformType t;
+    Transform t;
     double z_offset;
 
     bool evalGridPoint(Eigen::Vector3d& position)
@@ -55,7 +55,7 @@ struct GridAccess::GridAccessImpl
 	for(std::vector<ElevationGrid*>::iterator it = grids.begin();it != grids.end();it++)
 	{
 	    ElevationGrid* lgrid = *it;
-	    FrameNode::TransformType lt =
+	    Transform lt =
 		env->relativeTransform( 
 			env->getRootNode(),
 			lgrid->getFrameNode() );
@@ -126,7 +126,7 @@ struct PointcloudAccess::PointcloudAccessImpl
 
     void fillTree(Pointcloud* pc)
     {
-	FrameNode::TransformType t =
+	Transform t =
 	    env->relativeTransform( 
 		    pc->getFrameNode(),
 		    env->getRootNode() );
@@ -200,7 +200,7 @@ struct MLSAccess::MLSAccessImpl
     std::vector<MLSGrid*> grids;
     MLSGrid* grid;
 
-    FrameNode::TransformType t;
+    Transform t;
 
     bool getElevation(Eigen::Vector3d position, double& zpos, double& zstdev  )
     {
@@ -223,7 +223,7 @@ struct MLSAccess::MLSAccessImpl
 	for(std::vector<MLSGrid*>::iterator it = grids.begin();it != grids.end();it++)
 	{
 	    MLSGrid* lgrid = *it;
-	    FrameNode::TransformType lt =
+	    Transform lt =
 		env->relativeTransform( 
 			env->getRootNode(),
 			lgrid->getFrameNode() );

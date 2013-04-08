@@ -44,7 +44,7 @@ int main( int argc, char* argv[] )
 		/*
 		ICP icp;
 		icp.updateTree( meshes[i], density );
-		envire::FrameNode::TransformType t = meshes[j]->getFrameNode()->getTransform();
+		envire::Transform t = meshes[j]->getFrameNode()->getTransform();
 		icp.updateAlignment( meshes[j], threshold, density);
 		meshes[j]->getFrameNode()->setTransform(t);
 		adjMat(i,j) = icp.getX().size();
@@ -103,7 +103,7 @@ int main( int argc, char* argv[] )
 
 	if( h.adjecency > 0 )
 	{
-	    envire::FrameNode::TransformType t = env->relativeTransform(
+	    envire::Transform t = env->relativeTransform(
 		    meshes[h.child]->getFrameNode(),
 		    meshes[h.parent]->getFrameNode());
 	    env->addChild(meshes[h.parent]->getFrameNode(), meshes[h.child]->getFrameNode());

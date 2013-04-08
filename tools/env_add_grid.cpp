@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
     boost::scoped_ptr<envire::Environment> env(Environment::unserialize(env_path));
     envire::GridBase::Ptr input;
-    FrameNode::TransformType transform;
+    Transform transform;
     boost::tie(input, transform) = GridBase::readGridFromGdal(grid_file, target_band);
 
     std::string frame_id = "", map_id = "";
@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
 
     if (frame_id == "" && map_id == "")
     {
-        if (transform.isApprox(FrameNode::TransformType::Identity()))
+        if (transform.isApprox(Transform::Identity()))
             frame_id = env->getRootNode()->getUniqueId();
         else
         {

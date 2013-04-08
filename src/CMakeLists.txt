@@ -53,13 +53,20 @@ rock_library(envire
     DEPS_PLAIN Boost_FILESYSTEM Boost_THREAD)
 
 install(FILES core/EventHandler.hpp
-    core/Features.hpp
+    core/Environment.hpp
+    core/EnvironmentItem.hpp
     core/Event.hpp
+    core/EventHandler.hpp
     core/EventSource.hpp
-    core/Serialization.hpp
     core/EventTypes.hpp
-    core/Transform.hpp
+    core/Features.hpp
+    core/FrameNode.hpp
     core/Holder.hpp
+    core/Layer.hpp
+    core/Operator.hpp
+    core/Serialization.hpp
+    core/SerializationFactory.hpp
+    core/Transform.hpp
     DESTINATION include/envire/core)
 
 install(FILES maps/GridBase.hpp

@@ -141,7 +141,7 @@ static GridBase::Ptr readGridFromGdalHelper(std::string const& path, std::string
     return result;
 }
 
-std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
+std::pair<GridBase::Ptr, envire::Transform> GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
 {
     GDALDataset  *poDataset;
     GDALAllRegister();
@@ -198,8 +198,8 @@ std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFro
     if (adfGeoTransform[5] < 0)
         offsety -= map->getCellSizeY() * map->getScaleY();
 
-    FrameNode::TransformType transform =
-        FrameNode::TransformType(Eigen::Translation<double, 3>(offsetx, offsety, 0));
+    Transform transform =
+        Transform(Eigen::Translation<double, 3>(offsetx, offsety, 0));
     return std::make_pair(map, transform);
 }
 
@@ -260,7 +260,7 @@ bool GridBase::isAlignedWith(GridBase const& grid) const
         getOffsetY() != grid.getOffsetY())
         return false;
 
-    FrameNode::TransformType tf = getEnvironment()->relativeTransform(this, &grid);
+    Transform tf = getEnvironment()->relativeTransform(this, &grid);
     base::Vector3d p(grid.getCellSizeX(), grid.getCellSizeY(), 0);
     p = tf * p;
     if (rint(p.x()) != grid.getCellSizeX() ||

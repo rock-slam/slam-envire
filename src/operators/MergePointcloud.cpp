@@ -72,7 +72,7 @@ bool MergePointcloud::updateAll(){
 	Pointcloud* cloud = dynamic_cast<envire::Pointcloud*>(*it);
 	assert(cloud);
 
-	FrameNode::TransformType trans = 
+	Transform trans = 
 	    env->relativeTransform( cloud->getFrameNode(), targetcloud->getFrameNode() );
 
 

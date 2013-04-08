@@ -11,7 +11,8 @@
 
 #include<kdtree++/kdtree.hpp>
 
-#include <envire/Core.hpp>
+#include <envire/core/EnvironmentItem.hpp>
+#include <envire/core/FrameNode.hpp>
 #include <envire/maps/Pointcloud.hpp>
 
 #include <boost/random/linear_congruential.hpp>
@@ -157,7 +158,7 @@ public:
 	C_localnew2global.linear() = rot;
 
 	fn->setTransform( 
-		envire::FrameNode::TransformType( C_localnew2global ) );
+		envire::Transform( C_localnew2global ) );
     }
 
 protected:

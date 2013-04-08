@@ -6,6 +6,7 @@
 #include <envire/maps/MLSGrid.hpp>
 
 #include <Eigen/Core>
+#include <envire/core/Operator.hpp>
 
 namespace envire {
     class MLSProjection : public Operator

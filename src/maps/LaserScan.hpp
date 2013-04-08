@@ -44,7 +44,7 @@ namespace envire {
             std::vector<scanline_t> lines;
 
 	private:
-	    bool parseScan( std::istream& is, envire::FrameNode::TransformType& transform );
+	    bool parseScan( std::istream& is, Transform& transform );
 
         public:
 	    void addScanLine( double tilt_angle, const base::samples::LaserScan& scan );

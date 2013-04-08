@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "Operator.hpp"
 #include <boost/lexical_cast.hpp>
 
 using namespace envire;

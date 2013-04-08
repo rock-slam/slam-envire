@@ -489,7 +489,7 @@ namespace envire
 	if(getEnvironment())
 	{
 	    // get the frame transformation to the root frame 
-	    envire::FrameNode::TransformType t = getEnvironment()->relativeTransform(
+	    Transform t = getEnvironment()->relativeTransform(
 		    getFrameNode(),
 		    getEnvironment()->getRootNode() );
 

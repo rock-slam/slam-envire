@@ -68,7 +68,7 @@ LaserScan* LaserScan::importScanFile(const std::string& file, FrameNode* node)
     Environment* env = node->getEnvironment();
     LaserScan* scan = new LaserScan();
 
-    FrameNode::TransformType transform( Eigen::Matrix4d::Identity() );
+    Transform transform( Eigen::Matrix4d::Identity() );
 
     std::ifstream data(file.c_str());
     if( data.fail() )  
@@ -103,7 +103,7 @@ const std::string LaserScan::getMapFileName() const
     return Layer::getMapFileName() + ".scan";
 }
 
-bool LaserScan::parseScan( std::istream& is, FrameNode::TransformType& transform ) {
+bool LaserScan::parseScan( std::istream& is, Transform& transform ) {
     std::string line;
     while( !is.eof() ) {
         getline( is, line );
@@ -182,7 +182,7 @@ bool LaserScan::parseScan( std::istream& is, FrameNode::TransformType& transform
 
 bool LaserScan::readScan( std::istream& is ) 
 {
-    FrameNode::TransformType t;
+    Transform t;
     return parseScan( is, t );
 }
 

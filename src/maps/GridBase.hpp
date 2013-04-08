@@ -1,8 +1,10 @@
 #ifndef __ENVIRE_GRIDBASE_HPP__
 #define __ENVIRE_GRIDBASE_HPP__
 
-#include <envire/Core.hpp>
 #include <envire/core/Serialization.hpp>
+#include <envire/Core.hpp>
+#include <base/pose.h>
+#include <boost/function.hpp>
 
 namespace envire 
 {
@@ -193,7 +195,7 @@ namespace envire
          * @arg band_name the band name in the created Grid instance
          * @arg band the band index in the GDAL file
          */
-        static std::pair<Ptr, FrameNode::TransformType> readGridFromGdal(std::string const& path, std::string const& band_name, int band = 1);
+        static std::pair<GridBase::Ptr, Transform> readGridFromGdal(std::string const& path, std::string const& band_name, int band = 1);
 
         /** Copies the specified band in this grid map
          *

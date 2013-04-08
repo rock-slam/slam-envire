@@ -1,5 +1,3 @@
-#include "Serialization.hpp"
-
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <iostream>
@@ -8,6 +6,12 @@
 #include <stdlib.h>
 #include <iterator>
 #include <algorithm>
+
+#include "Serialization.hpp"
+#include "Operator.hpp"
+#include "FrameNode.hpp"
+#include "Layer.hpp"
+#include <envire/Core.hpp>
 
 extern "C" {
 #include <yaml.h>
@@ -169,7 +173,7 @@ void Serialization::write(const std::string& key, const std::string& value)
     yamlSerialization->addNodeToMap( key, yamlSerialization->addScalar(value) );
 }
 
-void Serialization::write(const std::string& key, const FrameNode::TransformType &value)
+void Serialization::write(const std::string& key, const Transform &value)
 {
     // create a sequence node with all the elements
     int seq_id = yamlSerialization->addSequenceNode( YAML_FLOW_SEQUENCE_STYLE );
@@ -217,7 +221,7 @@ bool Serialization::read(const std::string &key, std::string &value)
     }
 }
 
-bool Serialization::read(const std::string& key, FrameNode::TransformType &value)
+bool Serialization::read(const std::string& key, Transform &value)
 {
     int node_index = yamlSerialization->findNodeInMap( key );
     yaml_node_t* node = yamlSerialization->getNode( node_index );
@@ -232,7 +236,7 @@ bool Serialization::read(const std::string& key, FrameNode::TransformType &value
         std::string t(yamlSerialization->getScalar( *item ) );
 
         value( i / value.matrix().rows(), i % value.matrix().rows() ) =
-            boost::lexical_cast<FrameNode::TransformType::Scalar>( t );
+            boost::lexical_cast<Transform::Scalar>( t );
         i++;
     }
    

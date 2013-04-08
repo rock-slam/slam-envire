@@ -1,4 +1,7 @@
-#include "core/EventHandler.hpp"
+#include "EventHandler.hpp"
+#include "FrameNode.hpp"
+#include "Layer.hpp"
+#include <envire/Core.hpp>
 
 using namespace envire;
 
