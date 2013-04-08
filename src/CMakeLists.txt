@@ -80,6 +80,7 @@ install(FILES maps/GridBase.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
     maps/Featurecloud.hpp
+    maps/TraversabilityGrid.hpp
     maps/TriMesh.hpp
     maps/MapSegment.hpp
     DESTINATION include/envire/maps)

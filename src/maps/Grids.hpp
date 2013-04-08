@@ -3,6 +3,7 @@
 
 #include <envire/maps/Grid.hpp>
 #include <base/samples/distance_image.h>
+#include "TraversabilityGrid.hpp"
 
 namespace envire
 {  
