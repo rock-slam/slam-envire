@@ -1,5 +1,5 @@
 #include "TraversabilityGridVisualization.hpp"
-#include "envire/maps/Grids.hpp"
+#include "envire/maps/TraversabilityGrid.hpp"
 #include <osg/Image>
 #include <osg/Geometry>
 #include <osg/Geode>

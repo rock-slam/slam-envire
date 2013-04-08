@@ -24,20 +24,6 @@ static envire::SerializationPlugin< Grid<uint16_t> > Grid_uint16_plugin("Grid_t"
 static envire::SerializationPlugin< Grid<int32_t> >  Grid_int32_plugin("Grid_i");
 static envire::SerializationPlugin< Grid<uint32_t> > Grid_uint32_plugin("Grid_j");
 
-ENVIRONMENT_ITEM_DEF( TraversabilityGrid )
-const std::string TraversabilityGrid::TRAVERSABILITY = "traversability";
-static const std::vector<std::string> &initTraversabilityBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(TraversabilityGrid::TRAVERSABILITY);
-  }
-  return bands;
-}
-const std::vector<std::string> &TraversabilityGrid::bands = initTraversabilityBands();
-
-
 ENVIRONMENT_ITEM_DEF( ConfidenceGrid )
 const std::string ConfidenceGrid::CONFIDENCE = "confidence";
 static const std::vector<std::string> &initConfidenceBands()

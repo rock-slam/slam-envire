@@ -25,7 +25,8 @@ rock_library(envire
     core/EventHandler.cpp
     maps/TriMesh.cpp
     maps/GridBase.cpp
-    maps/Grids.cpp
+    maps/Grids.cpp 
+    maps/TraversabilityGrid.cpp
     maps/Pointcloud.cpp
     maps/Featurecloud.cpp
     maps/LaserScan.cpp
