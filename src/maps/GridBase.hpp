@@ -35,7 +35,8 @@ namespace envire
 	    size_t y;
 
 	    Position() {}
-	    Position( size_t x, size_t y ) : x(x), y(y) {}
+            Position( size_t x, size_t y ) : x(x), y(y) {}
+            Position( const Eigen::Vector2i &pos ) : x(pos.x()), y(pos.y()) {}
 	    bool operator<( const Position& other ) const
 	    {
 		if( x < other.x )
@@ -95,6 +96,29 @@ namespace envire
 	~GridBase();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
+
+        /**
+         * Helper function that computes the grid coordinates of 
+         * a given oriented rectangle.
+         * 
+         * Returns false if the rectangle is not inside the grid
+         * */
+        bool getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g) const;
+
+        /**
+         * This function calls the given callback for each cell, which 
+         * will be covered by the given rectangle at the given pose.
+         * 
+         * Node that this method might produce some aliasing artifacts
+         * at the border of the rectangle.  
+         * 
+         * returns true if the given rectangle is inside the grid.
+         *         false otherwise.
+         * */
+        bool forEachInRectangle(base::Pose2D rectCenterWorld, double widthWorld, double heightWorld, boost::function<void (size_t, size_t)> callbackGrid) const;
+
+        bool forEachInRectangles(const base::Pose2D &rectCenter_w, double innerWidth_w, double innerHeight_w, boost::function<void (size_t, size_t)> innerCallback, 
+                                                        double outerWidth_w, double outerHeight_w, boost::function<void (size_t, size_t)> outerCallback) const;
 
         /** Converts coordinates from the frame specified by \c frame to the
          * map-local grid coordinates
