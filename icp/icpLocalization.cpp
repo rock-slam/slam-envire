@@ -132,7 +132,6 @@ void ICPLocalization::loadEnvironment(std::string environment_path, double model
 
 ICPInputData ICPLocalization::generatePointcloud()
 {
-    base::Time startTime = base::Time::now();
     envire::Pointcloud *pc = new envire::Pointcloud();
 
     Eigen::Affine3d odo2World;
