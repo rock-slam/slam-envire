@@ -59,6 +59,22 @@ namespace envire
 	typedef Eigen::Vector2d Point2D;
 
     protected:
+        
+        /**
+         * To Grid function that returns a grid coordinate that is multiplier 
+         * higher resolved as the grid.
+         * 
+         * Computes grid coordinates from world coordinate.
+         * */
+        bool toGridTimesX(const Point2D &pWorld, Position& pGrid, int multiplier) const;
+        /**
+         * To Grid function that returns a grid coordinate that is multiplier 
+         * higher resolved as the grid.
+         * 
+         * Computes grid coordinates from world coordinate.
+         * */
+        bool toGridTimesX(double x, double y, size_t& xi, size_t& yi, int multiplier) const;
+        
 	size_t cellSizeX, cellSizeY;
 	double scalex, scaley;	
 	double offsetx, offsety;
@@ -101,9 +117,12 @@ namespace envire
          * Helper function that computes the grid coordinates of 
          * a given oriented rectangle.
          * 
+         * @param multiplier This multiplier is applied to the pose before calculation the grid coordinates
+         *                      This allows to calculate subcell accurate grid position.
+         * 
          * Returns false if the rectangle is not inside the grid
          * */
-        bool getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g) const;
+        bool getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier = 1) const;
 
         /**
          * This function calls the given callback for each cell, which 

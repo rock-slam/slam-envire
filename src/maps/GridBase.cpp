@@ -55,7 +55,7 @@ void GridBase::unserialize(Serialization& so)
     so.read("offsety", offsety );
 }
 
-bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g) const
+bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier) const
 {
     const double widthHalf = width / 2.0;
     const double heightHalf = height / 2.0;
@@ -83,31 +83,31 @@ bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, dou
 //     std::cout << "P DR:" << downRight.transpose() << std::endl;
 //     std::cout << "P DL:" << downLeft.transpose() << std::endl;
 
-    if(!toGrid(upLeft, upLeft_g))
+    if(!toGridTimesX(upLeft, upLeft_g, multiplier))
     {
 //         std::cout << "Error P UL:" << upLeft.transpose() << " outside of grid " << std::endl;
         return false;
     }
-    if(!toGrid(upRight, upRight_g))
+    if(!toGridTimesX(upRight, upRight_g, multiplier))
     {
 //         std::cout << "Error P UR:" << upRight.transpose() << "  outside of grid " << std::endl;
         return false;
     }
-    if(!toGrid(downLeft, downLeft_g))
+    if(!toGridTimesX(downLeft, downLeft_g, multiplier))
     {
 //         std::cout << "Error P DL:" << downLeft.transpose() << "  outside of grid " << std::endl;
         return false;
     }
-    if(!toGrid(downRight, downRight_g))
+    if(!toGridTimesX(downRight, downRight_g, multiplier))
     {
 //         std::cout << "Error P DR:" << downRight.transpose() << "  outside of grid " << std::endl;
         return false;
     }
  
-//     std::cout << "upLeftOut    X " << upLeft_g.x << " Y " << upLeft_g.y << std::endl;
-//     std::cout << "upRightOut   X " << upRight_g.x << " Y " << upRight_g.y << std::endl;
-//     std::cout << "downLeftOut  X " << downLeft_g.x << " Y " << downLeft_g.y << std::endl;
-//     std::cout << "downRightOut X " << downRight_g.x << " Y " << downRight_g.y << std::endl;
+    std::cout << "upLeftOut    X " << upLeft_g.x << " Y " << upLeft_g.y << std::endl;
+    std::cout << "upRightOut   X " << upRight_g.x << " Y " << upRight_g.y << std::endl;
+    std::cout << "downLeftOut  X " << downLeft_g.x << " Y " << downLeft_g.y << std::endl;
+    std::cout << "downRightOut X " << downRight_g.x << " Y " << downRight_g.y << std::endl;
  
     return true;
 }
@@ -116,12 +116,13 @@ bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, dou
 bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, double innerWidth_w, double innerHeight_w, boost::function< void (size_t, size_t)> innerCallback, 
                                            double outerWidth_w, double outerHeight_w, boost::function< void (size_t, size_t)> outerCallback) const
 {
+    int multiplier = 10;
     envire::GridBase::Position upLeft_g;
     envire::GridBase::Position upRight_g;
     envire::GridBase::Position downLeft_g;
     envire::GridBase::Position downRight_g;
     
-    if(!getRectPoints(rectCenter, innerWidth_w, innerHeight_w, upLeft_g, upRight_g, downLeft_g, downRight_g))
+    if(!getRectPoints(rectCenter, innerWidth_w, innerHeight_w, upLeft_g, upRight_g, downLeft_g, downRight_g, multiplier))
         return false;
 
     envire::GridBase::Position upLeftOut;
@@ -129,7 +130,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
     envire::GridBase::Position downLeftOut;
     envire::GridBase::Position downRightOut;
     
-    if(!getRectPoints(rectCenter, outerWidth_w, outerHeight_w, upLeftOut, upRightOut, downLeftOut, downRightOut))
+    if(!getRectPoints(rectCenter, outerWidth_w, outerHeight_w, upLeftOut, upRightOut, downLeftOut, downRightOut, multiplier))
         return false;
 
 //     std::cout << "upLeftOut    X " << upLeftOut.x << " Y " << upLeftOut.y << std::endl;
@@ -199,16 +200,16 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
     while((leftOutIt != leftOut.end()) && (rightOutIt != rightOut.end()))
     {
         if(leftInIt != leftIn.end())
-            inY = leftInIt->y;
+            inY = leftInIt->y / multiplier;
         
-        outY = leftOutIt->y;
+        outY = leftOutIt->y / multiplier;
 
         maxX = 0;
         minX = std::numeric_limits<size_t>::max();
         maxXOut = 0;
         minXOut = std::numeric_limits<size_t>::max();
         
-        while((leftInIt != leftIn.end()) && (leftInIt->y == outY))
+        while((leftInIt != leftIn.end()) && ((leftInIt->y / multiplier) == outY))
         {
             if(minX > leftInIt->x)
                 minX = leftInIt->x;
@@ -218,7 +219,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
             leftInIt++;
         }
 
-        while((rightInIt != rightIn.end()) && (rightInIt->y == outY))
+        while((rightInIt != rightIn.end()) && ((rightInIt->y / multiplier) == outY))
         {
             if(minX > rightInIt->x)
                 minX = rightInIt->x;
@@ -228,7 +229,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
             rightInIt++;
         }
 
-        while((leftOutIt != leftOut.end()) && (leftOutIt->y == outY))
+        while((leftOutIt != leftOut.end()) && ((leftOutIt->y / multiplier) == outY))
         {
             if(minXOut > leftOutIt->x)
                 minXOut = leftOutIt->x;
@@ -238,7 +239,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
             leftOutIt++;
         }
 
-        while((rightOutIt != rightOut.end()) && (rightOutIt->y == outY))
+        while((rightOutIt != rightOut.end()) && ((rightOutIt->y / multiplier) == outY))
         {
             if(minXOut > rightOutIt->x)
                 minXOut = rightOutIt->x;
@@ -247,6 +248,11 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
             
             rightOutIt++;
         }
+        
+        minX /= multiplier;
+        maxX /= multiplier;
+        minXOut /= multiplier;
+        maxXOut /= multiplier;
         
         if(inY == outY)
         {
@@ -281,12 +287,13 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
 
 bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, double height, boost::function<void (size_t, size_t)> callbackGrid) const
 {
+    int multiplier = 10;
     envire::GridBase::Position ulGrid;
     envire::GridBase::Position urGrid;
     envire::GridBase::Position dlGrid;
     envire::GridBase::Position drGrid;
     
-    if(!getRectPoints(pose, width, height, ulGrid, urGrid, dlGrid, drGrid))
+    if(!getRectPoints(pose, width, height, ulGrid, urGrid, dlGrid, drGrid, multiplier))
         return false;
 
     std::vector<envire::GridBase::Position> left;
@@ -320,14 +327,14 @@ bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, doubl
     size_t minX, maxX;
     while((leftIt != left.end()) && (rightIt != right.end()))
     {
-        curY = leftIt->y;
+        curY = leftIt->y / multiplier;
 
         maxX = 0;
         minX = std::numeric_limits<size_t>::max();
         
         assert(rightIt->y == leftIt->y);
         
-        while((leftIt != left.end()) && (leftIt->y == curY))
+        while((leftIt != left.end()) && ((leftIt->y / multiplier) == curY))
         {
             if(minX > leftIt->x)
                 minX = leftIt->x;
@@ -337,7 +344,7 @@ bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, doubl
             leftIt++;
         }
 
-        while((rightIt != right.end()) && (rightIt->y == curY))
+        while((rightIt != right.end()) && ((rightIt->y / multiplier) == curY))
         {
             if(minX > rightIt->x)
                 minX = rightIt->x;
@@ -346,6 +353,9 @@ bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, doubl
             
             rightIt++;
         }
+        
+        minX /= multiplier;
+        maxX /= multiplier;
 
         for(size_t x = minX; x <= maxX; x++)
         {
@@ -384,6 +394,27 @@ bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
     else {
 	return false;
     }
+}
+
+bool envire::GridBase::toGridTimesX(double x, double y, size_t& xi, size_t& yi, int multiplier) const
+{
+    size_t am = floor(((x-offsetx)*multiplier)/scalex);
+    size_t an = floor(((y-offsety)*multiplier)/scaley);
+
+    if((am < (cellSizeX * multiplier)) && (an < (cellSizeY * multiplier)))
+    {
+        xi = am;
+        yi = an;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool envire::GridBase::toGridTimesX(const Point2D& pWorld, GridBase::Position& pGrid, int multiplier) const
+{
+    return toGridTimesX(pWorld.x(), pWorld.y(), pGrid.x, pGrid.y, multiplier);
 }
 
 Eigen::Vector3d GridBase::fromGrid(size_t xi, size_t yi, FrameNode const* frame) const
