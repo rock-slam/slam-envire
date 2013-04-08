@@ -43,6 +43,7 @@ rock_library(envire
     operators/MLSToGrid.cpp
     operators/CutPointcloud.cpp
     operators/GridIllumination.cpp
+    tools/BresenhamLine.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
