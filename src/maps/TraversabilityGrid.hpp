@@ -1,5 +1,5 @@
-#ifndef TRAVERSABILITYGRID_H
-#define TRAVERSABILITYGRID_H
+#ifndef ENVIRE_TRAVERSABILITYGRID_H
+#define ENVIRE_TRAVERSABILITYGRID_H
 
 #include <envire/maps/Grid.hpp>
 #include <base/samples/distance_image.h>
