@@ -1,5 +1,5 @@
 #include "MLSVisualization.hpp"
-#include "ColorConversion.hpp"
+#include <vizkit/ColorConversionHelper.hpp>
 
 #include <osg/Group>
 #include <osg/Geode>
@@ -259,7 +259,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    else if( cycleHeightColor )
                     {
                        double hue = (p.mean - std::floor(p.mean)) / cycleColorInterval;
-			ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, 0.6 , col.x(), col.y(), col.z());
+			vizkit::hslToRgb( hue - std::floor(hue), 1.0, 0.6 , col.x(), col.y(), col.z());
                        col.w() = 1.0;
                     }
 		    else

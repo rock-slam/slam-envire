@@ -1,5 +1,5 @@
 #include "ElevationGridVisualization.hpp"
-#include "ColorConversion.hpp"
+#include <vizkit/ColorConversionHelper.hpp>
 
 #include <osg/Point>
 #include <osg/Geometry>
@@ -89,7 +89,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
 	    if( visibility )
 		col.a() = *(visibility++);
 	    if( cycleHeightColor )
-		ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, luminance, col.r(), col.g(), col.b());
+		vizkit::hslToRgb( hue - std::floor(hue), 1.0, luminance, col.r(), col.g(), col.b());
 	    else
 		col = osg::Vec4f( col.r() * luminance, col.g() * luminance, col.b() * luminance, col.a() );
 	    *pos++ = (unsigned char)(col.r() * 255.0);
