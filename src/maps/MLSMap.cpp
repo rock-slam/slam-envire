@@ -138,28 +138,33 @@ void MLSMap::selectActiveGrid( const FrameNode* fn, double threshold, bool align
     else
     {
 	Transform t = fn->relativeTransform( getActiveGrid()->getFrameNode() );
-	if( aligned )
-	{
-	    // remove rotation
-	    t.linear().setIdentity();
-	    // align to grid size
-	    t.translation().x() = floor(t.translation().x() / active->getScaleX()) * active->getScaleX();
-	    t.translation().y() = floor(t.translation().y() / active->getScaleY()) * active->getScaleY();
-	}
-	createGrid( t );
+	createGrid( t, true, true );
     }
 }
 
-void MLSMap::createGrid( const Transform& trans )
+void MLSMap::createGrid( const Transform& trans, bool relative, bool aligned )
 {
     // don't do anything if there is no template 
     if( !active )
 	return;
 
+    Transform t = trans;
+    if( aligned )
+    {
+	// remove rotation
+	t.linear().setIdentity();
+	// align to grid size
+	t.translation().x() = floor(t.translation().x() / active->getScaleX()) * active->getScaleX();
+	t.translation().y() = floor(t.translation().y() / active->getScaleY()) * active->getScaleY();
+    }
+
     MLSGrid* grid_clone = active->cloneShallow(); 
-    FrameNode* fn = new FrameNode( trans );
+    FrameNode* fn = new FrameNode( t );
     fn->setUniqueId( getUniqueIdPrefix() + "/" );
-    env->addChild( active->getFrameNode(), fn );
+    if( relative )
+	env->addChild( active->getFrameNode(), fn );
+    else
+	env->addChild( getFrameNode(), fn );
     env->setFrameNode( grid_clone, fn );
 
     addGrid( grid_clone );

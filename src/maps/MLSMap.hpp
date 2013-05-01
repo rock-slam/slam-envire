@@ -33,11 +33,15 @@ public:
     void addGrid( MLSGrid::Ptr grid );
 
     /** add a new grid taking the current active grid as a template
-     * and placing it relative to the active grid 
+     * and placing it relative to the active grid or relative to the mlsmap
      * @param trans - the transform between the active grid and the newly
      *                created grid
+     * @param relative - if true, the transform is considered relative to 
+     *	                 the previous grid
+     * @param aligned - if true, the grid is aligned to to the cells of the 
+     *                  currently active grid
      */
-    void createGrid( const Transform& trans );
+    void createGrid( const Transform& trans, bool relative = true, bool aligned = true );
 
     /** 
      * based on the transform this function will set the active grid to a
