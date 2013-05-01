@@ -46,7 +46,9 @@ class ExtentsRectangle : public osg::Geode
     osg::ref_ptr<osg::Vec3Array> vertices;
 
 public:
-    ExtentsRectangle( const envire::GridBase::Extents& extents ) :
+    ExtentsRectangle( 
+	    const envire::GridBase::Extents& extents, 
+	    const osg::Vec4& col = osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) ) :
 	geom( new osg::Geometry() ),
 	color( new osg::Vec4Array() ), 
 	vertices( new osg::Vec3Array() )
@@ -58,10 +60,11 @@ public:
 	vertices->push_back( osg::Vec3( max.x(), min.y(), 0 ));
 
 	geom->setVertexArray(vertices);
-	osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
+	osg::ref_ptr<osg::DrawArrays> drawArrays = 
+	    new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
 	geom->addPrimitiveSet(drawArrays.get());
 
-	color->push_back( osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) );
+	color->push_back( col );
 	geom->setColorArray(color.get());
 	geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
@@ -219,9 +222,14 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     // draw the extents of the mls
     if( showExtents )
     {
+	// get the color as a function of the environmentitem pointer
+	float scale = ((long)item%1000)/1000.0;
+	osg::Vec4 col(0,0,0,1);
+	vizkit::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
+
 	group->removeChild( 1 );
 	group->addChild( 
-		new ExtentsRectangle( mls->getExtents() ) );
+		new ExtentsRectangle( mls->getExtents(), col ) );
     }
     
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
