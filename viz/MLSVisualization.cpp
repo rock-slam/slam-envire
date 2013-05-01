@@ -22,7 +22,8 @@ MLSVisualization::MLSVisualization()
     showNegative(false),
     estimateNormals(false),
     cycleHeightColor(true),
-    cycleColorInterval(1.0)
+    cycleColorInterval(1.0),
+    showExtents(true)
 {
 }
 
@@ -215,13 +216,13 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     envire::MultiLevelSurfaceGrid *mls = dynamic_cast<envire::MultiLevelSurfaceGrid *>(item);
     assert(mls);
 
-    //this leads to CullVisitor error
-    //because it is not implemented for mls and the exeption is 
-    //catched 
-    // add extents
-    //group->removeChild( extents );
-   // extents = new ExtentsRectangle( mls->getExtents() );
-   // group->addChild( extents );
+    // draw the extents of the mls
+    if( showExtents )
+    {
+	group->removeChild( 1 );
+	group->addChild( 
+		new ExtentsRectangle( mls->getExtents() ) );
+    }
     
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
@@ -439,4 +440,14 @@ void MLSVisualization::setUncertaintyColor(QColor color)
     uncertaintyColor.z() = color.blueF();
     uncertaintyColor.w() = color.alphaF();
     emit propertyChanged("uncertainty_color");
+}
+
+void MLSVisualization::setShowExtents( bool value ) 
+{
+    showExtents = value;
+}
+
+bool MLSVisualization::areExtentsShown() const
+{
+    return showExtents;
 }
