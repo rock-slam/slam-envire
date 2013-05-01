@@ -462,8 +462,19 @@ bool GridBase::contains( const Position& pos ) const
         
 GridBase::Extents GridBase::getExtents() const
 {
+    // take the cell extents and transform them to local coordinates
+    CellExtents cellExtents = getCellExtents();
+    Eigen::Vector2d scale( scalex, scaley );
     Eigen::Vector2d min( offsetx, offsety );
-    return Extents( min, min + Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
+    Extents scaled( 
+	    min + (cellExtents.min().array().cast<double>() * scale.array()).matrix(), 
+	    min + (cellExtents.max().array().cast<double>() * scale.array()).matrix() );
+    return scaled;
+}
+
+GridBase::CellExtents GridBase::getCellExtents() const
+{
+    return CellExtents( Eigen::Vector2i::Zero(), Eigen::Vector2i( cellSizeX, cellSizeY ) );
 }
 
 template<typename T>

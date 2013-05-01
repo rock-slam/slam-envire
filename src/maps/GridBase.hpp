@@ -36,7 +36,7 @@ namespace envire
 
 	    Position() {}
             Position( size_t x, size_t y ) : x(x), y(y) {}
-            Position( const Eigen::Vector2i &pos ) : x(pos.x()), y(pos.y()) {}
+            explicit Position( const Eigen::Vector2i &pos ) : x(pos.x()), y(pos.y()) {}
 	    bool operator<( const Position& other ) const
 	    {
 		if( x < other.x )
@@ -57,6 +57,7 @@ namespace envire
 	    }
 	};
 	typedef Eigen::Vector2d Point2D;
+	typedef Eigen::AlignedBox<int, 2> CellExtents;
 
     protected:
         
@@ -227,9 +228,17 @@ namespace envire
 		+ Point2D( offsetx, offsety );
 	};
 
-        /** Returns the size of the grid, in world units
+        /** Returns the size of the grid, in world units.
+	 * uses getCellExtents() as the basis
          */
 	Extents getExtents() const;
+
+	/** return the extents of the subset of the grid, which 
+	 * for which the cells contain data. The base implementation is
+	 * to return the cellsSize values. Override since this is used to
+	 * calculate the return value for getExtents. 
+	 */
+	virtual CellExtents getCellExtents() const; 
 
         /** Read a band from a GDAL file and returns a Grid map containing the
          * loaded data
