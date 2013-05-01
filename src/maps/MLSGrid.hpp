@@ -427,7 +427,7 @@ namespace envire
 	/** return the extents of the subset of the grid, which 
 	 * contains cells.
 	 */
-	Extents getCellExtents() const { return extents; }
+	CellExtents getCellExtents() const { return extents; }
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
@@ -441,7 +441,7 @@ namespace envire
 
 	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;
-	Extents extents;
+	CellExtents extents;
 	boost::pool<> mem_pool;
     };
 

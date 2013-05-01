@@ -41,7 +41,7 @@ void MLSGrid::clear()
     mem_pool.purge_memory();
     cellcount = 0;
     if(index) index->reset();
-    extents = Extents();
+    extents = CellExtents();
     hasCellColor_ = false;
 }
 
@@ -798,9 +798,7 @@ void MLSGrid::addCell( const Position& pos )
     if( index )
 	index->addCell(pos);
 
-    Point2D p;
-    fromGrid( pos, p );
-    extents.extend( p );
+    extents.extend( Eigen::Vector2i( pos.x, pos.y ) );
 }
 
 void MLSGrid::initIndex()
