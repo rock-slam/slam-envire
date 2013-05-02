@@ -164,6 +164,7 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
     if( pc->hasData( Pointcloud::VERTEX_COLOR ) )
     {
 	color = &pc->getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR);
+	assert( color->size() == points.size() );
 	grid->setHasCellColor( true );
     }
     bool hasUncertainty = points.size() == uncertainty.size();
