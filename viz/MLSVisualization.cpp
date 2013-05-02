@@ -268,8 +268,11 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    else if( cycleHeightColor )
                     {
                        double hue = (p.mean - std::floor(p.mean)) / cycleColorInterval;
-			vizkit::hslToRgb( hue - std::floor(hue), 1.0, 0.6 , col.x(), col.y(), col.z());
-                       col.w() = 1.0;
+		       double sat = 1.0;
+		       double alpha = std::max( 0.0, 1.0 - p.stdev );
+		       double lum = 0.6;
+		       vizkit::hslToRgb( hue - std::floor(hue), sat, lum , col.x(), col.y(), col.z());
+                       col.w() = alpha;
                     }
 		    else
 			col = horizontalCellColor;
