@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( mlsviz_test )
 		}
 		else 
 		{
-		    *it = p;
+		    (*it) = p;
 		}
 	    }
 	}

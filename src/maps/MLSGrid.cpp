@@ -1,7 +1,6 @@
 #include "MLSGrid.hpp"
 #include <fstream>
 #include <limits>
-#include "tools/Numeric.hpp"
 #include <algorithm>
 
 using namespace envire;
@@ -14,53 +13,35 @@ static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 
 MLSGrid::MLSGrid()
     : GridBase()
-    , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
-    , hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
+    , cellcount( 0 )
 {
     clear();
 }
 
 MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scaley, double offsetx, double offsety)
     : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
-    , cells( boost::extents[cellSizeX][cellSizeY] )
-    , gapSize( 1.0 ), thickness( 0.05 ), cellcount( 0 )
-    , hasCellColor_(false), mem_pool( sizeof( SurfacePatchItem ) )
+    , cells( cellSizeX, cellSizeY )
+    , cellcount( 0 )
 {
     clear();
 }
 
 void MLSGrid::clear()
 {
-    for(size_t xi=0;xi<cellSizeX;xi++)
-    {
-	for(size_t yi=0;yi<cellSizeY;yi++)
-	{
-	    cells[xi][yi] = NULL;
-	}
-    }
-    mem_pool.purge_memory();
+    cells.clear();
     cellcount = 0;
     if(index) index->reset();
     extents = CellExtents();
-    hasCellColor_ = false;
+    config.useColor = false;
 }
 
 MLSGrid::MLSGrid(const MLSGrid& other)
     : GridBase( other )
-    , cells( boost::extents[other.cellSizeX][other.cellSizeY] )
-    , gapSize( other.gapSize ), thickness( other.thickness ), cellcount( other.cellcount )
-    , hasCellColor_( other.hasCellColor_), mem_pool( sizeof( SurfacePatchItem ) )
+    , cells( other.cells )
+    , config( other.config )
+    , cellcount( other.cellcount )
+    , extents( other.extents )
 {
-    clear();
-    hasCellColor_ = other.hasCellColor_;
-    for(size_t xi=0;xi<cellSizeX;xi++)
-    {
-	for(size_t yi=0;yi<cellSizeY;yi++)
-	{
-	    for( const_iterator it = other.beginCell( xi,yi ); it != other.endCell(); it++ )
-		insertTail( xi, yi, *it );
-	}
-    }
 }
 
 MLSGrid& MLSGrid::operator=(const MLSGrid& other)
@@ -69,23 +50,10 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
     {
 	GridBase::operator=(other);
 
-	mem_pool.purge_memory();
-	cells.resize( boost::extents[cellSizeX][cellSizeY] );
-
-	for(size_t xi=0;xi<cellSizeX;xi++)
-	{
-	    for(size_t yi=0;yi<cellSizeY;yi++)
-	    {
-		cells[xi][yi] = NULL;
-		for( const_iterator it = other.beginCell( xi,yi ); it != endCell(); it++ )
-		    insertTail( xi, yi, *it );
-	    }
-	}
-
-	gapSize = other.gapSize;
-	thickness = other.thickness;
+	cells = other.cells;
+	extents = other.extents;
+	config = other.config;
 	cellcount = other.cellcount;
-	hasCellColor_ = other.hasCellColor_;
     }
 
     return *this;
@@ -94,10 +62,7 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 envire::MLSGrid* MLSGrid::cloneShallow() const
 {
     MLSGrid* res = new MLSGrid( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety );
-    res->gapSize = gapSize;
-    res->thickness = thickness;
-    res->cellcount = cellcount;
-    res->hasCellColor_ = hasCellColor_;
+    res->config = config;
     return res;
 }
 
@@ -112,11 +77,11 @@ std::vector< Eigen::Vector3d > MLSGrid::projectPointsOnSurface(double startHeigh
     std::vector< Eigen::Vector3d > ret;
     std::vector< GridBase::Position>::const_iterator it = gridPoints.begin();
     for(; it != gridPoints.end(); ++it) {
-	envire::MLSGrid::const_iterator cIt = beginCell(it->x, it->y);
+	envire::MLSGrid::iterator cIt = beginCell(it->x, it->y);
 	
 	double minDiff = std::numeric_limits< double >::max();
 	double closestZ = base::unset<double>();
-	for(;cIt != endCell_const(); cIt++)
+	for(;cIt != endCell(); cIt++)
 	{
 	    double diff = fabs(lastHeight - cIt->getMaxZ());
 	    if(diff < minDiff)
@@ -147,11 +112,11 @@ base::geometry::Spline3 MLSGrid::projectSplineOnSurface(double startHeight, cons
 	const Eigen::Vector3d p(*it);
 	if(toGrid(p, x, y))
 	{
-	    envire::MLSGrid::const_iterator cIt = beginCell(x, y);
+	    envire::MLSGrid::iterator cIt = beginCell(x, y);
 	    
 	    double minDiff = std::numeric_limits< double >::max();
 	    double closestZ = base::unset<double>();
-	    for(;cIt != endCell_const(); cIt++)
+	    for(;cIt != endCell(); cIt++)
 	    {
 		double diff = fabs(lastHeight - cIt->getMaxZ());
 		if(diff < minDiff)
@@ -180,7 +145,9 @@ void MLSGrid::serialize(Serialization& so)
 {
     GridBase::serialize(so);
 
-    so.write( "hasCellColor", hasCellColor_ );
+    so.write( "hasCellColor", config.useColor );
+    long updateModelInt = static_cast<long>( config.updateModel );
+    so.write( "updateModel", updateModelInt );
     writeMap( so.getBinaryOutputStream(getMapFileName() + ".mls") );
 }
 
@@ -188,12 +155,18 @@ void MLSGrid::unserialize(Serialization& so)
 {
     GridBase::unserialize(so);
 
+    if( so.hasKey( "updateModel" ) )
+    {
+	long updateModelInt;
+	so.read( "updateModel", updateModelInt );
+	config.updateModel = static_cast<MLSConfiguration::update_model>( updateModelInt );
+    }
     if( so.hasKey( "hasCellColor" ) )
-	so.read( "hasCellColor", hasCellColor_ );
+	so.read( "hasCellColor", config.useColor );
     else
-	hasCellColor_ = false;
+	config.useColor = false;
 
-    cells.resize( boost::extents[cellSizeX][cellSizeY] );
+    cells.resize( cellSizeX, cellSizeY );
 
     // this is a workaround to make the MLS generatable by 
     // the GridBase::create method, which sets the map_count
@@ -236,10 +209,9 @@ struct SurfacePatchStore10
 
     size_t xi, yi;
 
-    MLSGrid::SurfacePatch toSurfacePatch()
+    SurfacePatch toSurfacePatch()
     {
-	typedef envire::MLSGrid::SurfacePatch sp;
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
 	p.update_idx = update_idx;
 	return p;
     }
@@ -257,10 +229,9 @@ struct SurfacePatchStore11
 
     size_t xi, yi;
 
-    MLSGrid::SurfacePatch toSurfacePatch()
+    SurfacePatch toSurfacePatch()
     {
-	typedef envire::MLSGrid::SurfacePatch sp;
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
 	p.update_idx = update_idx;
 	p.setColor( color );
 	return p;
@@ -278,21 +249,47 @@ struct SurfacePatchStore12
 
     size_t xi, yi;
 
-    MLSGrid::SurfacePatch toSurfacePatch()
+    SurfacePatch toSurfacePatch()
     {
-	typedef envire::MLSGrid::SurfacePatch sp;
-	MLSGrid::SurfacePatch p( mean, stdev, height, horizontal ? sp::HORIZONTAL : sp::VERTICAL );
+	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
 	p.update_idx = update_idx;
 	std::copy( color, color+3, p.color );
 	return p;
     }
 };
 
-struct SurfacePatchStore : MLSGrid::SurfacePatch
+struct SurfacePatchStore13
+{
+    float mean;
+    float stdev;
+    float height;
+    base::PlaneFitting<float> plane;
+    float n;
+    float min, max;
+    size_t update_idx;
+    uint8_t color[3];
+    SurfacePatch::TYPE type;
+
+    size_t xi, yi;
+
+    SurfacePatch toSurfacePatch()
+    {
+	SurfacePatch p( mean, stdev, height, type );
+	p.update_idx = update_idx;
+	p.plane = plane;
+	p.n = n;
+	p.min = min;
+	p.max = max;
+	std::copy( color, color+3, p.color );
+	return p;
+    }
+};
+
+struct SurfacePatchStore : SurfacePatch
 {
     SurfacePatchStore() {};
 
-    SurfacePatchStore( const MLSGrid::SurfacePatch& data, size_t xi, size_t yi )
+    SurfacePatchStore( const SurfacePatch& data, size_t xi, size_t yi )
 	: SurfacePatch(data), xi(xi), yi(yi) {}
 
     size_t xi, yi;
@@ -301,7 +298,7 @@ struct SurfacePatchStore : MLSGrid::SurfacePatch
 void MLSGrid::writeMap(std::ostream& os)
 {
     os << "mls" << std::endl;
-    os << "1.2" << std::endl;
+    os << "1.3" << std::endl;
     os << sizeof( SurfacePatchStore ) << std::endl;
     os << "bin" << std::endl;
 
@@ -327,32 +324,19 @@ void MLSGrid::readMap(std::istream& is)
 
     is.getline(c, 20);
     std::string version = std::string(c);
-    if( version != "1.0" && version != "1.1" && version != "1.2" )
+    if( version != "1.0" && version != "1.1" && version != "1.2" && version != "1.3" )
 	throw std::runtime_error("version not supported " + version );
 
     is.getline(c, 20);
-    if( version == "1.0" )
-    {
-	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore10 ) )
-	    throw std::runtime_error("binary size mismatch");
-    }
-    else if( version == "1.1" )
-    {
-	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore11 ) )
-	    throw std::runtime_error("binary size mismatch");
-    }
-    else if( version == "1.2" )
-    {
-	if( boost::lexical_cast<int>(std::string(c)) != sizeof( SurfacePatchStore12 ) )
-	    throw std::runtime_error("binary size mismatch");
-    }
-
+    int struct_size = boost::lexical_cast<int>(std::string(c)); 
     is.getline(c, 20);
     if( std::string(c) != "bin" )
 	throw std::runtime_error("missing bin identifier" + std::string(c));
 
     if( version == "1.0" )
     {
+	if( struct_size != sizeof( SurfacePatchStore10 ) )
+	    throw std::runtime_error("binary size mismatch");
 	SurfacePatchStore10 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore10 ) ) )
 	{
@@ -361,6 +345,8 @@ void MLSGrid::readMap(std::istream& is)
     }
     else if( version == "1.1" )
     {
+	if( struct_size != sizeof( SurfacePatchStore11 ) )
+	    throw std::runtime_error("binary size mismatch");
 	SurfacePatchStore11 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore11 ) ) )
 	{
@@ -369,8 +355,20 @@ void MLSGrid::readMap(std::istream& is)
     }
     else if( version == "1.2" )
     {
+	if( struct_size != sizeof( SurfacePatchStore12 ) )
+	    throw std::runtime_error("binary size mismatch");
 	SurfacePatchStore12 d;
 	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore12 ) ) )
+	{
+	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
+	}
+    }
+    else if( version == "1.3" )
+    {
+	if( struct_size != sizeof( SurfacePatchStore13 ) )
+	    throw std::runtime_error("binary size mismatch");
+	SurfacePatchStore13 d;
+	while( is.read(reinterpret_cast<char*>(&d), sizeof( SurfacePatchStore13 ) ) )
 	{
 	    insertTail( d.xi, d.yi, d.toSurfacePatch() );
 	}
@@ -379,86 +377,49 @@ void MLSGrid::readMap(std::istream& is)
 
 MLSGrid::iterator MLSGrid::beginCell( size_t xi, size_t yi )
 {
-    return iterator( cells[xi][yi] );
+    return cells.beginCell( xi, yi );
 }
 
 MLSGrid::const_iterator MLSGrid::beginCell( size_t xi, size_t yi ) const
 {
-    return const_iterator( cells[xi][yi] );
+    return cells.beginCell( xi, yi );
 }
 
 MLSGrid::iterator MLSGrid::endCell()
 {
-    return iterator();
+    return cells.endCell();
 }
 
 MLSGrid::const_iterator MLSGrid::endCell() const
 {
-    return const_iterator();
+    return cells.endCell();
 }
 
 void MLSGrid::insertHead( size_t xi, size_t yi, const SurfacePatch& value )
 {
-    SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
-    static_cast<SurfacePatch&>(*n_item).operator=(value);
-    n_item->next = cells[xi][yi];
-    n_item->pthis = &cells[xi][yi];
-    if( n_item->next )
-	n_item->next->pthis = &n_item->next;
-
-    cells[xi][yi] = n_item;
+    cells.insertHead( xi, yi, value );
     addCell( Position( xi, yi ) );
 }
 
 void MLSGrid::insertTail( size_t xi, size_t yi, const SurfacePatch& value )
 {
-    iterator last, it;
-    last = it = beginCell( xi, yi );
-    while( it != endCell() )
-    {
-	last = it;
-	it++;
-    }
-
-    SurfacePatchItem* n_item = static_cast<SurfacePatchItem*>(mem_pool.malloc());
-    static_cast<SurfacePatch&>(*n_item).operator=(value);
-    n_item->next = NULL;
-    
-    if( last != endCell() )
-    {
-	last.m_item->next = n_item;
-	n_item->pthis = &last.m_item->next;
-    }
-    else
-    {
-	cells[xi][yi] = n_item;
-	n_item->pthis = &cells[xi][yi];
-    }
-
+    cells.insertTail( xi, yi, value );
     addCell( Position( xi, yi ) );
 }
 
 MLSGrid::iterator MLSGrid::erase( iterator position )
 {
-    SurfacePatchItem* &p( position.m_item );
-    iterator res( p->next );
-
-    *p->pthis = p->next;
-    if( p->next )
-	p->next->pthis = p->pthis; 
-
+    iterator res = cells.erase( position );
     cellcount--;
-    mem_pool.free( p );
-
     return res; 
 }
 
-MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
+SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
 {
     MLSGrid::iterator it = beginCell(position.x, position.y);
     while( it != endCell() )
     {
-	MLSGrid::SurfacePatch &p(*it);
+	SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
 	if( p.distance( patch ) < interval && (!ignore_negative || !p.isNegative()) )
 	{
@@ -470,21 +431,30 @@ MLSGrid::SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatc
 }
 
 
-bool MLSGrid::get(const Eigen::Vector3d& position, double& zpos, double& zstdev )
+SurfacePatch* MLSGrid::get(const Eigen::Vector2d& position, double& zpos, double& zstdev )
 {
     size_t xi, yi;
-    if( toGrid(position.x(), position.y(), xi, yi) )
+    double xmod, ymod;
+    if( toGrid(position.x(), position.y(), xi, yi, xmod, ymod) )
     {
-	SurfacePatch patch( position.z(), zstdev ); 
+	SurfacePatch patch( zpos, zstdev ); 
 	SurfacePatch *p = get( Position(xi, yi), patch );
 	if( p )
 	{
-	    zpos = p->mean;
-	    zstdev = p->stdev;
-	    return true;
+	    if( config.updateModel == MLSConfiguration::SLOPE )
+	    {
+		zpos = p->getHeight( Eigen::Vector2f( xmod, ymod ) );
+		zstdev = p->stdev;
+	    }
+	    else
+	    {
+		zpos = p->mean;
+		zstdev = p->stdev;
+	    }
+	    return p;
 	}
     }
-    return false;
+    return NULL;
 }
 
 void MLSGrid::updateCell( size_t xi, size_t yi, double mean, double stdev )
@@ -538,108 +508,36 @@ void MLSGrid::updateCell( size_t xi, size_t yi, const SurfacePatch& co )
     }
 }
 
-bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
+bool MLSGrid::update( const Eigen::Vector2d& pos, const SurfacePatch& patch )
 {
-    const double delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
-
-    // see if the distance between the patches is small enough
-    if( (p.mean - p.height - gapSize - delta_dev) < o.mean 
-	    && (p.mean + gapSize + delta_dev) > (o.mean - o.height) )
+    size_t xi, yi;
+    double xmod, ymod;
+    if( toGrid(pos.x(), pos.y(), xi, yi, xmod, ymod) )
     {
-	// if both patches are horizontal, we see if we can merge them
-	if( p.isHorizontal() && o.isHorizontal() ) 
+	if( config.updateModel == MLSConfiguration::SLOPE )
 	{
-	    if( (p.mean - p.height - thickness - delta_dev) < o.mean && 
-		    (p.mean + thickness + delta_dev) > o.mean )
-	    {
-		kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-	    }
-	    else
-	    {
-		// convert into a vertical patch element
-		//p.mean += p.stdev;
-		//p.height = 2 * p.stdev; 
-		p.setVertical();
-	    }
+	    SurfacePatch p( 
+		    Eigen::Vector3f( xmod, ymod, patch.mean ),
+		    patch.stdev );
+	    updateCell( xi, yi, p );
 	}
-
-	// if either of the patches is vertical, the result is also going
-	// to be vertical
-	if( !p.isHorizontal() || !o.isHorizontal())
-	{
-	    if( p.isVertical() && o.isVertical() )
-		p.setVertical();
-	    else if( p.isNegative() && o.isNegative() )
-		p.setNegative();
-	    else if( p.isNegative() || o.isNegative() )
-	    {
-		// in this case (one negative one non negative)
-		// its a bit hard to decide, since we have to remove
-		// something somewhere to make it compatible
-		//
-		// best is to decide on age (based on update_idx) 
-		// of the patch. Newer patches will be preferred
-
-		if( p.update_idx == o.update_idx )
-		    return false;
-
-		SurfacePatch &rp( p.update_idx < o.update_idx ? p : o );
-		SurfacePatch &ro( p.update_idx < o.update_idx ? o : p );
-
-		if( rp.update_idx < ro.update_idx )
-		{
-		    // the new patch fully encloses the old one, 
-		    // so will overwrite it
-		    if( ro.mean > rp.mean && ro.mean - ro.height < rp.mean - rp.height )
-		    {
-			p = ro;
-			return true; 
-		    } 
-
-		    // the other patch is occupied, so cut
-		    // the free patch accordingly
-		    if( ro.mean < rp.mean )
-			rp.height = rp.mean - ro.mean;
-		    else if( ro.mean - ro.height < rp.mean )
-		    {
-			double new_mean = ro.mean - ro.height;
-			rp.height -= rp.mean - new_mean;
-			rp.mean = new_mean;
-		    }
-
-		    // both patches can live 
-		    return false;
-		}
-	    }
-
-	    if( o.mean > p.mean )
-	    {
-		p.height += ( o.mean - p.mean );
-		p.mean = o.mean;
-		p.stdev = o.stdev;
-	    }
-
-	    const double o_min = o.mean - o.height;
-	    const double p_min = p.mean - p.height;
-	    if( o_min < p_min )
-	    {
-		p.height = p.mean - o_min;
-	    }
-	}
-	p.update_idx = std::max( p.update_idx, o.update_idx );
-
-	if( hasCellColor_ )
-	    p.setColor( (p.getColor() + o.getColor()) / 2.0 );
+	else
+	    updateCell( xi, yi, patch );
 
 	return true;
     }
     return false;
 }
 
-std::pair<MLSGrid::SurfacePatch*, double> 
-    getNearestPatch( const MLSGrid::SurfacePatch& p, MLSGrid::iterator begin, MLSGrid::iterator end )
+bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
-    MLSGrid::SurfacePatch* min = NULL;
+    return p.merge( o, config.thickness, config.gapSize, config.updateModel );
+}
+
+std::pair<SurfacePatch*, double> 
+    getNearestPatch( const SurfacePatch& p, MLSGrid::iterator begin, MLSGrid::iterator end )
+{
+    SurfacePatch* min = NULL;
     double dist = std::numeric_limits<double>::infinity();
 
     // find the cell with the smallest z-diff
@@ -667,8 +565,8 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
     // that of the scanmap for the update. Afterwards, we set it 
     // to its original value, if it previously had one.
     // if the other has cell color, also use it in the target grid
-    bool hadCellColor = getHasCellColor();
-    setHasCellColor( other.getHasCellColor() );
+    bool hadCellColor = config.useColor;
+    config.useColor = other.config.useColor;
 
     const std::set<Position> &cells = other.getIndex()->cells;
 
@@ -700,7 +598,7 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
     }
 
     if( hadCellColor )
-	setHasCellColor( hadCellColor );
+	config.useColor = hadCellColor;
 }
 
 float MLSGrid::match( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset, size_t sampling, float sigma )
@@ -768,7 +666,7 @@ std::pair<double, double> MLSGrid::matchHeight( const MLSGrid& other )
     {
 	for(size_t yi=0;yi<cellSizeY;yi++)
 	{
-	    if( other.cells[xi][yi] && cells[xi][yi] )
+	    if( other.beginCell(xi, yi) != other.endCell() && beginCell(xi, yi) != endCell() )
 	    {
 		for( const_iterator it = other.beginCell(xi,yi); it != other.endCell(); it++ )
 		{

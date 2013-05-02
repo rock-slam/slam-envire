@@ -24,28 +24,40 @@ int main( int argc, char* argv[] )
     
     env->updateOperators();
 
-    // create new grid
-    envire::FrameNode *fm1 = new envire::FrameNode();
-    env->addChild(env->getRootNode(), fm1);
-    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(-9,-3,-2)*Eigen::AngleAxisd(-0.15*M_PI, Eigen::Vector3d::UnitZ())) );
-    
-    double res = 0.10;
-    envire::ElevationGrid *grid = new envire::ElevationGrid(12/res, 85/res, res, res);
-    env->attachItem( grid );
-    grid->setFrameNode( fm1 );
+    // fix resolution
+    const float res = 0.1;
 
-    // and operator
+    // add operator
     envire::Projection *proj = new envire::Projection();
     env->attachItem( proj );
-    proj->addOutput( grid );
 
+    // add input pointclouds
+    envire::Pointcloud::Extents extents;
     std::vector<envire::Pointcloud*> meshes = env->getItems<envire::Pointcloud>();
     for(std::vector<envire::Pointcloud*>::iterator it=meshes.begin();it!=meshes.end();it++)
     {
 	std::cout << "adding pointcloud to projection" << std::endl;
 	proj->addInput( *it );
+	extents.extend( (*it)->getExtentsTransformed( *env->getRootNode() ) );
     }
 
+    std::cout << "Grid Extents: " << std::endl
+	<< "min: " << extents.min().transpose() << std::endl
+	<< "max: " << extents.max().transpose() << std::endl;
+
+    // generate output grid
+    envire::FrameNode *fm1 = new envire::FrameNode();
+    env->addChild(env->getRootNode(), fm1);
+    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(extents.min().x(), extents.min().y(), 0)) );
+
+    // create the grid at the right size
+    envire::Pointcloud::Extents::VectorType dim = extents.max() - extents.min();
+    envire::ElevationGrid *grid = new envire::ElevationGrid(dim.x()/res, dim.y()/res, res, res);
+    env->attachItem( grid );
+    grid->setFrameNode( fm1 );
+
+    // update to projection and add output
+    proj->addOutput( grid );
     proj->updateAll();
 
     std::string path(argv[2]);

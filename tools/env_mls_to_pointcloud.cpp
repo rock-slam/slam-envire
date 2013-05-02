@@ -48,7 +48,7 @@ int main( int argc, char* argv[] )
     {
 	for(size_t n=0;n<mls->getHeight();n++)
 	{
-	    for( MLSGrid::const_iterator cit = mls->beginCell(m,n); cit != mls->endCell(); cit++ )
+	    for( MLSGrid::iterator cit = mls->beginCell(m,n); cit != mls->endCell(); cit++ )
 	    {
 		MLSGrid::SurfacePatch p( *cit );
 

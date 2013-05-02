@@ -113,12 +113,12 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_serialization )
     it++;
     BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
     it++;
-    BOOST_CHECK_EQUAL( it, mls2->endCell() );
+    BOOST_CHECK( it == mls2->endCell() );
     
     MultiLevelSurfaceGrid::iterator it2 = mls2->beginCell(2,1);
     BOOST_CHECK_EQUAL( it2->mean, 3.0 );
     it2++;
-    BOOST_CHECK_EQUAL( it2, mls2->endCell() );
+    BOOST_CHECK( it2 == mls2->endCell() );
 }
 
 BOOST_AUTO_TEST_CASE( framenode_binitem_serialization ) 
@@ -167,12 +167,12 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid_binitem_serialization )
     it++;
     BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
     it++;
-    BOOST_CHECK_EQUAL( it, mls2->endCell() );
+    BOOST_CHECK( it == mls2->endCell() );
     
     MultiLevelSurfaceGrid::iterator it2 = mls2->beginCell(2,1);
     BOOST_CHECK_EQUAL( it2->mean, 3.0 );
     it2++;
-    BOOST_CHECK_EQUAL( it2, mls2->endCell() );
+    BOOST_CHECK( it2 == mls2->endCell() );
     
 }
 

@@ -1,3 +1,6 @@
+rock_testsuite(mls_perf mlsperf.cpp
+    DEPS envire)
+
 rock_testsuite(test_core unit/core.cpp
     DEPS envire
     DEPS_CMAKE GDAL)

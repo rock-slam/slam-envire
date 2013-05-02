@@ -8,6 +8,10 @@
 #include "envire/operators/MLSProjection.hpp"
 #include "envire/operators/MergeMLS.hpp"
 
+#include "envire/tools/ListGrid.hpp"
+
+#include <base/timemark.h>
+
 using namespace envire;
 
 BOOST_AUTO_TEST_CASE( multilevelsurfacegrid ) 
@@ -26,12 +30,12 @@ BOOST_AUTO_TEST_CASE( multilevelsurfacegrid )
     it++;
     BOOST_CHECK_EQUAL( (*it).mean, 1.0 );
     ++it;
-    BOOST_CHECK_EQUAL( it, mls->endCell() );
+    BOOST_CHECK( it == mls->endCell() );
 
     MultiLevelSurfaceGrid::iterator it2 = mls->beginCell(2,1);
     BOOST_CHECK_EQUAL( it2->mean, 3.0 );
     it2++;
-    BOOST_CHECK_EQUAL( it2, mls->endCell() );
+    BOOST_CHECK( it2 == mls->endCell() );
 }
 
 BOOST_AUTO_TEST_CASE( mlsprojection_test ) 
@@ -144,3 +148,71 @@ BOOST_AUTO_TEST_CASE( gridaligned_test )
     fn3->setTransform( Eigen::Affine3d( Eigen::Translation3d( 0.15, 0, 0 ) ) );
     BOOST_CHECK( !mls2->isCellAlignedWith( *mls3 ) );
 }
+
+inline void populateRandom( envire::MLSGrid::Ptr grid, const size_t count )
+{
+    const size_t gridsize_x = grid->getCellSizeX();
+    const size_t gridsize_y = grid->getCellSizeY();
+
+    for( size_t n=0; n<count; n++ )
+    {
+	size_t x = rand() % gridsize_x;
+	size_t y = rand() % gridsize_y;
+	MLSGrid::SurfacePatch p( rand()%100 / 100.0, rand()%100 / 100.0 );
+	grid->updateCell( x, y, p );
+    }
+}
+
+BOOST_AUTO_TEST_CASE( profiling_test ) 
+{
+    // randomly populate the grid
+    srand(0);
+
+    size_t grid_size = 1000;
+    MLSGrid::Ptr mls( new MLSGrid(grid_size, grid_size, 0.1, 0.1) );
+
+    base::TimeMark tmls("Populate MLS 10 x 1000000");
+    for( int i=0; i<10; i++ )
+    {
+	mls->clear();
+	populateRandom( mls, 1000000 );
+    }
+    std::cout 
+	<< "cellcount: " << mls->getCellCount() 
+	<< " " << tmls 
+	<< std::endl;
+
+}
+
+struct Integer
+{
+    int v;
+    Integer(int i) : v(i) {};
+    operator int() const { return v; }
+};
+
+BOOST_AUTO_TEST_CASE( list_grid )
+{
+    ListGrid<Integer> lg( 10, 10 );
+
+    lg.insertHead( 1, 1, 10 );
+    lg.insertTail( 1, 1, 20 );
+
+    {
+	ListGrid<Integer>::iterator it = lg.beginCell( 1, 1 );
+	BOOST_CHECK_EQUAL( *(it++), 10 );
+	BOOST_CHECK_EQUAL( *(it++), 20 );
+	BOOST_CHECK( it == lg.endCell() );
+    }
+
+    {
+	const ListGrid<Integer>& clg( lg );
+	// and the same thing for const
+	ListGrid<Integer>::const_iterator it = clg.beginCell( 1, 1 );
+	BOOST_CHECK_EQUAL( *(it++), 10 );
+	BOOST_CHECK_EQUAL( *(it++), 20 );
+	BOOST_CHECK( it == clg.endCell() );
+    }
+}
+
+
