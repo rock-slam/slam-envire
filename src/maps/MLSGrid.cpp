@@ -157,7 +157,7 @@ void MLSGrid::unserialize(Serialization& so)
 
     if( so.hasKey( "updateModel" ) )
     {
-	long updateModelInt;
+	long updateModelInt = MLSConfiguration::KALMAN;
 	so.read( "updateModel", updateModelInt );
 	config.updateModel = static_cast<MLSConfiguration::update_model>( updateModelInt );
     }
