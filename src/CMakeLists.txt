@@ -109,6 +109,7 @@ install(FILES tools/GraphViz.hpp
     tools/Numeric.hpp
     tools/PlyFile.hpp
     tools/GaussianMixture.hpp
+    tools/ListGrid.hpp
     tools/ExpectationMaximization.hpp
     DESTINATION include/envire/tools)
 
