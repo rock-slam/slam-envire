@@ -431,6 +431,11 @@ SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch,
     return NULL;
 }
 
+SurfacePatch* MLSGrid::get( const Eigen::Vector3d& position, double& zpos, double& zstdev )
+{
+    zpos = position.z();
+    return get( (const Eigen::Vector2d&)position.head<2>(), zpos, zstdev );
+}
 
 SurfacePatch* MLSGrid::get(const Eigen::Vector2d& position, double& zpos, double& zstdev )
 {

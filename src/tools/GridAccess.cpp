@@ -210,7 +210,7 @@ struct MLSAccess::MLSAccessImpl
 	{
 	    Eigen::Vector3d v = t * position;
 	    zpos = v.z();
-	    if( grid->get( v.head<2>(), zpos, zstdev ) )
+	    if( grid->get( (const Eigen::Vector2d&)v.head<2>(), zpos, zstdev ) )
 		return true;
 
 	    // this is a shortcut, which will only allow one
@@ -235,7 +235,7 @@ struct MLSAccess::MLSAccessImpl
 
 	    Eigen::Vector3d v = t * position;
 	    zpos = v.z();
-	    if( grid->get( (v).head<2>(), zpos, zstdev ) )
+	    if( grid->get( (const Eigen::Vector2d&)(v).head<2>(), zpos, zstdev ) )
 		return true;
 	}
 
