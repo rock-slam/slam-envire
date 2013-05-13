@@ -35,6 +35,25 @@ namespace envire
      */
     bool fileExists(std::string const& path);
 
+    /**
+     * @brief helper class, which all the templated Grid<> types derive from.
+     *
+     * Contains functionality that is common to these classes, but should
+     * not necessarily go into GridBase.
+     */
+    class BandedGrid : public GridBase
+    {
+    public:
+        explicit BandedGrid(std::string const& id = Environment::ITEM_NOT_ATTACHED) 
+	    : GridBase( id ) {}
+	BandedGrid(size_t cellSizeX, size_t cellSizeY,
+                double scalex, double scaley,
+                double offsetx = 0.0, double offsety = 0.0,
+                std::string const& id = Environment::ITEM_NOT_ATTACHED) 
+	    : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety, id ) {}
+	virtual void createBand( const std::string& key ) = 0;
+    };
+
     /** Generic handling of a multi-layer grid
      *
      * The data is stored as a boost multiarray. The indices in the boost
@@ -51,7 +70,7 @@ namespace envire
      * </code>
      */
     template <typename T>
-    class Grid : public GridBase
+    class Grid : public BandedGrid
     {
     public:
 	typedef boost::multi_array<T,2> ArrayType; 
@@ -81,7 +100,7 @@ namespace envire
         typedef boost::intrusive_ptr< Grid<T> > Ptr;
 
 	Grid(std::string const& id = Environment::ITEM_NOT_ATTACHED)
-            : GridBase(id) {}
+            : BandedGrid(id) {}
 	Grid(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0,
@@ -141,6 +160,17 @@ namespace envire
         /** Returns the boost::multiarray that stores the data of the first band
          */
 	const ArrayType& getGridData() const {return getGridData(getBands().front());};
+	
+	/** @brief create a band with the given name
+	 * 
+	 * this method allows the generation of named bands from the base class,
+	 * without actually knowing the grid type
+	 */
+	void createBand( const std::string& key )
+	{
+	    getGridData( key );
+	}
+
         /** Returns the boost::multiarray that stores the data of the specified band
          */
 	ArrayType& getGridData( const std::string& key )
@@ -307,7 +337,7 @@ namespace envire
     template<class T>Grid<T>::Grid(size_t cellSizeX, size_t cellSizeY,
             double scalex, double scaley, double offsetx, double offsety,
             std::string const& id) :
-	GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety, id )
+	BandedGrid( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety, id )
     {
       static bool initialized = false;
       if(!initialized)
