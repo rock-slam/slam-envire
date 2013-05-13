@@ -83,7 +83,7 @@ namespace envire
     public:
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
-        GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
+        explicit GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	/** @brief Constructor of the abstract GridBase class
 	 * 
 	 * Defines the extends and positioning of the grid. The grid is assumed
