@@ -108,7 +108,7 @@ bool CutPointcloud::updateAll(){
     }
     
     // get transformation
-    FrameNode::TransformType trans = 
+    Transform trans = 
         env->relativeTransform( sourcecloud->getFrameNode(), targetcloud->getFrameNode() );
     Eigen::Quaterniond normal_rot(trans.linear());
 

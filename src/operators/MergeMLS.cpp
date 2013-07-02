@@ -46,7 +46,7 @@ bool MergeMLS::updateAll()
 	{
 	    MLSGrid* input = *it;
 
-	    FrameNode::TransformType C_m2g = env->relativeTransform( input->getFrameNode(), output->getFrameNode() );
+	    Transform C_m2g = env->relativeTransform( input->getFrameNode(), output->getFrameNode() );
 
 	    for(size_t m=0;m<input->getWidth();m++)
 	    {
@@ -86,7 +86,7 @@ bool MergeMLS::updateAll()
 	for( std::vector<MLSGrid*>::iterator it = grids.begin(); it != grids.end(); it++ )
 	{
 	    MLSGrid* input = *it;
-	    FrameNode::TransformType C_g2m = 
+	    Transform C_g2m = 
 		env->relativeTransform( output->getFrameNode(), input->getFrameNode() );
 	    transforms.push_back( C_g2m );
 	}

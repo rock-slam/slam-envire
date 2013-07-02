@@ -1,5 +1,6 @@
 #include "GridBase.hpp"
 #include "Grid.hpp"
+#include <envire/tools/BresenhamLine.hpp>
 
 using namespace envire;
 
@@ -54,6 +55,317 @@ void GridBase::unserialize(Serialization& so)
     so.read("offsety", offsety );
 }
 
+bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier) const
+{
+    const double widthHalf = width / 2.0;
+    const double heightHalf = height / 2.0;
+    Eigen::Rotation2D<double> rot(pose.orientation);
+    
+    Eigen::Vector2d upLeft = pose.position +  rot * Eigen::Vector2d(-widthHalf, heightHalf);
+    Eigen::Vector2d upRight = pose.position +  rot * Eigen::Vector2d(widthHalf, heightHalf);
+    Eigen::Vector2d downRight = pose.position +  rot * Eigen::Vector2d(widthHalf, -heightHalf);
+    Eigen::Vector2d downLeft = pose.position +  rot * Eigen::Vector2d(-widthHalf, -heightHalf);
+
+    if(upLeft.y() < downLeft.y())
+    {
+        std::swap(upLeft, downLeft);
+        std::swap(upRight, downRight);
+    }
+
+    if(upRight.x() < upLeft.x())
+    {
+        std::swap(upLeft, upRight);
+        std::swap(downLeft, downRight);
+    }
+
+//     std::cout << "P UL:" << upLeft.transpose() << std::endl;
+//     std::cout << "P UR:" << upRight.transpose() << std::endl;
+//     std::cout << "P DR:" << downRight.transpose() << std::endl;
+//     std::cout << "P DL:" << downLeft.transpose() << std::endl;
+
+    if(!toGridTimesX(upLeft, upLeft_g, multiplier))
+    {
+//         std::cout << "Error P UL:" << upLeft.transpose() << " outside of grid " << std::endl;
+        return false;
+    }
+    if(!toGridTimesX(upRight, upRight_g, multiplier))
+    {
+//         std::cout << "Error P UR:" << upRight.transpose() << "  outside of grid " << std::endl;
+        return false;
+    }
+    if(!toGridTimesX(downLeft, downLeft_g, multiplier))
+    {
+//         std::cout << "Error P DL:" << downLeft.transpose() << "  outside of grid " << std::endl;
+        return false;
+    }
+    if(!toGridTimesX(downRight, downRight_g, multiplier))
+    {
+//         std::cout << "Error P DR:" << downRight.transpose() << "  outside of grid " << std::endl;
+        return false;
+    }
+ 
+    std::cout << "upLeftOut    X " << upLeft_g.x << " Y " << upLeft_g.y << std::endl;
+    std::cout << "upRightOut   X " << upRight_g.x << " Y " << upRight_g.y << std::endl;
+    std::cout << "downLeftOut  X " << downLeft_g.x << " Y " << downLeft_g.y << std::endl;
+    std::cout << "downRightOut X " << downRight_g.x << " Y " << downRight_g.y << std::endl;
+ 
+    return true;
+}
+
+
+bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, double innerWidth_w, double innerHeight_w, boost::function< void (size_t, size_t)> innerCallback, 
+                                           double outerWidth_w, double outerHeight_w, boost::function< void (size_t, size_t)> outerCallback) const
+{
+    int multiplier = 10;
+    envire::GridBase::Position upLeft_g;
+    envire::GridBase::Position upRight_g;
+    envire::GridBase::Position downLeft_g;
+    envire::GridBase::Position downRight_g;
+    
+    if(!getRectPoints(rectCenter, innerWidth_w, innerHeight_w, upLeft_g, upRight_g, downLeft_g, downRight_g, multiplier))
+        return false;
+
+    envire::GridBase::Position upLeftOut;
+    envire::GridBase::Position upRightOut;
+    envire::GridBase::Position downLeftOut;
+    envire::GridBase::Position downRightOut;
+    
+    if(!getRectPoints(rectCenter, outerWidth_w, outerHeight_w, upLeftOut, upRightOut, downLeftOut, downRightOut, multiplier))
+        return false;
+
+//     std::cout << "upLeftOut    X " << upLeftOut.x << " Y " << upLeftOut.y << std::endl;
+//     std::cout << "upRightOut   X " << upRightOut.x << " Y " << upRightOut.y << std::endl;
+//     std::cout << "downLeftOut  X " << downLeftOut.x << " Y " << downLeftOut.y << std::endl;
+//     std::cout << "downRightOut X " << downRightOut.x << " Y " << downRightOut.y << std::endl;
+    
+    std::vector<envire::GridBase::Position> leftIn;
+    std::vector<envire::GridBase::Position> rightIn;
+    std::vector<envire::GridBase::Position> leftOut;
+    std::vector<envire::GridBase::Position> rightOut;
+
+    if(upLeft_g.y > upRight_g.y)
+    {
+        //points of left side
+        lineBresenham(upLeft_g, downLeft_g, leftIn);
+        lineBresenham(downLeft_g, downRight_g, leftIn);
+
+        lineBresenham(upLeftOut, downLeftOut, leftOut);
+        lineBresenham(downLeftOut, downRightOut, leftOut);
+
+        //points of right side
+        lineBresenham(upLeft_g, upRight_g, rightIn);
+        lineBresenham(upRight_g, downRight_g, rightIn);
+
+        lineBresenham(upLeftOut, upRightOut, rightOut);
+        lineBresenham(upRightOut, downRightOut, rightOut);
+    }
+    else
+    {
+        //points of left side
+        lineBresenham(upRight_g, upLeft_g, leftIn);
+        lineBresenham(upLeft_g, downLeft_g, leftIn);
+
+        lineBresenham(upRightOut, upLeftOut, leftOut);
+        lineBresenham(upLeftOut, downLeftOut, leftOut);
+
+        //points of right side
+        lineBresenham(upRight_g, downRight_g, rightIn);
+        lineBresenham(downRight_g, downLeft_g, rightIn);
+
+        lineBresenham(upRightOut, downRightOut, rightOut);
+        lineBresenham(downRightOut, downLeftOut, rightOut);
+    }
+
+//     std::cout << "Left " << std::endl;
+//     for(std::vector<envire::GridBase::Position>::const_iterator it = leftOut.begin(); it != leftOut.end(); it++ )
+//     {
+//         std::cout << "X " << it->x << " Y " << it->y << std::endl;
+//     }
+//     std::cout << "Right " << std::endl;
+//     for(std::vector<envire::GridBase::Position>::const_iterator it = rightOut.begin(); it != rightOut.end(); it++ )
+//     {
+//         std::cout << "X " << it->x << " Y " << it->y << std::endl;
+//     }
+    
+    std::vector<envire::GridBase::Position>::const_iterator leftInIt = leftIn.begin();
+    std::vector<envire::GridBase::Position>::const_iterator rightInIt = rightIn.begin();
+    std::vector<envire::GridBase::Position>::const_iterator leftOutIt = leftOut.begin();
+    std::vector<envire::GridBase::Position>::const_iterator rightOutIt = rightOut.begin();
+
+    
+    size_t inY;
+    size_t outY;
+    size_t minX, maxX;
+    size_t minXOut, maxXOut;
+    while((leftOutIt != leftOut.end()) && (rightOutIt != rightOut.end()))
+    {
+        if(leftInIt != leftIn.end())
+            inY = leftInIt->y / multiplier;
+        
+        outY = leftOutIt->y / multiplier;
+
+        maxX = 0;
+        minX = std::numeric_limits<size_t>::max();
+        maxXOut = 0;
+        minXOut = std::numeric_limits<size_t>::max();
+        
+        while((leftInIt != leftIn.end()) && ((leftInIt->y / multiplier) == outY))
+        {
+            if(minX > leftInIt->x)
+                minX = leftInIt->x;
+            if(maxX < leftInIt->x)
+                maxX = leftInIt->x;
+            
+            leftInIt++;
+        }
+
+        while((rightInIt != rightIn.end()) && ((rightInIt->y / multiplier) == outY))
+        {
+            if(minX > rightInIt->x)
+                minX = rightInIt->x;
+            if(maxX < rightInIt->x)
+                maxX = rightInIt->x;
+            
+            rightInIt++;
+        }
+
+        while((leftOutIt != leftOut.end()) && ((leftOutIt->y / multiplier) == outY))
+        {
+            if(minXOut > leftOutIt->x)
+                minXOut = leftOutIt->x;
+            if(maxXOut < leftOutIt->x)
+                maxXOut = leftOutIt->x;
+            
+            leftOutIt++;
+        }
+
+        while((rightOutIt != rightOut.end()) && ((rightOutIt->y / multiplier) == outY))
+        {
+            if(minXOut > rightOutIt->x)
+                minXOut = rightOutIt->x;
+            if(maxXOut < rightOutIt->x)
+                maxXOut = rightOutIt->x;
+            
+            rightOutIt++;
+        }
+        
+        minX /= multiplier;
+        maxX /= multiplier;
+        minXOut /= multiplier;
+        maxXOut /= multiplier;
+        
+        if(inY == outY)
+        {
+//             std::cout << "minX " << minX << " maxX " << maxX << " minXOut " << minXOut << " maxXOut " << maxXOut << std::endl;  
+            for(size_t x = minXOut; x < minX; x++)
+            {
+                outerCallback(x, outY);
+            }
+            for(size_t x = minX; x < maxX; x++)
+            {
+                innerCallback(x, outY);
+            }
+            for(size_t x = maxX; x < maxXOut; x++)
+            {
+                outerCallback(x, outY);
+            }
+
+        }
+        else
+        {
+//             std::cout << "NE minX " << minX << " maxX " << maxX << " minXOut " << minXOut << " maxXOut " << maxXOut << std::endl;  
+            for(size_t x = minXOut; x < maxXOut; x++)
+            {
+                outerCallback(x, outY);
+            }        
+        }
+        
+    }
+    return true;
+
+}
+
+bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, double height, boost::function<void (size_t, size_t)> callbackGrid) const
+{
+    int multiplier = 10;
+    envire::GridBase::Position ulGrid;
+    envire::GridBase::Position urGrid;
+    envire::GridBase::Position dlGrid;
+    envire::GridBase::Position drGrid;
+    
+    if(!getRectPoints(pose, width, height, ulGrid, urGrid, dlGrid, drGrid, multiplier))
+        return false;
+
+    std::vector<envire::GridBase::Position> left;
+    std::vector<envire::GridBase::Position> right;
+
+    if(ulGrid.y > urGrid.y)
+    {
+        //points of left side
+        lineBresenham(ulGrid, dlGrid, left);
+        lineBresenham(dlGrid, drGrid, left);
+
+        //points of right side
+        lineBresenham(ulGrid, urGrid, right);
+        lineBresenham(urGrid, drGrid, right);
+    }
+    else
+    {
+        //points of left side
+        lineBresenham(urGrid, ulGrid, left);
+        lineBresenham(ulGrid, dlGrid, left);
+
+        //points of right side
+        lineBresenham(urGrid, drGrid, right);
+        lineBresenham(drGrid, dlGrid, right);
+    }
+    
+    std::vector<envire::GridBase::Position>::const_iterator leftIt = left.begin();
+    std::vector<envire::GridBase::Position>::const_iterator rightIt = right.begin();
+
+    size_t curY;
+    size_t minX, maxX;
+    while((leftIt != left.end()) && (rightIt != right.end()))
+    {
+        curY = leftIt->y / multiplier;
+
+        maxX = 0;
+        minX = std::numeric_limits<size_t>::max();
+        
+        assert(rightIt->y == leftIt->y);
+        
+        while((leftIt != left.end()) && ((leftIt->y / multiplier) == curY))
+        {
+            if(minX > leftIt->x)
+                minX = leftIt->x;
+            if(maxX < leftIt->x)
+                maxX = leftIt->x;
+            
+            leftIt++;
+        }
+
+        while((rightIt != right.end()) && ((rightIt->y / multiplier) == curY))
+        {
+            if(minX > rightIt->x)
+                minX = rightIt->x;
+            if(maxX < rightIt->x)
+                maxX = rightIt->x;
+            
+            rightIt++;
+        }
+        
+        minX /= multiplier;
+        maxX /= multiplier;
+
+        for(size_t x = minX; x <= maxX; x++)
+        {
+            callbackGrid(x, curY);
+        }        
+    }
+    return true;
+}
+
+
 bool GridBase::toGrid( Eigen::Vector3d const& point,
         size_t& xi, size_t& yi, FrameNode const* frame) const
 {
@@ -82,6 +394,27 @@ bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
     else {
 	return false;
     }
+}
+
+bool envire::GridBase::toGridTimesX(double x, double y, size_t& xi, size_t& yi, int multiplier) const
+{
+    size_t am = floor(((x-offsetx)*multiplier)/scalex);
+    size_t an = floor(((y-offsety)*multiplier)/scaley);
+
+    if((am < (cellSizeX * multiplier)) && (an < (cellSizeY * multiplier)))
+    {
+        xi = am;
+        yi = an;
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+bool envire::GridBase::toGridTimesX(const Point2D& pWorld, GridBase::Position& pGrid, int multiplier) const
+{
+    return toGridTimesX(pWorld.x(), pWorld.y(), pGrid.x, pGrid.y, multiplier);
 }
 
 Eigen::Vector3d GridBase::fromGrid(size_t xi, size_t yi, FrameNode const* frame) const
@@ -129,8 +462,19 @@ bool GridBase::contains( const Position& pos ) const
         
 GridBase::Extents GridBase::getExtents() const
 {
+    // take the cell extents and transform them to local coordinates
+    CellExtents cellExtents = getCellExtents();
+    Eigen::Vector2d scale( scalex, scaley );
     Eigen::Vector2d min( offsetx, offsety );
-    return Extents( min, min + Eigen::Vector2d( cellSizeX * scalex, cellSizeY * scaley ) ); 
+    Extents scaled( 
+	    min + (cellExtents.min().array().cast<double>() * scale.array()).matrix(), 
+	    min + (cellExtents.max().array().cast<double>() * scale.array()).matrix() );
+    return scaled;
+}
+
+GridBase::CellExtents GridBase::getCellExtents() const
+{
+    return CellExtents( Eigen::Vector2i::Zero(), Eigen::Vector2i( cellSizeX, cellSizeY ) );
 }
 
 template<typename T>
@@ -141,7 +485,7 @@ static GridBase::Ptr readGridFromGdalHelper(std::string const& path, std::string
     return result;
 }
 
-std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
+std::pair<GridBase::Ptr, envire::Transform> GridBase::readGridFromGdal(std::string const& path, std::string const& band_name, int band)
 {
     GDALDataset  *poDataset;
     GDALAllRegister();
@@ -198,8 +542,8 @@ std::pair<GridBase::Ptr, envire::FrameNode::TransformType> GridBase::readGridFro
     if (adfGeoTransform[5] < 0)
         offsety -= map->getCellSizeY() * map->getScaleY();
 
-    FrameNode::TransformType transform =
-        FrameNode::TransformType(Eigen::Translation<double, 3>(offsetx, offsety, 0));
+    Transform transform =
+        Transform(Eigen::Translation<double, 3>(offsetx, offsety, 0));
     return std::make_pair(map, transform);
 }
 
@@ -260,7 +604,7 @@ bool GridBase::isAlignedWith(GridBase const& grid) const
         getOffsetY() != grid.getOffsetY())
         return false;
 
-    FrameNode::TransformType tf = getEnvironment()->relativeTransform(this, &grid);
+    Transform tf = getEnvironment()->relativeTransform(this, &grid);
     base::Vector3d p(grid.getCellSizeX(), grid.getCellSizeY(), 0);
     p = tf * p;
     if (rint(p.x()) != grid.getCellSizeX() ||

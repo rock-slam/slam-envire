@@ -5,7 +5,7 @@ if( USE_CGAL AND CGAL_FOUND )
 	operators/Projection.cpp)
 
     if( TAUCS_FOUND )
-	list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
+	    list(APPEND ADDITIONAL_SOURCES operators/SurfaceReconstruction.cpp)
     endif( TAUCS_FOUND )
 endif()
 
@@ -25,7 +25,8 @@ rock_library(envire
     core/EventHandler.cpp
     maps/TriMesh.cpp
     maps/GridBase.cpp
-    maps/Grids.cpp
+    maps/Grids.cpp 
+    maps/TraversabilityGrid.cpp
     maps/Pointcloud.cpp
     maps/Featurecloud.cpp
     maps/LaserScan.cpp
@@ -42,6 +43,8 @@ rock_library(envire
     operators/GridFloatToMLS.cpp
     operators/MLSToGrid.cpp
     operators/CutPointcloud.cpp
+    operators/GridIllumination.cpp
+    tools/BresenhamLine.cpp
     tools/PlyFile.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
@@ -52,13 +55,20 @@ rock_library(envire
     DEPS_PLAIN Boost_FILESYSTEM Boost_THREAD)
 
 install(FILES core/EventHandler.hpp
-    core/Features.hpp
+    core/Environment.hpp
+    core/EnvironmentItem.hpp
     core/Event.hpp
+    core/EventHandler.hpp
     core/EventSource.hpp
-    core/Serialization.hpp
     core/EventTypes.hpp
-    core/Transform.hpp
+    core/Features.hpp
+    core/FrameNode.hpp
     core/Holder.hpp
+    core/Layer.hpp
+    core/Operator.hpp
+    core/Serialization.hpp
+    core/SerializationFactory.hpp
+    core/Transform.hpp
     DESTINATION include/envire/core)
 
 install(FILES maps/GridBase.hpp
@@ -70,6 +80,7 @@ install(FILES maps/GridBase.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
     maps/Featurecloud.hpp
+    maps/TraversabilityGrid.hpp
     maps/TriMesh.hpp
     maps/MapSegment.hpp
     DESTINATION include/envire/maps)
@@ -88,6 +99,7 @@ install(FILES operators/MergeMLS.hpp
     operators/SurfaceReconstruction.hpp
     operators/ClassGridProjection.hpp
     operators/CutPointcloud.hpp
+    operators/GridIllumination.hpp
     DESTINATION include/envire/operators)
 
 install(FILES tools/GraphViz.hpp
@@ -99,12 +111,15 @@ install(FILES tools/GraphViz.hpp
     DESTINATION include/envire/tools)
 
 if (USE_CGAL AND CGAL_FOUND)
+    message(WARNING "Linking boost system libraries to envire, this may lead to conflicting boost versions!")
     target_link_libraries(envire 
-	${CGAL_LIBRARIES}
-	${Boost_FILESYSTEM_LIBRARY}
-	${Boost_THREAD_LIBRARY})
+	    ${CGAL_LIBRARIES}
+	    ${Boost_FILESYSTEM_LIBRARY}
+	    ${Boost_THREAD_LIBRARY}
+        ${Boost_SYSTEM_LIBRARY}
+        ${Boost_THREAD_LIBRARY}
+    )
 else() 
     target_link_libraries(envire 
-	${Boost_FILESYSTEM_LIBRARY}
-	${Boost_THREAD_LIBRARY})
+	    ${Boost_LIBRARIES})
 endif()

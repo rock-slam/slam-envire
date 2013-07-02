@@ -4,7 +4,10 @@
 #include "GridVisualizationBase.hpp"
 #include <vector>
 #include <osg/Node>
+// Workaround MOC not being able to expand macros properly
+#ifndef Q_MOC_RUN
 #include <envire/maps/Grids.hpp>
+#endif
 
 namespace envire 
 {

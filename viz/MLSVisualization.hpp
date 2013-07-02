@@ -14,6 +14,7 @@ class MLSVisualization : public EnvironmentItemVisualizer
     Q_PROPERTY(bool show_negative READ isNegativeShown WRITE setShowNegative)
     Q_PROPERTY(bool estimate_normals READ areNormalsEstimated WRITE setEstimateNormals)
     Q_PROPERTY(bool cycle_height_color READ isHeightColorCycled WRITE setCycleHeightColor)
+    Q_PROPERTY(bool show_extents READ areExtentsShown WRITE setShowExtents)
     Q_PROPERTY(double cycle_color_interval READ getCycleColorInterval WRITE setCycleColorInterval)
     Q_PROPERTY(QColor horizontal_cell_color READ getHorizontalCellColor WRITE setHorizontalCellColor)
     Q_PROPERTY(QColor vertical_cell_color READ getVerticalCellColor WRITE setVerticalCellColor)
@@ -49,6 +50,8 @@ class MLSVisualization : public EnvironmentItemVisualizer
         void setNegativeCellColor(QColor color);
         QColor getUncertaintyColor() const;
         void setUncertaintyColor(QColor color);
+	void setShowExtents( bool value );
+	bool areExtentsShown() const;
 
     protected:
 	osg::Vec4 horizontalCellColor;
@@ -56,13 +59,12 @@ class MLSVisualization : public EnvironmentItemVisualizer
 	osg::Vec4 negativeCellColor;
 	osg::Vec4 uncertaintyColor;
 
-	mutable osg::ref_ptr<osg::Geode> extents;
-
 	bool showUncertainty;
 	bool showNegative;
 	bool estimateNormals;
 	bool cycleHeightColor;
         double cycleColorInterval;
+	bool showExtents;
 };
 }
 

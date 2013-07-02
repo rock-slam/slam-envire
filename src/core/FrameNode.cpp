@@ -24,7 +24,7 @@ FrameNode::FrameNode(const TransformWithUncertainty& t)
 {
 }
 
-FrameNode::FrameNode(const TransformType& t)
+FrameNode::FrameNode(const Transform& t)
     : EnvironmentItem(Environment::ITEM_NOT_ATTACHED)
     , frame( t )
 {
@@ -79,12 +79,12 @@ FrameNode* FrameNode::getParent()
     return const_cast<FrameNode*>(static_cast<const FrameNode&>(*this).getParent());
 }
 
-FrameNode::TransformType const& FrameNode::getTransform() const 
+Transform const& FrameNode::getTransform() const 
 {
     return frame.getTransform();
 }
 
-void FrameNode::setTransform(TransformType const& transform)
+void FrameNode::setTransform(Transform const& transform)
 {
     frame = TransformWithUncertainty( transform );
 
@@ -107,7 +107,7 @@ void FrameNode::setTransform(TransformWithUncertainty const& transform)
     }
 }
 
-FrameNode::TransformType FrameNode::relativeTransform( const FrameNode* to ) const
+Transform FrameNode::relativeTransform( const FrameNode* to ) const
 {
     return env->relativeTransform( this, to );
 }

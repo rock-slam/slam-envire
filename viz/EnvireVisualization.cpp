@@ -46,7 +46,7 @@ EnvireVisualization::EnvireVisualization()
     {
         (*it)->setParent(this);
 	eventListener->addVisualizer( (*it).get() );
-        QObject::connect((*it).get(), SIGNAL(propertyChanged(QString)), eventListener.get(), SLOT(propertyChangedInVizualization()));
+        QObject::connect((*it).get(), SIGNAL(propertyChanged(QString)), eventListener.get(), SLOT(propertyChangedInVizualization(QString)));
     }
 }
 

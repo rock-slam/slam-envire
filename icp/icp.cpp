@@ -3,6 +3,7 @@
 #include <Eigen/Eigenvalues> 
 #include <math.h> 
 #include <boost/concept_check.hpp>
+#include <envire/core/FrameNode.hpp>
 
 using namespace envire::icp;
 using namespace Eigen;

@@ -2,6 +2,7 @@
 #define __SCANMESHING_HPP__
 
 #include <envire/Core.hpp>
+#include <envire/core/Operator.hpp>
 #include <envire/maps/LaserScan.hpp>
 #include <envire/maps/TriMesh.hpp>
 

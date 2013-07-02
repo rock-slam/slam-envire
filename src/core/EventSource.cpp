@@ -1,6 +1,7 @@
 #include "EventSource.hpp"
 #include "EventHandler.hpp"
 #include "Event.hpp"
+#include "EnvironmentItem.hpp"
 
 #include <boost/lambda/lambda.hpp>
 

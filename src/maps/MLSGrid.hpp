@@ -9,6 +9,8 @@
 #include <boost/pool/pool.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <base/geometry/spline.h>
+
 #include <algorithm>
 #include <set>
 
@@ -280,6 +282,12 @@ namespace envire
 	typedef iterator_base<const SurfacePatchItem> const_iterator;
 
     public:
+        /**
+         * Creates the grid with the specified parameters.\n
+         * width,height: Number of horizontal and vertical patches.\n
+         * scalex, scaley: Size of each patch.\n
+         * offsetx, offsety: Describing the world_to_mls transformation.
+         */
         MLSGrid();
 	MLSGrid(const MLSGrid& other);
 	MLSGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0);
@@ -301,6 +309,20 @@ namespace envire
         /** Clears the whole map */
 	void clear();
 
+	/**
+	 * This function expects a spline in world coordinates that
+	 * get's projected on top of the surface of the mls grid.
+	 * */
+	base::geometry::Spline3 projectSplineOnSurface(double startHeight, const base::geometry::Spline3 &spline, const double zOffset = 0.0);
+
+	/**
+	 * This function expects an array of local 
+	 * grid positions and returns an array
+	 * of local grid coordinates with Z positions 
+	 * on top of surface of the mls grid. 
+	 * */
+	std::vector<Eigen::Vector3d> projectPointsOnSurface(double startHeight, const std::vector<Position> &gridPoints, const double zOffset = 0.0);
+	
         /** Returns the iterator on the first registered patch at \c xi and \c
          * yi
          */
@@ -405,7 +427,7 @@ namespace envire
 	/** return the extents of the subset of the grid, which 
 	 * contains cells.
 	 */
-	Extents getCellExtents() const { return extents; }
+	CellExtents getCellExtents() const { return extents; }
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
@@ -419,7 +441,7 @@ namespace envire
 
 	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;
-	Extents extents;
+	CellExtents extents;
 	boost::pool<> mem_pool;
     };
 

@@ -83,8 +83,8 @@ int main(int argc, char* argv[])
             next_arg = argv[7];
             if (next_arg != "-frame")
             {
-                offset_x = boost::lexical_cast<int>(argv[7]);
-                offset_y = boost::lexical_cast<int>(argv[8]);
+                offset_x = boost::lexical_cast<double>(argv[7]);
+                offset_y = boost::lexical_cast<double>(argv[8]);
                 if (argc > 9) next_arg = argv[9];
             }
 

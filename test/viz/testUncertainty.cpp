@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test2 )
     TransformWithUncertainty t;
     for(int i=0;i<50000 && app.isRunning();i++)
     {
-	double r = i/5000.0;
+	//double r = i/5000.0;
 
 	Eigen::Matrix<double,6,6> lt1; 
 	lt1 <<

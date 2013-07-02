@@ -1,8 +1,10 @@
 #ifndef __ENVIRE_GRIDBASE_HPP__
 #define __ENVIRE_GRIDBASE_HPP__
 
-#include <envire/Core.hpp>
 #include <envire/core/Serialization.hpp>
+#include <envire/Core.hpp>
+#include <base/pose.h>
+#include <boost/function.hpp>
 
 namespace envire 
 {
@@ -33,7 +35,8 @@ namespace envire
 	    size_t y;
 
 	    Position() {}
-	    Position( size_t x, size_t y ) : x(x), y(y) {}
+            Position( size_t x, size_t y ) : x(x), y(y) {}
+            explicit Position( const Eigen::Vector2i &pos ) : x(pos.x()), y(pos.y()) {}
 	    bool operator<( const Position& other ) const
 	    {
 		if( x < other.x )
@@ -54,8 +57,25 @@ namespace envire
 	    }
 	};
 	typedef Eigen::Vector2d Point2D;
+	typedef Eigen::AlignedBox<int, 2> CellExtents;
 
     protected:
+        
+        /**
+         * To Grid function that returns a grid coordinate that is multiplier 
+         * higher resolved as the grid.
+         * 
+         * Computes grid coordinates from world coordinate.
+         * */
+        bool toGridTimesX(const Point2D &pWorld, Position& pGrid, int multiplier) const;
+        /**
+         * To Grid function that returns a grid coordinate that is multiplier 
+         * higher resolved as the grid.
+         * 
+         * Computes grid coordinates from world coordinate.
+         * */
+        bool toGridTimesX(double x, double y, size_t& xi, size_t& yi, int multiplier) const;
+        
 	size_t cellSizeX, cellSizeY;
 	double scalex, scaley;	
 	double offsetx, offsety;
@@ -64,6 +84,28 @@ namespace envire
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
         GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
+	/** @brief Constructor of the abstract GridBase class
+	 * 
+	 * Defines the extends and positioning of the grid. The grid is assumed
+	 * to be on the x-y plane of the reference frame. The number of grid
+	 * cells is given by the cellSizeX and cellSizeY params. Each dimension
+	 * also has an scaling and offset parameter, such that the origin of the
+	 * grid can be moved around and the grid scaled.
+	 *
+	 * The relation between the grid cell index xi and the value for the
+	 * dimension x is:
+	 * @verbatim
+	 * x = xi * scale_x + offset_x
+	 * @endverbatim
+	 * This is of course the same for the y axis as well.
+	 *  
+	 * @param cellSizeX - number of cells in x direction
+	 * @param cellSizeY - number of cells in y direction
+	 * @param scalex - scaling of the x axis (size in x per cell)
+	 * @param scaley - scaling of the y axis (size in y per cell)
+	 * @param offsetx - x-position of the [0,0] cell
+	 * @param offsety - y-position of the [0,0] cell
+	 */
 	GridBase(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0,
@@ -71,6 +113,32 @@ namespace envire
 	~GridBase();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
+
+        /**
+         * Helper function that computes the grid coordinates of 
+         * a given oriented rectangle.
+         * 
+         * @param multiplier This multiplier is applied to the pose before calculation the grid coordinates
+         *                      This allows to calculate subcell accurate grid position.
+         * 
+         * Returns false if the rectangle is not inside the grid
+         * */
+        bool getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier = 1) const;
+
+        /**
+         * This function calls the given callback for each cell, which 
+         * will be covered by the given rectangle at the given pose.
+         * 
+         * Node that this method might produce some aliasing artifacts
+         * at the border of the rectangle.  
+         * 
+         * returns true if the given rectangle is inside the grid.
+         *         false otherwise.
+         * */
+        bool forEachInRectangle(base::Pose2D rectCenterWorld, double widthWorld, double heightWorld, boost::function<void (size_t, size_t)> callbackGrid) const;
+
+        bool forEachInRectangles(const base::Pose2D &rectCenter_w, double innerWidth_w, double innerHeight_w, boost::function<void (size_t, size_t)> innerCallback, 
+                                                        double outerWidth_w, double outerHeight_w, boost::function<void (size_t, size_t)> outerCallback) const;
 
         /** Converts coordinates from the frame specified by \c frame to the
          * map-local grid coordinates
@@ -128,6 +196,14 @@ namespace envire
          */
         size_t getCellSizeY() const { return cellSizeY; }
 
+        /** Returns the world size of the grid along the X direction
+         */
+        size_t getSizeX() const { return cellSizeX * scalex; }
+
+        /** Returns the world size of the grid along the Y direction
+         */
+        size_t getSizeY() const { return cellSizeY * scaley; }
+
         /** Returns the world size of a cell along the X direction
          */
 	double getScaleX() const { return scalex; };
@@ -147,11 +223,22 @@ namespace envire
         /** Returns the position of the center of the grid, in world
          * coordinates, w.r.t. the position of the (0, 0) cell
          */
-	Point2D getCenterPoint() const { return Point2D( cellSizeX * scalex, cellSizeY * scaley ) * 0.5; };
+	Point2D getCenterPoint() const { 
+	    return Point2D( cellSizeX * scalex, cellSizeY * scaley ) * 0.5
+		+ Point2D( offsetx, offsety );
+	};
 
-        /** Returns the size of the grid, in world units
+        /** Returns the size of the grid, in world units.
+	 * uses getCellExtents() as the basis
          */
 	Extents getExtents() const;
+
+	/** return the extents of the subset of the grid, which 
+	 * for which the cells contain data. The base implementation is
+	 * to return the cellsSize values. Override since this is used to
+	 * calculate the return value for getExtents. 
+	 */
+	virtual CellExtents getCellExtents() const; 
 
         /** Read a band from a GDAL file and returns a Grid map containing the
          * loaded data
@@ -160,7 +247,7 @@ namespace envire
          * @arg band_name the band name in the created Grid instance
          * @arg band the band index in the GDAL file
          */
-        static std::pair<Ptr, FrameNode::TransformType> readGridFromGdal(std::string const& path, std::string const& band_name, int band = 1);
+        static std::pair<GridBase::Ptr, Transform> readGridFromGdal(std::string const& path, std::string const& band_name, int band = 1);
 
         /** Copies the specified band in this grid map
          *

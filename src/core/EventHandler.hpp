@@ -1,15 +1,21 @@
 #ifndef __ENVIRE_EVENTHANDLER__
 #define __ENVIRE_EVENTHANDLER__
 
-#include <envire/Core.hpp>
-#include <envire/core/EventSource.hpp>
+#include <list>
+
 #include <envire/core/Event.hpp>
+#include <envire/core/EventSource.hpp>
 #include <boost/thread/mutex.hpp>
 
 namespace envire
 {
 
 class EventHandler;
+class EnvironmentItem;
+class FrameNode;
+class Layer;
+class CartesianMap;
+class Environment;
 
 class EventFilter
 {

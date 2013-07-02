@@ -24,20 +24,6 @@ static envire::SerializationPlugin< Grid<uint16_t> > Grid_uint16_plugin("Grid_t"
 static envire::SerializationPlugin< Grid<int32_t> >  Grid_int32_plugin("Grid_i");
 static envire::SerializationPlugin< Grid<uint32_t> > Grid_uint32_plugin("Grid_j");
 
-ENVIRONMENT_ITEM_DEF( TraversabilityGrid )
-const std::string TraversabilityGrid::TRAVERSABILITY = "traversability";
-static const std::vector<std::string> &initTraversabilityBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(TraversabilityGrid::TRAVERSABILITY);
-  }
-  return bands;
-}
-const std::vector<std::string> &TraversabilityGrid::bands = initTraversabilityBands();
-
-
 ENVIRONMENT_ITEM_DEF( ConfidenceGrid )
 const std::string ConfidenceGrid::CONFIDENCE = "confidence";
 static const std::vector<std::string> &initConfidenceBands()
@@ -84,6 +70,8 @@ ENVIRONMENT_ITEM_DEF( ElevationGrid )
 const std::string ElevationGrid::ELEVATION = "elevation_max"; // this will reference the max band
 const std::string ElevationGrid::ELEVATION_MIN = "elevation_min";
 const std::string ElevationGrid::ELEVATION_MAX = "elevation_max";
+const std::string ElevationGrid::ILLUMINATION = "illumination";
+const std::string ElevationGrid::VISIBILITY = "visibility";
 static const std::vector<std::string> &initElevationBands()
 {
   static std::vector<std::string> bands;
@@ -91,6 +79,8 @@ static const std::vector<std::string> &initElevationBands()
   {
     bands.push_back(ElevationGrid::ELEVATION_MIN);
     bands.push_back(ElevationGrid::ELEVATION_MAX);
+    bands.push_back(ElevationGrid::ILLUMINATION);
+    bands.push_back(ElevationGrid::VISIBILITY);
   }
   return bands;
 }

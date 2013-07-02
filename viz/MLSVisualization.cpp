@@ -1,5 +1,5 @@
 #include "MLSVisualization.hpp"
-#include "ColorConversion.hpp"
+#include <vizkit/ColorConversionHelper.hpp>
 
 #include <osg/Group>
 #include <osg/Geode>
@@ -18,11 +18,12 @@ MLSVisualization::MLSVisualization()
     verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
     negativeCellColor(osg::Vec4(0.1,0.5,0.9,0.2)), 
     uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
-    cycleColorInterval(1.0),
     showUncertainty(false),
     showNegative(false),
     estimateNormals(false),
-    cycleHeightColor(true)
+    cycleHeightColor(true),
+    cycleColorInterval(1.0),
+    showExtents(true)
 {
 }
 
@@ -45,7 +46,9 @@ class ExtentsRectangle : public osg::Geode
     osg::ref_ptr<osg::Vec3Array> vertices;
 
 public:
-    ExtentsRectangle( const envire::GridBase::Extents& extents ) :
+    ExtentsRectangle( 
+	    const envire::GridBase::Extents& extents, 
+	    const osg::Vec4& col = osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) ) :
 	geom( new osg::Geometry() ),
 	color( new osg::Vec4Array() ), 
 	vertices( new osg::Vec3Array() )
@@ -57,10 +60,11 @@ public:
 	vertices->push_back( osg::Vec3( max.x(), min.y(), 0 ));
 
 	geom->setVertexArray(vertices);
-	osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
+	osg::ref_ptr<osg::DrawArrays> drawArrays = 
+	    new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
 	geom->addPrimitiveSet(drawArrays.get());
 
-	color->push_back( osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) );
+	color->push_back( col );
 	geom->setColorArray(color.get());
 	geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
@@ -215,13 +219,18 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     envire::MultiLevelSurfaceGrid *mls = dynamic_cast<envire::MultiLevelSurfaceGrid *>(item);
     assert(mls);
 
-    //this leads to CullVisitor error
-    //because it is not implemented for mls and the exeption is 
-    //catched 
-    // add extents
-    //group->removeChild( extents );
-   // extents = new ExtentsRectangle( mls->getExtents() );
-   // group->addChild( extents );
+    // draw the extents of the mls
+    if( showExtents )
+    {
+	// get the color as a function of the environmentitem pointer
+	float scale = ((long)item%1000)/1000.0;
+	osg::Vec4 col(0,0,0,1);
+	vizkit::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
+
+	group->removeChild( 1 );
+	group->addChild( 
+		new ExtentsRectangle( mls->getExtents(), col ) );
+    }
     
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
@@ -259,7 +268,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		    else if( cycleHeightColor )
                     {
                        double hue = (p.mean - std::floor(p.mean)) / cycleColorInterval;
-			ColorConversion::hslToRgb( hue - std::floor(hue), 1.0, 0.6 , col.x(), col.y(), col.z());
+			vizkit::hslToRgb( hue - std::floor(hue), 1.0, 0.6 , col.x(), col.y(), col.z());
                        col.w() = 1.0;
                     }
 		    else
@@ -439,4 +448,14 @@ void MLSVisualization::setUncertaintyColor(QColor color)
     uncertaintyColor.z() = color.blueF();
     uncertaintyColor.w() = color.alphaF();
     emit propertyChanged("uncertainty_color");
+}
+
+void MLSVisualization::setShowExtents( bool value ) 
+{
+    showExtents = value;
+}
+
+bool MLSVisualization::areExtentsShown() const
+{
+    return showExtents;
 }

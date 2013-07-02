@@ -48,6 +48,8 @@ class EnvireNode : public osg::Group
     boost::try_mutex mu;
     Buffer node, children;
 
+    bool enabled;
+
 public:
     EnvireNode( envire::EnvironmentItem *item, EnvironmentItemVisualizer *viz );
     void addChildNode( osg::Group* child );
@@ -56,6 +58,7 @@ public:
     void update();
     bool isDirty();
     void apply();
+    void setEnable( bool enable );
     osg::Group *getFront();
     osg::Group *getBack();
     
@@ -99,7 +102,7 @@ class EnvireEventListener : public QObject, public envire::EventListener
 	void apply();
         
     protected slots:
-        void propertyChangedInVizualization();
+        void propertyChangedInVizualization(QString);
 
     protected:
 	boost::mutex mu;

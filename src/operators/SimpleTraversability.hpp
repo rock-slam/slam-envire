@@ -3,6 +3,8 @@
 
 #include <envire/Core.hpp>
 #include <envire/maps/Grid.hpp>
+#include <envire/maps/Grids.hpp>
+#include <envire/maps/TraversabilityGrid.hpp>
 
 namespace envire {
     /** @brief Configuration parameters for the SimpleTraversability operator
@@ -103,7 +105,7 @@ namespace envire {
         SimpleTraversabilityConfig conf;
 
     public:
-        typedef envire::Grid<uint8_t> OutputLayer;
+        typedef envire::TraversabilityGrid OutputLayer;
 
         SimpleTraversability();
         SimpleTraversability(SimpleTraversabilityConfig const& conf);

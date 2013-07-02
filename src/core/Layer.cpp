@@ -1,5 +1,6 @@
 #include "Core.hpp"
 #include "Serialization.hpp"
+#include "Operator.hpp"
 
 #include <stdexcept>
 #include <fstream>

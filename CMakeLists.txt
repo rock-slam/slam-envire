@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-include($ENV{ROCK_CMAKE_MACROS}/Rock.cmake)
+find_package(Rock)
 
 
 rock_init(envire 1.0)
@@ -7,18 +7,16 @@ rock_init(envire 1.0)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
-
-# To make sure envire links to the default system libraries 
-# such as CGAL does, setting BOOST_ROOT here 
-set(BOOST_ROOT "/usr/")
-find_package(Boost REQUIRED COMPONENTS filesystem thread system regex)
+find_package(Boost REQUIRED COMPONENTS filesystem thread system regex program_options)
+include_directories(${Boost_INCLUDE_DIRS})
 
 option( USE_CGAL "Switch on CGAL related functionality" OFF )
-if ( USE_CGAL )
-    include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
-    if( CGAL_FOUND )
-	add_definitions( -DENVIRE_USE_CGAL )
+include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
+if (USE_CGAL)
+    if (NOT CGAL_FOUND)
+        message (FATAL_ERROR "CGAL, BLAS and/or LAPACK could not be found, CGAL will not be used!")
     endif()
+    add_definitions( -DENVIRE_USE_CGAL )    
 endif()
 
 rock_add_source_dir(icp icp)

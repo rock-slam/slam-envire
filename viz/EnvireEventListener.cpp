@@ -4,7 +4,7 @@ namespace envire
 {
 
 EnvireNode::EnvireNode( EnvironmentItem *item, EnvironmentItemVisualizer *viz )
-    : item( item ), viz( viz )
+    : item( item ), viz( viz ), enabled( true )
 {
     node.front = viz->getNodeForItem(item);
     node.front->setDataVariance(osg::Object::DYNAMIC);        
@@ -27,6 +27,12 @@ osg::Group* EnvireNode::getBack()
 osg::Group* EnvireNode::getFront()
 {
     return node.front;
+}
+
+void EnvireNode::setEnable( bool enable )
+{
+    boost::mutex::scoped_lock lock(mu);
+    enabled = enable;
 }
 
 void EnvireNode::addChildNode( osg::Group* child )
@@ -84,6 +90,10 @@ void EnvireNode::apply()
 
 	    node.dirty = false;
 	}
+
+	// detach front node, if disabled
+	if( !enabled )
+	    removeChild( node.front );
 
 	// (re)attach the child nodes to front node
 	if( node.front && children.front )
@@ -263,7 +273,7 @@ void EnvireEventListener::itemModified ( envire::EnvironmentItem* item )
     environmentToNode[item]->update();
 }  
 
-void EnvireEventListener::propertyChangedInVizualization()
+void EnvireEventListener::propertyChangedInVizualization(QString property)
 {
     QObject* obj = QObject::sender();
     EnvironmentItemVisualizer* visualizer = dynamic_cast<EnvironmentItemVisualizer*>(obj);
@@ -272,7 +282,12 @@ void EnvireEventListener::propertyChangedInVizualization()
         for( mapType::iterator it=environmentToNode.begin(); it!=environmentToNode.end(); it++ )
         {
             if(it->second->getVisualizer() == visualizer)
+	    {
+		if( property == "enabled" )
+		    it->second->setEnable( obj->property( qPrintable( property ) ).toBool() );
+
                 it->second->update();
+	    }
         }
     }
 }

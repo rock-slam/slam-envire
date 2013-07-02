@@ -3,23 +3,10 @@
 
 #include <envire/maps/Grid.hpp>
 #include <base/samples/distance_image.h>
+#include "TraversabilityGrid.hpp"
 
 namespace envire
 {  
-  class TraversabilityGrid : public Grid<uint8_t>
-  {
-      ENVIRONMENT_ITEM( TraversabilityGrid )
-    public:
-      static const std::string TRAVERSABILITY;
-    private:
-      const static std::vector<std::string> &bands;
-    public:
-      TraversabilityGrid() : Grid<uint8_t>() {};
-      TraversabilityGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
-      ~TraversabilityGrid(){};
-      virtual const std::vector<std::string>& getBands() const {return bands;};
-  };
-  
   class ConfidenceGrid : public Grid<uint8_t>
   {
       ENVIRONMENT_ITEM( ConfidenceGrid )
@@ -60,6 +47,8 @@ namespace envire
       static const std::string ELEVATION;
       static const std::string ELEVATION_MIN;
       static const std::string ELEVATION_MAX;
+      static const std::string ILLUMINATION;
+      static const std::string VISIBILITY;
     private:
       const static std::vector<std::string> &bands;
 

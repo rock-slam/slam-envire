@@ -71,6 +71,8 @@ public:
 protected:
     struct Cache
     {
+     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	Cache() : grid( NULL ) {}
 	MLSGrid* grid;
 	Transform trans;

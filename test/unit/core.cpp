@@ -134,10 +134,10 @@ BOOST_AUTO_TEST_CASE( environment )
     env->addChild( env->getRootNode(), fn3 );    
 
     // perform a relative transformation
-    FrameNode::TransformType rt1 = env->relativeTransform(fn2, fn1);
+    Transform rt1 = env->relativeTransform(fn2, fn1);
     BOOST_CHECK( rt1.matrix().isApprox( fn2->getTransform().matrix(), 1e-10 ) );
 
-    FrameNode::TransformType rt2 = env->relativeTransform(fn2, fn3);
+    Transform rt2 = env->relativeTransform(fn2, fn3);
     BOOST_CHECK( rt2.matrix().isApprox( 
 		(fn3->getTransform().inverse() * fn1->getTransform() * fn2->getTransform()).matrix(),
 		1e-10 ) );

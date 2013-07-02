@@ -103,7 +103,7 @@ int main( int argc, char* argv[] )
 	exit(0);
     }
 
-    fm1->setTransform( FrameNode::TransformType(Eigen::Translation3d(extents.min().x(), extents.min().y(), 0)) );
+    fm1->setTransform( Transform(Eigen::Translation3d(extents.min().x(), extents.min().y(), 0)) );
     std::cout << "MLSGrid Extents: " << std::endl
     << "min: " << extents.min().transpose() << std::endl
     << "max: " << extents.max().transpose() << std::endl;

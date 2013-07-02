@@ -1,13 +1,14 @@
 #ifndef __ENVIRE_EVENT__
 #define __ENVIRE_EVENT__
 
-#include <envire/Core.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/intrusive_ptr.hpp>
 #include <envire/core/EventTypes.hpp>
 
 namespace envire
 {
-
+    class EnvironmentItem;
+    class Environment;
+    
 /** Base Event class that encodes information on changes to a given environment.
  * Events can happen to different parts of the environment, the structure and/or
  * the data items. Each of these parts can have an add, remove or update event. 
@@ -23,7 +24,7 @@ struct Event
      * @param a - the first subject of the change
      * @param b - optional second subject of the change
      */
-    Event( event::Type type, event::Operation operation, EnvironmentItem::Ptr a, EnvironmentItem::Ptr b = 0 );
+    Event( event::Type type, event::Operation operation, boost::intrusive_ptr<EnvironmentItem> a, boost::intrusive_ptr<EnvironmentItem> b = 0 );
 
     /** This method will check the message has any effect on the other message.
      * There are three possible scenarios which are returned by the result value.
@@ -48,7 +49,7 @@ struct Event
 
     event::Type type;
     event::Operation operation;
-    EnvironmentItem::Ptr a, b;
+    boost::intrusive_ptr<EnvironmentItem> a, b;
     std::string id_a, id_b;
 };
 
