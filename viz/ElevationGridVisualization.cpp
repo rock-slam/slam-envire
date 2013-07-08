@@ -121,7 +121,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
   {
     envire::ElevationGrid::ArrayType &data = elevation_grid.getGridData(envire::ElevationGrid::ELEVATION);
     osg::HeightField* heightField = new osg::HeightField();
-    heightField->allocate(elevation_grid.getCellSizeY(), elevation_grid.getCellSizeX());
+    heightField->allocate(elevation_grid.getCellSizeX(), elevation_grid.getCellSizeY());
     heightField->setXInterval(elevation_grid.getScaleX());
     heightField->setYInterval(elevation_grid.getScaleY());
     heightField->setOrigin(osg::Vec3d(elevation_grid.getOffsetX(), elevation_grid.getOffsetY(), 0.0));
