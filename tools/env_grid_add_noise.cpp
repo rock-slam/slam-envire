@@ -8,12 +8,22 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
+#include <libnoise/noise.h>
 #include <iostream>
 
 using namespace envire;
 using namespace std;
 namespace po = boost::program_options;
 using boost::lexical_cast;
+
+struct fractal
+{
+    fractal()
+	: octaves(8), frequency(1.0), persistence(0.5) {}
+    int octaves;
+    float frequency;
+    float persistence;
+};
 
 struct position
 {
@@ -22,6 +32,27 @@ struct position
 	: x(x), y(y) {}
     float x, y;
 };
+
+void validate(boost::any& v, 
+              const std::vector<std::string>& values,
+	      fractal*, int)
+{
+    po::validators::check_first_occurrence(v);
+    const string& s = po::validators::get_single_string(values);
+
+    vector<std::string> strs;
+    boost::split(strs, s, boost::is_any_of(","));
+
+    if( strs.size() != 3 )
+        throw po::validation_error(po::validation_error::invalid_option_value);
+
+    fractal f;
+    f.octaves = lexical_cast<int>( strs[0] );
+    f.frequency = lexical_cast<float>( strs[1] );
+    f.persistence = lexical_cast<float>( strs[2] );
+
+    v = boost::any( f );
+}
 
 void validate(boost::any& v, 
               const std::vector<std::string>& values,
@@ -55,7 +86,8 @@ int main(int argc, char* argv[])
 {
     string input_env, output_env;
     position center, win;
-    float scale, angle, sigma, radius;
+    fractal frac;
+    float scale = 1.0, angle, sigma = 1.0, radius;
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -66,6 +98,7 @@ int main(int argc, char* argv[])
 	("slope", po::value<float>(&angle), "<orientation of slope> vs x-axis in degrees")
 	("normal", po::value<float>(&sigma), "normal distribution with <sigma>")
 	("sphere", po::value<float>(&radius), "sphere with <radius>")
+	("fractal", po::value<fractal>(&frac), "fractal with noise <octaves,frequency,persistance>")
 	("const", "constant offset of 1.0 (use scaling to change)")
 	("noise", "add gaussian noise with sigma 1.0")
 	("center", po::value<position>(&center), "<x,y> center of origin")
@@ -116,6 +149,12 @@ int main(int argc, char* argv[])
     boost::variate_generator<boost::mt19937,boost::normal_distribution<float> > 
 	gen( eng, boost::normal_distribution<float>(0,1) );
 
+    // Initialize fractal noise
+    noise::module::Perlin perlin;
+    perlin.SetOctaveCount( frac.octaves );
+    perlin.SetFrequency( frac.frequency );
+    perlin.SetPersistence( frac.persistence );
+
     // calculate window on which to operate
     float 
 	minx = std::max( grid->getOffsetX(), center.x - win.x/2.0 ),
@@ -151,6 +190,9 @@ int main(int argc, char* argv[])
 
 	    if( useNoise )
 		height += gen() * scale;
+
+	    if( useFractal )
+		height += perlin.GetValue( x, y, 0 ) * scale;
 	}
     }	
 
