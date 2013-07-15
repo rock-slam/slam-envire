@@ -80,7 +80,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
         // fill image with color
         while(pos!= end_pos)
         {
-            double hue = (*pos2 - std::floor(*pos2)) / scaling;
+            double hue = (*pos2 - std::floor(*pos2)); // / scaling;
             pos2++;
             osg::Vec4f col(1.0,1.0,0.6,1.0);
 	    double luminance = 0.6;
@@ -89,7 +89,7 @@ ElevationGridVisualization::ElevationGridVisualization() : cycleHeightColor(true
 	    if( visibility )
 		col.a() = *(visibility++);
 	    if( cycleHeightColor )
-		vizkit::hslToRgb( hue - std::floor(hue), 1.0, luminance, col.r(), col.g(), col.b());
+		vizkit::hslToRgb( hue, 1.0, luminance, col.r(), col.g(), col.b());
 	    else
 		col = osg::Vec4f( col.r() * luminance, col.g() * luminance, col.b() * luminance, col.a() );
 	    *pos++ = (unsigned char)(col.r() * 255.0);
