@@ -23,6 +23,11 @@ namespace envire {
 	void serialize(Serialization& so);
         void unserialize(Serialization& so);
 
+	/**
+	 * set the default uncertainty value used for the grid values
+	 */
+	void setGridUncertainty( float uncertainty );
+
         /** @overload
          *
          * Calls either Grid<float> or Grid<double> based on the actual type of
@@ -52,6 +57,7 @@ namespace envire {
 
     private:
         std::string band;
+	float uncertainty;
     };
 }
 #endif

@@ -5,8 +5,14 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( GridFloatToMLS )
 
 GridFloatToMLS::GridFloatToMLS()
-    : Operator(1, 1)
+    : Operator(1, 1), 
+    uncertainty( 0.1 )
 {
+}
+
+void GridFloatToMLS::setGridUncertainty(float uncertainty)
+{
+    this->uncertainty = uncertainty;
 }
 
 void GridFloatToMLS::unserialize(Serialization& so)
@@ -47,30 +53,53 @@ void GridFloatToMLS::setOutput( MLSGrid* mls )
 }
 
 template<typename T>
-static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls)
+static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls, float uncertainty )
 {
-    Transform mls2grid = grid->getEnvironment()->relativeTransform( grid, mls );
-    
     boost::multi_array<T, 2>* grid_data;
     if (band_name.empty())
         grid_data = &grid->getGridData();
     else
         grid_data = &grid->getGridData(band_name);
 
-    for (size_t yi = 0; yi < mls->getCellSizeY(); ++yi)
-    {
-        double y = mls->getScaleY() * yi + mls->getOffsetY();
-        for (size_t xi = 0; xi < mls->getCellSizeX(); ++xi)
-        {
-            double x = mls->getScaleX() * xi + mls->getOffsetX();
-            Eigen::Vector3d src_p = mls2grid * Eigen::Vector3d(x, y, 0);
-            size_t src_xi, src_yi;
-            if (!grid->toGrid(src_p.x(), src_p.y(), src_xi, src_yi))
-                continue;
+    // we can now iterate through the source, or the target grid
+    // This should be depending on the cell resolution
 
-            T value = (*grid_data)[src_yi][src_xi];
-            mls->updateCell(xi, yi, value, 0);
-        }
+    if( mls->getScaleX() < grid->getScaleX() )
+    {
+	Transform mls2grid = grid->getEnvironment()->relativeTransform( grid, mls );
+    
+	for (size_t yi = 0; yi < mls->getCellSizeY(); ++yi)
+	{
+	    double y = mls->getScaleY() * yi + mls->getOffsetY();
+	    for (size_t xi = 0; xi < mls->getCellSizeX(); ++xi)
+	    {
+		double x = mls->getScaleX() * xi + mls->getOffsetX();
+		Eigen::Vector3d src_p = mls2grid * Eigen::Vector3d(x, y, 0);
+		size_t src_xi, src_yi;
+		if (!grid->toGrid(src_p.x(), src_p.y(), src_xi, src_yi))
+		    continue;
+
+		T value = (*grid_data)[src_yi][src_xi];
+		mls->updateCell(xi, yi, value, uncertainty);
+	    }
+	}
+    }
+    else  
+    {
+	Transform grid2mls = grid->getEnvironment()->relativeTransform( mls, grid );
+    
+	for (size_t yi = 0; yi < grid->getCellSizeY(); ++yi)
+	{
+	    double y = grid->getScaleY() * yi + grid->getOffsetY();
+	    for (size_t xi = 0; xi < grid->getCellSizeX(); ++xi)
+	    {
+		double x = grid->getScaleX() * xi + grid->getOffsetX();
+		Eigen::Vector3d mls_p = grid2mls * Eigen::Vector3d(x, y, 0);
+
+		T value = (*grid_data)[yi][xi];
+		mls->update( mls_p.head<2>(), envire::SurfacePatch( value, uncertainty ) );
+	    }
+	}
     }
 }
 
@@ -80,12 +109,12 @@ bool GridFloatToMLS::updateAll()
 
     Grid<float>* grid = dynamic_cast<Grid<float>*>(*env->getInputs(this).begin());
     if (grid)
-        convert(grid, band, mls);
+        convert(grid, band, mls, uncertainty);
     else
     {
         Grid<double>* grid = dynamic_cast<Grid<double>*>(*env->getInputs(this).begin());
         if (grid)
-            convert(grid, band, mls);
+            convert(grid, band, mls, uncertainty);
         else
             throw std::logic_error("could not find an input of either type Grid<double> or Grid<float>");
     }
