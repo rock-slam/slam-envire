@@ -38,7 +38,7 @@ ApplicationWindow::ApplicationWindow( envire::Environment* _env )
 
     // seting up envire plugin and creating an empty environment
     envViz = boost::shared_ptr<envire::EnvireVisualization>(new envire::EnvireVisualization());
-    ui.vizkitWidget->addDataHandler( envViz.get() );
+    ui.vizkitWidget->addPlugin( envViz.get() );
     envViz->attachTreeWidget( ui.treeWidget );
 
     if( !_env )

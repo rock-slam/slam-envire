@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     app.start();
-    app.getWidget()->addDataHandler( &envViz );
+    app.getWidget()->addPlugin( &envViz );
 
     boost::scoped_ptr<Environment> env( new Environment() );
     envViz.updateData( env.get() );
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     app.start();
-    app.getWidget()->addDataHandler( &envViz );
+    app.getWidget()->addPlugin( &envViz );
 
     boost::scoped_ptr<Environment> env( new Environment() );
     envViz.updateData( env.get() );
