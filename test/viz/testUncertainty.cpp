@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     envire::UncertaintyVisualization viz;
     app.start();
-    app.getWidget()->addDataHandler( &viz );
+    app.getWidget()->addPlugin( &viz );
 
     for(int i=0;i<5000 && app.isRunning();i++)
     {
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test2 )
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     envire::UncertaintyVisualization viz;
     app.start();
-    app.getWidget()->addDataHandler( &viz );
+    app.getWidget()->addPlugin( &viz );
 
     TransformWithUncertainty t;
     for(int i=0;i<50000 && app.isRunning();i++)
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
     QtThreadedWidget<vizkit::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     app.start();
-    app.getWidget()->addDataHandler( &envViz );
+    app.getWidget()->addPlugin( &envViz );
     
     boost::scoped_ptr<Environment> env( new Environment() );
     envViz.updateData( env.get() );
@@ -185,9 +185,9 @@ BOOST_AUTO_TEST_CASE( uncertaintymls_test )
     envire::EnvireVisualization envViz;
     envire::UncertaintyVisualization viz[uncertainty_points];
     app.start();
-    app.getWidget()->addDataHandler( &envViz );
+    app.getWidget()->addPlugin( &envViz );
     for(size_t i=0;i<uncertainty_points;i++)
-	app.getWidget()->addDataHandler( &viz[i] );
+	app.getWidget()->addPlugin( &viz[i] );
 
     // set up test environment
     boost::scoped_ptr<Environment> env( new Environment() );
