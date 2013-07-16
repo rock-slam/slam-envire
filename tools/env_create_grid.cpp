@@ -11,7 +11,7 @@ using namespace envire;
 
 void usage(int exit_code = 0)
 {
-    std::cerr << "usage: env_create_grid <env_path> <type> <width> <height> <scale_x> <scale_y> [<offset_x> <offset_y>] -frame <frame_id> [-bands band1 band2 ...]\n"
+    std::cerr << "usage: env_create_grid <env_path> <type> <width> <height> <scale_x> <scale_y> [<offset_x> <offset_y>] -frame <frame_id> [-bands band1 band2 ...] [-mls type]\n"
         << "       env_create_grid <env_path> <type> <width> <height> <scale_x> <scale_y> [<offset_x> <offset_y>]\n"
         << "       env_create_grid <env_path> <type> -map <map_id>\n"
         << "  creates a new grid map of the specified type (as the envire class name) in the specified environment\n"
@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
     double offset_x = 0, offset_y = 0;
     FrameNode* base_frame = env->getRootNode();
     std::vector<std::string> bands;
+    std::string mls_type;
 
     if ( !strcmp( argv[argi], "-map" ))
     {
@@ -113,8 +114,14 @@ int main(int argc, char* argv[])
 	    if( argi < argc && !strcmp( argv[argi], "-bands" ) )
 	    {
 		argi++;
-		while( argi < argc )
+		while( argi < argc && argv[argi][0] != '-' )
 		    bands.push_back( argv[argi++] );
+	    }
+
+	    if( argi < argc && !strcmp( argv[argi], "-mls" ) )
+	    {
+		argi++;
+		mls_type = argv[argi++];
 	    }
         }
     }
@@ -131,6 +138,31 @@ int main(int argc, char* argv[])
 
     GridBase::Ptr grid = GridBase::create(grid_type,
             width, height, scale_x, scale_y, offset_x, offset_y);
+
+    if( !mls_type.empty() )
+    {
+	envire::MLSGrid *mls = dynamic_cast<envire::MLSGrid*>( grid.get() );
+	if( mls )
+	{
+	    if( mls_type == "kalman" )
+		mls->getConfig().updateModel = envire::MLSConfiguration::KALMAN;
+	    else if( mls_type == "sum" )
+		mls->getConfig().updateModel = envire::MLSConfiguration::SUM;
+	    else if( mls_type == "slope" )
+		mls->getConfig().updateModel = envire::MLSConfiguration::SLOPE;
+	    else
+	    {
+		std::cerr << "Specified mls type " << mls_type << " is not supported " << std::endl;
+		exit(1);
+	    }
+
+	}
+	else
+	{
+	    std::cerr << "Specified mls, but grid type is not MLSGrid" << std::endl;
+	    exit(1);
+	}
+    }
 
     // if there are bands, try to create them
     if( !bands.empty() )
