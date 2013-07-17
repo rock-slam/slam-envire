@@ -200,6 +200,11 @@ struct SurfacePatch
 	return zpos;
     }
 
+    Eigen::Vector3f getNormal() const
+    {
+	return Eigen::Vector3f( -plane.getCoeffs().x(), -plane.getCoeffs().y(), 1.0 ).normalized();
+    }
+
     bool mergeSum( SurfacePatch& o, float gapSize )
     {
 	SurfacePatch &p(*this);
