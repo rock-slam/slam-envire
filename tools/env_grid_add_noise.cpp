@@ -88,6 +88,7 @@ int main(int argc, char* argv[])
     position center, win;
     fractal frac;
     float scale = 1.0, angle, sigma = 1.0, radius;
+    int seed = 0;
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -101,6 +102,7 @@ int main(int argc, char* argv[])
 	("fractal", po::value<fractal>(&frac), "fractal with noise <octaves,frequency,persistance>")
 	("const", "constant offset of 1.0 (use scaling to change)")
 	("noise", "add gaussian noise with sigma 1.0")
+	("seed", po::value<int>(&seed), "the seed <value> for all random noise")
 	("center", po::value<position>(&center), "<x,y> center of origin")
 	("window", po::value<position>(&win), "<width,height> window parameters")
 	;
@@ -145,12 +147,13 @@ int main(int argc, char* argv[])
     boost::math::normal normal( 0, sigma );
 
     // generate random number generator
-    boost::mt19937 eng;
+    boost::mt19937 eng( seed );
     boost::variate_generator<boost::mt19937,boost::normal_distribution<float> > 
 	gen( eng, boost::normal_distribution<float>(0,1) );
 
     // Initialize fractal noise
     noise::module::Perlin perlin;
+    perlin.SetSeed( seed );
     perlin.SetOctaveCount( frac.octaves );
     perlin.SetFrequency( frac.frequency );
     perlin.SetPersistence( frac.persistence );
