@@ -64,7 +64,7 @@ static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls, f
     // we can now iterate through the source, or the target grid
     // This should be depending on the cell resolution
 
-    if( mls->getScaleX() < grid->getScaleX() )
+    if( mls->getScaleX() <= grid->getScaleX() )
     {
 	Transform mls2grid = grid->getEnvironment()->relativeTransform( grid, mls );
     
