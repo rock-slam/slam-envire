@@ -61,6 +61,21 @@ static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls, f
     else
         grid_data = &grid->getGridData(band_name);
 
+    // try to find rgb bands in input
+    boost::multi_array<T, 2> *r = NULL, *g = NULL, *b = NULL;
+    if( grid->hasBand( "r" ) )
+	r = &grid->getGridData( "r" );
+    if( grid->hasBand( "g" ) )
+	g = &grid->getGridData( "g" );
+    if( grid->hasBand( "b" ) )
+	b = &grid->getGridData( "b" );
+    bool hasColor = false;
+    if( r && g && b )
+    {
+	hasColor = true;
+	mls->setHasCellColor( true );
+    }
+
     // we can now iterate through the source, or the target grid
     // This should be depending on the cell resolution
 
@@ -80,7 +95,10 @@ static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls, f
 		    continue;
 
 		T value = (*grid_data)[src_yi][src_xi];
-		mls->updateCell(xi, yi, value, uncertainty);
+		envire::SurfacePatch updatePatch( value, uncertainty );
+		if( hasColor )
+		    updatePatch.setColor( Eigen::Vector3d( (*r)[src_yi][src_xi], (*g)[src_yi][src_xi], (*b)[src_yi][src_xi] ) );
+		mls->updateCell(xi, yi, updatePatch);
 	    }
 	}
     }
@@ -97,7 +115,10 @@ static void convert(Grid<T>* grid, std::string const& band_name, MLSGrid* mls, f
 		Eigen::Vector3d mls_p = grid2mls * Eigen::Vector3d(x, y, 0);
 
 		T value = (*grid_data)[yi][xi];
-		mls->update( mls_p.head<2>(), envire::SurfacePatch( value, uncertainty ) );
+		envire::SurfacePatch updatePatch( value, uncertainty );
+		if( hasColor )
+		    updatePatch.setColor( Eigen::Vector3d( (*r)[yi][xi], (*g)[yi][xi], (*b)[yi][xi] ) );
+		mls->update( mls_p.head<2>(), updatePatch );
 	    }
 	}
     }
