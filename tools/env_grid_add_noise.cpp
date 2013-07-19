@@ -84,7 +84,7 @@ void validate(boost::any& v,
 
 int main(int argc, char* argv[])
 {
-    string input_env, output_env;
+    string input_env, output_env, band;
     position center, win;
     fractal frac;
     float scale = 1.0, angle, sigma = 1.0, radius;
@@ -105,6 +105,7 @@ int main(int argc, char* argv[])
 	("seed", po::value<int>(&seed), "the seed <value> for all random noise")
 	("center", po::value<position>(&center), "<x,y> center of origin")
 	("window", po::value<position>(&win), "<width,height> window parameters")
+	("band", po::value<string>(&band), "<name> of the grid band to use")
 	;
     
     po::variables_map vm;
@@ -167,7 +168,7 @@ int main(int argc, char* argv[])
 
     const float sx = grid->getScaleX(), sy = grid->getScaleY();
     const float normalScale = 1.0 / pdf( normal, 0 );
-    ElevationGrid::ArrayType &raster = grid->getGridData( ElevationGrid::ELEVATION );
+    ElevationGrid::ArrayType &raster = grid->getGridData( band.empty() ? ElevationGrid::ELEVATION : band );
     for( float x = minx + grid->getScaleX()*.5; x < maxx; x+= sx )
     {
 	for( float y = miny + grid->getScaleY()*.5; y < maxy; y+= sy )
