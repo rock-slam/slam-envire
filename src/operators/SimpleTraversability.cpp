@@ -370,7 +370,7 @@ void SimpleTraversability::growObstacles(OutputLayer& map, std::string const& ba
 			const int ty = y+oy;
 			if( (pow(ox*sx,2) + pow(oy*sy,2) < width_square )
 				&& tx >= 0 && tx < (int)map.getWidth()
-				&& ty >= 0 && ty < (int)map.getWidth() )
+				&& ty >= 0 && ty < (int)map.getHeight() )
 			    data[ty][tx] = CLASS_OBSTACLE;
 		    }
 		}
