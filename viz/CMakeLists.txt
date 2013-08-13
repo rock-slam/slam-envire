@@ -1,5 +1,3 @@
-rock_export_includedir(${PROJECT_SOURCE_DIR}/viz vizkit)
-
 # compile shared library
 rock_vizkit_plugin(envire-viz
     ElevationGridVisualization.cpp
