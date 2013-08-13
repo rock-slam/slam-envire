@@ -19,6 +19,7 @@ if (USE_CGAL)
     add_definitions( -DENVIRE_USE_CGAL )    
 endif()
 
+rock_export_includedir(${PROJECT_SOURCE_DIR}/src ${PROJECT_NAME})
 rock_add_source_dir(icp icp)
 rock_standard_layout()
 add_subdirectory(tools)
