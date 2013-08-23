@@ -169,10 +169,23 @@ bool ScanMeshing::updateAll()
 	    {
                 float xx = std::cos( psi ) * range;
 
-                Eigen::Vector3d point( 
-                    -std::sin( psi ) * range,
-                    std::cos( phi ) * xx,
-                    std::sin( phi ) * xx );
+                Eigen::Vector3d point;
+		if( scan.x_forward )
+		{
+		    // x-forward
+		    point = Eigen::Vector3d( 
+			    std::cos( phi ) * xx,
+			    std::sin( psi ) * range,
+			    std::sin( phi ) * xx );
+		}
+		else
+		{
+		    // y-forward
+		    point = Eigen::Vector3d( 
+			    -std::sin( psi ) * range,
+			    std::cos( phi ) * xx,
+			    std::sin( phi ) * xx );
+		}
 
                 // perform center offset compensation
                 Eigen::Vector3d offset = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitX()) * scan.center_offset;
