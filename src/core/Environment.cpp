@@ -286,6 +286,12 @@ void Environment::attachItem(EnvironmentItem* item)
             item->unique_id = candidate;
         }
     }
+    else if( item->getEnvironment() != this )
+    {
+	// if it comes from a different environment, it
+	// needs to be detached first
+	item->detach();
+    }
 
     // make sure item not already present
     if( items.count(item->getUniqueId()) ) {
