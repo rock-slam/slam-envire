@@ -2,6 +2,7 @@
 #include "FrameNode.hpp"
 #include "Layer.hpp"
 #include <envire/Core.hpp>
+#include <boost/thread/locks.hpp>
 
 using namespace envire;
 
