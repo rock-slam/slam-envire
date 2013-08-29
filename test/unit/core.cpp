@@ -253,8 +253,7 @@ BOOST_AUTO_TEST_CASE( grid_access )
 
     for(size_t i=0;i<probes.size();i++)
     {
-	bool r;
-        r = ga.getElevation( probes[i] );
+        ga.getElevation( probes[i] );
 	// TODO: actually check the values here
     }
 }
@@ -273,14 +272,13 @@ BOOST_AUTO_TEST_CASE( pointcloud_access )
 
     PointcloudAccess pa( env.get() );
 
-    bool success;
     Eigen::Vector3d v;
 
     base::TimeMark a("dist");
     for(int i=0;i<10000;i++)
     {
 	v = Eigen::Vector3d::Random();
-	success = pa.getElevation( v, 0.1 );
+	pa.getElevation( v, 0.1 );
     }
     cout << a << endl;;
 
@@ -288,7 +286,7 @@ BOOST_AUTO_TEST_CASE( pointcloud_access )
     for(int i=0;i<10000;i++)
     {
 	v = Eigen::Vector3d::Random();
-	success = pa.getElevation( v, 0.1, 0, 0.2 );
+	pa.getElevation( v, 0.1, 0, 0.2 );
     }
     cout << b << endl;
 }

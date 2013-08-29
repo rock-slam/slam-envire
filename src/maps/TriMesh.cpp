@@ -35,7 +35,11 @@ void TriMesh::calcVertexNormals()
     // go through all the faces and compute the normals 
     for(size_t i=0;i<faces.size();i++)
     {
-	size_t tri[3] = { faces[i].get<0>(), faces[i].get<1>(), faces[i].get<2>() };
+	size_t tri[3] = {
+            static_cast<size_t>(faces[i].get<0>()),
+            static_cast<size_t>(faces[i].get<1>()),
+            static_cast<size_t>(faces[i].get<2>())
+        };
 	Eigen::Vector3d a[3];
 	for(int n=0;n<3;n++)
 	    a[n] = vertices[ tri[n] ];
