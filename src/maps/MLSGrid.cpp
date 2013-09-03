@@ -41,7 +41,7 @@ void MLSGrid::clear()
     mem_pool.purge_memory();
     cellcount = 0;
     if(index) index->reset();
-    extents = CellExtents();
+    extents = CellExtents(Eigen::Vector2i(0,0),Eigen::Vector2i(0,0));
     hasCellColor_ = false;
 }
 
