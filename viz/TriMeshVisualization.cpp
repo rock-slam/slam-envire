@@ -79,7 +79,6 @@ void TriMeshVisualization::updateNode(envire::EnvironmentItem* item, osg::Group*
 	    normals->push_back(osg::Vec3(it->x(),it->y(), it->z()));
 	}
 	geom->setNormalArray(normals);
-	geom->setNormalIndices( geom->getVertexIndices() );
 	geom->setNormalBinding( osg::Geometry::BIND_PER_VERTEX );
     }
     
