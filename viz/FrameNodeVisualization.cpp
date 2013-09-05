@@ -10,6 +10,10 @@
 
 namespace envire {
 
+FrameNodeVisualization::FrameNodeVisualization() : showUncertainty(false)
+{
+}
+
 osg::Group* FrameNodeVisualization::getNodeForItem(envire::EnvironmentItem* item) const
 {
     osg::PositionAttitudeTransform *transform = new osg::PositionAttitudeTransform;
@@ -39,7 +43,6 @@ void FrameNodeVisualization::updateNode(envire::EnvironmentItem* item, osg::Grou
     
     assert(fn && transform);
     setTransform( transform, fn->getTransform() );
-    
     // slightly awkward way of adding the uncertainty,
     // since it should actually be added to the parent
     // frame. adds a group with the inverse transform to 
@@ -64,12 +67,14 @@ void FrameNodeVisualization::updateNode(envire::EnvironmentItem* item, osg::Grou
 
 	ug->removeChildren(0, ug->getNumChildren());
 
-	TransformWithUncertainty tf = fn->getTransformWithUncertainty();
-	vizkit::Uncertainty *ellipse = new vizkit::Uncertainty();
-	ellipse->setMean( Eigen::Vector3d(tf.getTransform().translation()) );
-	ellipse->setCovariance( Eigen::Matrix3d( tf.getCovariance().bottomRightCorner<3,3>()) );
-
-	ug->addChild( ellipse );
+        if(showUncertainty)
+        {
+            TransformWithUncertainty tf = fn->getTransformWithUncertainty();
+            vizkit::Uncertainty *ellipse = new vizkit::Uncertainty();
+            ellipse->setMean( Eigen::Vector3d(tf.getTransform().translation()) );
+            ellipse->setCovariance( Eigen::Matrix3d( tf.getCovariance().bottomRightCorner<3,3>()) );
+            ug->addChild( ellipse );
+        }
     }
 }
 
