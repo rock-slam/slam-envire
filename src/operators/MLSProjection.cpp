@@ -9,7 +9,7 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( MLSProjection )
 
 MLSProjection::MLSProjection()
-    : withUncertainty( true ), m_negativeInformation( false ), defaultUncertainty( 0.01 )
+    : withUncertainty( true ), m_negativeInformation( false ), defaultUncertainty( 0.01 ), use_boundary_box(false)
 {
 }
 
@@ -35,6 +35,20 @@ void MLSProjection::addOutput( MultiLevelSurfaceGrid* grid )
         throw std::runtime_error("MLSProjection can only have one output.");
 
     Operator::addOutput(grid);
+}
+
+void MLSProjection::setAreaOfInterest(double min_x, double max_x, double min_y, double max_y, double min_z, double max_z)
+{
+    boundary_box.setEmpty();
+    boundary_box.extend(Eigen::Vector3d(min_x, min_y, min_z));
+    boundary_box.extend(Eigen::Vector3d(max_x, max_y, max_z));
+    use_boundary_box = true;
+}
+
+void MLSProjection::unsetAreaOfInterest()
+{
+    boundary_box.setEmpty();
+    use_boundary_box = false;
 }
 
 void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
@@ -175,6 +189,9 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 	Point p = C_m2g.getTransform() * points[i];
 
 	const Eigen::Vector3d &mean( p );
+
+        if(use_boundary_box && !boundary_box.contains(mean))
+            continue;
 
 	size_t xi, yi;
 	if( grid->toGrid( mean.x(), mean.y(), xi, yi ) )

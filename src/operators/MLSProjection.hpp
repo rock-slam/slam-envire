@@ -7,6 +7,7 @@
 
 #include <Eigen/Core>
 #include <envire/core/Operator.hpp>
+#include <Eigen/src/Geometry/AlignedBox.h>
 
 namespace envire {
     class MLSProjection : public Operator
@@ -27,6 +28,13 @@ namespace envire {
 	void useUncertainty( bool use ) { withUncertainty = use; }
 	void useNegativeInformation( bool use ) { m_negativeInformation = use; }
 	void setDefaultUncertainty( double uncertainty ) { defaultUncertainty = uncertainty; }
+    
+        /** 
+         * Only samples within the area of interest will be projected. 
+         * All parameters are in the transformation frame of the mls grid.
+         */
+        void setAreaOfInterest(double min_x, double max_x, double min_y, double max_y, double min_z, double max_z);
+        void unsetAreaOfInterest();
 
     protected:
 	void projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
@@ -35,6 +43,8 @@ namespace envire {
 	bool withUncertainty;
 	bool m_negativeInformation;
 	double defaultUncertainty;
+        bool use_boundary_box;
+        Eigen::AlignedBox<double,3> boundary_box;
 
     private:
 	TransformWithUncertainty C_m2g;
