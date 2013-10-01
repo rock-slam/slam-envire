@@ -69,7 +69,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     Eigen::Affine3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
     // get the origin of the poincloud as a map cell
-    Eigen::Vector3d origin_m = C_m2g.getTransform() * Eigen::Vector3d::Zero();
+    Eigen::Vector3d origin_m = C_m2g.getTransform() * pc->getSensorOrigin().translation();
     GridBase::Position origin;
     if( !grid->toGrid( origin_m.head<2>(), origin ) )
 	if( m_negativeInformation )
