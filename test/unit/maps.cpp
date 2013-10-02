@@ -3,6 +3,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include <envire/maps/Grids.hpp>
+#include <envire/tools/VoxelTraversal.hpp>
 
 using namespace envire;
 
@@ -21,3 +22,15 @@ BOOST_AUTO_TEST_CASE( test_elevationgrid )
 
 }
 
+BOOST_AUTO_TEST_CASE( test_voxeltraversal )
+{
+    ElevationGrid grid( 3, 3, 0.5, 0.5 );
+
+    VoxelTraversal vt( grid );
+    vt.init( Eigen::Vector3d( 0,0,0 ), Eigen::Vector3d( 1,1,0 ) );
+    ElevationGrid::Position pos;
+    while( vt.step( pos ) )
+    {
+	std::cout << pos.x << " " << pos.y << std::endl;
+    }
+}

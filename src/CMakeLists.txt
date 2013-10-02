@@ -111,6 +111,8 @@ install(FILES tools/GraphViz.hpp
     tools/GaussianMixture.hpp
     tools/ListGrid.hpp
     tools/ExpectationMaximization.hpp
+    tools/BresenhamLine.cpp
+    tools/VoxelTraversal.cpp
     DESTINATION include/envire/tools)
 
 if (USE_CGAL AND CGAL_FOUND)
