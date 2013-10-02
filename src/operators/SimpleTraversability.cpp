@@ -166,8 +166,8 @@ bool SimpleTraversability::updateAll()
     if (!has_data)
         throw std::runtime_error("SimpleTraversability: no input layer configured");
 
-    if (inputs[MAX_STEP] && conf.ground_clearance == 0)
-        throw std::runtime_error("a max_step band is available, but the ground clearance is set to zero");
+    //if (inputs[MAX_STEP] && conf.ground_clearance == 0)
+    //    throw std::runtime_error("a max_step band is available, but the ground clearance is set to zero");
 
     double const class_width = 1.0 / conf.class_count;
                 
@@ -199,7 +199,7 @@ bool SimpleTraversability::updateAll()
 
             // First, max_step is an ON/OFF threshold on the ground clearance
             // parameter
-            if (has_max_step && (values[MAX_STEP] > conf.ground_clearance))
+            if (has_max_step && conf.ground_clearance && (values[MAX_STEP] > conf.ground_clearance))
             {
                 result[y][x] = CLASS_OBSTACLE;
                 continue;
