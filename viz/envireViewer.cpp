@@ -5,6 +5,7 @@
 #include <QDockWidget>
 #include <QLayout>
 #include <QHBoxLayout>
+#include <iostream>
 
 #include "TreeViewListener.hpp"
 #include "EnvireVisualization.hpp"
