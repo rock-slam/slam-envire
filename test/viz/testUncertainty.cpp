@@ -4,28 +4,28 @@
 #include <Eigen/Geometry>
 #include <boost/scoped_ptr.hpp>
 
-#include <vizkit/Vizkit3DWidget.hpp>
-#include <vizkit/QtThreadedWidget.hpp>
+#include <vizkit3d/Vizkit3DWidget.hpp>
+#include <vizkit3d/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
 #include "envire/maps/MLSGrid.hpp"
 #include "envire/maps/Pointcloud.hpp"
 #include "envire/operators/MLSProjection.hpp"
 
 #include "envire/Core.hpp"
-#include <vizkit/Uncertainty.hpp>
+#include <vizkit3d/Uncertainty.hpp>
 
 using namespace envire;
 
 namespace envire
 {
-class UncertaintyVisualization : public vizkit::Vizkit3DPlugin<envire::PointWithUncertainty>
+class UncertaintyVisualization : public vizkit3d::Vizkit3DPlugin<envire::PointWithUncertainty>
 {
 public:
     UncertaintyVisualization()
 	: point( Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero() ) {}
     osg::ref_ptr<osg::Node> createMainNode()
     {
-	m_uncertainty = new vizkit::Uncertainty();
+	m_uncertainty = new vizkit3d::Uncertainty();
 	m_uncertainty->setNumSamples( 10000 );
 	return m_uncertainty;
     }
@@ -43,13 +43,13 @@ public:
 
 private:
     envire::PointWithUncertainty point;
-    osg::ref_ptr<vizkit::Uncertainty> m_uncertainty;
+    osg::ref_ptr<vizkit3d::Uncertainty> m_uncertainty;
 };
 }
 
 BOOST_AUTO_TEST_CASE( uncertainty_test ) 
 {
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
     envire::UncertaintyVisualization viz;
     app.start();
     app.getWidget()->addPlugin( &viz );
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE( uncertainty_test )
 
 BOOST_AUTO_TEST_CASE( uncertainty_test2 ) 
 {
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
     envire::UncertaintyVisualization viz;
     app.start();
     app.getWidget()->addPlugin( &viz );
@@ -140,7 +140,7 @@ std::ostream& operator<<( std::ostream &os, const envire::TransformWithUncertain
 
 BOOST_AUTO_TEST_CASE( mlsmerge_test ) 
 {
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addPlugin( &envViz );
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( mlsmerge_test )
 BOOST_AUTO_TEST_CASE( uncertaintymls_test ) 
 {
     const size_t uncertainty_points = 10;
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     envire::UncertaintyVisualization viz[uncertainty_points];
     app.start();

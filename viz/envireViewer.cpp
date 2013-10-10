@@ -1,5 +1,5 @@
 
-#include <vizkit/Vizkit3DWidget.hpp>
+#include <vizkit3d/Vizkit3DWidget.hpp>
 #include <QApplication>
 #include <QMainWindow>
 #include <QDockWidget>
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     //load environment
     envire::Environment *env = envire::Environment::unserialize( std::string(argv[1]) );
 
-    //create vizkit plugin for showing envire
+    //create vizkit3d plugin for showing envire
     EnvireVisualization *envViz = new EnvireVisualization();    
     envViz->updateData(env);
 
@@ -40,8 +40,8 @@ int main(int argc, char** argv)
     qdw->setWidget(qtw);    
     a.addDockWidget(Qt::LeftDockWidgetArea, qdw);
     
-    //create vizkit widget
-    vizkit::Vizkit3DWidget *widget = new vizkit::Vizkit3DWidget();
+    //create vizkit3d widget
+    vizkit3d::Vizkit3DWidget *widget = new vizkit3d::Vizkit3DWidget();
     
     //set envire as central dock widget
     a.setCentralWidget(widget);

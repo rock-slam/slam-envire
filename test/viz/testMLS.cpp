@@ -2,8 +2,8 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/scoped_ptr.hpp>
 
-#include <vizkit/Vizkit3DWidget.hpp>
-#include <vizkit/QtThreadedWidget.hpp>
+#include <vizkit3d/Vizkit3DWidget.hpp>
+#include <vizkit3d/QtThreadedWidget.hpp>
 #include "EnvireVisualization.hpp"
 
 #include "envire/Core.hpp"
@@ -15,7 +15,7 @@ using namespace envire;
 
 BOOST_AUTO_TEST_CASE( mlsmatch_test ) 
 {
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addPlugin( &envViz );
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
 
 BOOST_AUTO_TEST_CASE( mlsnegative_test ) 
 {
-    QtThreadedWidget<vizkit::Vizkit3DWidget> app;
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
     envire::EnvireVisualization envViz;
     app.start();
     app.getWidget()->addPlugin( &envViz );

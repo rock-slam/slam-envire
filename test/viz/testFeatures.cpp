@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE EnvireVizTest 
 #include <boost/test/included/unit_test.hpp>
 
-#include <vizkit/Vizkit3DWidget.hpp>
-#include <vizkit/QtThreadedWidget.hpp>
+#include <vizkit3d/Vizkit3DWidget.hpp>
+#include <vizkit3d/QtThreadedWidget.hpp>
 #include "EnvireWidget.hpp"
 #include "envire/maps/Featurecloud.hpp"
 

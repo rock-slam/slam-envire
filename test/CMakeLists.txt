@@ -21,6 +21,6 @@ rock_testsuite(test_serialization unit/serialization.cpp
     DEPS envire
     DEPS_CMAKE GDAL)
 
-if( vizkit_FOUND )
+if( vizkit3d_FOUND )
     add_subdirectory(viz)
-endif( vizkit_FOUND )
+endif( vizkit3d_FOUND )

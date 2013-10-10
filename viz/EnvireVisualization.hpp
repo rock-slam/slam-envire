@@ -1,14 +1,14 @@
 #ifndef __ENVIEW_ENVIREVISUALIZATION__
 #define __ENVIEW_ENVIREVISUALIZATION__
 
-#include <vizkit/Vizkit3DPlugin.hpp>
+#include <vizkit3d/Vizkit3DPlugin.hpp>
 #include <osg/Geometry>
 #include <envire/Core.hpp>
 #include <envire/core/Serialization.hpp>
 
 #include <boost/thread/recursive_mutex.hpp>
-#include <vizkit/EnvireEventListener.hpp>
-#include <vizkit/TreeViewListener.hpp>
+#include <vizkit3d/EnvireEventListener.hpp>
+#include <vizkit3d/TreeViewListener.hpp>
 
 class QTreeWidget;
 
@@ -16,7 +16,7 @@ namespace envire
 {
 
 class EnvireVisualization : 
-    public vizkit::Vizkit3DPlugin<envire::Environment*>
+    public vizkit3d::Vizkit3DPlugin<envire::Environment*>
 {
     Q_OBJECT
 

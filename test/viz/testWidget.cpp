@@ -4,13 +4,13 @@
 #include <Eigen/Geometry>
 #include <boost/scoped_ptr.hpp>
 
-#include <vizkit/Vizkit3DWidget.hpp>
-#include <vizkit/QtThreadedWidget.hpp>
+#include <vizkit3d/Vizkit3DWidget.hpp>
+#include <vizkit3d/QtThreadedWidget.hpp>
 #include "EnvireWidget.hpp"
 #include "envire/maps/MLSGrid.hpp"
 
 #include "envire/Core.hpp"
-#include <vizkit/Uncertainty.hpp>
+#include <vizkit3d/Uncertainty.hpp>
 
 using namespace envire;
 
