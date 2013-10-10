@@ -34,12 +34,15 @@ public:
 
     void init( const Eigen::Vector3d& orig3, const Eigen::Vector3d& dir3 )
     {
+	assert( dir3.norm() > .0 );
+
 	Eigen::Vector2d
 	    orig = orig3.head<2>(),
 	    dir = dir3.head<2>();
 
 	envire::GridBase::Position pos;
-	valid = grid.toGrid( orig, pos );
+	double xmod, ymod;
+	valid = grid.toGrid( orig.x(), orig.y(), pos.x, pos.y, xmod, ymod );
 	cx = pos.x;
 	cy = pos.y;
 
@@ -51,10 +54,8 @@ public:
 	deltay = (dir / dir.y() * grid.getScaleY()).norm();
 
 	// starting distance until a new cell is reached.
-	// TODO fix this to come from the orig position
-	// currently this is the center of the cell
-	maxx = deltax * 0.5,
-	maxy = deltay * 0.5; 
+	maxx = deltax * xmod / grid.getScaleX();
+	maxy = deltay * ymod / grid.getScaleY(); 
     }
 
     bool step( GridBase::Position &pos )
