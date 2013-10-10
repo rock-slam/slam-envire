@@ -1,7 +1,7 @@
 #include "MapSegmentVisualization.hpp"
 #include <envire/maps/MapSegment.hpp>
 #include <osg/Geode>
-#include <vizkit/Uncertainty.hpp>
+#include <vizkit3d/Uncertainty.hpp>
 
 using namespace envire;
 
@@ -68,7 +68,7 @@ void MapSegmentVisualization::updateNode(envire::EnvironmentItem* item, osg::Gro
     // add uncertainties
     for( size_t i=0; i<mapSegment->gmm.params.size(); i++ )
     {
-	vizkit::Uncertainty *ellipse = new vizkit::Uncertainty();
+	vizkit3d::Uncertainty *ellipse = new vizkit3d::Uncertainty();
 	ellipse->setMean( Eigen::Vector3d(mapSegment->gmm.params[i].dist.mean.tail<3>()) );
 	ellipse->setCovariance( Eigen::Matrix3d( mapSegment->gmm.params[i].dist.cov.bottomRightCorner<3,3>()) );
 

@@ -28,7 +28,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
-     <widget class="vizkit::Vizkit3DWidget" name="vizkitWidget"/>
+     <widget class="vizkit3d::Vizkit3DWidget" name="vizkitWidget"/>
     </item>
    </layout>
   </widget>
@@ -261,9 +261,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>vizkit::Vizkit3DWidget</class>
+   <class>vizkit3d::Vizkit3DWidget</class>
    <extends>QWidget</extends>
-   <header>vizkit/Vizkit3DWidget.hpp</header>
+   <header>vizkit3d/Vizkit3DWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

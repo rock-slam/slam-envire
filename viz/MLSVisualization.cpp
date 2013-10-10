@@ -1,5 +1,5 @@
 #include "MLSVisualization.hpp"
-#include <vizkit/ColorConversionHelper.hpp>
+#include <vizkit3d/ColorConversionHelper.hpp>
 
 #include <osg/Group>
 #include <osg/Geode>
@@ -235,7 +235,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	// get the color as a function of the environmentitem pointer
 	float scale = ((long)item%1000)/1000.0;
 	osg::Vec4 col(0,0,0,1);
-	vizkit::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
+	vizkit3d::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
 
 	group->removeChild( 1 );
 	group->addChild( 
@@ -290,7 +290,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		       double sat = 1.0;
 		       double alpha = std::max( 0.0, 1.0 - p.stdev );
 		       double lum = 0.6;
-		       vizkit::hslToRgb( hue - std::floor(hue), sat, lum , col.x(), col.y(), col.z());
+		       vizkit3d::hslToRgb( hue - std::floor(hue), sat, lum , col.x(), col.y(), col.z());
                        col.w() = alpha;
                     }
 		    else

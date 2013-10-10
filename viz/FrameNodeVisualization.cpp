@@ -6,7 +6,7 @@
 #include <osg/ShapeDrawable>
 #include <osg/Geode>
 #include <osg/Geometry>
-#include <vizkit/Uncertainty.hpp>
+#include <vizkit3d/Uncertainty.hpp>
 
 namespace envire {
 
@@ -70,7 +70,7 @@ void FrameNodeVisualization::updateNode(envire::EnvironmentItem* item, osg::Grou
         if(showUncertainty)
         {
             TransformWithUncertainty tf = fn->getTransformWithUncertainty();
-            vizkit::Uncertainty *ellipse = new vizkit::Uncertainty();
+            vizkit3d::Uncertainty *ellipse = new vizkit3d::Uncertainty();
             ellipse->setMean( Eigen::Vector3d(tf.getTransform().translation()) );
             ellipse->setCovariance( Eigen::Matrix3d( tf.getCovariance().bottomRightCorner<3,3>()) );
             ug->addChild( ellipse );

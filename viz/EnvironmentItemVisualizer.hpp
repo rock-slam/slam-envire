@@ -1,7 +1,7 @@
 #ifndef EVIRONMENTITEMVIZALIZER_H
 #define EVIRONMENTITEMVIZALIZER_H
 
-#include <vizkit/Vizkit3DPlugin.hpp>
+#include <vizkit3d/Vizkit3DPlugin.hpp>
 
 #define INVISIBLE_MASK 0x0
 #define VISIBLE_MASK 0xffffffff
@@ -17,7 +17,7 @@ namespace envire {
 
 namespace envire {
     
-class EnvironmentItemVisualizer : public vizkit::VizPluginBase
+class EnvironmentItemVisualizer : public vizkit3d::VizPluginBase
 {
     public:
         virtual void updateMainNode(osg::Node* node) {};

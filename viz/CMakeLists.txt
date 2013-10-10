@@ -17,6 +17,7 @@ rock_vizkit_plugin(envire-viz
     TraversabilityGridVisualization.cpp
     MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp ElevationGridVisualization.hpp MapSegmentVisualization.hpp FrameNodeVisualization.hpp
     DEPS envire
+    DEPS_PKGCONFIG base-viz
     DEPS_CMAKE GDAL
     HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp
     EnvironmentItemVisualizer.hpp)
@@ -24,7 +25,7 @@ target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
 
 rock_executable(envireViewer envireViewer.cpp
     DEPS envire-viz
-    DEPS_PKGCONFIG vizkit)
+    DEPS_PKGCONFIG vizkit3d)
 target_link_libraries(envireViewer
     ${QT_QTGUI_LIBRARY})
     
