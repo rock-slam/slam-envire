@@ -31,7 +31,7 @@ void MLSGrid::clear()
     cells.clear();
     cellcount = 0;
     if(index) index->reset();
-    extents = CellExtents(Eigen::Vector2i(0,0),Eigen::Vector2i(0,0));
+    extents = CellExtents();
     config.useColor = false;
 }
 

@@ -224,7 +224,7 @@ namespace envire
 	/** return the extents of the subset of the grid, which 
 	 * contains cells.
 	 */
-	CellExtents getCellExtents() const { return extents; }
+	CellExtents getCellExtents() const { return extents.isEmpty() ? CellExtents(Eigen::Vector2i(0,0),Eigen::Vector2i(0,0)) : extents; }
 
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
