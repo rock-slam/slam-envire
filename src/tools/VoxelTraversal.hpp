@@ -54,8 +54,13 @@ public:
 	deltay = (dir / dir.y() * grid.getScaleY()).norm();
 
 	// starting distance until a new cell is reached.
-	maxx = deltax * xmod / grid.getScaleX();
-	maxy = deltay * ymod / grid.getScaleY(); 
+	maxx = deltax * xmod;
+	maxy = deltay * ymod; 
+    }
+
+    Eigen::Vector3d getPosition()
+    {
+	return Eigen::Vector3d( maxx / deltax, maxy / deltay, .0 );
     }
 
     bool step( GridBase::Position &pos )
