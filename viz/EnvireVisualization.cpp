@@ -10,6 +10,7 @@
 #include "ImageRGB24Visualization.hpp"
 #include "TraversabilityGridVisualization.hpp"
 #include "MapSegmentVisualization.hpp"
+#include "GridVisualization.hpp"
 
 #include "ItemManipulator.hpp"
 
@@ -40,6 +41,7 @@ EnvireVisualization::EnvireVisualization()
     visualizers.push_back( boost::shared_ptr<ImageRGB24Visualization>(new ImageRGB24Visualization() ) );
     visualizers.push_back( boost::shared_ptr<TraversabilityGridVisualization>(new TraversabilityGridVisualization()));
     visualizers.push_back( boost::shared_ptr<MapSegmentVisualization>(new MapSegmentVisualization()));
+    visualizers.push_back( boost::shared_ptr<GridVisualization>(new GridVisualization()));
     
     // attach visualizers
     for(std::vector<boost::shared_ptr<EnvironmentItemVisualizer> >::iterator it = visualizers.begin(); it != visualizers.end(); it++)

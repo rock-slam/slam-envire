@@ -7,6 +7,7 @@ rock_vizkit_plugin(envire-viz
     FrameNodeVisualization.cpp
     GridVisualizationBase.cpp
     ImageRGB24Visualization.cpp
+    GridVisualization.cpp
     LaserScanVisualization.cpp
     MapSegmentVisualization.cpp
     MLSVisualization.cpp
