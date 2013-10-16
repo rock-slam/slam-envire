@@ -171,6 +171,25 @@ namespace envire
 	    getGridData( key );
 	}
 
+        /** 
+         * @return the minimum and maximum values in the grid
+         */
+        void getMinMaxValues( const std::string& key, T& min, T& max )
+        {
+            min = std::numeric_limits<T>::max();
+            max = std::numeric_limits<T>::min();
+
+            ArrayType& a = getGridData( key );
+            for( T* i = a.data(); i < (a.data() + a.num_elements()); i++ )
+            {
+                const T val = *i;
+                if( val < min )
+                    min = val;
+                if( val > max )
+                    max = val;
+            }
+        }
+
         /** Returns the boost::multiarray that stores the data of the specified band
          */
 	ArrayType& getGridData( const std::string& key )
