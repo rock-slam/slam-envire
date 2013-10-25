@@ -52,7 +52,7 @@ rock_library(envire
     HEADERS Core.hpp
     DEPS_PKGCONFIG ply base-types base-lib
     DEPS_CMAKE LibYAML GDAL
-    DEPS_PLAIN Boost_FILESYSTEM Boost_THREAD)
+    DEPS_PLAIN Boost_SYSTEM Boost_FILESYSTEM Boost_THREAD)
 
 install(FILES core/EventHandler.hpp
     core/Environment.hpp
