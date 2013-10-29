@@ -14,6 +14,7 @@ static SerializationPlugin<MLSGrid> factory("MultiLevelSurfaceGrid");
 MLSGrid::MLSGrid()
     : GridBase()
     , cellcount( 0 )
+    , serialize_version("1.3")
 {
     clear();
 }
@@ -22,6 +23,7 @@ MLSGrid::MLSGrid(size_t cellSizeX, size_t cellSizeY, double scalex, double scale
     : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety )
     , cells( cellSizeX, cellSizeY )
     , cellcount( 0 )
+    , serialize_version("1.3")
 {
     clear();
 }
@@ -41,6 +43,7 @@ MLSGrid::MLSGrid(const MLSGrid& other)
     , config( other.config )
     , cellcount( other.cellcount )
     , extents( other.extents )
+    , serialize_version(other.serialize_version)
 {
 }
 
@@ -54,6 +57,7 @@ MLSGrid& MLSGrid::operator=(const MLSGrid& other)
 	extents = other.extents;
 	config = other.config;
 	cellcount = other.cellcount;
+    serialize_version = other.serialize_version;
     }
 
     return *this;
@@ -148,7 +152,7 @@ void MLSGrid::serialize(Serialization& so)
     so.write( "hasCellColor", config.useColor );
     long updateModelInt = static_cast<long>( config.updateModel );
     so.write( "updateModel", updateModelInt );
-    writeMap( so.getBinaryOutputStream(getMapFileName() + ".mls") );
+    writeMap( so.getBinaryOutputStream(getMapFileName() + ".mls"), serialize_version );
 }
 
 void MLSGrid::unserialize(Serialization& so)
@@ -209,6 +213,11 @@ struct SurfacePatchStore10
 
     size_t xi, yi;
 
+    SurfacePatchStore10() {};
+
+    SurfacePatchStore10( const SurfacePatch& data, size_t xi, size_t yi )
+	: mean(data.mean), stdev(data.stdev), height(data.height), horizontal(data.isHorizontal()), update_idx(update_idx), xi(xi), yi(yi) {}
+
     SurfacePatch toSurfacePatch()
     {
 	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
@@ -229,6 +238,11 @@ struct SurfacePatchStore11
 
     size_t xi, yi;
 
+    SurfacePatchStore11() {};
+
+    SurfacePatchStore11( const SurfacePatch& data, size_t xi, size_t yi )
+	: mean(data.mean), stdev(data.stdev), height(data.height), horizontal(data.isHorizontal()), update_idx(update_idx), color(data.getColor()), xi(xi), yi(yi) {}
+
     SurfacePatch toSurfacePatch()
     {
 	SurfacePatch p( mean, stdev, height, horizontal ? SurfacePatch::HORIZONTAL : SurfacePatch::VERTICAL );
@@ -248,6 +262,14 @@ struct SurfacePatchStore12
     uint8_t color[3];
 
     size_t xi, yi;
+
+    SurfacePatchStore12() {};
+
+    SurfacePatchStore12( const SurfacePatch& data, size_t xi, size_t yi )
+	: mean(data.mean), stdev(data.stdev), height(data.height), horizontal(data.isHorizontal()), update_idx(update_idx), xi(xi), yi(yi) 
+    {
+        std::copy( data.color, data.color+3, color );
+    }
 
     SurfacePatch toSurfacePatch()
     {
@@ -296,11 +318,23 @@ struct SurfacePatchStore : SurfacePatch
     size_t xi, yi;
 };
 
-void MLSGrid::writeMap(std::ostream& os)
+void MLSGrid::writeMap(std::ostream& os, const std::string &mls_version)
 {
+    if( mls_version != "1.0" && mls_version != "1.1" && mls_version != "1.2" && mls_version != "1.3" )
+	throw std::runtime_error("version not supported " + mls_version );
+
     os << "mls" << std::endl;
-    os << "1.3" << std::endl;
-    os << sizeof( SurfacePatchStore ) << std::endl;
+    os << mls_version << std::endl;
+    size_t surface_patch_size = 0;
+    if(mls_version == "1.0")
+        surface_patch_size = sizeof( SurfacePatchStore10 );
+    else if(mls_version == "1.1")
+        surface_patch_size = sizeof( SurfacePatchStore11 );
+    else if(mls_version == "1.2")
+        surface_patch_size = sizeof( SurfacePatchStore12 );
+    else if(mls_version == "1.3")
+        surface_patch_size = sizeof( SurfacePatchStore );
+    os << surface_patch_size << std::endl;
     os << "bin" << std::endl;
 
     for(size_t xi=0;xi<cellSizeX;xi++)
@@ -309,8 +343,26 @@ void MLSGrid::writeMap(std::ostream& os)
 	{
 	    for( iterator it = beginCell( xi,yi ); it != endCell(); it++ )
 	    {
-		SurfacePatchStore d( *it, xi, yi );
-		os.write( reinterpret_cast<const char*>(&d), sizeof( SurfacePatchStore ) );
+                if(mls_version == "1.0")
+                {
+                    SurfacePatchStore10 d( *it, xi, yi );
+                    os.write( reinterpret_cast<const char*>(&d), surface_patch_size );
+                }
+                else if(mls_version == "1.1")
+                {
+                    SurfacePatchStore11 d( *it, xi, yi );
+                    os.write( reinterpret_cast<const char*>(&d), surface_patch_size );
+                }
+                else if(mls_version == "1.2")
+                {
+                    SurfacePatchStore12 d( *it, xi, yi );
+                    os.write( reinterpret_cast<const char*>(&d), surface_patch_size );
+                }
+                else if(mls_version == "1.3")
+                {
+                    SurfacePatchStore d( *it, xi, yi );
+                    os.write( reinterpret_cast<const char*>(&d), surface_patch_size );
+                }
 	    }
 	}
     }

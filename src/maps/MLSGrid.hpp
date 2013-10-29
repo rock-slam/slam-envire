@@ -93,7 +93,7 @@ namespace envire
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
-	void writeMap(std::ostream& os);
+	void writeMap(std::ostream& os, const std::string &mls_version = "1.3");
 	void readMap(std::istream& is);
 
         /** Clears the whole map */
@@ -226,6 +226,9 @@ namespace envire
 	 */
 	CellExtents getCellExtents() const { return extents.isEmpty() ? CellExtents(Eigen::Vector2i(0,0),Eigen::Vector2i(0,0)) : extents; }
 
+    std::string getSerializeVersion() const {return serialize_version;}
+    void setSerializeVersion(const std::string &version) {this->serialize_version = version;}
+
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
 
@@ -238,6 +241,9 @@ namespace envire
 	/// optionaly stores information on which grid cells are used
 	boost::shared_ptr<Index> index;
 	CellExtents extents;
+
+    // option to serialize a specific version of the mls
+    std::string serialize_version;
     };
 
     /** For backward compatibility. Use MLSGrid instead. */
