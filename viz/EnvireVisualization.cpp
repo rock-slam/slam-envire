@@ -32,6 +32,8 @@ EnvireVisualization::EnvireVisualization()
 		boost::bind( &osg::Group::removeChild, ownNode->asGroup(), _1 ) ) );
 
     // create and register visualizers
+    // NOTE: the visualizers at the back have higher priority 
+    visualizers.push_back( boost::shared_ptr<GridVisualization>(new GridVisualization()));
     visualizers.push_back( boost::shared_ptr<LaserScanVisualization>(new LaserScanVisualization() ) );
     visualizers.push_back( boost::shared_ptr<FrameNodeVisualization>(new FrameNodeVisualization() ) );
     visualizers.push_back( boost::shared_ptr<TriMeshVisualization>(new TriMeshVisualization() ) );
@@ -41,7 +43,6 @@ EnvireVisualization::EnvireVisualization()
     visualizers.push_back( boost::shared_ptr<ImageRGB24Visualization>(new ImageRGB24Visualization() ) );
     visualizers.push_back( boost::shared_ptr<TraversabilityGridVisualization>(new TraversabilityGridVisualization()));
     visualizers.push_back( boost::shared_ptr<MapSegmentVisualization>(new MapSegmentVisualization()));
-    visualizers.push_back( boost::shared_ptr<GridVisualization>(new GridVisualization()));
     
     // attach visualizers
     for(std::vector<boost::shared_ptr<EnvironmentItemVisualizer> >::iterator it = visualizers.begin(); it != visualizers.end(); it++)
