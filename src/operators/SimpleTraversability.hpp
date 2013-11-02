@@ -79,11 +79,13 @@ namespace envire {
             INPUT_COUNT
         };
 
+    public:
         enum CLASSES {
             CLASS_UNKNOWN = 0,
             CLASS_OBSTACLE = 1,
             CUSTOM_CLASSES = 2
         };
+    private:
 
         /** Our input layers. This is stored here in addition to store it in the
          * operator graph, as we might use multiple bands of the same layer
