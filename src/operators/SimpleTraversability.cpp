@@ -140,10 +140,10 @@ bool SimpleTraversability::updateAll()
         output_layer->setNoData(output_band, CLASS_UNKNOWN);
 
     static float const DEFAULT_UNKNOWN_INPUT = -std::numeric_limits<float>::infinity();
-    Grid<float> const* input_layers[3] = { 0, 0, 0 };
-    float input_unknown[3];
+    Grid<float> const* input_layers[INPUT_COUNT] = { 0, 0, 0};
+    float input_unknown[INPUT_COUNT];
 
-    boost::multi_array<float, 2> const* inputs[3] = { 0, 0, 0 };
+    boost::multi_array<float, 2> const* inputs[INPUT_COUNT] = { 0, 0, 0 };
     bool has_data = false;
     for (int i = 0; i < INPUT_COUNT; ++i)
     {
