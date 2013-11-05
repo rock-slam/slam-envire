@@ -23,15 +23,13 @@ SimpleTraversability::SimpleTraversability(
 }
 
 SimpleTraversability::SimpleTraversability(
-        double weight_force,
-        double force_threshold,
+        double maximum_slope,
         int class_count,
         double min_width,
         double ground_clearance)
     : Operator(0, 1)
 {
-    conf.weight_force     = weight_force;
-    conf.force_threshold  = force_threshold;
+    conf.maximum_slope     = maximum_slope;
     conf.class_count      = class_count;
     conf.min_width        = min_width;
     conf.ground_clearance = ground_clearance;
@@ -50,8 +48,7 @@ void SimpleTraversability::serialize(envire::Serialization& so)
         }
     }
 
-    so.write("weight_force", conf.weight_force);
-    so.write("force_threshold", conf.force_threshold);
+    so.write("maximum_slope", conf.maximum_slope);
     so.write("class_count", conf.class_count);
     so.write("ground_clearance", conf.ground_clearance);
     so.write("min_width", conf.min_width);
@@ -72,8 +69,7 @@ void SimpleTraversability::unserialize(envire::Serialization& so)
         }
     }
 
-    so.read<double>("weight_force", conf.weight_force);
-    so.read<double>("force_threshold", conf.force_threshold);
+    so.read<double>("maximum_slope", conf.maximum_slope);
     so.read<int>("class_count", conf.class_count);
     so.read<double>("ground_clearance", conf.ground_clearance);
     so.read<double>("min_width", conf.min_width);
@@ -108,15 +104,6 @@ void SimpleTraversability::setMaxStep(Grid<float>* grid, std::string const& band
     input_bands[MAX_STEP] = band_name;
 }
 
-envire::Grid<float>* SimpleTraversability::getMaxForceLayer() const { return getInputLayer(MAX_FORCE); }
-std::string SimpleTraversability::getMaxForceBand() const { return getInputBand(MAX_FORCE); }
-void SimpleTraversability::setMaxForce(Grid<float>* grid, std::string const& band_name)
-{
-    addInput(grid);
-    input_layers_id[MAX_FORCE] = grid->getUniqueId();
-    input_bands[MAX_FORCE] = band_name;
-}
-
 void SimpleTraversability::setOutput(OutputLayer* grid, std::string const& band_name)
 {
     removeOutputs();
@@ -140,10 +127,10 @@ bool SimpleTraversability::updateAll()
         output_layer->setNoData(output_band, CLASS_UNKNOWN);
 
     static float const DEFAULT_UNKNOWN_INPUT = -std::numeric_limits<float>::infinity();
-    Grid<float> const* input_layers[INPUT_COUNT] = { 0, 0, 0};
+    Grid<float> const* input_layers[INPUT_COUNT] = { 0, 0};
     float input_unknown[INPUT_COUNT];
 
-    boost::multi_array<float, 2> const* inputs[INPUT_COUNT] = { 0, 0, 0 };
+    boost::multi_array<float, 2> const* inputs[INPUT_COUNT] = { 0, 0 };
     bool has_data = false;
     for (int i = 0; i < INPUT_COUNT; ++i)
     {
@@ -169,8 +156,6 @@ bool SimpleTraversability::updateAll()
     //if (inputs[MAX_STEP] && conf.ground_clearance == 0)
     //    throw std::runtime_error("a max_step band is available, but the ground clearance is set to zero");
 
-    double const class_width = 1.0 / conf.class_count;
-                
     int width = output_layer->getWidth(), height = output_layer->getHeight();
     for (int y = 0; y < height; ++y)
     {
@@ -183,7 +168,8 @@ bool SimpleTraversability::updateAll()
             for (int band_idx = 0; band_idx < INPUT_COUNT; ++band_idx)
             {
                 has_value[band_idx] = false;
-                if (!inputs[band_idx]) continue;
+                if (!inputs[band_idx]) 
+                    continue;
 
                 double value = (*inputs[band_idx])[y][x];
                 if (value != input_unknown[band_idx])
@@ -194,8 +180,7 @@ bool SimpleTraversability::updateAll()
             }
 
             bool has_slope = has_value[SLOPE],
-                 has_max_step    = has_value[MAX_STEP],
-                 has_max_force   = has_value[MAX_FORCE];
+                 has_max_step    = has_value[MAX_STEP];
 
             // First, max_step is an ON/OFF threshold on the ground clearance
             // parameter
@@ -204,34 +189,29 @@ bool SimpleTraversability::updateAll()
                 result[y][x] = CLASS_OBSTACLE;
                 continue;
             }
-            if ((inputs[MAX_FORCE] && !has_value[MAX_FORCE]) || (inputs[SLOPE] && !has_value[SLOPE]))
+            
+            if (inputs[SLOPE] && !has_slope)
             {
                 result[y][x] = CLASS_UNKNOWN;
                 continue;
             }
 
-            // Compute an estimate of the force that the system can use to
-            // propulse itself, using the max_force / slope values (and using
-            // the maximum values if none are available)
-            //
-            // The result is then a linear mapping of F=[O, force_threshold] to
-            // [0, 1]
-            double max_force = conf.force_threshold;
-            double speed = 1;
-            if (has_max_force)
-                max_force = values[MAX_FORCE];
-            if (has_slope)
-                max_force = max_force - conf.weight_force * fabs(sin(values[SLOPE]));
-
-            if (max_force <= 0)
-                result[y][x] = CLASS_OBSTACLE;
-            else
+            if(has_slope && conf.maximum_slope)
             {
-                if (max_force < conf.force_threshold)
-                    speed *= max_force / conf.force_threshold;
+                const double meanSlope(fabs(values[SLOPE]));
+                if(meanSlope > conf.maximum_slope)
+                {
+                    result[y][x] = CLASS_OBSTACLE;
+                    continue;
+                }
+                else
+                {
+                    //scale current slope to cost classes
+                    int klass = conf.class_count - rint(meanSlope / conf.maximum_slope * conf.class_count);
+                    result[y][x] = CUSTOM_CLASSES + klass;
+                }
 
-                int klass = rint(speed / class_width);
-                result[y][x] = CUSTOM_CLASSES + klass;
+                
             }
         }
     }
