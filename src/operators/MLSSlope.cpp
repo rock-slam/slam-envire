@@ -36,10 +36,8 @@ static void updateGradient(MLSGrid const& mls,
             stdev1 = neighbour_cell->stdev;
         }
 
-        double gradient_factor = 1;
         if (z0 > z1)
         {
-            gradient_factor = -1;
             std::swap(z0, z1);
             std::swap(stdev0, stdev1);
         }
@@ -161,7 +159,7 @@ bool MLSSlope::updateAll()
                     const int rx = x + xi;
                     const int ry = y + yi;
                     
-                    if((rx < 0) || (rx >= width) || (ry < 0) || (ry >= height) )
+                    if((rx < 0) || (rx >= (int) width) || (ry < 0) || (ry >= (int) height) )
                         continue;
                     
                     MLSGrid::const_iterator neighbour_cell = 
