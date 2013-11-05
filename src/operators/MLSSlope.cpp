@@ -131,7 +131,10 @@ bool MLSSlope::updateAll()
             MLSGrid::const_iterator this_cell = 
                 std::max_element( mls.beginCell(x,y), mls.endCell() );
             if (this_cell == mls.endCell())
+            {
+                angles[y][x] = UNKNOWN;
                 continue;
+            }
 
             updateGradient(mls, use_stddev, angles, diffs, counts, scaley,
                     BOTTOM_CENTER, x, y, TOP_CENTER, x, y + 1,
@@ -155,7 +158,6 @@ bool MLSSlope::updateAll()
                     if(xi == 0 && yi == 0)
                         continue;
 
-                    count++;
                     const int rx = x + xi;
                     const int ry = y + yi;
                     
@@ -167,6 +169,7 @@ bool MLSSlope::updateAll()
 
                     if( neighbour_cell != mls.endCell() )
                     {
+                        count++;
                         Vector3d input(xi * mls.getScaleX(), yi * mls.getScaleY(), thisHeight - neighbour_cell->mean);
 //                         std::cout << x << " " << y << " coords " << input.transpose() << std::endl; 
                         fitter.update(input);
