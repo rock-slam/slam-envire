@@ -14,12 +14,9 @@ namespace envire {
      */
     struct SimpleTraversabilityConfig
     {
-        /** Force (in N) due to system's mass */
-        double weight_force;
-
-        /** Force (in N) that constitutes the highest class */
-        double force_threshold;
-
+        /** The maximum slope the robot is able to traverse */
+        double maximum_slope;
+        
         /** Number of classes in the output map */
         int class_count;
 
@@ -39,8 +36,7 @@ namespace envire {
        double obstacle_clearance;
 
        SimpleTraversabilityConfig()
-           : weight_force(0)
-           , force_threshold(0)
+           : maximum_slope(0)
            , class_count(0)
            , min_width(0)
            , ground_clearance(0)
@@ -75,7 +71,6 @@ namespace envire {
         enum INPUT_DATA {
             SLOPE,
             MAX_STEP,
-            MAX_FORCE,
             INPUT_COUNT
         };
 
@@ -112,8 +107,7 @@ namespace envire {
         SimpleTraversability();
         SimpleTraversability(SimpleTraversabilityConfig const& conf);
         SimpleTraversability(
-                double weight_force,
-                double force_threshold,
+                double maximum_slope,
                 int class_count,
                 double min_width,
                 double ground_clearance);
@@ -125,10 +119,6 @@ namespace envire {
         envire::Grid<float>* getMaxStepLayer() const;
         std::string getMaxStepBand() const;
         void setMaxStep(envire::Grid<float>* grid, std::string const& band_name);
-
-        envire::Grid<float>* getMaxForceLayer() const;
-        std::string getMaxForceBand() const;
-        void setMaxForce(envire::Grid<float>* grid, std::string const& band_name);
 
         std::string getOutputBand() const;
         void setOutput(OutputLayer* grid, std::string const& band_name);
