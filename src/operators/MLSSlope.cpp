@@ -2,8 +2,10 @@
 #include <envire/maps/MLSGrid.hpp>
 #include <envire/maps/Grids.hpp>
 #include <boost/multi_array.hpp>
+#include <numeric/PlaneFitting.hpp>
 
 using namespace envire;
+using namespace Eigen;
 
 ENVIRONMENT_ITEM_DEF( MLSSlope )
 
@@ -11,7 +13,7 @@ static double const UNKNOWN = -std::numeric_limits<double>::infinity();
     
 static void updateGradient(MLSGrid const& mls,
         bool use_stddev,
-        boost::multi_array<float,2>& angles,
+        boost::multi_array<float,2>& mean_angles,
         boost::multi_array<float,3>& diffs,
         boost::multi_array<int, 2>& count,
         double scale,
@@ -46,14 +48,11 @@ static void updateGradient(MLSGrid const& mls,
         double max_z = z1 + stdev1;
 
         double step = max_z - min_z;
-        double gradient = gradient_factor * step / scale;
-
+        
         diffs[this_y][this_x][this_index] = step;
-        angles[this_y][this_x] += gradient;
         count[this_y][this_x]++;
 
         diffs[other_y][other_x][other_index] = step;
-        angles[other_y][other_x] += gradient;
         count[other_y][other_x]++;
     }
     else
@@ -80,7 +79,6 @@ bool MLSSlope::updateAll()
 
     // init traversibility grid
     boost::multi_array<float,2>& angles(travGrid.getGridData("mean_slope"));
-    std::fill(angles.data(), angles.data() + angles.num_elements(), 0);
     boost::multi_array<float,2>& max_steps(travGrid.getGridData("max_step"));
     std::fill(max_steps.data(), max_steps.data() + max_steps.num_elements(), UNKNOWN);
     boost::multi_array<float,2>& corrected_max_steps(travGrid.getGridData("corrected_max_step"));
@@ -148,7 +146,51 @@ bool MLSSlope::updateAll()
                     this_cell);
             updateGradient(mls, use_stddev, angles, diffs, counts, diagonal_scale,
                     BOTTOM_RIGHT, x, y, TOP_LEFT, x - 1, y + 1,
-                    this_cell);
+                    this_cell);            
+            
+            base::PlaneFitting<double> fitter;
+            int count = 0;
+            double thisHeight = this_cell->mean;
+            for(int xi = -1; xi <= 1; xi++) {
+                for(int yi = -1; yi <= 1; yi++) {
+                    //skip onw entry
+                    if(xi == 0 && yi == 0)
+                        continue;
+
+                    count++;
+                    const int rx = x + xi;
+                    const int ry = y + yi;
+                    
+                    if((rx < 0) || (rx >= width) || (ry < 0) || (ry >= height) )
+                        continue;
+                    
+                    MLSGrid::const_iterator neighbour_cell = 
+                        std::max_element( mls.beginCell(rx,ry), mls.endCell() );
+
+                    if( neighbour_cell != mls.endCell() )
+                    {
+                        Vector3d input(xi * mls.getScaleX(), yi * mls.getScaleY(), thisHeight - neighbour_cell->mean);
+//                         std::cout << x << " " << y << " coords " << input.transpose() << std::endl; 
+                        fitter.update(input);
+                    }
+
+                }
+            }
+
+            
+            fitter.update(Vector3d(0,0,0));
+            
+            if (count < 5)
+            {
+                angles[y][x] = UNKNOWN;
+            }
+            else
+            {
+                Vector3d fit(fitter.getCoeffs());
+                const double divider = sqrt(fit.x() * fit.x() + fit.y() * fit.y() + 1);
+                angles[y][x] = acos(1 / divider);
+            }
+            
         }
     }
 
@@ -160,14 +202,11 @@ bool MLSSlope::updateAll()
             int count = counts[y][x];
             if (count < 5)
             {
-                angles[y][x] = UNKNOWN;
                 max_steps[y][x] = UNKNOWN;
                 corrected_max_steps[y][x] = UNKNOWN;
                 continue;
             }
 
-            double mean_gradient = fabs(angles[y][x] / count);
-            angles[y][x] = atan(mean_gradient);
 
             double max_step = UNKNOWN;
             double corrected_max_step = UNKNOWN;
