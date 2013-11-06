@@ -10,6 +10,7 @@
 #include <osgDB/ReadFile>
 #include <iostream>
 #include <osg/ShapeDrawable>
+#include <osg/BlendFunc>
 
 namespace envire 
 {
@@ -17,6 +18,10 @@ namespace envire
   {
     osg::ref_ptr<osg::Group> group = new osg::Group();
     osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+    // apply transparency
+    geode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    osg::BlendFunc* bf = new osg::BlendFunc( osg::BlendFunc::SRC_ALPHA, osg::BlendFunc::ONE_MINUS_SRC_ALPHA );
+    geode->getOrCreateStateSet()->setAttributeAndModes(bf);
     group->addChild(geode.get());
     updateNode ( item, group);
     return group.release();
