@@ -12,6 +12,8 @@
 #include <osgManipulator/TrackballDragger>
 #include "FrameNodeManipulator.hpp"
 
+#include <base/Pose.hpp>
+
 #include <iostream>
 
 using namespace envire;
@@ -53,8 +55,24 @@ void ItemManipulator::itemActivated(QTreeWidgetItem* item, int column)
 		osg::Group *osgGroup = eel->getNodeForItem(activeItem);		
 		viz->highlightNode(activeItem, osgGroup);
 		
-		if(dynamic_cast<envire::FrameNode *>( activeItem))
+		FrameNode *fn = dynamic_cast<envire::FrameNode *>(activeItem);
+		if( fn )
+		{
 		    frameManipulator = new FrameNodeManipulator(activeItem, eel->getParentNodeForItem(activeItem));
+
+		    base::Pose pose( fn->getTransform() );
+		    std::cout << "FrameNode selected:" << std::endl
+			<< ":position => ["
+			    << pose.position.x() << ", " 
+			    << pose.position.y() << ", " 
+			    << pose.position.z() << "], " 
+			<< ":orientation => ["
+			    << pose.orientation.w() << ", " 
+			    << pose.orientation.x() << ", " 
+			    << pose.orientation.y() << ", " 
+			    << pose.orientation.z() << "], " 
+			<< ":id => '" << fn->getUniqueIdSuffix() << "'" << std::endl;
+		}
 	    }
 	}
     }
