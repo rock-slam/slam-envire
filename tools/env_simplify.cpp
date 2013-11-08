@@ -21,7 +21,7 @@ int main( int argc, char* argv[] )
 	exit(0);
     }
     double cell_size = 0.05;
-    if( argc >=3 )
+    if( argc >=4 )
 	cell_size = boost::lexical_cast<double>( argv[3] );
     std::cout << "using cell size: " << cell_size << std::endl;
 
