@@ -26,4 +26,5 @@ target_link_libraries(enview
     ${QT_QTGUI_LIBRARY}
     ${PROJECT_NAME}-viz
     envire
+    ${VIZKIT3D_LIBRARIES}
     icp)
