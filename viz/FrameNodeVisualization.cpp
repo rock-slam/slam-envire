@@ -7,6 +7,7 @@
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <vizkit3d/Uncertainty.hpp>
+#include <vizkit3d/CoordinateFrame.hpp>
 
 namespace envire {
 
@@ -18,6 +19,7 @@ osg::Group* FrameNodeVisualization::getNodeForItem(envire::EnvironmentItem* item
 {
     osg::PositionAttitudeTransform *transform = new osg::PositionAttitudeTransform;
     updateNode(item, transform);
+    transform->addChild(new vizkit3d::CoordinateFrame());
     
     return transform;
 }
@@ -43,6 +45,8 @@ void FrameNodeVisualization::updateNode(envire::EnvironmentItem* item, osg::Grou
     
     assert(fn && transform);
     setTransform( transform, fn->getTransform() );
+    
+    
     // slightly awkward way of adding the uncertainty,
     // since it should actually be added to the parent
     // frame. adds a group with the inverse transform to 
@@ -74,7 +78,7 @@ void FrameNodeVisualization::updateNode(envire::EnvironmentItem* item, osg::Grou
             ellipse->setMean( Eigen::Vector3d(tf.getTransform().translation()) );
             ellipse->setCovariance( Eigen::Matrix3d( tf.getCovariance().bottomRightCorner<3,3>()) );
             ug->addChild( ellipse );
-        }
+        }        
     }
 }
 
