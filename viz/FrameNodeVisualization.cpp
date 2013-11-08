@@ -19,8 +19,6 @@ osg::Group* FrameNodeVisualization::getNodeForItem(envire::EnvironmentItem* item
 {
     osg::PositionAttitudeTransform *transform = new osg::PositionAttitudeTransform;
     updateNode(item, transform);
-    transform->addChild(new vizkit3d::CoordinateFrame());
-    
     return transform;
 }
 
@@ -87,14 +85,20 @@ void FrameNodeVisualization::highlightNode(envire::EnvironmentItem* item, osg::G
     osg::PositionAttitudeTransform *transform = dynamic_cast<osg::PositionAttitudeTransform *>(group);    
     assert(transform);
     
-    osg::ref_ptr<osg::Sphere> sp = new osg::Sphere(osg::Vec3d(0, 0, 0), 0.3);
-    osg::ref_ptr<osg::ShapeDrawable> spd = new osg::ShapeDrawable(sp.get());
-    spd->setColor(osg::Vec4(1.0, 0, 0, 1.0));
-    osg::ref_ptr<osg::Geode> gp = new osg::Geode();
-    gp->addDrawable(spd.get());
+//     osg::ref_ptr<osg::Sphere> sp = new osg::Sphere(osg::Vec3d(0, 0, 0), 0.3);
+//     osg::ref_ptr<osg::ShapeDrawable> spd = new osg::ShapeDrawable(sp.get());
+//     spd->setColor(osg::Vec4(1.0, 0, 0, 1.0));
+//     osg::ref_ptr<osg::Geode> gp = new osg::Geode();
+//     gp->addDrawable(spd.get());
+//     
+//     gp->setName("FrameNodeHighlighter");
+//     transform->addChild(gp);
     
-    gp->setName("FrameNodeHighlighter");
-    transform->addChild(gp);
+    
+    osg::Geode *cross = new vizkit3d::CoordinateFrame();
+    cross->setName("CoordinateCross");
+    transform->addChild(cross);
+    
 }
 
 void FrameNodeVisualization::unHighlightNode(envire::EnvironmentItem* item, osg::Group* group) const
@@ -103,7 +107,8 @@ void FrameNodeVisualization::unHighlightNode(envire::EnvironmentItem* item, osg:
     assert(transform);
 
     for(unsigned int i = 0; i < transform->getNumChildren();i++) {
-	if(group->getChild(i)->getName() == std::string("FrameNodeHighlighter")) {
+	if(group->getChild(i)->getName() == std::string("FrameNodeHighlighter") 
+            || group->getChild(i)->getName() == std::string("CoordinateCross")) {
 	    group->removeChild(i);
 	    break;
 	}
