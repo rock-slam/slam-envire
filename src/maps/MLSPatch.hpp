@@ -281,7 +281,7 @@ struct SurfacePatch
 	    // to be vertical
 	    if( !p.isHorizontal() || !o.isHorizontal())
 	    {
-		if( p.isVertical() && o.isVertical() )
+		if( p.isHorizontal() && o.isVertical() )
 		    p.setVertical();
 		else if( p.isNegative() && o.isNegative() )
 		    p.setNegative();
