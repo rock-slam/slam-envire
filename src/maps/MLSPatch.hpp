@@ -63,7 +63,7 @@ struct SurfacePatch
 
     SurfacePatch( const Eigen::Vector3f &p, float stdev )
 	: plane( p, 1.0f/pow(stdev,2)), 
-	min(mean), max(mean),
+	min(p.z()), max(p.z()),
 	n(1.0), 
 	normsq(1.0/pow(stdev,4)),
 	update_idx(0),
@@ -220,8 +220,8 @@ struct SurfacePatch
 	    p.plane.n += o.plane.n;
 	    p.n += o.n;
 	    p.normsq += o.normsq;
-	    p.min = std::min( p.min, p.min );
-	    p.max = std::max( p.max, p.max );
+	    p.min = std::min( p.min, o.min );
+	    p.max = std::max( p.max, o.max );
 
 	    p.updateSum();
 
@@ -238,8 +238,8 @@ struct SurfacePatch
 	if( overlap( min-gapSize, max+gapSize, o.min, o.max ) )
 	{
 	    p.n += o.n;
-	    p.min = std::min( p.min, p.min );
-	    p.max = std::max( p.max, p.max );
+	    p.min = std::min( p.min, o.min );
+	    p.max = std::max( p.max, o.max );
 
 	    // sum the plane between the two
 	    p.plane.update( o.plane );
