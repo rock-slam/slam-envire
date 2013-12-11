@@ -264,8 +264,8 @@ struct SurfacePatchStore13
     float stdev;
     float height;
     base::PlaneFitting<float> plane;
-    float n, normsq;
     float min, max;
+    float n, normsq;
     size_t update_idx;
     uint8_t color[3];
     SurfacePatch::TYPE type;
