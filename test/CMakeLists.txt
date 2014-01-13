@@ -1,4 +1,4 @@
-rock_testsuite(mls_perf mlsperf.cpp
+rock_executable(mls_perf mlsperf.cpp
     DEPS envire)
 
 rock_testsuite(test_core unit/core.cpp
