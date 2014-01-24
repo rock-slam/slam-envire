@@ -52,7 +52,7 @@ rock_library(envire
     HEADERS Core.hpp
     DEPS_PKGCONFIG ply base-types base-lib
     DEPS_CMAKE LibYAML GDAL
-    DEPS_PLAIN Boost_FILESYSTEM Boost_THREAD)
+    DEPS_PLAIN Boost_SYSTEM Boost_FILESYSTEM Boost_THREAD)
 
 install(FILES core/EventHandler.hpp
     core/Environment.hpp
@@ -76,6 +76,8 @@ install(FILES maps/GridBase.hpp
     maps/Grids.hpp
     maps/LaserScan.hpp
     maps/MLSGrid.hpp
+    maps/MLSPatch.hpp
+    maps/MLSConfiguration.hpp
     maps/MLSMap.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
@@ -107,7 +109,10 @@ install(FILES tools/GraphViz.hpp
     tools/Numeric.hpp
     tools/PlyFile.hpp
     tools/GaussianMixture.hpp
+    tools/ListGrid.hpp
     tools/ExpectationMaximization.hpp
+    tools/BresenhamLine.hpp
+    tools/VoxelTraversal.hpp
     DESTINATION include/envire/tools)
 
 if (USE_CGAL AND CGAL_FOUND)

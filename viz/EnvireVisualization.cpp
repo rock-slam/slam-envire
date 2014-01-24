@@ -10,6 +10,7 @@
 #include "ImageRGB24Visualization.hpp"
 #include "TraversabilityGridVisualization.hpp"
 #include "MapSegmentVisualization.hpp"
+#include "GridVisualization.hpp"
 
 #include "ItemManipulator.hpp"
 
@@ -31,6 +32,8 @@ EnvireVisualization::EnvireVisualization()
 		boost::bind( &osg::Group::removeChild, ownNode->asGroup(), _1 ) ) );
 
     // create and register visualizers
+    // NOTE: the visualizers at the back have higher priority 
+    visualizers.push_back( boost::shared_ptr<GridVisualization>(new GridVisualization()));
     visualizers.push_back( boost::shared_ptr<LaserScanVisualization>(new LaserScanVisualization() ) );
     visualizers.push_back( boost::shared_ptr<FrameNodeVisualization>(new FrameNodeVisualization() ) );
     visualizers.push_back( boost::shared_ptr<TriMeshVisualization>(new TriMeshVisualization() ) );

@@ -13,7 +13,7 @@ using namespace std;
 ENVIRONMENT_ITEM_DEF( LaserScan )
 
 LaserScan::LaserScan()
-    : origin_phi(0), center_offset( Eigen::Vector3d::Zero() )
+    : origin_phi(0), center_offset( Eigen::Vector3d::Zero() ), x_forward( false )
 {
 }
 
@@ -22,6 +22,16 @@ void LaserScan::serialize(Serialization& so)
     CartesianMap::serialize(so);
 
     writeScan( so.getBinaryOutputStream(getMapFileName()) );
+}
+
+void LaserScan::setXForward()
+{
+    x_forward = true;
+}
+
+void LaserScan::setYForward()
+{
+    x_forward = false;
 }
 
 void LaserScan::unserialize(Serialization& so)

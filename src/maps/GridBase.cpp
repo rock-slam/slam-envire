@@ -380,7 +380,7 @@ bool GridBase::toGrid( Eigen::Vector3d const& point,
     }
 }
 
-bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
+bool GridBase::toGrid(double x, double y, size_t& xi, size_t& yi, double& xmod, double& ymod) const
 {
     size_t am = floor((x-offsetx)/scalex);
     size_t an = floor((y-offsety)/scaley);
@@ -389,11 +389,19 @@ bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
     {
 	xi = am;
 	yi = an;
+	xmod = x - (xi * scalex + offsetx);
+	ymod = y - (yi * scaley + offsety);
 	return true;
     }
     else {
 	return false;
     }
+}
+
+bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
+{
+    double xmod, ymod;
+    return toGrid( x, y, xi, yi, xmod, ymod );
 }
 
 bool envire::GridBase::toGridTimesX(double x, double y, size_t& xi, size_t& yi, int multiplier) const

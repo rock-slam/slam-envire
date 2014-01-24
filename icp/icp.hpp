@@ -205,7 +205,11 @@ struct PairFilter
 
 struct EdgeAndNormalPairFilter
 {
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    static constexpr double MAX_NORMAL_DEV = M_PI/8.0;
+#else
     static const double MAX_NORMAL_DEV = M_PI/8.0;
+#endif
     inline bool operator()(const VertexEdgeAndNormalNode& a, const VertexEdgeAndNormalNode& b) const
     {
 	const bool edge = (a.edge || b.edge);
@@ -341,8 +345,11 @@ class Trimmed {
 	
 	std::vector<double> pairs_distance;
 
-	
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	constexpr static double gamma = 2.0;
+#else
 	const static double gamma = 2.0;
+#endif
 
 	Eigen::Affine3d C_global2globalnew;
 	size_t iter;

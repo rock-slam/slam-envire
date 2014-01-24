@@ -1,5 +1,3 @@
-rock_export_includedir(${PROJECT_SOURCE_DIR}/viz vizkit)
-
 # compile shared library
 rock_vizkit_plugin(envire-viz
     ElevationGridVisualization.cpp
@@ -9,6 +7,7 @@ rock_vizkit_plugin(envire-viz
     FrameNodeVisualization.cpp
     GridVisualizationBase.cpp
     ImageRGB24Visualization.cpp
+    GridVisualization.cpp
     LaserScanVisualization.cpp
     MapSegmentVisualization.cpp
     MLSVisualization.cpp
@@ -17,7 +16,7 @@ rock_vizkit_plugin(envire-viz
     TreeViewListener.cpp
     ItemManipulator.cpp
     TraversabilityGridVisualization.cpp
-    MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp ElevationGridVisualization.hpp MapSegmentVisualization.hpp FrameNodeVisualization.hpp
+    MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp ElevationGridVisualization.hpp MapSegmentVisualization.hpp FrameNodeVisualization.hpp GridVisualization.hpp
     DEPS envire
     DEPS_PKGCONFIG base-viz
     DEPS_CMAKE GDAL

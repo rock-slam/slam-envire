@@ -13,7 +13,7 @@ const std::string Pointcloud::VERTEX_NORMAL = "vertex_normal";
 const std::string Pointcloud::VERTEX_VARIANCE = "vertex_variance";
 const std::string Pointcloud::VERTEX_ATTRIBUTES = "vertex_attributes";
 
-Pointcloud::Pointcloud()
+Pointcloud::Pointcloud() : sensor_origin(Eigen::Affine3d::Identity())
 {
 }
 
@@ -30,6 +30,8 @@ void Pointcloud::serialize(Serialization& so, bool handleMap)
 {
     CartesianMap::serialize(so);
 
+    so.write( "sensor_origin", sensor_origin );
+
     if(handleMap)
 	writePly( getMapFileName() + ".ply", so.getBinaryOutputStream(getMapFileName() + ".ply") );
 }
@@ -37,6 +39,11 @@ void Pointcloud::serialize(Serialization& so, bool handleMap)
 void Pointcloud::unserialize(Serialization& so, bool handleMap)
 {
     CartesianMap::unserialize(so);
+
+    if( so.hasKey( "sensor_origin" ) )
+        so.read("sensor_origin", sensor_origin );
+    else
+        sensor_origin = Eigen::Affine3d::Identity();
 
     if(handleMap)
     {
@@ -144,4 +151,14 @@ Pointcloud::Extents Pointcloud::getExtents() const
 	res.extend( vertices[i] );
     }
     return res; 
+}
+
+void Pointcloud::setSensorOrigin(const Transform& origin)
+{
+    this->sensor_origin = origin;
+}
+
+const Transform& Pointcloud::getSensorOrigin() const
+{
+    return sensor_origin;
 }

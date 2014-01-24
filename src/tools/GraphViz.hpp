@@ -9,7 +9,7 @@ namespace envire
 class GraphViz
 {
 public:
-    void writeToFile( Environment* env, const std::string& outputfile );
+    static void writeToFile( Environment* env, const std::string& outputfile );
 };
 
 }

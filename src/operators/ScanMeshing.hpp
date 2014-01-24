@@ -18,6 +18,7 @@ namespace envire
 	long remissionMarkerThreshold;
 	double minRange;
 	double maxRange;
+	bool _useRemission;
 
 	bool extractMarkers;
 
@@ -31,6 +32,7 @@ namespace envire
 	void addOutput( TriMesh* mesh ); 
 
 	void setMaxEdgeLength( double value );
+	void useRemission( bool );
 	void setRemissionScaleFactor( double value );
 	void setRemissionMarkerThreshold( long value );
 	void setMinRange( double value );

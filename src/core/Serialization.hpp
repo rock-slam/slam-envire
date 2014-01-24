@@ -78,6 +78,7 @@ namespace envire
         template <class T> void write(const std::string &key, const T& value);
         virtual void write(const std::string &key, const std::string &value);
         virtual void write(const std::string &key, const Transform &value);
+        virtual void write(const std::string &key, const TransformWithUncertainty::Covariance &value);
 
         /**
          * Reads the value at the key position from a yaml map node.
@@ -91,6 +92,7 @@ namespace envire
         }
         virtual bool read(const std::string &key, std::string &value);
         virtual bool read(const std::string &key, Transform &value);
+        virtual bool read(const std::string &key, TransformWithUncertainty::Covariance &value);
 
         /**
          * @return true if the key is available in the current map node

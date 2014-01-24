@@ -83,7 +83,7 @@ namespace envire
     public:
         typedef boost::intrusive_ptr<GridBase> Ptr;
 
-        GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
+        explicit GridBase(std::string const& id = Environment::ITEM_NOT_ATTACHED);
 	/** @brief Constructor of the abstract GridBase class
 	 * 
 	 * Defines the extends and positioning of the grid. The grid is assumed
@@ -156,6 +156,14 @@ namespace envire
          * @return true if (x, y) is within the grid and false otherwise
          */
 	bool toGrid(double x, double y, size_t& xi, size_t& yi) const;
+	
+        /** Converts coordinates in the map-local frame to grid coordinates
+	 * and calculate the position within the cell, such that xmod and ymod
+	 * are between 0 and scalex or scaley respectively
+         *
+         * @return true if (x, y) is within the grid and false otherwise
+         */
+	bool toGrid(double x, double y, size_t& xi, size_t& yi, double& xmod, double& ymod) const;
 
         /** Converts coordinates from the map-local grid coordinates to
          * the coordinates in the specified \c frame

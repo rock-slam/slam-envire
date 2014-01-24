@@ -35,6 +35,8 @@ void FrameNode::serialize(Serialization &so)
     EnvironmentItem::serialize( so );
 
     so.write("transform", frame.getTransform() );
+    if(frame.hasUncertainty())
+        so.write("covariance", frame.getCovariance() );
 }
 
 void FrameNode::unserialize(Serialization &so)
@@ -44,6 +46,12 @@ void FrameNode::unserialize(Serialization &so)
     Eigen::Affine3d t;
     so.read("transform", t );
     frame.setTransform( t );
+    if( so.hasKey( "covariance" ) )
+    {
+        TransformWithUncertainty::Covariance cov;
+        so.read("covariance", cov );
+        frame.setCovariance( cov );
+    }
 }
 
 bool FrameNode::isRoot() const

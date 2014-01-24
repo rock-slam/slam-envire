@@ -21,6 +21,7 @@ void ScanMeshing::setDefaultConfiguration()
     minRange = 0.1;
     maxRange = 1e9;
     extractMarkers = false;
+    _useRemission = false;
 }
 
 void ScanMeshing::serialize(Serialization& so)
@@ -37,6 +38,11 @@ void ScanMeshing::unserialize(Serialization& so)
     so.read("maxEdgeLength", maxEdgeLength ); 
     so.read("remissionScaleFactor", maxEdgeLength ); 
     so.read("minRange", minRange ); 
+}
+
+void ScanMeshing::useRemission( bool value )
+{
+    _useRemission = value;
 }
 
 void ScanMeshing::addInput( LaserScan* scan ) 
@@ -163,10 +169,23 @@ bool ScanMeshing::updateAll()
 	    {
                 float xx = std::cos( psi ) * range;
 
-                Eigen::Vector3d point( 
-                    -std::sin( psi ) * range,
-                    std::cos( phi ) * xx,
-                    std::sin( phi ) * xx );
+                Eigen::Vector3d point;
+		if( scan.x_forward )
+		{
+		    // x-forward
+		    point = Eigen::Vector3d( 
+			    std::cos( phi ) * xx,
+			    std::sin( psi ) * range,
+			    std::sin( phi ) * xx );
+		}
+		else
+		{
+		    // y-forward
+		    point = Eigen::Vector3d( 
+			    -std::sin( psi ) * range,
+			    std::cos( phi ) * xx,
+			    std::sin( phi ) * xx );
+		}
 
                 // perform center offset compensation
                 Eigen::Vector3d offset = Eigen::AngleAxisd(phi, Eigen::Vector3d::UnitX()) * scan.center_offset;
@@ -179,7 +198,7 @@ bool ScanMeshing::updateAll()
 		double sigma = std::min(0.01 * range, 0.02);
 		uncertainty.push_back( sigma * sigma );
 
-		if( has_rem )
+		if( _useRemission && has_rem )
 		{
 		    // convert the remission value into a color value
 		    // for now we do that with a simple linear conversion and a cutoff
@@ -290,11 +309,13 @@ bool ScanMeshing::updateAll()
     // calculate vertex normals
     meshPtr->calcVertexNormals();
 
-    env->itemModified( meshPtr );
-
-    // remove color if size is not the same
-    if( colors.size() != points.size() )
+    // remove colors if empty 
+    assert( colors.empty() || colors.size() == points.size() );
+    if( colors.empty() )
 	meshPtr->removeData( TriMesh::VERTEX_COLOR );
+
+    // mark item as modified
+    env->itemModified( meshPtr );
 
     return true;
 }

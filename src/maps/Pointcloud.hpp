@@ -33,6 +33,10 @@ namespace envire {
 	 */
 	std::vector<Eigen::Vector3d> vertices;
 
+    /** sensor acquisition pose
+     */
+    Transform sensor_origin;
+
     public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -72,6 +76,9 @@ namespace envire {
 	bool readPly(const std::string& filename, std::istream& is);
 
 	Extents getExtents() const;
+
+    void setSensorOrigin(const Transform& origin);
+    const Transform& getSensorOrigin() const;
     };
 }
 

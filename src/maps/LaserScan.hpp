@@ -43,6 +43,12 @@ namespace envire {
             /** list of lines in the scan */
             std::vector<scanline_t> lines;
 
+	    /** 
+	     * if true, the center of the scan is on the x-axis,
+	     * if set to false, the center is on the y-axis (default)
+	     */
+	    bool x_forward;
+
 	private:
 	    bool parseScan( std::istream& is, Transform& transform );
 
@@ -51,6 +57,9 @@ namespace envire {
 
             EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	    LaserScan();
+
+	    void setXForward();
+	    void setYForward();
             
 	    void serialize(Serialization& so);
             void unserialize(Serialization& so);

@@ -52,7 +52,7 @@ bool MergeMLS::updateAll()
 	    {
 		for(size_t n=0;n<input->getHeight();n++)
 		{
-		    for( MLSGrid::const_iterator cit = input->beginCell(m,n); cit != input->endCell(); cit++ )
+		    for( MLSGrid::iterator cit = input->beginCell(m,n); cit != input->endCell(); cit++ )
 		    {
 			MLSGrid::SurfacePatch p( *cit );
 
@@ -112,7 +112,7 @@ bool MergeMLS::updateAll()
 		    MLSGrid::Position s_pos;
 		    if( input->toGrid( src_pos.head<2>(), s_pos ) )
 		    {
-			for( MLSGrid::const_iterator cit = input->beginCell(s_pos.x, s_pos.y); cit != input->endCell(); cit++ )
+			for( MLSGrid::iterator cit = input->beginCell(s_pos.x, s_pos.y); cit != input->endCell(); cit++ )
 			{
 			    MLSGrid::SurfacePatch p( *cit );
 			    p.mean += src_pos.z();

@@ -9,7 +9,7 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( MLSProjection )
 
 MLSProjection::MLSProjection()
-    : withUncertainty( true ), m_negativeInformation( false ), defaultUncertainty( 0.01 )
+    : withUncertainty( true ), m_negativeInformation( false ), defaultUncertainty( 0.01 ), use_boundary_box(false)
 {
 }
 
@@ -37,6 +37,20 @@ void MLSProjection::addOutput( MultiLevelSurfaceGrid* grid )
     Operator::addOutput(grid);
 }
 
+void MLSProjection::setAreaOfInterest(double min_x, double max_x, double min_y, double max_y, double min_z, double max_z)
+{
+    boundary_box.setEmpty();
+    boundary_box.extend(Eigen::Vector3d(min_x, min_y, min_z));
+    boundary_box.extend(Eigen::Vector3d(max_x, max_y, max_z));
+    use_boundary_box = true;
+}
+
+void MLSProjection::unsetAreaOfInterest()
+{
+    boundary_box.setEmpty();
+    use_boundary_box = false;
+}
+
 void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
 {
     // create a new grid with the same dimensions in case the given grid is not
@@ -55,7 +69,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     Eigen::Affine3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
     // get the origin of the poincloud as a map cell
-    Eigen::Vector3d origin_m = C_m2g.getTransform() * Eigen::Vector3d::Zero();
+    Eigen::Vector3d origin_m = C_m2g.getTransform() * pc->getSensorOrigin().translation();
     GridBase::Position origin;
     if( !grid->toGrid( origin_m.head<2>(), origin ) )
 	if( m_negativeInformation )
@@ -164,6 +178,7 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
     if( pc->hasData( Pointcloud::VERTEX_COLOR ) )
     {
 	color = &pc->getVertexData<Eigen::Vector3d>(Pointcloud::VERTEX_COLOR);
+	assert( color->size() == points.size() );
 	grid->setHasCellColor( true );
     }
     bool hasUncertainty = points.size() == uncertainty.size();
@@ -174,6 +189,9 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 	Point p = C_m2g.getTransform() * points[i];
 
 	const Eigen::Vector3d &mean( p );
+
+        if(use_boundary_box && !boundary_box.contains(mean))
+            continue;
 
 	size_t xi, yi;
 	if( grid->toGrid( mean.x(), mean.y(), xi, yi ) )

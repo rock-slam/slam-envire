@@ -3,9 +3,10 @@ exec_prefix=@CMAKE_INSTALL_PREFIX@
 libdir=${prefix}/lib
 includedir=${prefix}/include
 
-Name: envire
-Description: Library for the Environment Representation
+Name: @TARGET_NAME@
+Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
-Requires: eigen3
-Libs: -L${libdir} -lenvire -licp @envire_PKGCONFIG_LIBS@
-Cflags: -I${includedir} @envire_PKGCONFIG_CFLAGS@
+Requires: @PKGCONFIG_REQUIRES@
+Libs: -L${libdir} -l@TARGET_NAME@ @PKGCONFIG_LIBS@ -licp
+Cflags: -I${includedir} @PKGCONFIG_CFLAGS@
+

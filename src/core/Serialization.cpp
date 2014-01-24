@@ -188,6 +188,21 @@ void Serialization::write(const std::string& key, const Transform &value)
     }
 }
 
+void Serialization::write(const std::string& key, const TransformWithUncertainty::Covariance &value)
+{
+    // create a sequence node with all the elements
+    int seq_id = yamlSerialization->addSequenceNode( YAML_FLOW_SEQUENCE_STYLE );
+    yamlSerialization->addNodeToMap( key, seq_id );
+
+    for(int i=0;i<value.rows();i++)
+    {
+        for(int j=0;j<value.cols();j++)
+        {
+            yamlSerialization->addToSequence( seq_id, yamlSerialization->addScalar( value(i,j) ) );
+        }
+    }
+}
+
 void Serialization::begin()
 {
     yaml_document_initialize(&yamlSerialization->document, NULL, NULL, NULL, 1, 1);
@@ -241,6 +256,31 @@ bool Serialization::read(const std::string& key, Transform &value)
     }
    
     if( i != value.matrix().rows() * value.matrix().cols() )
+       throw std::runtime_error("matrix dimension incompatible");       
+
+    return true;
+}
+
+bool Serialization::read(const std::string& key, TransformWithUncertainty::Covariance &value)
+{
+    int node_index = yamlSerialization->findNodeInMap( key );
+    yaml_node_t* node = yamlSerialization->getNode( node_index );
+    
+    if( node->type != YAML_SEQUENCE_NODE )
+        throw std::runtime_error("can't read TransformType");
+
+    int i=0;
+    for(yaml_node_item_t* item=node->data.sequence.items.start;
+            item < node->data.sequence.items.top; item++)
+    {
+        std::string t(yamlSerialization->getScalar( *item ) );
+
+        value( i / value.rows(), i % value.rows() ) =
+            boost::lexical_cast<Transform::Scalar>( t );
+        i++;
+    }
+   
+    if( i != value.rows() * value.cols() )
        throw std::runtime_error("matrix dimension incompatible");       
 
     return true;
