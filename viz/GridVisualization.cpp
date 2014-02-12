@@ -8,7 +8,7 @@
 
 namespace envire 
 {
-    GridVisualization::GridVisualization() : GridVisualizationBase(), showEmptyCells(false), cycleGridColor(false)
+    GridVisualization::GridVisualization() : GridVisualizationBase(), cycleGridColor(false), showEmptyCells(false)
     {
         // set available colors
         for(unsigned i = 0; i < 7; i++)
