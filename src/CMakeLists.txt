@@ -46,6 +46,8 @@ rock_library(envire
     operators/GridIllumination.cpp
     tools/BresenhamLine.cpp
     tools/PlyFile.cpp
+    tools/RadialLookUpTable.cpp
+    tools/BoxLookUpTable.cpp
     tools/GridAccess.cpp
     tools/GraphViz.cpp
     ${ADDITIONAL_SOURCES}
