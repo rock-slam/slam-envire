@@ -135,7 +135,7 @@ namespace envire
          * returns true if the given rectangle is inside the grid.
          *         false otherwise.
          * */
-        bool forEachInRectangle(base::Pose2D rectCenterWorld, double widthWorld, double heightWorld, boost::function<void (size_t, size_t)> callbackGrid) const;
+        bool forEachInRectangle(const base::Pose2D &rectCenterWorld, double widthWorld, double heightWorld, boost::function<void (size_t, size_t)> callbackGrid) const;
 
         bool forEachInRectangles(const base::Pose2D &rectCenter_w, double innerWidth_w, double innerHeight_w, boost::function<void (size_t, size_t)> innerCallback, 
                                                         double outerWidth_w, double outerHeight_w, boost::function<void (size_t, size_t)> outerCallback) const;

@@ -283,15 +283,16 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
 
 }
 
-bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, double height, boost::function<void (size_t, size_t)> callbackGrid) const
+bool envire::GridBase::forEachInRectangle(const base::Pose2D& pose, double widthWorld, double heightWorld, boost::function<void (size_t, size_t) > callbackGrid) const
 {
+//     return forEachInRectangles(pose, 0, 0, callbackGrid, widthWorld, heightWorld, callbackGrid);
     double multiplier = 10;
     envire::GridBase::Position ulGrid;
     envire::GridBase::Position urGrid;
     envire::GridBase::Position dlGrid;
     envire::GridBase::Position drGrid;
     
-    if(!getRectPoints(pose, width, height, ulGrid, urGrid, dlGrid, drGrid, multiplier))
+    if(!getRectPoints(pose, widthWorld, heightWorld, ulGrid, urGrid, dlGrid, drGrid, multiplier))
         return false;
 
     std::vector<envire::GridBase::Position> left;
