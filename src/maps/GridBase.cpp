@@ -406,8 +406,8 @@ bool GridBase::toGrid( double x, double y, size_t& xi, size_t& yi) const
 
 bool envire::GridBase::toGridTimesX(double x, double y, size_t& xi, size_t& yi, int multiplier) const
 {
-    size_t am = floor(((x-offsetx)*multiplier)/scalex);
-    size_t an = floor(((y-offsety)*multiplier)/scaley);
+    size_t am = floor(((x-offsetx)/scalex)*multiplier);
+    size_t an = floor(((y-offsety)/scaley)*multiplier);
 
     if((am < (cellSizeX * multiplier)) && (an < (cellSizeY * multiplier)))
     {
