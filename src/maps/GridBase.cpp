@@ -116,7 +116,7 @@ bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, dou
 bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, double innerWidth_w, double innerHeight_w, boost::function< void (size_t, size_t)> innerCallback, 
                                            double outerWidth_w, double outerHeight_w, boost::function< void (size_t, size_t)> outerCallback) const
 {
-    int multiplier = 10;
+    double multiplier = 10;
     envire::GridBase::Position upLeft_g;
     envire::GridBase::Position upRight_g;
     envire::GridBase::Position downLeft_g;
@@ -256,16 +256,15 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
         
         if(inY == outY)
         {
-//             std::cout << "minX " << minX << " maxX " << maxX << " minXOut " << minXOut << " maxXOut " << maxXOut << std::endl;  
             for(size_t x = minXOut; x < minX; x++)
             {
                 outerCallback(x, outY);
             }
-            for(size_t x = minX; x < maxX; x++)
+            for(size_t x = minX; x <= maxX; x++)
             {
                 innerCallback(x, outY);
             }
-            for(size_t x = maxX; x < maxXOut; x++)
+            for(size_t x = maxX+1; x <= maxXOut; x++)
             {
                 outerCallback(x, outY);
             }
@@ -273,8 +272,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
         }
         else
         {
-//             std::cout << "NE minX " << minX << " maxX " << maxX << " minXOut " << minXOut << " maxXOut " << maxXOut << std::endl;  
-            for(size_t x = minXOut; x < maxXOut; x++)
+            for(size_t x = minXOut; x <= maxXOut; x++)
             {
                 outerCallback(x, outY);
             }        
@@ -287,7 +285,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
 
 bool envire::GridBase::forEachInRectangle(base::Pose2D pose, double width, double height, boost::function<void (size_t, size_t)> callbackGrid) const
 {
-    int multiplier = 10;
+    double multiplier = 10;
     envire::GridBase::Position ulGrid;
     envire::GridBase::Position urGrid;
     envire::GridBase::Position dlGrid;
