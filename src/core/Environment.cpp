@@ -25,18 +25,18 @@ void envire::intrusive_ptr_add_ref( EnvironmentItem* item ) { item->ref_count++;
 void envire::intrusive_ptr_release( EnvironmentItem* item ) { if(!--item->ref_count) delete item; }
 
 EnvironmentItem::EnvironmentItem(std::string const& unique_id)
-    : ref_count(0), unique_id(unique_id), env(NULL)
+    : ref_count(0), unique_id(unique_id), env(&(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT))
 {
 }
 
 EnvironmentItem::EnvironmentItem(Environment* envPtr)
-   : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+   : ref_count(0), unique_id( EnvironmentBase::ITEM_NOT_ATTACHED ), env(&(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT))
 {
     envPtr->attachItem( this );
 }
 
 EnvironmentItem::EnvironmentItem(const EnvironmentItem& item)
-    : ref_count(0), unique_id( Environment::ITEM_NOT_ATTACHED ), env(NULL)
+    : ref_count(0), unique_id( EnvironmentBase::ITEM_NOT_ATTACHED ), env(&(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT))
 {
 }
 
@@ -52,7 +52,8 @@ EnvironmentItem::~EnvironmentItem()
 
 bool EnvironmentItem::isAttached() const
 {
-    return env;
+//     std::cout << "Env is " << env << " dummy is " << &(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT) << std::endl;
+    return env != &(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT);
 }
 
 void EnvironmentItem::setUniqueId(std::string const& id)
@@ -102,7 +103,7 @@ long EnvironmentItem::getUniqueIdNumericalSuffix() const
 
 Environment* EnvironmentItem::getEnvironment() const
 {
-    return env;
+    return dynamic_cast<Environment*>(env);
 }
 
 void EnvironmentItem::serialize(Serialization &so)
@@ -124,19 +125,18 @@ void EnvironmentItem::unserialize(Serialization &so)
 
 void EnvironmentItem::itemModified()
 {
-    if( isAttached() )
-	env->itemModified(this);
+    env->itemModified(this);
 }
 
 EnvironmentItem::Ptr EnvironmentItem::detach()
 {
-    assert( env );
     return env->detachItem( this );
 }
 
-const std::string Environment::ITEM_NOT_ATTACHED = "";
+const std::string EnvironmentBase::ITEM_NOT_ATTACHED = std::string("");
+EnvironmentBase EnvironmentBase::NOT_ATTACHED_ENVIRONMENT = EnvironmentBase();
 
-Environment::Environment() : last_id(0), synchronizationEventQueue(NULL),envPrefix("/")
+Environment::Environment() : EnvironmentBase(), last_id(0), synchronizationEventQueue(NULL),envPrefix("/")
 {
     // each environment has a root node
     rootNode = new FrameNode();
@@ -286,7 +286,7 @@ void Environment::attachItem(EnvironmentItem* item)
             item->unique_id = candidate;
         }
     }
-    else if( item->getEnvironment() != this )
+    else if( item->getEnvironment() != this && item->getEnvironment() != &(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT) )
     {
 	// if it comes from a different environment, it
 	// needs to be detached first
@@ -391,7 +391,7 @@ EnvironmentItem::Ptr Environment::detachItem(EnvironmentItem* item, bool deep)
     
     EnvironmentItem::Ptr itemPtr = items[ item->getUniqueId() ];
     items.erase( item->getUniqueId() );
-    item->env = NULL;
+    item->env = &(EnvironmentBase::NOT_ATTACHED_ENVIRONMENT);
 
     return itemPtr;
 }
@@ -845,3 +845,227 @@ void Environment::pullEvents(std::vector<BinaryEvent> &events,bool all)
     synchronizationEventQueue->popEvents(events);
 }
 
+EnvironmentBase::EnvironmentBase()
+{
+
+}
+
+EnvironmentBase::~EnvironmentBase()
+{
+
+}
+
+void EnvironmentBase::addChild(FrameNode* parent, FrameNode* child)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::addChild(Layer* parent, Layer* child)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::addEventHandler(EventHandler* handler)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+bool EnvironmentBase::addInput(Operator* op, Layer* input)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+bool EnvironmentBase::addOutput(Operator* op, Layer* output)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::applyEvents(const vector< BinaryEvent >& events)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::attachItem(EnvironmentItem* item)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::attachItem(CartesianMap* item, FrameNode* node)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::detachFrameNode(CartesianMap* map, FrameNode* node)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+EnvironmentItem::Ptr EnvironmentBase::detachItem(EnvironmentItem* item, bool deep)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< FrameNode* > EnvironmentBase::getChildren(FrameNode* parent)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< Layer* > EnvironmentBase::getChildren(Layer* parent)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< const Layer* > EnvironmentBase::getChildren(const Layer* parent) const
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+string EnvironmentBase::getEnvironmentPrefix() const
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+FrameNode* EnvironmentBase::getFrameNode(CartesianMap* map)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+Operator* EnvironmentBase::getGenerator(Layer* output)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< Layer* > EnvironmentBase::getInputs(Operator* op)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+const EnvironmentBase::itemListType& EnvironmentBase::getItemStorage() const
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< Layer* > EnvironmentBase::getLayersGeneratedFrom(Layer* input)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< CartesianMap* > EnvironmentBase::getMaps(FrameNode* node)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< Layer* > EnvironmentBase::getOutputs(Operator* op)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+FrameNode* EnvironmentBase::getParent(FrameNode* node)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+std::list< Layer* > EnvironmentBase::getParents(Layer* layer)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+FrameNode* EnvironmentBase::getRootNode()
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::handle(const Event& event)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::itemModified(EnvironmentItem* item)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::pullEvents(vector< BinaryEvent >& events, bool all)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+Transform EnvironmentBase::relativeTransform(const FrameNode* from, const FrameNode* to)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+Transform EnvironmentBase::relativeTransform(const CartesianMap* from, const CartesianMap* to)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+TransformWithUncertainty EnvironmentBase::relativeTransformWithUncertainty(const FrameNode* from, const FrameNode* to)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+TransformWithUncertainty EnvironmentBase::relativeTransformWithUncertainty(const CartesianMap* from, const CartesianMap* to)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::removeChild(FrameNode* parent, FrameNode* child)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::removeChild(Layer* parent, Layer* child)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::removeEventHandler(EventHandler* handler)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+bool EnvironmentBase::removeInput(Operator* op, Layer* input)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+bool EnvironmentBase::removeInputs(Operator* op)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+bool EnvironmentBase::removeOutput(Operator* op, Layer* output)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+bool EnvironmentBase::removeOutputs(Operator* op)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::serialize(const string& path)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::setEnvironmentPrefix(string envPrefix)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::setFrameNode(CartesianMap* map, FrameNode* node)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+Environment* EnvironmentBase::unserialize(const string& path)
+{
+    throw std::runtime_error("Item is not attached");
+}
+
+void EnvironmentBase::updateOperators()
+{
+    throw std::runtime_error("Item is not attached");
+}
