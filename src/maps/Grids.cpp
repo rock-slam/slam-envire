@@ -66,27 +66,6 @@ void DistanceGrid::copyFromDistanceImage( const base::samples::DistanceImage& di
     }
 }
 
-ENVIRONMENT_ITEM_DEF( ElevationGrid )
-const std::string ElevationGrid::ELEVATION = "elevation_max"; // this will reference the max band
-const std::string ElevationGrid::ELEVATION_MIN = "elevation_min";
-const std::string ElevationGrid::ELEVATION_MAX = "elevation_max";
-const std::string ElevationGrid::ILLUMINATION = "illumination";
-const std::string ElevationGrid::VISIBILITY = "visibility";
-static const std::vector<std::string> &initElevationBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(ElevationGrid::ELEVATION_MIN);
-    bands.push_back(ElevationGrid::ELEVATION_MAX);
-    bands.push_back(ElevationGrid::ILLUMINATION);
-    bands.push_back(ElevationGrid::VISIBILITY);
-  }
-  return bands;
-}
-const std::vector<std::string> &ElevationGrid::bands = initElevationBands();
-
-
 ENVIRONMENT_ITEM_DEF( OccupancyGrid )
 const std::string OccupancyGrid::OCCUPANCY = "occupancy";
 static const std::vector<std::string> &initOccupancyBands()

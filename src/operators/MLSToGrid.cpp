@@ -1,6 +1,6 @@
 #include "MLSToGrid.hpp"
 #include <envire/maps/MLSGrid.hpp>
-#include <envire/maps/Grids.hpp>
+#include <envire/maps/ElevationGrid.hpp>
 #include <boost/multi_array.hpp>
 
 using namespace envire;

@@ -3,6 +3,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include <envire/maps/Grids.hpp>
+#include <envire/maps/ElevationGrid.hpp>
 #include <envire/tools/VoxelTraversal.hpp>
 #include <envire/tools/BoxLookUpTable.hpp>
 

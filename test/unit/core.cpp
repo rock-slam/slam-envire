@@ -15,6 +15,7 @@
 
 #include "envire/tools/GridAccess.hpp"
 #include "envire/maps/Grids.hpp"
+#include "envire/maps/ElevationGrid.hpp"
 
 #include "base/timemark.h"
    

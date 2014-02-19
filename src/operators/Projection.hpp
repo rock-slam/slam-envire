@@ -3,7 +3,7 @@
 
 #include <envire/Core.hpp>
 #include <envire/maps/TriMesh.hpp>
-#include <envire/maps/Grids.hpp>
+#include <envire/maps/ElevationGrid.hpp>
 
 #include <Eigen/Core>
 

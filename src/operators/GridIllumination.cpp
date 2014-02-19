@@ -1,5 +1,5 @@
 #include "GridIllumination.hpp"
-#include <envire/maps/Grids.hpp>
+#include <envire/maps/ElevationGrid.hpp>
 
 using namespace envire;
 using namespace Eigen;

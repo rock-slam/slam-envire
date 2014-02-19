@@ -23,16 +23,17 @@ rock_library(envire
     core/Event.cpp
     core/EventSource.cpp
     core/EventHandler.cpp
-    maps/TriMesh.cpp
+    maps/ElevationGrid.cpp
+    maps/Featurecloud.cpp
     maps/GridBase.cpp
     maps/Grids.cpp 
-    maps/TraversabilityGrid.cpp
-    maps/Pointcloud.cpp
-    maps/Featurecloud.cpp
     maps/LaserScan.cpp
     maps/MLSGrid.cpp
     maps/MLSMap.cpp
     maps/MapSegment.cpp
+    maps/Pointcloud.cpp
+    maps/TraversabilityGrid.cpp
+    maps/TriMesh.cpp
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp

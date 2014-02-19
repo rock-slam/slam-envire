@@ -1,5 +1,6 @@
 #include <envire/Core.hpp>
 #include <envire/maps/Grids.hpp>
+#include <envire/maps/ElevationGrid.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/program_options.hpp>
 #include <boost/lexical_cast.hpp>

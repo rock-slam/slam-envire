@@ -1,6 +1,6 @@
 #include "tools/GridAccess.hpp"
 
-#include "maps/Grids.hpp"
+#include "maps/ElevationGrid.hpp"
 #include "maps/Pointcloud.hpp"
 #include "maps/MLSGrid.hpp"
 #include <Eigen/LU>

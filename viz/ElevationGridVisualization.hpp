@@ -6,7 +6,7 @@
 #include <osg/Node>
 // Workaround MOC not being able to expand macros properly
 #ifndef Q_MOC_RUN
-#include <envire/maps/Grids.hpp>
+#include <envire/maps/ElevationGrid.hpp>
 #endif
 
 namespace envire 
