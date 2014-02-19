@@ -36,7 +36,8 @@ class StatisticHelper
     int yCenter;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    StatisticHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double width, double height, double borderWidth) : pose(pose), inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()), gridData(grid.getGridData(TraversabilityGrid::TRAVERSABILITY))
+    StatisticHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double width, double height, double borderWidth) : pose(pose), 
+    inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()), gridData(grid.getGridData(TraversabilityGrid::TRAVERSABILITY))
     , scaleX(grid.getScaleX()), scaleY(grid.getScaleY())
     {
         if(!lut)
@@ -134,30 +135,39 @@ const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRect
 
 void TraversabilityGrid::setTraversabilityClass(uint8_t num, const TraversabilityClass& klass)
 {
+    if(traversabilityClasses.size() >= num)
+        traversabilityClasses.resize(num + 1);
+    
     traversabilityClasses[num] = klass;
 }
 
 const TraversabilityClass& TraversabilityGrid::getTraversabilityClass(uint8_t klass) const
 {
+    if(traversabilityClasses.size() >= klass)
+        throw std::runtime_error("TraversabilityGrid::Tried to access non existing TraversabilityClass");
+        
     return traversabilityClasses[klass];
 }
 
 void TraversabilityGrid::serialize(Serialization& so)
 {
-    for(uint8_t i = 0; i < std::numeric_limits<uint8_t>::max(); i++)
+    so.write<size_t>(std::string("drivabilityClassCount"), traversabilityClasses.size());
+    for(uint8_t i = 0; i < traversabilityClasses.size(); i++)
     {
-        so.write(std::string("drivability") + boost::lexical_cast< std::string>(i), traversabilityClasses[i].getDrivability());
+        so.write(std::string("drivability") + boost::lexical_cast< std::string>((int) i), traversabilityClasses[i].getDrivability());
     }
     envire::Grid< uint8_t >::serialize(so);
 }
 
 void TraversabilityGrid::unserialize(Serialization& so)
 {
-    for(uint8_t i = 0; i < std::numeric_limits<uint8_t>::max(); i++)
+    size_t traversabilityClassCount = 0; 
+    so.read<size_t>(std::string("drivabilityClassCount"), traversabilityClassCount); 
+    for(uint8_t i = 0; i < traversabilityClassCount; i++)
     {
         double drivability;
-        so.read(std::string("drivability") + boost::lexical_cast< std::string>(i), drivability);
-        traversabilityClasses[i] = TraversabilityClass(drivability);
+        if(so.read(std::string("drivability") + boost::lexical_cast< std::string>((int) i), drivability))
+            setTraversabilityClass(i, TraversabilityClass(drivability));
     }
     envire::Grid< uint8_t >::unserialize(so);
 }
