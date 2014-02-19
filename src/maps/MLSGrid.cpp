@@ -709,3 +709,9 @@ void MLSGrid::initIndex()
 {
    index = boost::shared_ptr<Index>( new Index() ); 
 }
+
+void MLSGrid::move(int x, int y)
+{
+    cells.move(x, y);
+}
+

@@ -115,7 +115,58 @@ public:
 
 	return *this;
     }
+    
+    /**
+     * Moves the contents of the grid by 
+     * x and y cells. Cells falling of the grid
+     * will be discarded. 'New' cells are filled
+     * with empty cells.
+     * */
+    void move(int xd, int yd)
+    {
+        if(abs(xd) >= cells.shape()[0] || abs(yd) >= cells.shape()[1] )
+        {
+            clear();
+            return;
+        }
+        
+        //copy grid to tempgrid
+        ArrayType tmp;
+        boost::array<typename ArrayType::index, 2> shape;
+        std::copy( cells.shape(), cells.shape() + 2, shape.begin() ); 
+        tmp.resize(shape);
 
+        int width = cells.shape()[0];
+        int height = cells.shape()[1];
+
+        boost::swap(tmp, cells);
+
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                const int newX = x + xd;
+                const int newY = y + yd;
+                if(newX < 0 || newX >= width || newY < 0 || newY >= height )
+                {
+                    //cell moved off the grid
+                    //delete all entries
+                    Item *p = tmp[x][y];
+                    while(p)
+                    {
+                        Item *cur = p;
+                        p = cur->next;
+                        mem_pool.free(cur);
+                    }
+                }
+                else
+                {
+                    cells[newX][newY] = tmp[x][y];
+                }
+            }
+        }        
+    }
+    
     /** resize the grid. This will also clear all content
      */
     void resize( size_t sizeX, size_t sizeY )

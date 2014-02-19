@@ -226,6 +226,13 @@ namespace envire
 	 */
 	CellExtents getCellExtents() const { return extents.isEmpty() ? CellExtents(Eigen::Vector2i(0,0),Eigen::Vector2i(0,0)) : extents; }
 
+	/**
+         * Moves the content of the MLSGrid by 
+         * x and y cells. Cells leaving the 
+         * grid will be discarded. Cells entering
+         * the grid will be initialized with zero
+         * */
+	void move(int x, int y);
     protected:
 	bool mergePatch( SurfacePatch& p, SurfacePatch& o );
 
