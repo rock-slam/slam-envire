@@ -415,6 +415,12 @@ MLSGrid::iterator MLSGrid::erase( iterator position )
     return res; 
 }
 
+MLSGrid::SurfacePatch* MLSGrid::get(const Position& position, double zpos, double zstdev, double sigma_threshold, bool ignore_negative )
+{
+    SurfacePatch tmp(zpos, zstdev);
+    return get(position, tmp, sigma_threshold, ignore_negative);
+}
+
 SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
 {
     MLSGrid::iterator it = beginCell(position.x, position.y);

@@ -116,11 +116,19 @@ namespace envire
         /** Returns the iterator on the first registered patch at \c xi and \c
          * yi
          */
-	iterator beginCell( size_t xi, size_t yi );
+        iterator beginCell( size_t xi, size_t yi );
+        iterator beginCell( const Position &pos )
+        {
+            return beginCell(pos.x, pos.y);
+        };
         /** Returns the first const iterator on the first registered patch at \c
          * xi and \c yi
          */
-	const_iterator beginCell( size_t xi, size_t yi ) const;
+        const_iterator beginCell( size_t xi, size_t yi ) const;
+        const_iterator beginCell( const Position &pos ) const
+        {
+            return beginCell(pos.x, pos.y);
+        };
         /** Returns the past-the-end iterator for cell iteration */
 	iterator endCell();
         /** Returns the const past-the-end iterator for cell iteration */
@@ -145,7 +153,8 @@ namespace envire
          * patch.sigma of sigma.mean
          */
 	SurfacePatch* get( const Position& position, const SurfacePatch& patch, double sigma_threshold = 3.0, bool ignore_negative = true );
-	SurfacePatch* get( const Eigen::Vector2d& position, double& zpos, double& zstdev );
+        SurfacePatch* get( const Eigen::Vector2d& position, double& zpos, double& zstdev );
+        SurfacePatch* get( const Position& position, double zpos, double zstdev, double sigma_threshold = 3.0, bool ignore_negative = true );        
 	/** 
 	 * used for backwards compatibility
 	 */
