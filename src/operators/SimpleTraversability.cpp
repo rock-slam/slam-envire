@@ -216,6 +216,14 @@ bool SimpleTraversability::updateAll()
         }
     }
 
+    //register klasses in traversability map
+    output_layer->setTraversabilityClass(CLASS_UNKNOWN, TraversabilityClass(1.0));
+    output_layer->setTraversabilityClass(CLASS_OBSTACLE, TraversabilityClass(0));
+    for(int i = 0; i < conf.class_count; i++)
+    {
+        output_layer->setTraversabilityClass(CUSTOM_CLASSES + i, TraversabilityClass(1.0 / conf.class_count * (i + 1)));
+    }
+    
     // perform some post processing if required
     if( conf.min_width > 0 )
 	closeNarrowPassages(*output_layer, output_band, conf.min_width);
