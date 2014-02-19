@@ -96,7 +96,7 @@ void FrameNode::setTransform(Transform const& transform)
 {
     frame = TransformWithUncertainty( transform );
 
-    if(env) {
+    if(isAttached()) {
 	env->itemModified(this);
     }
 }
@@ -110,7 +110,7 @@ void FrameNode::setTransform(TransformWithUncertainty const& transform)
 {
     frame = transform;
 
-    if(env) {
+    if(isAttached()) {
 	env->itemModified(this);
     }
 }
