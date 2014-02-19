@@ -28,7 +28,7 @@ osg::Group* TraversabilityGridVisualization::getNodeForItem ( envire::Environmen
     return group.release();
   }
 
-bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret, const envire::TraversabilityGrid::ArrayType &trGridData)
+bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret, const envire::TraversabilityGrid &grid, const envire::TraversabilityGrid::ArrayType &trGridData)
 {
     assert(x >= 0);
     assert(x < 1600);
@@ -52,12 +52,23 @@ bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret,
 	    ret.b = 0;
 	    break;
 	default:
-	    //this is hard coded for now we assume there are vaules from 0 to 12
-	    assert(value < 13);
-	    //give a red to black color gradient
-	    ret.r = 255 - 240 * (value / 12.0 + 1);
-	    ret.g = 255 * (value / 12.0);
-	    ret.b = 0;
+            try{
+                //this value is allway between 0 and 1
+                const double drivability = grid.getTraversabilityClass(value).getDrivability();
+                ret.r = 255 - 255 * drivability;
+                ret.g = 255 * drivability;
+                ret.b = 0;
+                
+            } catch (std::runtime_error e)
+            {
+                //legacy code for old grids
+                //this is hard coded for now we assume there are vaules from 0 to 12
+                assert(value < 13);
+                //give a red to black color gradient
+                ret.r = 255 - 240 * (value / 12.0 + 1);
+                ret.g = 255 * (value / 12.0);
+                ret.b = 0;
+            }
 	    break;
     }
 
@@ -75,5 +86,5 @@ void TraversabilityGridVisualization::updateNode(envire::EnvironmentItem* item, 
 
     const envire::TraversabilityGrid::ArrayType &trGridData = trGrid->getGridData(bandName);
 
-    showGridAsImage(geode, trGrid, boost::bind(colorForCoordinate, _1, _2, _3, trGridData));
+    showGridAsImage(geode, trGrid, boost::bind(colorForCoordinate, _1, _2, _3, boost::ref(*trGrid), boost::ref(trGridData)));
 }
