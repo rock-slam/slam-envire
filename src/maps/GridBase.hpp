@@ -206,11 +206,11 @@ namespace envire
 
         /** Returns the world size of the grid along the X direction
          */
-        size_t getSizeX() const { return cellSizeX * scalex; }
+        double getSizeX() const { return cellSizeX * scalex; }
 
         /** Returns the world size of the grid along the Y direction
          */
-        size_t getSizeY() const { return cellSizeY * scaley; }
+        double getSizeY() const { return cellSizeY * scaley; }
 
         /** Returns the world size of a cell along the X direction
          */
