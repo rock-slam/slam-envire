@@ -171,7 +171,6 @@ void TraversabilityGrid::serialize(Serialization& so)
     {
         so.write(std::string("drivability") + boost::lexical_cast< std::string>((int) i), traversabilityClasses[i].getDrivability());
     }
-     }
     envire::Grid< uint8_t >::serialize(so);
 }
 
