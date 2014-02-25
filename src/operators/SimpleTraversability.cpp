@@ -143,7 +143,7 @@ bool SimpleTraversability::updateAll()
             std::pair<float, bool> no_data = input_layers[i]->getNoData(input_bands[i]);
             if (no_data.second)
             {
-                std::cout << "band " << i << " no_data=" << no_data.first << std::endl;
+//                 std::cout << "band " << i << " no_data=" << no_data.first << std::endl;
                 input_unknown[i] = no_data.first;
             }
             else
@@ -219,9 +219,9 @@ bool SimpleTraversability::updateAll()
     //register klasses in traversability map
     output_layer->setTraversabilityClass(CLASS_UNKNOWN, TraversabilityClass(1.0));
     output_layer->setTraversabilityClass(CLASS_OBSTACLE, TraversabilityClass(0));
-    for(int i = 0; i < conf.class_count; i++)
+    for(int i = 0; i <= conf.class_count; i++)
     {
-        output_layer->setTraversabilityClass(CUSTOM_CLASSES + i, TraversabilityClass(1.0 / conf.class_count * (i + 1)));
+        output_layer->setTraversabilityClass(CUSTOM_CLASSES + i, TraversabilityClass((1.0 / conf.class_count) + (1.0 - (1.0 / conf.class_count)) / conf.class_count * (i)));
     }
     
     // perform some post processing if required
