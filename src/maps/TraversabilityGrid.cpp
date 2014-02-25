@@ -27,17 +27,18 @@ class StatisticHelper
     static BoxLookUpTable *boxLut;
     const base::Pose2D &pose;
     Eigen::Rotation2D<double> inverseOrientation;
+    const TraversabilityGrid &grid;
     const TraversabilityGrid::ArrayType &gridData;
     TraversabilityStatistic *innerStats;
     TraversabilityStatistic *outerStats;
     double scaleX;
     double scaleY;
-    int xCenter;
-    int yCenter;
+    size_t xCenter;
+    size_t yCenter;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     StatisticHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double width, double height, double borderWidth) : pose(pose), 
-    inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()), gridData(grid.getGridData(TraversabilityGrid::TRAVERSABILITY))
+    inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()), grid(grid), gridData(grid.getGridData(TraversabilityGrid::TRAVERSABILITY))
     , scaleX(grid.getScaleX()), scaleY(grid.getScaleY())
     {
         if(!lut)
@@ -48,10 +49,9 @@ public:
             boxLut = new BoxLookUpTable();
         //note the scale should be higher than the grid scale because 
         //of the roation. Else we get aliasing problems.
-        boxLut->recompute(scaleX / 10.0, width, height, borderWidth);
+        boxLut->recompute(scaleX / 10.0, width, height, borderWidth * 2);
         
-        xCenter = pose.position.x() / grid.getScaleX();
-        yCenter = pose.position.y() / grid.getScaleY();
+        grid.toGrid(pose.position.x(), pose.position.y(), xCenter, yCenter);
     }
 
     void addInnerVal(size_t x, size_t y)
@@ -61,7 +61,9 @@ public:
     
     void addOuterVal(size_t x, size_t y)
     {
-        Vector2d posAligned = inverseOrientation * (Vector2d(x * scaleX, y * scaleY) - pose.position);
+        Vector2d pos_map;
+        grid.fromGrid(x, y, pos_map.x(), pos_map.y());
+        Vector2d posAligned = inverseOrientation * (pos_map - pose.position);
         
         outerStats->addMeasurement(gridData[y][x], boxLut->getDistanceToBox(posAligned.x(), posAligned.y()));
     }
