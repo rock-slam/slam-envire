@@ -108,7 +108,7 @@ const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRect
     TraversabilityStatistic innerStatistic;
     computeStatistic(pose, width, height, innerStatistic);
 
-    for(uint8_t i = 0; i < innerStatistic.getHighestTraversabilityClass(); i++)
+    for(uint8_t i = 0; i <= innerStatistic.getHighestTraversabilityClass(); i++)
     {
         size_t count;
         double dist;
@@ -116,7 +116,7 @@ const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRect
         if(count)
         {
             const TraversabilityClass &klass(getTraversabilityClass(i));
-            if(curDrivability < klass.getDrivability())
+            if(curDrivability > klass.getDrivability())
             {
                 curClass = i;
                 curDrivability = klass.getDrivability();
@@ -128,7 +128,18 @@ const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRect
     }
     
     if(curClass < 0)
+    {        
+        std::cout << "Pose " << pose.position.transpose() << " width " << width << " height " << height << " Total Count " << innerStatistic.getTotalCount() << std::endl;
+        for(uint8_t i = 0; i <= innerStatistic.getHighestTraversabilityClass(); i++)
+        {
+            size_t count;
+            double dist;
+            innerStatistic.getStatisticForClass(i, dist, count);
+            const TraversabilityClass &klass(getTraversabilityClass(i));
+            std::cout << "Class " << i << " drivability " << klass.getDrivability() << " count " << count << std::endl;
+        }
         throw std::runtime_error("TraversabilityGrid::Error, terrain class could not be identified");
+    }
     
     return getTraversabilityClass(curClass);
 }
