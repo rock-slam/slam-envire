@@ -154,8 +154,10 @@ void TraversabilityGrid::setTraversabilityClass(uint8_t num, const Traversabilit
 
 const TraversabilityClass& TraversabilityGrid::getTraversabilityClass(uint8_t klass) const
 {
-    if(traversabilityClasses.size() >= klass)
-        throw std::runtime_error("TraversabilityGrid::Tried to access non existing TraversabilityClass");
+    if(traversabilityClasses.size() <= klass)
+    {
+        throw std::runtime_error("TraversabilityGrid::Tried to access non existing TraversabilityClass " + boost::lexical_cast< std::string>((int) klass));
+    }
         
     return traversabilityClasses[klass];
 }
