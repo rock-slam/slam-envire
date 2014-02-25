@@ -13,6 +13,7 @@ class TraversabilityClass
 public:
     TraversabilityClass(double drivability) : drivability(drivability) 
     {
+        assert(drivability <= 1.000001);
     }
 
     TraversabilityClass() : drivability(-1) 
@@ -127,6 +128,10 @@ public:
     
     void setTraversabilityClass(uint8_t num, const TraversabilityClass &klass);
     const TraversabilityClass &getTraversabilityClass(uint8_t klass) const;
+    const std::vector<TraversabilityClass> &getTraversabilityClasses() const 
+    {
+        return traversabilityClasses;
+    }
     
     void computeStatistic(const base::Pose2D& pose, double width, double height, envire::TraversabilityStatistic& innerStatistic) const;
     void computeStatistic(const base::Pose2D &pose, double width, double height, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const;
