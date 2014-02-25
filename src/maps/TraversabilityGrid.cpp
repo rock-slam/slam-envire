@@ -165,23 +165,24 @@ const TraversabilityClass& TraversabilityGrid::getTraversabilityClass(uint8_t kl
 void TraversabilityGrid::serialize(Serialization& so)
 {
     so.write<size_t>(std::string("drivabilityClassCount"), traversabilityClasses.size());
-    for(uint8_t i = 0; i < traversabilityClasses.size(); i++)
+    for(size_t i = 0; i < traversabilityClasses.size(); i++)
     {
         so.write(std::string("drivability") + boost::lexical_cast< std::string>((int) i), traversabilityClasses[i].getDrivability());
     }
+     }
     envire::Grid< uint8_t >::serialize(so);
 }
 
 void TraversabilityGrid::unserialize(Serialization& so)
 {
+    envire::Grid< uint8_t >::unserialize(so);
     size_t traversabilityClassCount = 0; 
     so.read<size_t>(std::string("drivabilityClassCount"), traversabilityClassCount); 
-    for(uint8_t i = 0; i < traversabilityClassCount; i++)
+    for(size_t i = 0; i < traversabilityClassCount; i++)
     {
         double drivability;
         if(so.read(std::string("drivability") + boost::lexical_cast< std::string>((int) i), drivability))
             setTraversabilityClass(i, TraversabilityClass(drivability));
     }
-    envire::Grid< uint8_t >::unserialize(so);
 }
 
