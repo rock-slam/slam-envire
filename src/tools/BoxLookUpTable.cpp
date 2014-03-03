@@ -14,7 +14,11 @@ BoxLookUpTable::BoxLookUpTable() : scale(0), width(0), height(0), maxDistFromBox
     
 void BoxLookUpTable::recompute(double scale, double width, double height, double maxDistFromBox)
 {
-    if(scale == this->scale && width == this->width && height == this->height && maxDistFromBox == this->maxDistFromBox)
+    double epsilon = 0.00001;
+    if((fabs(scale - this->scale) < epsilon) 
+        && (fabs(width - this->width) < epsilon) 
+        && (fabs(height - this->height) < epsilon) 
+        && ((this->maxDistFromBox + epsilon) > maxDistFromBox ))
         return;
     
     this->scale = scale;
