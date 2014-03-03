@@ -299,7 +299,7 @@ struct RadialLUT
                     continue;
                 if (in_distance[y][x] && result[map_y][map_x] == value)
                 {
-                    LOG_DEBUG("  found cell with value %i (expected %i) at %i %i, marking radius", result[map_y][map_x], value, map_x, map_y);
+//                     LOG_DEBUG("  found cell with value %i (expected %i) at %i %i, marking radius", result[map_y][map_x], value, map_x, map_y);
                     markSingleRadius(result, centerx, centery, x, y, value, 255);
                 }
             }
@@ -317,7 +317,7 @@ struct RadialLUT
             if (current != expected_value)
 	    {
 		current = mark_value;
-		LOG_DEBUG("  marking %i %i", map_x, map_y);
+// 		LOG_DEBUG("  marking %i %i", map_x, map_y);
 	    }
             boost::tie(x, y) = parents[y][x];
         }
@@ -402,7 +402,7 @@ void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer
             int value = data[y][x];
             if (value == CLASS_OBSTACLE)
             {
-                LOG_DEBUG("inspecting around obstacle cell %i %i", x, y);
+//                 LOG_DEBUG("inspecting around obstacle cell %i %i", x, y);
                 lut.markAllRadius(data, map.getWidth(), map.getHeight(), x, y, CLASS_OBSTACLE);
             }
         }
