@@ -74,20 +74,22 @@ install(FILES core/EventHandler.hpp
     core/Transform.hpp
     DESTINATION include/envire/core)
 
-install(FILES maps/GridBase.hpp
+install(FILES 
+    maps/ElevationGrid.hpp
+    maps/Featurecloud.hpp
+    maps/GridBase.hpp
     maps/Grid.hpp
     maps/Grids.hpp
     maps/LaserScan.hpp
+    maps/MapSegment.hpp
     maps/MLSGrid.hpp
     maps/MLSPatch.hpp
     maps/MLSConfiguration.hpp
     maps/MLSMap.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
-    maps/Featurecloud.hpp
     maps/TraversabilityGrid.hpp
     maps/TriMesh.hpp
-    maps/MapSegment.hpp
     DESTINATION include/envire/maps)
 
 install(FILES operators/MergeMLS.hpp
