@@ -207,9 +207,14 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 
 bool MLSProjection::updateAll() 
 {
-    // TODO add checking of connections
-    MultiLevelSurfaceGrid* grid = static_cast<envire::MultiLevelSurfaceGrid*>(*env->getOutputs(this).begin());
-
+    std::list<Layer*> outputs = env->getOutputs(this);
+    if(outputs.empty())
+        return false;
+    
+    MultiLevelSurfaceGrid* grid = dynamic_cast<envire::MultiLevelSurfaceGrid*>(*(outputs.begin()));
+    if(!grid)
+        return false;
+    
     std::list<Layer*> inputs = env->getInputs(this);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
