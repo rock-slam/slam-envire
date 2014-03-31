@@ -193,15 +193,14 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
         if(use_boundary_box && !boundary_box.contains(mean))
             continue;
 
-	size_t xi, yi;
-	if( grid->toGrid( mean.x(), mean.y(), xi, yi ) )
-	{
-	    const double stdev = sqrt(p_var);
-	    MLSGrid::SurfacePatch patch( mean.z(), stdev );
-	    if( color )
-		patch.setColor( (*color)[i] );
-	    grid->updateCell(xi, yi, patch);
-	}
+        // create patch to update
+        MLSGrid::SurfacePatch patch( mean.z(), sqrt(p_var) );
+        if( color )
+            patch.setColor( (*color)[i] );
+
+        // and use the update method of the mls to determine
+        // which cell and update model to use
+        grid->update( mean.head<2>(), patch );
     }
 }
 
