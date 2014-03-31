@@ -238,6 +238,7 @@ struct SurfacePatch
 	if( overlap( min-gapSize, max+gapSize, o.min, o.max ) )
 	{
 	    p.n += o.n;
+	    p.normsq += o.normsq;
 	    p.min = std::min( p.min, o.min );
 	    p.max = std::max( p.max, o.max );
 
