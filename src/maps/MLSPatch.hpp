@@ -382,6 +382,26 @@ struct SurfacePatch
 	return false;
     }
 
+    /** 
+     * @brief get the weighting for the patch
+     * This value will depend on the uncertainty with which it was applied. It
+     * is the sum of the inverse square of the standard deviation.
+     */ 
+    float getWeight() const
+    {
+        return plane.n;
+    }
+
+    /**
+     * @brief scale the weighting without affecting the uncertainty calculation
+     * @param factor scale factor to apply
+     */
+    void scaleWeight( float factor )
+    {
+        plane.scale( factor );
+        normsq *= pow( factor, 2 );
+    }
+
     float getMean() const
     {
 	return mean;
@@ -409,7 +429,8 @@ public:
 
     base::PlaneFitting<float> plane;
     float min, max;
-    float n, normsq;
+    float n;
+    float normsq;
 
     size_t update_idx;
     uint8_t color[3];

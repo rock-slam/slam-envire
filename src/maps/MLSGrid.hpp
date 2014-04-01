@@ -180,6 +180,14 @@ namespace envire
          */
 	bool update( const Eigen::Vector2d& pos, const SurfacePatch& patch );
 
+        /**
+         * @brief scale the weight of the cell patches
+         * This function will scale the normalisation weight of all patches in the grid.
+         *
+         * @param scale factor to apply to the cell patch weight
+         */
+        void scalePatchWeights( double scale );
+
 	size_t getCellCount() const { return cellcount; }
 	bool empty() const { return cellcount == 0; }
 

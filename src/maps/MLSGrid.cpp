@@ -668,6 +668,21 @@ float MLSGrid::match( const MLSGrid& other, const Eigen::Affine3d& other2this, c
 	return 1.0;
 }
 
+void MLSGrid::scalePatchWeights( double scale )
+{
+    // simply run the scaling on all cells
+    for(size_t xi=0;xi<cellSizeX;xi++)
+    {
+	for(size_t yi=0;yi<cellSizeY;yi++)
+	{
+            for( iterator it = beginCell(xi,yi); it != endCell(); it++ )
+            {
+                it->scaleWeight( scale );
+            }
+        }
+    }
+}
+
 std::pair<double, double> MLSGrid::matchHeight( const MLSGrid& other )
 {
     assert( other.getWidth() == getWidth() && other.getHeight() == getHeight() );
