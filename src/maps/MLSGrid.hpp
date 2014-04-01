@@ -163,6 +163,21 @@ namespace envire
 	void updateCell( size_t xi, size_t yi, const SurfacePatch& patch );
 	void updateCell( const Position& pos, const SurfacePatch& patch );
 
+        /**
+         * @brief update a single patch in the grid
+         * The cell is selected based on 2d cartesian coordinates, not grid
+         * indices.  The coordinate is checked to be in the grid, and if this
+         * is the case, the cell which is provided is merged into the existing
+         * cell list.
+         *
+         * This method is the preferred way of updating cells in the grid,
+         * since it allows other update models like e.g. slope to be handled
+         * properly.
+         *
+         * @param pos - 2d cartesian position of the cell to be updated
+         * @param patch - patch information to be merged into cell
+         * @return true if pos was within the grid
+         */
 	bool update( const Eigen::Vector2d& pos, const SurfacePatch& patch );
 
 	size_t getCellCount() const { return cellcount; }
