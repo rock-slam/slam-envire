@@ -44,7 +44,8 @@ rock_library(envire
     operators/GridFloatToMLS.cpp
     operators/MLSToGrid.cpp
     operators/CutPointcloud.cpp
-    operators/GridIllumination.cpp
+    operators/GridIllumination.cpp 
+    operators/TraversabilityGrassfire.cpp
     tools/BresenhamLine.cpp
     tools/PlyFile.cpp
     tools/RadialLookUpTable.cpp
@@ -96,6 +97,7 @@ install(FILES operators/MergeMLS.hpp
     operators/MergePointcloud.hpp
     operators/MLSProjection.hpp
     operators/SimpleTraversability.hpp
+    operators/TraversabilityGrassfire.hpp
     operators/GridFloatToMLS.hpp
     operators/MLSToGrid.hpp
     operators/MLSSlope.hpp
