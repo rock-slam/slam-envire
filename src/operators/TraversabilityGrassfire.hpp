@@ -34,8 +34,13 @@ public:
     }
     
 private:
-    void computeSlopeMap();
-    void smoothSlopeMap();
+    SurfacePatch *getNearestPatchWhereRobotFits(size_t x, size_t y, double height);
+    void addNeightboursToSearchList(size_t x, size_t y, SurfacePatch *patch);
+    
+    double getStepHeight(SurfacePatch *from, SurfacePatch *to);
+    void markAsObstacle(size_t x, size_t y);
+    
+    bool determineDrivePlane();
     
     base::Vector3d startPos;
     base::Vector2d startPos_map;
@@ -63,13 +68,11 @@ private:
     
     boost::multi_array<bool, 2> visited;
     boost::multi_array<envire::SurfacePatch *, 2> bestPatchMap;
-    boost::multi_array<double, 2> drivabilityMap;
-    boost::multi_array<double, 2> slopeMap;
-    boost::multi_array<double, 2> smoothedSlopeMap;
 
-    double getTraversability(envire::SurfacePatch* from, envire::SurfacePatch* to);
+    void computeTraversability();
+    void setTraversability(size_t x, size_t y);
     void checkRecursive(size_t x, size_t y, envire::SurfacePatch* origin);
-    bool startRecursion(base::Vector3d startPos, bool searchSourunding = true);
+    bool determineDrivePlane(base::Vector3d startPos, bool searchSourunding = true);
     
     enum TRCLASSES
     {

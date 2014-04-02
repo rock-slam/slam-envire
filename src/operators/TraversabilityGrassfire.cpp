@@ -11,121 +11,132 @@ int stepTooHigh = 0;
 int totalCnt = 0;
 int drivable = 0;
 
-double TraversabilityGrassfire::getTraversability(SurfacePatch* from, SurfacePatch* to)
+void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
 {
     totalCnt++;
-    if(fabs(from->getMaxZ() - to->getMaxZ()) > config.maxStepHeight)
+
+    SurfacePatch *currentPatch = bestPatchMap[y][x];
+    if(!currentPatch)
     {
-        stepTooHigh++;
-        //non traversable
-        return 0.0;
+        (*trData)[y][x] = UNKNOWN;
+        return;
     }
     
-    double slope = to->getSlope();
+    base::PlaneFitting<double> fitter;
+    int count = 0;
     
+    double thisHeight = currentPatch->getMean() + currentPatch->getStdev();
+
+    const double scaleX =mlsGrid->getScaleX();
+    const double scaleY = mlsGrid->getScaleY();
+    
+    for(int yi = -1; yi <= 1; yi++)
+    {
+        for(int xi = -1; xi <= 1; xi++)
+        {
+            if(yi == 0 && xi == 0)
+                continue;
+            
+            size_t newX = x + xi;
+            size_t newY = y + yi;
+            if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
+            {
+                SurfacePatch *neighbourPatch = bestPatchMap[newY][newX];
+                if(neighbourPatch)
+                {
+                    count++;
+                    double neighbourHeight = neighbourPatch->getMean() + neighbourPatch->getStdev();
+                    if(fabs(neighbourHeight - thisHeight) > config.maxStepHeight)
+                    {
+                        stepTooHigh++;
+                        (*trData)[y][x] = OBSTACLE;
+                        return;
+                    }
+                    
+                    Eigen::Vector3d input(xi * scaleX, yi * scaleY, thisHeight - neighbourHeight);
+                    fitter.update(input);
+                }
+            }
+        }
+    }
+    
+    fitter.update(Eigen::Vector3d(0,0,0));
+            
+    if (count < 5)
+    {
+        (*trData)[y][x] = UNKNOWN;
+        return;
+    }
+
+    Eigen::Vector3d fit(fitter.getCoeffs());
+    const double divider = sqrt(fit.x() * fit.x() + fit.y() * fit.y() + 1);
+    double slope = acos(1 / divider);
+
     if(slope > config.maxSlope)
     {
         slopeTooHigh++;
-        return 0.0;
+        (*trData)[y][x] = OBSTACLE;
+        return;
     }
+
+    double drivability = 1.0 - (slope / config.maxSlope); 
+
+    //-0.00001 to get rid of precision problems...
+    (*trData)[y][x] = OBSTACLE + ceil((drivability - 0.00001) * config.numTraversabilityClasses);
     
     drivable++;
-    
-    //scale to max slope as best traversability
-    return 1.0 - slope / config.maxSlope;
 }
 
+double TraversabilityGrassfire::getStepHeight(SurfacePatch* from, SurfacePatch* to)
+{
+    return fabs((from->getMean() + from->getStdev()) - (to->getMean() + to->getStdev()));
+}
 
 void TraversabilityGrassfire::checkRecursive(size_t x, size_t y, SurfacePatch* origin)
 {
     if(visited[y][x])
     {
-        if(!bestPatchMap[y][x])
-            return;
-        
-        double traversability = getTraversability(origin, bestPatchMap[y][x]);
-        if(drivabilityMap[y][x] > traversability)
-        {
-            //worse to drive through
-            drivabilityMap[y][x] = traversability;
-
-
-            //-0.00001 to get rid of precision problems...
-            (*trData)[y][x] = OBSTACLE + ceil((traversability - 0.00001) * config.numTraversabilityClasses);
-
-            //TODO this would be the place for multi dimensional traversability map generation...
-        }
-        else
-        {
-            //better traversability
-            //we search for worst drivability of the best matches, so we stop here and do nothing
-            return;
-        }
-        
+        return;
     }
     
     visited[y][x] = true;
-    double bestTraversability = -1;
-    SurfacePatch *bestMatchingPatch = NULL;
-    
-    MLSGrid::iterator it = mlsGrid->beginCell(x, y);
-    for(; it != mlsGrid->endCell(); it++)
+    SurfacePatch *bestMatchingPatch = getNearestPatchWhereRobotFits(x, y, origin->getMean() + origin->getStdev());
+
+    if(bestMatchingPatch)
     {
-        //ignored for now
-//         MLSGrid::iterator nextPatch = it;
-//         nextPatch++;
-//         if(nextPatch != mlsGrid->endCell())
-//         {
-//             //check if the robot fits between this and the next patch
-//             if(fabs(nextPatch->getMinZ() - it->getMaxZ()) < config.robotHeight)
-//             {
-//                 //it dosen't fit, patch is non traversable
-//                 continue;
-//             }
-//         }
-        //if there is no next patch, everything is fine, as it
-        //means there is no obstacle obove the current patcht
-        
-        double curTraversability = getTraversability(origin, &(*it));
-        if(bestTraversability < curTraversability)
-        {
-            bestTraversability = curTraversability;
-            bestMatchingPatch =&(*it);
-        }
-    }
-    
-    if(bestMatchingPatch != NULL)
-    {
-        bestPatchMap[y][x] = bestMatchingPatch;
-        drivabilityMap[y][x] = bestTraversability;
-        
-        //-0.00001 to get rid of precision problems...
-        (*trData)[y][x] = OBSTACLE + ceil((bestTraversability - 0.00001) * config.numTraversabilityClasses);
-        
-        //recuse to surounding patches
-        for(int yi = -1; yi <= 1; yi++)
-        {
-            for(int xi = -1; xi <= 1; xi++)
-            {
-                if(yi == 0 && xi == 0)
-                    continue;
-                
-                size_t newX = x + xi;
-                size_t newY = y + yi;
-                if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
-                {
-                    searchList.push(SearchItem(newX, newY, bestMatchingPatch));
-                }
-            }
-        }
+        addNeightboursToSearchList(x, y, bestMatchingPatch);
     } 
     else
     {
-        (*trData)[y][x] = UNKNOWN;
+        bestPatchMap[y][x] = NULL;
+    }
+        
+}
+
+void TraversabilityGrassfire::addNeightboursToSearchList(size_t x, size_t y, SurfacePatch* patch)
+{
+    bestPatchMap[y][x] = patch;
+    visited[y][x] = true;
+
+    for(int yi = -1; yi <= 1; yi++)
+    {
+        for(int xi = -1; xi <= 1; xi++)
+        {
+            if(yi == 0 && xi == 0)
+                continue;
+            
+            size_t newX = x + xi;
+            size_t newY = y + yi;
+            if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
+            {
+                searchList.push(SearchItem(newX, newY, patch));
+            }
+        }
     }
 }
 
-bool TraversabilityGrassfire::startRecursion(base::Vector3d startPos, bool searchSourunding)
+
+bool TraversabilityGrassfire::determineDrivePlane(base::Vector3d startPos, bool searchSourunding)
 {
     std::cout << "Input pos is " << startPos.transpose() << std::endl;
     size_t startX;
@@ -137,7 +148,6 @@ bool TraversabilityGrassfire::startRecursion(base::Vector3d startPos, bool searc
     
     //make shure temp maps have correct size
     bestPatchMap.resize(boost::extents[mlsGrid->getCellSizeY()][mlsGrid->getCellSizeX()]);
-    drivabilityMap.resize(boost::extents[mlsGrid->getCellSizeY()][mlsGrid->getCellSizeX()]);
     visited.resize(boost::extents[mlsGrid->getCellSizeY()][mlsGrid->getCellSizeX()]);
     trData->resize(boost::extents[mlsGrid->getCellSizeY()][mlsGrid->getCellSizeX()]);
 
@@ -145,13 +155,14 @@ bool TraversabilityGrassfire::startRecursion(base::Vector3d startPos, bool searc
     SurfacePatch *emptyPatch = NULL;
     //Note passing directly NULL to fill makes the compiler cry....
     std::fill(bestPatchMap.data(), bestPatchMap.data() + bestPatchMap.num_elements(), emptyPatch);
-    std::fill(drivabilityMap.data(), drivabilityMap.data() + drivabilityMap.num_elements(), 0);
     std::fill(visited.data(), visited.data() + visited.num_elements(), false);
     std::fill(trData->data(), trData->data() + trData->num_elements(), UNKNOWN);    
     
     double bestHeightDiff = std::numeric_limits< double >::max();
     SurfacePatch *bestMatchingPatch = NULL;
 
+    size_t correctedStartX = startX;
+    size_t correctedStartY = startY;
     //search the sourounding of the start pos for a start patch
     for(int i = 0; i < 10; i++)
     {
@@ -168,15 +179,18 @@ bool TraversabilityGrassfire::startRecursion(base::Vector3d startPos, bool searc
                 if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
                 {
                     //look for patch with best height
-                    MLSGrid::iterator it = mlsGrid->beginCell(startX, startY);
-                    for(; it != mlsGrid->endCell(); it++)
+                    SurfacePatch *curPatch = getNearestPatchWhereRobotFits(newX, newY, startPos.z());
+                    if(curPatch)
                     {
-                        double curHeightDiff = fabs(startPos.z() - it->getMaxZ());
+                        double curHeightDiff = fabs(startPos.z() - curPatch->getMean() + curPatch->getStdev());
                         if(curHeightDiff < bestHeightDiff)
                         {
-                            bestMatchingPatch = &(*it);
+                            bestMatchingPatch = curPatch;
                             bestHeightDiff = curHeightDiff;
+                            correctedStartX = newX;
+                            correctedStartY = newY;
                         }
+                        
                     }
                 }
             }
@@ -190,41 +204,51 @@ bool TraversabilityGrassfire::startRecursion(base::Vector3d startPos, bool searc
         //we are screwed, can't start the grassfire
         return false;
     }
-
-    bestPatchMap[startY][startX] = bestMatchingPatch;
-    double slope = bestMatchingPatch->getSlope();
-    if(slope > config.maxSlope)
-    {
-        drivabilityMap[startY][startX] = 0;
-    }
-    else
-    {
-        drivabilityMap[startY][startX] = 1.0 - slope / config.maxSlope;
-    }
-    visited[startY][startX] = true;
-        
-    //-0.00001 to get rid of precision problems...
-    (*trData)[startY][startX] = OBSTACLE + ceil((drivabilityMap[startY][startX] - 0.00001) * config.numTraversabilityClasses);
         
     //recuse to surounding patches
-    for(int yi = -1; yi < 1; yi++)
-    {
-        for(int xi = -1; xi < 1; xi++)
-        {
-            if(yi == 0 && xi == 0)
-                continue;
-            
-            size_t newX = startX + xi;
-            size_t newY = startY + yi;
-            if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
-            {
-                searchList.push(SearchItem(newX, newY, bestMatchingPatch));
-            }
-        }
-    }
+    addNeightboursToSearchList(correctedStartX, correctedStartY, bestMatchingPatch);
     
     return true;
 }
+
+SurfacePatch* TraversabilityGrassfire::getNearestPatchWhereRobotFits(size_t x, size_t y, double height)
+{
+    SurfacePatch *bestMatchingPatch = NULL;
+    double minDistance = std::numeric_limits< double >::max();
+    
+    MLSGrid::iterator it = mlsGrid->beginCell(x, y);
+    MLSGrid::iterator itEnd = mlsGrid->endCell();
+    for(; it != itEnd; it++)
+    {
+        bool gapTooSmall = false;
+        MLSGrid::iterator hcIt= mlsGrid->beginCell(x, y);
+        MLSGrid::iterator hcItEnd = mlsGrid->endCell();
+        double curFloorHeight = it->getMean() + it->getStdev();
+        for(; hcIt != hcItEnd; hcIt++)
+        {
+            //check if the robot can pass between this and the other patches
+            double otherCeilingHeight = hcIt->getMean() - hcIt->getStdev();
+            if((curFloorHeight < otherCeilingHeight) && otherCeilingHeight - curFloorHeight < config.robotHeight)
+            {
+                gapTooSmall = true;
+                break;
+            }
+        }
+        if(gapTooSmall)
+            continue;
+        
+        double curDist = fabs(curFloorHeight - height);
+        if(curDist < minDistance)
+        {
+            minDistance = curDist;
+            bestMatchingPatch =&(*it);
+        }        
+    }
+    
+    return bestMatchingPatch;
+}
+
+
 
 
 void TraversabilityGrassfire::setStartPosition(Eigen::Vector3d startPos)
@@ -232,26 +256,19 @@ void TraversabilityGrassfire::setStartPosition(Eigen::Vector3d startPos)
     this->startPos = startPos;
 }
 
-void TraversabilityGrassfire::computeSlopeMap()
+void TraversabilityGrassfire::computeTraversability()
 {
-//     size_t maxX = mlsGrid->getCellSizeX();
-//     size_t maxY = mlsGrid->getCellSizeY();
-//     
-//     for(size_t y = 0;y < maxY; y++)
-//     {
-//         for(size_t x = 0;x < maxX; x++)
-//         {
-//             slopeMap[y][x] = ml
-//         }
-//     }
-
+    size_t maxX = mlsGrid->getCellSizeX();
+    size_t maxY = mlsGrid->getCellSizeY();
+    
+    for(size_t y = 0;y < maxY; y++)
+    {
+        for(size_t x = 0;x < maxX; x++)
+        {
+            setTraversability(x, y);
+        }
+    }
 }
-
-void TraversabilityGrassfire::smoothSlopeMap()
-{
-
-}
-
 
 bool envire::TraversabilityGrassfire::updateAll()
 {
@@ -280,9 +297,9 @@ bool envire::TraversabilityGrassfire::updateAll()
         trGrid->setTraversabilityClass(OBSTACLE + i, TraversabilityClass(1.0 / numClasses * i));
     }
 
-    if(!startRecursion(startPos))
+    if(!determineDrivePlane(startPos))
     {
-        std::cout << "TraversabilityGrassfire::Warning, could not start recursion" << std::endl;
+        std::cout << "TraversabilityGrassfire::Warning, could not find plane robot is driving on" << std::endl;
         return false;
     }
     
@@ -294,6 +311,8 @@ bool envire::TraversabilityGrassfire::updateAll()
         checkRecursive(next.x, next.y, next.origin);
         
     }
+    
+    computeTraversability();
 /*    
     std::cout << "stepTooHigh " << stepTooHigh << std::endl;
     std::cout << "slopeTooHigh " << slopeTooHigh << std::endl;
