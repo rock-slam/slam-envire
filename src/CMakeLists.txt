@@ -41,6 +41,7 @@ rock_library(envire
     operators/MLSSlope.cpp
     operators/SimpleTraversability.cpp
     operators/DistanceGridToPointcloud.cpp
+    operators/Fold.cpp
     operators/GridFloatToMLS.cpp
     operators/MLSToGrid.cpp
     operators/CutPointcloud.cpp
