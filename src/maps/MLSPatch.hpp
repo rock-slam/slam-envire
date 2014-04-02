@@ -200,6 +200,11 @@ struct SurfacePatch
 	return zpos;
     }
 
+    double getSlope() const
+    {
+        return acos(getNormal().dot(Eigen::Vector3f::UnitZ()));
+    }
+    
     Eigen::Vector3f getNormal() const
     {
 	return Eigen::Vector3f( -plane.getCoeffs().x(), -plane.getCoeffs().y(), 1.0 ).normalized();
