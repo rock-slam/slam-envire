@@ -76,9 +76,14 @@ struct SurfacePatch
     {
 	mean = plane.z / plane.n;
 	float norm = plane.n / ( pow(plane.n,2) - normsq );
-	float var = 
-	    std::max(1e-6f, (float)((plane.zz - (pow(mean,2)*(plane.n - 2.0))) * norm - n/plane.n));
-	stdev = sqrt(var);
+        if( n > 1 )
+        {
+            float var = 
+                std::max(1e-6f, (float)((plane.zz - (pow(mean,2)*(plane.n - 2.0))) * norm - n/plane.n));
+            stdev = sqrt(var);
+        }
+        else
+            stdev = sqrt(1.0/plane.n);
     }
 
     void updatePlane()
