@@ -215,4 +215,32 @@ BOOST_AUTO_TEST_CASE( list_grid )
     }
 }
 
+BOOST_AUTO_TEST_CASE( mls_patch )
+{
+    {
+        envire::SurfacePatch psum( Eigen::Vector3f( 0, 0, 1 ), 1.0 );
+        BOOST_CHECK_EQUAL( psum.getStdev(), 1.0 );
+    }
+
+    {
+        envire::SurfacePatch psum( Eigen::Vector3f( .1, .1, 1 ), 1.0 );
+
+        envire::SurfacePatch p1( Eigen::Vector3f( -.1, -.1, 1 ), 1.0 );
+        psum.mergePlane( p1, 1.0 );
+
+        envire::SurfacePatch p2( Eigen::Vector3f( -.1, .1, 1.5 ), 1.0 );
+        psum.mergePlane( p2, 1.0 );
+
+        BOOST_CHECK_CLOSE( psum.min, 1.0, 1e-3 );
+        BOOST_CHECK_CLOSE( psum.max, 1.5, 1e-3 );
+
+        BOOST_CHECK_CLOSE( psum.getMean(), 3.5 / 3.0, 1e-3 );
+        envire::SurfacePatch pcopy( psum );
+
+        psum.scaleWeight( 0.5 );
+        BOOST_CHECK_CLOSE( psum.getMean(), pcopy.getMean(), 1e-3 );
+        BOOST_CHECK_CLOSE( psum.getStdev(), pcopy.getStdev(), 1e-3 );
+    }
+}
+
 
