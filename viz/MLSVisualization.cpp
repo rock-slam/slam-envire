@@ -29,14 +29,10 @@ MLSVisualization::MLSVisualization()
 
 MLSVisualization::~MLSVisualization() {}
 
-osg::Vec3 Vec3( const Eigen::Vector3d& v )
+template <class T>
+osg::Vec3 Vec3( const Eigen::Matrix<T,3,1>& v )
 {
     return osg::Vec3( v.x(), v.y(), v.z() );
-}
-
-osg::Vec3 Vec3( const Eigen::Vector2d& v )
-{
-    return osg::Vec3( v.x(), v.y(), 0 );
 }
 
 class ExtentsRectangle : public osg::Geode
@@ -103,89 +99,214 @@ void MLSVisualization::unHighlightNode(envire::EnvironmentItem* item, osg::Group
     // TODO handle highlight and unhighlight
 }
 
-void drawBox(
-	osg::ref_ptr<osg::Vec3Array> vertices, 
-	osg::ref_ptr<osg::Vec3Array> normals, 
-	osg::ref_ptr<osg::Vec4Array> colors,  
-	const osg::Vec3& position, 
-	const osg::Vec4& heights,
-	const osg::Vec3& extents, 
-	const osg::Vec4& color, 
-	const osg::Vec3& normal )
+class PatchesGeode : public osg::Geode
 {
-    const double xp = position.x();
-    const double yp = position.y();
-    const double zp = position.z();
+    osg::ref_ptr<osg::Vec3Array> vertices;
+    osg::ref_ptr<osg::Vec3Array> normals;
+    osg::ref_ptr<osg::Vec4Array> colors;  
+    osg::ref_ptr<osg::Geometry> geom;  
 
-    const double xs = extents.x();
-    const double ys = extents.y();
-    const double zs = extents.z();
+    size_t vertexIndex;
 
-    const osg::Vec4 h( heights + osg::Vec4(zp,zp,zp,zp) );
+    float hue;
+    float sat; 
+    float alpha; 
+    float lum;
+    osg::Vec4 color;
 
-    vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
-    vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
-    vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]+zs*0.5));
-    vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]+zs*0.5));
-    for(size_t i=0;i<4;i++)
+public:
+    bool cycleColor;
+    float cycleColorInterval;
+
+    PatchesGeode()
+        : vertexIndex( 0 ),
+        hue( 0.0 ), sat( 1.0 ), alpha( 1.0 ), lum( 1.0 ),
+        cycleColor( false )
     {
-	normals->push_back(normal);
-	colors->push_back(color);
+        colors = new osg::Vec4Array;
+        vertices = new osg::Vec3Array;
+        normals = new osg::Vec3Array;
+        geom = new osg::Geometry;
+
+        geom->setVertexArray(vertices);
+        geom->setNormalArray(normals);
+        geom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
+        geom->setColorArray(colors); 
+        geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+        addDrawable(geom);    
     }
 
-    if( zs > 0.0 )
+    void drawPlane(
+            const osg::Vec3& position, 
+            const osg::Vec4& heights,
+            const osg::Vec3& extents, 
+            const osg::Vec3& normal,
+            double min,
+            double max )
     {
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[2]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[3]-zs*0.5));
-	for(size_t i=0;i<4;i++)
-	{
-	    normals->push_back(osg::Vec3(0,-1.0,0));
-	    colors->push_back(color);
-	}
+        const double xp = position.x();
+        const double yp = position.y();
+        const double zp = position.z();
 
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[0]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[1]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[3]-zs*0.5));
-	for(size_t i=0;i<4;i++)
-	{
-	    normals->push_back(osg::Vec3(1.0,0,0));
-	    colors->push_back(color);
-	}
+        const double xs = extents.x();
+        const double ys = extents.y();
 
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[0]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[1]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[2]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[3]-zs*0.5));
-	for(size_t i=0;i<4;i++)
-	{
-	    normals->push_back(osg::Vec3(0,1.0,0));
-	    colors->push_back(color);
-	}
+        enum { NONE, LOW, BOX, HIGH } prev_pos = NONE, pos;
+        osg::Vec3 prev_p, p;
+        for( size_t i=0; i<4; i++ )
+        {
+            switch( i%4 )
+            {
+                case 0: p = osg::Vec3(xp-xs*0.5, yp-ys*0.5, heights[0]); break;
+                case 1: p = osg::Vec3(xp+xs*0.5, yp-ys*0.5, heights[1]); break;
+                case 2: p = osg::Vec3(xp+xs*0.5, yp+ys*0.5, heights[2]); break;
+                case 3: p = osg::Vec3(xp-xs*0.5, yp+ys*0.5, heights[3]); break;
+            }
 
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[0]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[1]+zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[2]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]-zs*0.5));
-	for(size_t i=0;i<4;i++)
-	{
-	    normals->push_back(osg::Vec3(-1.0,0,0));
-	    colors->push_back(color);
-	}
+            if( p.z() < min )
+                pos = LOW;
+            else if( p.z() > max )
+                pos = HIGH;
+            else 
+                pos = BOX;
 
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]-zs*0.5));
-	vertices->push_back(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]-zs*0.5));
-	for(size_t i=0;i<4;i++)
-	{
-	    normals->push_back(osg::Vec3(0,0,-1.0));
-	    colors->push_back(color);
-	}
+            if( (prev_pos == LOW || prev_pos == HIGH) && pos != prev_pos )
+            {
+                // clipping in
+                double h = prev_pos == LOW ? min : max;
+                double s = (h - prev_p.z()) / (p.z() - prev_p.z());
+                osg::Vec3 cp = prev_p + (p - prev_p) * s;
+                addVertex( cp, normal );
+            }
+            if( pos == BOX )
+            {
+                addVertex( p, normal );
+            }
+            else if( pos != prev_pos && prev_pos != NONE )
+            {
+                // clipping out
+                double h = pos == LOW ? min : max;
+                double s = (h - prev_p.z()) / (p.z() - prev_p.z());
+                osg::Vec3 cp = prev_p + (p - prev_p) * s;
+                addVertex( cp, normal );
+            }
+
+            prev_pos = pos;
+            prev_p = p;
+        }
+
+        closePolygon();
     }
-}
+    
+    void drawBox(
+            const osg::Vec3& position, 
+            const osg::Vec3& extents, 
+            const osg::Vec3& c_normal )
+    {
+        const double xp = position.x();
+        const double yp = position.y();
+        const double zp = position.z();
+
+        const double xs = extents.x();
+        const double ys = extents.y();
+        const double zs = extents.z();
+
+        const osg::Vec4 h( osg::Vec4(zp,zp,zp,zp) );
+        osg::Vec3 normal( c_normal );
+
+        addVertex(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5), normal);
+        addVertex(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5), normal);
+        addVertex(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]+zs*0.5), normal);
+        addVertex(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]+zs*0.5), normal);
+
+        if( zs > 0.0 )
+        {
+            normal = osg::Vec3(0,-1.0,0);
+            addVertex(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[2]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[3]-zs*0.5), normal);
+
+            normal = osg::Vec3(1.0,0,0);
+            addVertex(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[0]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[1]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[3]-zs*0.5), normal);
+
+            normal = osg::Vec3(0,1.0,0);
+            addVertex(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[0]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[1]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[2]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[3]-zs*0.5), normal);
+
+            normal = osg::Vec3(-1.0,0,0);
+            addVertex(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[0]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[1]+zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[2]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]-zs*0.5), normal);
+
+            normal = osg::Vec3(0,0,-1.0);
+            addVertex(osg::Vec3(xp-xs*0.5, yp-ys*0.5, h[0]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp-ys*0.5, h[1]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp+xs*0.5, yp+ys*0.5, h[2]-zs*0.5), normal);
+            addVertex(osg::Vec3(xp-xs*0.5, yp+ys*0.5, h[3]-zs*0.5), normal);
+        }
+
+        closeQuads();
+    }
+
+    void setColorHSVA( float hue, float sat, float lum, float alpha )
+    {
+        this->hue = hue;
+        this->sat = sat;
+        this->alpha = alpha;
+        this->lum = lum;
+
+        updateColor();
+    }
+
+    void setColor( const osg::Vec4& color )
+    {
+        // TODO ideally this should also change the HSVA values
+        this->color = color;
+    }
+
+protected:
+    void updateColor()
+    {
+        vizkit3d::hslToRgb( hue, sat, lum , color.x(), color.y(), color.z());
+        color.w() = alpha;
+    }
+
+    void addVertex( const osg::Vec3& p, const osg::Vec3& n )
+    {
+        vertices->push_back( p );
+        normals->push_back( n );
+        
+        if( cycleColor )
+        {
+            hue = (p.z() - std::floor(p.z() / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
+            updateColor();
+        }
+
+        colors->push_back( color );
+    }
+
+    void closePolygon()
+    {
+        geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POLYGON,vertexIndex,vertices->size()-vertexIndex));
+        vertexIndex = vertices->size();
+    }
+
+    void closeQuads()
+    {
+        geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::QUADS,vertexIndex,vertices->size()-vertexIndex));
+        vertexIndex = vertices->size();
+    }
+};
+
+
 
 osg::Vec3 estimateNormal( MultiLevelSurfaceGrid::SurfacePatch patch, MultiLevelSurfaceGrid::Position pos, MultiLevelSurfaceGrid* grid ) {
     patch.stdev = grid->getScaleX() * 2;
@@ -222,9 +343,8 @@ osg::Vec3 estimateNormal( MultiLevelSurfaceGrid::SurfacePatch patch, MultiLevelS
 
 void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* group) const
 {
-    osg::ref_ptr<osg::Geode> geode = group->getChild(0)->asGeode();
-    //remove old drawables
-    while(geode->removeDrawables(0));
+    osg::ref_ptr<PatchesGeode> geode = new PatchesGeode();
+    group->setChild( 0, geode );
 
     envire::MultiLevelSurfaceGrid *mls = dynamic_cast<envire::MultiLevelSurfaceGrid *>(item);
     assert(mls);
@@ -241,11 +361,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	group->addChild( 
 		new ExtentsRectangle( mls->getExtents(), col ) );
     }
-    
-    osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
-    osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
-    osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
+
     
     const double xs = mls->getScaleX();
     const double ys = mls->getScaleY();
@@ -255,7 +371,6 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
     osg::ref_ptr<osg::Vec3Array> var_vertices = new osg::Vec3Array;
 
-    //std::cerr << "grid size: " << mls->getWidth() << " x " << mls->getHeight() << std::endl;
     int hor = 0;
     for(size_t x=0;x<mls->getWidth();x++)
     {
@@ -267,50 +382,71 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 		double xp = (x+0.5) * xs + xo;
 		double yp = (y+0.5) * ys + yo; 
 
-		osg::Vec4 heights(0,0,0,0);
+                // setup the color for the next geometry
+                if( mls->getHasCellColor() )
+                {
+                    geode->cycleColor = false;
+                    base::Vector3d c = p.getColor();
+                    osg::Vec4 col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
+                    geode->setColor( col );
+                }
+                else if( cycleHeightColor )
+                {
+                    geode->cycleColor = true;
+                    geode->cycleColorInterval = cycleColorInterval;
+                    double hue = (p.mean - std::floor(p.mean / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
+                    double sat = 1.0;
+                    double lum = 0.6;
+                    double alpha = std::max( 0.0, 1.0 - p.stdev );
+                    geode->setColorHSVA( hue, sat, lum, alpha );
+                }
+                else
+                    geode->setColor( horizontalCellColor );
+
+                // slopes need to be handled differently
 		if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
 		{
-		    heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) ) - p.mean;
-		    heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) ) - p.mean;
-		    heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) ) - p.mean;
-		    heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) ) - p.mean;
-		}
+                    osg::Vec4 heights(0,0,0,0);
+		    heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
+		    heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
+		    heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
+		    heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
 
-		if( p.isHorizontal() )
-		{
-		    osg::Vec4 col;
-		    if( mls->getHasCellColor() )
-		    {
-			base::Vector3d c = p.getColor();
-			col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
-		    }
-		    else if( cycleHeightColor )
+                    geode->drawPlane(  
+                            osg::Vec3( xp, yp, p.mean ), 
+                            heights, 
+                            osg::Vec3( xs, ys, 0.0 ), 
+                            Vec3( p.getNormal() ),
+                            p.min, p.max );
+		}
+                else
+                {
+                    if( p.isHorizontal() )
                     {
-                       double hue = (p.mean - std::floor(p.mean / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
-		       double sat = 1.0;
-		       double alpha = std::max( 0.0, 1.0 - p.stdev );
-		       double lum = 0.6;
-		       vizkit3d::hslToRgb( hue, sat, lum , col.x(), col.y(), col.z());
-                       col.w() = alpha;
+                        geode->drawBox( 
+                                osg::Vec3( xp, yp, p.mean ), 
+                                osg::Vec3( xs, ys, 0.0 ), 
+                                estimateNormals ? 
+                                    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
+                                    osg::Vec3( 0, 0, 1.0 ) );
+                        hor++;
                     }
-		    else
-			col = horizontalCellColor;
-		    
-		    drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean ), heights, osg::Vec3( xs, ys, 0.0 ), 
-			    col,
-			    estimateNormals ? 
-				estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
-				osg::Vec3( 0, 0, 1.0 ) );
-		    hor++;
-		}
-		else
-		{
-		    if( p.isVertical() || showNegative )
-		    {	
-			osg::Vec4 col = p.isVertical() ? verticalCellColor : negativeCellColor;
-			drawBox( vertices, normals, color, osg::Vec3( xp, yp, p.mean-p.height*.5 ), heights, osg::Vec3( xs, ys, p.height ), col, osg::Vec3(0, 0, 1.0) );
-		    }
-		}
+                    else
+                    {
+                        if( p.isVertical() || showNegative )
+                        {	
+                            geode->setColor( 
+                                    p.isVertical() ? verticalCellColor : negativeCellColor );
+                            geode->drawBox( 
+                                    osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
+                                    osg::Vec3( xs, ys, p.height ), 
+                                    osg::Vec3(0, 0, 1.0) );
+                        }
+                    }
+                }
+
+                if( p.stdev > 1.0 || p.stdev < 0 )
+                    std::cout << p.stdev << std::endl;
 
 		if( showUncertainty )
 		{
@@ -320,19 +456,6 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	    }
 	}
     }
-    //std::cerr << "vertices: " << vertices->size() << " hor: " << hor << std::endl;
-
-    geom->setVertexArray(vertices);
-    osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::QUADS, 0, vertices->size() );
-    geom->addPrimitiveSet(drawArrays.get());
-
-    geom->setNormalArray(normals);
-    geom->setNormalBinding( osg::Geometry::BIND_PER_VERTEX );
-
-    geom->setColorArray(color.get());
-    geom->setColorBinding( osg::Geometry::BIND_PER_VERTEX );
-
-    geode->addDrawable(geom.get());    
 
     if( showUncertainty )
     {
