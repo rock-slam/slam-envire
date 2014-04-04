@@ -445,9 +445,6 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                     }
                 }
 
-                if( p.stdev > 1.0 || p.stdev < 0 )
-                    std::cout << p.stdev << std::endl;
-
 		if( showUncertainty )
 		{
 		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
