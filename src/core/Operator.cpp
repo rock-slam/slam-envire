@@ -25,6 +25,9 @@ bool Operator::setInput( Layer* layer )
 
 bool Operator::addInput( Layer* layer ) 
 {
+    if (isAttached() == false)
+        throw std::runtime_error("Before adding the input attach " + className + " to the environment.");
+
     if( inputArity && env->getInputs(this).size() >= static_cast<unsigned int>(inputArity) )
         throw std::runtime_error(className + " can only have " + boost::lexical_cast<std::string>(inputArity) + " inputs");
     env->addInput( this, layer );
@@ -39,6 +42,9 @@ bool Operator::setOutput( Layer* layer )
 
 bool Operator::addOutput( Layer* layer ) 
 {
+    if (isAttached() == false)
+        throw std::runtime_error("Before adding the output attach " + className + " to the environment.");
+
     if( outputArity && env->getOutputs(this).size() >= static_cast<unsigned int>(outputArity) )
         throw std::runtime_error(className + " can only have " + boost::lexical_cast<std::string>(outputArity) + " outputs");
     env->addOutput( this, layer );
