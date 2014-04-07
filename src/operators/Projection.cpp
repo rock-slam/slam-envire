@@ -15,7 +15,7 @@ using namespace std;
 
 ENVIRONMENT_ITEM_DEF( Projection )
 
-Projection::Projection()
+Projection::Projection() : Operator(0, 1)
 {
 }
 
@@ -36,9 +36,6 @@ void Projection::addInput( Pointcloud* mesh )
 
 void Projection::addOutput( ElevationGrid* grid )
 {
-    if( env->getOutputs(this).size() > 0 )
-        throw std::runtime_error("Projection can only have one output.");
-
     Operator::addOutput(grid);
 }
 
