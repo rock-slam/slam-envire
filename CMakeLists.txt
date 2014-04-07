@@ -17,7 +17,8 @@ if (USE_CGAL)
     if (NOT CGAL_FOUND)
         message (FATAL_ERROR "CGAL, BLAS and/or LAPACK could not be found, CGAL will not be used!")
     endif()
-    add_definitions( -DENVIRE_USE_CGAL )    
+
+    add_definitions( -DENVIRE_USE_CGAL -DCGAL_EIGEN3_ENABLED)    
 endif()
 
 rock_export_includedir(${PROJECT_SOURCE_DIR}/src ${PROJECT_NAME})
