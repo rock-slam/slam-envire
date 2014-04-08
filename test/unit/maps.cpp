@@ -75,17 +75,20 @@ void printMap(const TraversabilityGrid &tr)
 
 }
 
-void verifyRect(double width, double height, base::Pose2D p, TraversabilityGrid &tr, uint8_t expected, uint8_t overwrite, uint8_t unset, uint8_t ow_unset )
+void verifyRect(double sizeX, double sizeY, base::Pose2D p, TraversabilityGrid &tr, uint8_t expected, uint8_t overwrite, uint8_t unset, uint8_t ow_unset )
 {
     TraversabilityGrid::ArrayType &data(tr.getGridData(TraversabilityGrid::TRAVERSABILITY));
     
     Rotation2D<double> rot(p.orientation);
 
     GridBase::Position lastP_g;
+    
+    const double sizeXHalf = sizeX / 2.0;
+    const double sizeYHalf = sizeY / 2.0;
 
-    for(double x = -width / 2.0; x <= (width / 2.0) + 0.000001; x += 0.001)
+    for(double x = -sizeXHalf; x <= sizeXHalf + 0.000001; x += 0.001)
     {
-        for(double y = -height / 2.0; y <= (height / 2.0) + 0.000001; y += 0.001)
+        for(double y = -sizeYHalf; y <= sizeYHalf + 0.000001; y += 0.001)
         {
             Vector2d p_w = p.position + rot * Vector2d(x, y);
             GridBase::Position p_g;
@@ -117,22 +120,22 @@ BOOST_AUTO_TEST_CASE( test_forEachInRect )
     
 //     std::cout << "XSize " << tr.getCellSizeX() << " YSize " << tr.getCellSizeY() << std::endl;
     
-    base::Pose2D p(Eigen::Vector2d(3.0,3.0), -0* M_PI / 180.0 );
+    base::Pose2D p(Eigen::Vector2d(3.0,1.0), -0* M_PI / 180.0 );
     
     TraversabilityGrid::ArrayType &data(tr.getGridData(TraversabilityGrid::TRAVERSABILITY));
     
-    double width = .6;
-    double height = 1.0;
+    double sizeY = .6;
+    double sizeX = 1.0;
     
-    tr.forEachInRectangle(p, width, height, boost::bind(makeX, _1, _2, 1, boost::ref(data)));
+    tr.forEachInRectangle(p, sizeX, sizeY, boost::bind(makeX, _1, _2, 1, boost::ref(data)));
 
     Rotation2D<double> rot(p.orientation);
 
     GridBase::Position lastP_g;
 
-    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << width << " height " << height << std::endl;
+    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << sizeY << " height " << sizeX << std::endl;
 
-    verifyRect(width, height, p, tr, 1, 2, 0, 4);
+    verifyRect(sizeX, sizeY, p, tr, 1, 2, 0, 4);
     printMap(tr);
 
     for(size_t x = 0; x < tr.getCellSizeX(); x++)
@@ -160,24 +163,24 @@ BOOST_AUTO_TEST_CASE( test_forEachInRects )
     
     TraversabilityGrid::ArrayType &data(tr.getGridData(TraversabilityGrid::TRAVERSABILITY));
     
-    double width = .5;
-    double height = 1.0;
+    double sizeX = 1.0;
+    double sizeY = .5;
     double border = 0.3;
 
 //     base::Pose2D p(Eigen::Vector2d(width / 2 + border + 0.1 , height / 2 + border + 0.1), 0* M_PI / 180.0 );
     base::Pose2D p(Eigen::Vector2d(2 , 2.15), 42* M_PI / 180.0 );
 
-    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << width << " height " << height << " border " << border << std::endl;
+    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << sizeY << " height " << sizeX << " border " << border << std::endl;
     
-    tr.forEachInRectangles(p, width, height, boost::bind(makeX, _1, _2, 1, boost::ref(data)),
-                            width + border * 2, height + border * 2, boost::bind(makeX, _1, _2, 5, boost::ref(data))
+    tr.forEachInRectangles(p, sizeX, sizeY, boost::bind(makeX, _1, _2, 1, boost::ref(data)),
+                            sizeX + border * 2, sizeY + border * 2, boost::bind(makeX, _1, _2, 5, boost::ref(data))
     );
 
     Rotation2D<double> rot(p.orientation);
     GridBase::Position lastP_g;
 
-    Vector2d p_t((-width / 2.0 - border), (-height / 2.0 - border));
-    Vector2d p_w = p.position + rot * Vector2d((-width / 2.0 - border), (-height / 2.0 - border));
+    Vector2d p_t((-sizeX / 2.0 - border), (-sizeY / 2.0 - border));
+    Vector2d p_w = p.position + rot * Vector2d((-sizeX / 2.0 - border), (-sizeY / 2.0 - border));
     GridBase::Position p_g;
             
     if(tr.toGrid(p_w, p_g))
@@ -186,9 +189,9 @@ BOOST_AUTO_TEST_CASE( test_forEachInRects )
         std::cout <<"MIN X " <<  p_g.x << " " << p_g.y << " " << p_w.x() / .1 << " " << p_w.y() / 0.1<<  std::endl;
     }
 
-    verifyRect(width, height, p, tr, 1, 2, 0, 4);
+    verifyRect(sizeX, sizeY, p, tr, 1, 2, 0, 4);
 
-    verifyRect(width+ 2*border, height + 2*border, p, tr, 5, 7, 0, 6);
+    verifyRect(sizeX+ 2*border, sizeY + 2*border, p, tr, 5, 7, 0, 6);
     
     printMap(tr);  
 }
@@ -205,13 +208,13 @@ public:
     Eigen::Vector2d pos;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    DistanceHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double width, double height, double borderWidth) : inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()),
+    DistanceHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double sizeX, double sizeY, double borderWidth) : inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()),
     scaleX(grid.getScaleX()), scaleY(grid.getScaleY())
     {
         boxLut = new BoxLookUpTable();
         //note the scale should be higher than the grid scale because 
         //of the roation. Else we get aliasing problems.
-        boxLut->recompute(scaleX, width, height, borderWidth);
+        boxLut->recompute(scaleX, sizeX, sizeY, borderWidth);
 
         pos = pose.position;
     }
@@ -242,29 +245,30 @@ BOOST_AUTO_TEST_CASE( test_BoxLookupTable )
     
     TraversabilityGrid::ArrayType &data(tr.getGridData(TraversabilityGrid::TRAVERSABILITY));
     
-    double width = .6;
-    double height = 1.0;
+    double sizeX = 1.0;
+    double sizeY = .6;
     double border = 0.5;
 
-    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << width << " height " << height << " border " << border << std::endl;
+    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << sizeY << " height " << sizeX << " border " << border << std::endl;
 
-    DistanceHelper helper(p, tr, width, height, border*2);
+    DistanceHelper helper(p, tr, sizeX, sizeY, border*2);
 
     std::cout << "FOOOOBAR" << std::endl;
-    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << width << " height " << height << " border " << border << std::endl;
+    std::cout << "Robot at " << p.position.transpose() << " angle " << p.orientation / M_PI * 180.0 << " width " << sizeY << " height " << sizeX << " border " << border << std::endl;
     helper.boxLut->printDebug();
 
     
-    tr.forEachInRectangles(p, width, height, boost::bind(makeX, _1, _2, 1, boost::ref(data)),
-                            width + border * 2, height + border * 2, boost::bind(makeX, _1, _2, 2, boost::ref(data))
+    tr.forEachInRectangles(p, sizeX, sizeY, boost::bind(makeX, _1, _2, 1, boost::ref(data)),
+                            sizeX + border * 2, sizeY + border * 2, boost::bind(makeX, _1, _2, 2, boost::ref(data))
     );
 
     std::cout << "Border Map" << std::endl;
     printMap(tr);
 
     std::cout << "Distance Map " << std::endl;
-    for(size_t y = 0; y < tr.getCellSizeY(); y++)
+    for(int y = tr.getCellSizeY()- 1; y >= 0; y--)
     {
+        std::cout << std::fixed << std::setw(2) << y << " ";
         for(size_t x = 0; x < tr.getCellSizeX(); x++)
         {
             double dist = 0;
@@ -273,8 +277,6 @@ BOOST_AUTO_TEST_CASE( test_BoxLookupTable )
             std::cout << std::setw(4) << std::setprecision(2) << dist << " ";
         }
         std::cout << std::endl;
-    }    
-    
-    
+    }  
 }
 

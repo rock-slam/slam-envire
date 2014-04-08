@@ -7,42 +7,42 @@
 namespace envire
 {
 
-BoxLookUpTable::BoxLookUpTable() : scale(0), width(0), height(0), maxDistFromBox(0), distanceTable(NULL)
+BoxLookUpTable::BoxLookUpTable() : scale(0), sizeX(0), sizeY(0), maxDistFromBox(0), distanceTable(NULL)
 {
 
 }
     
-void BoxLookUpTable::recompute(double scale, double width, double height, double maxDistFromBox)
+void BoxLookUpTable::recompute(double scalei, double sizeXi, double sizeYi, double maxDistFromBox)
 {
     double epsilon = 0.00001;
-    if((fabs(scale - this->scale) < epsilon) 
-        && (fabs(width - this->width) < epsilon) 
-        && (fabs(height - this->height) < epsilon) 
+    if((fabs(scale - scalei) < epsilon) 
+        && (fabs(sizeXi - sizeX) < epsilon) 
+        && (fabs(sizeYi - sizeY) < epsilon) 
         && ((this->maxDistFromBox + epsilon) > maxDistFromBox ))
         return;
     
-    this->scale = scale;
-    this->width = width;
-    this->height = height;
+    scale = scalei;
+    sizeX = sizeXi;
+    sizeY = sizeYi;
     this->maxDistFromBox = maxDistFromBox;
     
     
-    widthHalf = width / 2.0;
-    heightHalf = height / 2.0;
+    sizeXHalf = sizeX / 2.0;
+    sizeYHalf = sizeY / 2.0;
     
     //move cordinate frame into the center of a box
-    offsetX = (scale / 2 - fmod(widthHalf + maxDistFromBox, scale));
-    offsetY = (scale / 2 - fmod(heightHalf + maxDistFromBox, scale));
+    offsetX = (scale / 2 - fmod(sizeXHalf + maxDistFromBox, scale));
+    offsetY = (scale / 2 - fmod(sizeYHalf + maxDistFromBox, scale));
     if(offsetX < 0)
         offsetX += scale;
     if(offsetY < 0)
         offsetY += scale;
     
-    sizeX = ceil((offsetX + width + maxDistFromBox * 2) / scale);
-    sizeY = ceil((offsetY + height + maxDistFromBox * 2) / scale);
+    cellSizeX = ceil((offsetX + sizeX + maxDistFromBox * 2) / scale);
+    cellSizeY = ceil((offsetY + sizeY + maxDistFromBox * 2) / scale);
     
-    centerX = widthHalf + maxDistFromBox + offsetX;
-    centerY = heightHalf + maxDistFromBox + offsetY;
+    centerX = sizeXHalf + maxDistFromBox + offsetX;
+    centerY = sizeYHalf + maxDistFromBox + offsetY;
 
     computeDistances();
 }
@@ -52,27 +52,27 @@ void BoxLookUpTable::computeDistances()
     if(distanceTable)
         delete[] distanceTable;
         
-    distanceTable = new double[sizeX * sizeY];
+    distanceTable = new double[cellSizeX * cellSizeY];
     
-    for(int y = 0; y < sizeY; y++)
+    for(int y = 0; y < cellSizeY; y++)
     {
-        for(int x = 0; x < sizeX;x++)
+        for(int x = 0; x < cellSizeX;x++)
         {
-            distanceTable[sizeX * y + x] = 0;//std::numeric_limits< double >::max();
+            distanceTable[cellSizeX * y + x] = 0;//std::numeric_limits< double >::max();
         }
     }
     
-    for(double x = -(widthHalf + maxDistFromBox); x < (widthHalf + maxDistFromBox); x+= scale / 10.0)
+    for(double x = -(sizeXHalf + maxDistFromBox); x < (sizeXHalf + maxDistFromBox); x+= scale / 10.0)
     {        
         int xi = (x + centerX) / scale;
-        if(xi < 0 || xi > sizeX)
+        if(xi < 0 || xi >= cellSizeX)
             continue;
         
-        for(double y = -(heightHalf + maxDistFromBox); y < (heightHalf + maxDistFromBox); y+= scale / 10.0)
+        for(double y = -(sizeYHalf + maxDistFromBox); y < (sizeYHalf + maxDistFromBox); y+= scale / 10.0)
         {
             int yi = (y + centerY) / scale;
 
-            if(yi < 0 || yi > sizeY)
+            if(yi < 0 || yi >= cellSizeY)
                 continue;
             
             double xp = x;
@@ -83,23 +83,23 @@ void BoxLookUpTable::computeDistances()
             if(yp < 0)
                 yp *= -1;
             
-            if(xp > widthHalf)
+            if(xp > sizeXHalf)
             {
-                if(yp > heightHalf)
+                if(yp > sizeYHalf)
                 {
                     //edge case 
-                    dist = sqrt(pow(xp - widthHalf, 2) + pow(yp - heightHalf, 2));
+                    dist = sqrt(pow(xp - sizeXHalf, 2) + pow(yp - sizeYHalf, 2));
                 } 
                 else
                 {
-                    dist = xp - widthHalf;
+                    dist = xp - sizeXHalf;
                 }
             } 
             else
             {
-                if(yp > heightHalf)
+                if(yp > sizeYHalf)
                 {
-                   dist = yp - heightHalf;
+                   dist = yp - sizeYHalf;
                 }
                 else
                 {
@@ -108,7 +108,7 @@ void BoxLookUpTable::computeDistances()
                 }
             }
 
-            distanceTable[sizeX * yi + xi] = std::max(dist, distanceTable[sizeX * yi + xi]);
+            distanceTable[cellSizeX * yi + xi] = std::max(dist, distanceTable[cellSizeX * yi + xi]);
 
         }
     }
@@ -122,22 +122,22 @@ const double& BoxLookUpTable::getDistanceToBox(double xp, double yp) const
     int x = (xp + centerX) / scale;
     int y = (yp + centerY) / scale;
     
-    if(x < 0 || x > sizeX || y < 0 || y > sizeY)
+    if(x < 0 || x > cellSizeX || y < 0 || y > cellSizeY)
     {
         std::cout << "xp " << xp << " yp " << yp << " x " << x << " y " << y << std::endl; 
         throw std::runtime_error("BoxLookUpTable:: Distance lookup out of bound");
     }
     
-    return distanceTable[sizeX * y + x];
+    return distanceTable[cellSizeX * y + x];
 }
 
 void BoxLookUpTable::printDebug()
 {
-    for(int y = 0; y < sizeY; y++)
+    for(int y = 0; y < cellSizeY; y++)
     {
-        for(int x = 0; x < sizeX;x++)
+        for(int x = 0; x < cellSizeX;x++)
         {
-            std::cout << std::fixed << std::setw(4) << std::setprecision(2) << distanceTable[sizeX * y + x] << " ";
+            std::cout << std::fixed << std::setw(4) << std::setprecision(2) << distanceTable[cellSizeX * y + x] << " ";
         }
         std::cout << std::endl;
     }

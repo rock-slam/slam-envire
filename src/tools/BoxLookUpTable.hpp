@@ -13,7 +13,7 @@ public:
     
     const double& getDistanceToBox(double x, double y) const;
     
-    void recompute(double scale, double width, double height, double maxDistFromBox);
+    void recompute(double scale, double sizeX, double sizeY, double maxDistFromBox);
     
     void printDebug();
     
@@ -21,15 +21,15 @@ private:
     void computeDistances();
     
     double scale;
-    double width;
-    double height;
+    double sizeX;
+    double sizeY;
     double maxDistFromBox;
     double *distanceTable;
     
-    int sizeX;
-    int sizeY;
-    double widthHalf;
-    double heightHalf;
+    int cellSizeX;
+    int cellSizeY;
+    double sizeXHalf;
+    double sizeYHalf;
     double offsetX;
     double offsetY;
     double centerX;

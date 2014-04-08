@@ -55,24 +55,24 @@ void GridBase::unserialize(Serialization& so)
     so.read("offsety", offsety );
 }
 
-bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier) const
+bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double sizeX, double sizeY, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier) const
 {
-    const double widthHalf = width / 2.0;
-    const double heightHalf = height / 2.0;
+    const double sizeXHalf = sizeX / 2.0;
+    const double sizeYHalf = sizeY / 2.0;
     Eigen::Rotation2D<double> rot(pose.orientation);
     
-    Eigen::Vector2d upLeft = pose.position +  rot * Eigen::Vector2d(-widthHalf, heightHalf);
-    Eigen::Vector2d upRight = pose.position +  rot * Eigen::Vector2d(widthHalf, heightHalf);
-    Eigen::Vector2d downRight = pose.position +  rot * Eigen::Vector2d(widthHalf, -heightHalf);
-    Eigen::Vector2d downLeft = pose.position +  rot * Eigen::Vector2d(-widthHalf, -heightHalf);
+    Eigen::Vector2d upLeft = pose.position +  rot * Eigen::Vector2d(sizeXHalf, -sizeYHalf);
+    Eigen::Vector2d upRight = pose.position +  rot * Eigen::Vector2d(sizeXHalf, sizeYHalf);
+    Eigen::Vector2d downRight = pose.position +  rot * Eigen::Vector2d(-sizeXHalf, sizeYHalf);
+    Eigen::Vector2d downLeft = pose.position +  rot * Eigen::Vector2d(-sizeXHalf, -sizeYHalf);
 
-    if(upLeft.y() < downLeft.y())
+    if(upLeft.x() < downLeft.x())
     {
         std::swap(upLeft, downLeft);
         std::swap(upRight, downRight);
     }
 
-    if(upRight.x() < upLeft.x())
+    if(upRight.y() < upLeft.y())
     {
         std::swap(upLeft, upRight);
         std::swap(downLeft, downRight);
@@ -113,8 +113,7 @@ bool envire::GridBase::getRectPoints(const base::Pose2D &pose, double width, dou
 }
 
 
-bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, double innerWidth_w, double innerHeight_w, boost::function< void (size_t, size_t)> innerCallback, 
-                                           double outerWidth_w, double outerHeight_w, boost::function< void (size_t, size_t)> outerCallback) const
+bool envire::GridBase::forEachInRectangles(const base::Pose2D& rectCenter_w, double innerSizeX_w, double innerSizeY_w, boost::function< void (size_t, size_t)> innerCallback, double outerSizeX_w, double outerSizeY_w, boost::function< void (size_t, size_t)> outerCallback) const
 {
     double multiplier = 10;
     envire::GridBase::Position upLeft_g;
@@ -122,7 +121,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
     envire::GridBase::Position downLeft_g;
     envire::GridBase::Position downRight_g;
     
-    if(!getRectPoints(rectCenter, innerWidth_w, innerHeight_w, upLeft_g, upRight_g, downLeft_g, downRight_g, multiplier))
+    if(!getRectPoints(rectCenter_w, innerSizeX_w, innerSizeY_w, upLeft_g, upRight_g, downLeft_g, downRight_g, multiplier))
         return false;
 
     envire::GridBase::Position upLeftOut;
@@ -130,7 +129,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
     envire::GridBase::Position downLeftOut;
     envire::GridBase::Position downRightOut;
     
-    if(!getRectPoints(rectCenter, outerWidth_w, outerHeight_w, upLeftOut, upRightOut, downLeftOut, downRightOut, multiplier))
+    if(!getRectPoints(rectCenter_w, outerSizeX_w, outerSizeY_w, upLeftOut, upRightOut, downLeftOut, downRightOut, multiplier))
         return false;
 
 //     std::cout << "upLeftOut    X " << upLeftOut.x << " Y " << upLeftOut.y << std::endl;
@@ -142,24 +141,8 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
     std::vector<envire::GridBase::Position> rightIn;
     std::vector<envire::GridBase::Position> leftOut;
     std::vector<envire::GridBase::Position> rightOut;
-
-    if(upLeft_g.y > upRight_g.y)
-    {
-        //points of left side
-        lineBresenham(upLeft_g, downLeft_g, leftIn);
-        lineBresenham(downLeft_g, downRight_g, leftIn);
-
-        lineBresenham(upLeftOut, downLeftOut, leftOut);
-        lineBresenham(downLeftOut, downRightOut, leftOut);
-
-        //points of right side
-        lineBresenham(upLeft_g, upRight_g, rightIn);
-        lineBresenham(upRight_g, downRight_g, rightIn);
-
-        lineBresenham(upLeftOut, upRightOut, rightOut);
-        lineBresenham(upRightOut, downRightOut, rightOut);
-    }
-    else
+    
+    if(upRight_g.y > downRight_g.y)
     {
         //points of left side
         lineBresenham(upRight_g, upLeft_g, leftIn);
@@ -174,6 +157,22 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
 
         lineBresenham(upRightOut, downRightOut, rightOut);
         lineBresenham(downRightOut, downLeftOut, rightOut);
+    }
+    else
+    {
+        //points of left side
+        lineBresenham(downRight_g, upRight_g, leftIn);
+        lineBresenham(upRight_g, upLeft_g, leftIn);
+
+        lineBresenham(downRightOut, upRightOut, leftOut);
+        lineBresenham(upRightOut, upLeftOut, leftOut);
+
+        //points of right side
+        lineBresenham(downRight_g, downLeft_g, rightIn);
+        lineBresenham(downLeft_g, upLeft_g, rightIn);
+
+        lineBresenham(downRightOut, downLeftOut, rightOut);
+        lineBresenham(downLeftOut, upLeftOut, rightOut);
     }
 
 //     std::cout << "Left " << std::endl;
@@ -283,7 +282,7 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D &rectCenter, doubl
 
 }
 
-bool envire::GridBase::forEachInRectangle(const base::Pose2D& pose, double widthWorld, double heightWorld, boost::function<void (size_t, size_t) > callbackGrid) const
+bool envire::GridBase::forEachInRectangle(const base::Pose2D& pose, double sizeXWorld, double sizeYWorld, boost::function<void (size_t, size_t) > callbackGrid) const
 {
 //     return forEachInRectangles(pose, 0, 0, callbackGrid, widthWorld, heightWorld, callbackGrid);
     double multiplier = 10;
@@ -292,23 +291,13 @@ bool envire::GridBase::forEachInRectangle(const base::Pose2D& pose, double width
     envire::GridBase::Position dlGrid;
     envire::GridBase::Position drGrid;
     
-    if(!getRectPoints(pose, widthWorld, heightWorld, ulGrid, urGrid, dlGrid, drGrid, multiplier))
+    if(!getRectPoints(pose, sizeXWorld, sizeYWorld, ulGrid, urGrid, dlGrid, drGrid, multiplier))
         return false;
 
     std::vector<envire::GridBase::Position> left;
     std::vector<envire::GridBase::Position> right;
 
-    if(ulGrid.y > urGrid.y)
-    {
-        //points of left side
-        lineBresenham(ulGrid, dlGrid, left);
-        lineBresenham(dlGrid, drGrid, left);
-
-        //points of right side
-        lineBresenham(ulGrid, urGrid, right);
-        lineBresenham(urGrid, drGrid, right);
-    }
-    else
+    if(urGrid.y > drGrid.y)
     {
         //points of left side
         lineBresenham(urGrid, ulGrid, left);
@@ -317,6 +306,16 @@ bool envire::GridBase::forEachInRectangle(const base::Pose2D& pose, double width
         //points of right side
         lineBresenham(urGrid, drGrid, right);
         lineBresenham(drGrid, dlGrid, right);
+    }
+    else
+    {
+        //points of left side
+        lineBresenham(drGrid, urGrid, left);
+        lineBresenham(urGrid, ulGrid, left);
+
+        //points of right side
+        lineBresenham(drGrid, dlGrid, right);
+        lineBresenham(dlGrid, ulGrid, right);
     }
     
     std::vector<envire::GridBase::Position>::const_iterator leftIt = left.begin();

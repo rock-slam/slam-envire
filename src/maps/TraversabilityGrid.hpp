@@ -116,10 +116,10 @@ public:
     {
         traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
-    TraversabilityGrid(size_t width, size_t height, 
+    TraversabilityGrid(size_t cellSizeX, size_t cellSizeY, 
                         double scalex, double scaley, 
                         double offsetx = 0.0, double offsety = 0.0,
-                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(width,height,scalex,scaley,offsetx, offsety, id)
+                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id)
     {
         traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
@@ -133,10 +133,10 @@ public:
         return traversabilityClasses;
     }
     
-    void computeStatistic(const base::Pose2D& pose, double width, double height, envire::TraversabilityStatistic& innerStatistic) const;
-    void computeStatistic(const base::Pose2D &pose, double width, double height, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const;
+    void computeStatistic(const base::Pose2D& pose, double sizeX, double sizeY,  envire::TraversabilityStatistic& innerStatistic) const;
+    void computeStatistic(const base::Pose2D &pose, double sizeX, double sizeY, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const;
 
-    const TraversabilityClass &getWorstTraversabilityClassInRectangle(const base::Pose2D &pose, double width, double height) const;
+    const TraversabilityClass &getWorstTraversabilityClassInRectangle(const base::Pose2D &pose, double sizeX, double sizeY) const;
     
     virtual void serialize(Serialization& so);
     virtual void unserialize(Serialization& so);

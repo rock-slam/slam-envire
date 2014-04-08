@@ -123,7 +123,7 @@ namespace envire
          * 
          * Returns false if the rectangle is not inside the grid
          * */
-        bool getRectPoints(const base::Pose2D &pose, double width, double height, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier = 1) const;
+        bool getRectPoints(const base::Pose2D &pose, double sizeX, double sizeY, GridBase::Position &upLeft_g, GridBase::Position &upRight_g, GridBase::Position &downLeft_g, GridBase::Position &downRight_g, int multiplier = 1) const;
 
         /**
          * This function calls the given callback for each cell, which 
@@ -135,10 +135,10 @@ namespace envire
          * returns true if the given rectangle is inside the grid.
          *         false otherwise.
          * */
-        bool forEachInRectangle(const base::Pose2D &rectCenterWorld, double widthWorld, double heightWorld, boost::function<void (size_t, size_t)> callbackGrid) const;
+        bool forEachInRectangle(const base::Pose2D &rectCenterWorld, double sizeXWorld, double sizeYWorld, boost::function<void (size_t, size_t)> callbackGrid) const;
 
-        bool forEachInRectangles(const base::Pose2D &rectCenter_w, double innerWidth_w, double innerHeight_w, boost::function<void (size_t, size_t)> innerCallback, 
-                                                        double outerWidth_w, double outerHeight_w, boost::function<void (size_t, size_t)> outerCallback) const;
+        bool forEachInRectangles(const base::Pose2D &rectCenter_w, double innerSizeX_w, double innerSizeY_w, boost::function<void (size_t, size_t)> innerCallback, 
+                                                        double outerSizeX_w, double outerSizeY_w, boost::function<void (size_t, size_t)> outerCallback) const;
 
         /** Converts coordinates from the frame specified by \c frame to the
          * map-local grid coordinates

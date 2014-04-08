@@ -37,19 +37,19 @@ class StatisticHelper
     size_t yCenter;
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    StatisticHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double width, double height, double borderWidth) : pose(pose), 
+    StatisticHelper(const base::Pose2D &pose, const TraversabilityGrid &grid, double sizeX, double sizeY, double borderWidth) : pose(pose), 
     inverseOrientation(Eigen::Rotation2D<double>(pose.orientation).inverse()), grid(grid), gridData(grid.getGridData(TraversabilityGrid::TRAVERSABILITY))
     , scaleX(grid.getScaleX()), scaleY(grid.getScaleY())
     {
         if(!lut)
             lut = new RadialLookUpTable();
-        lut->recompute(grid.getScaleX(), std::max(width, height));
+        lut->recompute(grid.getScaleX(), std::max(sizeX, sizeY));
         
         if(!boxLut)
             boxLut = new BoxLookUpTable();
         //note the scale should be higher than the grid scale because 
         //of the roation. Else we get aliasing problems.
-        boxLut->recompute(scaleX / 10.0, width, height, borderWidth * 2);
+        boxLut->recompute(scaleX / 10.0, sizeX, sizeY, borderWidth * 2);
         
         grid.toGrid(pose.position.x(), pose.position.y(), xCenter, yCenter);
     }
@@ -86,29 +86,29 @@ void addVal(size_t x, size_t y, std::vector<uint8_t> &stats, const Traversabilit
     stats[gridData[y][x]]++;
 }
 
-void TraversabilityGrid::computeStatistic(const base::Pose2D &pose, double width, double height, TraversabilityStatistic &innerStatistic) const
+void TraversabilityGrid::computeStatistic(const base::Pose2D &pose, double sizeX, double sizeY, TraversabilityStatistic &innerStatistic) const
 {
-    StatisticHelper helper(pose, *this, width, height, 0);
+    StatisticHelper helper(pose, *this, sizeX, sizeY, 0);
     helper.setInnerStatistic(&innerStatistic);
-    forEachInRectangle(pose, width, height, boost::bind( &StatisticHelper::addInnerVal, &helper,  _1, _2));
+    forEachInRectangle(pose, sizeX, sizeY, boost::bind( &StatisticHelper::addInnerVal, &helper,  _1, _2));
 }
 
-void TraversabilityGrid::computeStatistic(const base::Pose2D &pose, double width, double height, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const
+void TraversabilityGrid::computeStatistic(const base::Pose2D &pose, double sizeX, double sizeY, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const
 {
-    StatisticHelper helper(pose, *this, width, height, borderWidth);
+    StatisticHelper helper(pose, *this, sizeX, sizeY, borderWidth);
     helper.setInnerStatistic(&innerStatistic);
     helper.setOuterStatistic(&outerStatistic);
-    forEachInRectangles(pose, width, height, boost::bind( &StatisticHelper::addInnerVal, &helper,  _1, _2), 
-                        width + borderWidth, height + borderWidth, boost::bind( &StatisticHelper::addOuterVal, &helper,  _1, _2));
+    forEachInRectangles(pose, sizeX, sizeY, boost::bind( &StatisticHelper::addInnerVal, &helper,  _1, _2), 
+                        sizeX + borderWidth, sizeY + borderWidth, boost::bind( &StatisticHelper::addOuterVal, &helper,  _1, _2));
 }
 
-const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRectangle(const base::Pose2D& pose, double width, double height) const
+const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRectangle(const base::Pose2D& pose, double sizeX, double sizeY) const
 {
     double curDrivability = std::numeric_limits< double >::max();
     int curClass = -1;
     
     TraversabilityStatistic innerStatistic;
-    computeStatistic(pose, width, height, innerStatistic);
+    computeStatistic(pose, sizeX, sizeY, innerStatistic);
 
     for(uint8_t i = 0; i <= innerStatistic.getHighestTraversabilityClass(); i++)
     {
@@ -131,7 +131,7 @@ const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRect
     
     if(curClass < 0)
     {        
-        std::cout << "Pose " << pose.position.transpose() << " width " << width << " height " << height << " Total Count " << innerStatistic.getTotalCount() << std::endl;
+        std::cout << "Pose " << pose.position.transpose() << " sizeY " << sizeY << " sizeX " << sizeX << " Total Count " << innerStatistic.getTotalCount() << std::endl;
         for(uint8_t i = 0; i <= innerStatistic.getHighestTraversabilityClass(); i++)
         {
             size_t count;
