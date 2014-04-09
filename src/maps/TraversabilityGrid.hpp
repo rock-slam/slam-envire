@@ -108,18 +108,23 @@ class TraversabilityGrid : public Grid<uint8_t>
     ENVIRONMENT_ITEM( TraversabilityGrid )
 public:
     static const std::string TRAVERSABILITY;
+    static const std::string PROBABILITY;
 private:
     const static std::vector<std::string> &bands;
     std::vector<TraversabilityClass> traversabilityClasses;
+    ArrayType *probabilityArray;
+    
+    void probabilityCallback(size_t x, size_t y, double &worst) const; 
+    void setProbabilityArray();
 public:
-    TraversabilityGrid() : Grid<uint8_t>() 
+    TraversabilityGrid() : Grid<uint8_t>(), probabilityArray(NULL) 
     {
         traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
     TraversabilityGrid(size_t cellSizeX, size_t cellSizeY, 
                         double scalex, double scaley, 
                         double offsetx = 0.0, double offsety = 0.0,
-                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id)
+                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id), probabilityArray(NULL)
     {
         traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
@@ -132,6 +137,10 @@ public:
     {
         return traversabilityClasses;
     }
+    
+    void setProbability(double probability, size_t x, size_t y);
+    double getProbability(size_t x, size_t y) const;
+    double getWorstProbabilityInRectangle(const base::Pose2D &pose, double sizeX, double sizeY) const;
     
     void computeStatistic(const base::Pose2D& pose, double sizeX, double sizeY,  envire::TraversabilityStatistic& innerStatistic) const;
     void computeStatistic(const base::Pose2D &pose, double sizeX, double sizeY, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const;

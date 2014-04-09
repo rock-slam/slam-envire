@@ -9,14 +9,16 @@ using namespace Eigen;
 
 ENVIRONMENT_ITEM_DEF( TraversabilityGrid )
 const std::string TraversabilityGrid::TRAVERSABILITY = "traversability";
+const std::string TraversabilityGrid::PROBABILITY = "probability";
 static const std::vector<std::string> &initTraversabilityBands()
 {
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(TraversabilityGrid::TRAVERSABILITY);
-  }
-  return bands;
+    static std::vector<std::string> bands;
+    if(bands.empty())
+    {
+        bands.push_back(TraversabilityGrid::TRAVERSABILITY);
+        bands.push_back(TraversabilityGrid::PROBABILITY);
+    }
+    return bands;
 }
 const std::vector<std::string> &TraversabilityGrid::bands = initTraversabilityBands();
 
@@ -146,6 +148,20 @@ const TraversabilityClass& TraversabilityGrid::getWorstTraversabilityClassInRect
     return getTraversabilityClass(curClass);
 }
 
+void TraversabilityGrid::probabilityCallback(size_t x, size_t y, double& worst) const
+{
+    double curProbabilty = getProbability(x, y);
+    if(worst > curProbabilty)
+        worst = curProbabilty; 
+}
+
+double TraversabilityGrid::getWorstProbabilityInRectangle(const base::Pose2D& pose, double sizeX, double sizeY) const
+{
+    double ret = 1.0;
+    forEachInRectangle(pose, sizeX, sizeY, boost::bind(&TraversabilityGrid::probabilityCallback, this, _1, _2, boost::ref(ret)));
+    return ret;
+}
+
 void TraversabilityGrid::setTraversabilityClass(uint8_t num, const TraversabilityClass& klass)
 {
     if(traversabilityClasses.size() >= num)
@@ -162,6 +178,28 @@ const TraversabilityClass& TraversabilityGrid::getTraversabilityClass(uint8_t kl
     }
         
     return traversabilityClasses[klass];
+}
+
+void TraversabilityGrid::setProbabilityArray()
+{
+    if(!probabilityArray)
+    {
+        probabilityArray = &(getData<ArrayType>(PROBABILITY));
+    }
+}
+
+void TraversabilityGrid::setProbability(double probability, size_t x, size_t y) 
+{
+    setProbabilityArray();
+    
+    (*probabilityArray)[y][x] = probability * std::numeric_limits< uint8_t >::max();
+}
+
+double TraversabilityGrid::getProbability(size_t x, size_t y) const
+{
+    const_cast<TraversabilityGrid *>(this)->setProbabilityArray();
+    
+    return ((double) (*probabilityArray)[y][x]) / std::numeric_limits< uint8_t >::max();
 }
 
 void TraversabilityGrid::serialize(Serialization& so)
