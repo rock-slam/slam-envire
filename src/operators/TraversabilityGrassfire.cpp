@@ -11,8 +11,39 @@ int stepTooHigh = 0;
 int totalCnt = 0;
 int drivable = 0;
 
+void TraversabilityGrassfire::setProbability(size_t x, size_t y)
+{
+    SurfacePatch *currentPatch = bestPatchMap[y][x];
+    if(!currentPatch)
+    {
+        trGrid->setProbability(0.0, x, y);
+        (*trData)[y][x] = UNKNOWN;
+        return;
+    }
+
+    float numScanPoints = currentPatch->getMeasurementCount();
+    
+    if(numScanPoints > config.numNominalMeasurements)
+    {
+        trGrid->setProbability(1.0, x, y);        
+    }
+    else
+    {
+        trGrid->setProbability(numScanPoints / config.numNominalMeasurements, x, y);
+    }
+}
+
+
 void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
 {
+    bool debug = false;
+    Eigen::Vector3d posWorld = mlsGrid->fromGrid(x, y, mlsGrid->getEnvironment()->getRootNode());
+    if(posWorld.x() < 0 && posWorld.x() > -1 
+        && posWorld.y() < -1 && posWorld.y() > -2 
+    )
+    {
+        debug = true;
+    }
     totalCnt++;
 
     SurfacePatch *currentPatch = bestPatchMap[y][x];
@@ -29,6 +60,11 @@ void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
 
     const double scaleX =mlsGrid->getScaleX();
     const double scaleY = mlsGrid->getScaleY();
+
+    if(debug)
+    {
+        std::cout << "x " << x << " y " << y << " height " << thisHeight << " mean " << currentPatch->getMean() << " stdev " << currentPatch->getStdev() << std::endl;
+    }
     
     for(int yi = -1; yi <= 1; yi++)
     {
@@ -41,20 +77,43 @@ void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
             size_t newY = y + yi;
             if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
             {
+
                 SurfacePatch *neighbourPatch = bestPatchMap[newY][newX];
                 if(neighbourPatch)
                 {
                     count++;
                     double neighbourHeight = neighbourPatch->getMean() + neighbourPatch->getStdev();
+                    
+                    if(debug)
+                    {
+                        std::cout << "Nx " << newX << " Ny " << newY << " height " << neighbourHeight << " mean " << neighbourPatch->getMean() << " stdev " << neighbourPatch->getStdev() << std::endl;
+                    }
+
                     if(fabs(neighbourHeight - thisHeight) > config.maxStepHeight)
                     {
+                        if(debug)
+                        {
+                            std::cout << "Step do hight" << std::endl;
+                        }
                         stepTooHigh++;
                         (*trData)[y][x] = OBSTACLE;
                         return;
                     }
                     
                     Eigen::Vector3d input(xi * scaleX, yi * scaleY, thisHeight - neighbourHeight);
+                    if(debug)
+                    {
+                        std::cout << "Input to plane fitter " << input.transpose() << std::endl;
+                    }
+
                     fitter.update(input);
+                }
+                else
+                {
+                    if(debug)
+                    {
+                        std::cout << "Nx " << newX << " Ny " << newY << " is unknown " << std::endl;
+                    }
                 }
             }
         }
@@ -64,6 +123,11 @@ void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
             
     if (count < 5)
     {
+        if(debug)
+        {
+            std::cout << "count to small " << count << "Setting patch to unknown " << std::endl;
+        }
+
         (*trData)[y][x] = UNKNOWN;
         return;
     }
@@ -72,8 +136,18 @@ void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
     const double divider = sqrt(fit.x() * fit.x() + fit.y() * fit.y() + 1);
     double slope = acos(1 / divider);
 
+    if(debug)
+    {
+        std::cout << "slope is " << slope << std::endl;
+    }
+
     if(slope > config.maxSlope)
     {
+        if(debug)
+        {
+            std::cout << "slope is to hight " << std::endl;
+        }
+
         slopeTooHigh++;
         (*trData)[y][x] = OBSTACLE;
         return;
@@ -84,6 +158,11 @@ void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
     //-0.00001 to get rid of precision problems...
     (*trData)[y][x] = OBSTACLE + ceil((drivability - 0.00001) * config.numTraversabilityClasses);
     
+    if(debug)
+    {
+        std::cout << "Setting tr class " << ceil((drivability - 0.00001) * config.numTraversabilityClasses) << std::endl;
+    }
+
     drivable++;
 }
 
@@ -266,6 +345,7 @@ void TraversabilityGrassfire::computeTraversability()
         for(size_t x = 0;x < maxX; x++)
         {
             setTraversability(x, y);
+            setProbability(x, y);
         }
     }
 }

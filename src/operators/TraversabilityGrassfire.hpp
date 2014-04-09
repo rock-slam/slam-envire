@@ -18,11 +18,16 @@ public:
     class Config
     {
     public:
-        Config(): maxStepHeight(0), maxSlope(0), robotHeight(0), numTraversabilityClasses(0) {};
+        Config(): maxStepHeight(0), maxSlope(0), robotHeight(0), numTraversabilityClasses(0), numNominalMeasurements(1) {};
         double maxStepHeight;
         double maxSlope;
         double robotHeight;
         int numTraversabilityClasses;
+        /**
+         * The amount of measurements a MLS-Patch needs
+         * to get a probability of 1.0
+         * */
+        int numNominalMeasurements;
     };
     
     virtual bool updateAll();
@@ -71,6 +76,7 @@ private:
 
     void computeTraversability();
     void setTraversability(size_t x, size_t y);
+    void setProbability(size_t x, size_t y);
     void checkRecursive(size_t x, size_t y, envire::SurfacePatch* origin);
     bool determineDrivePlane(base::Vector3d startPos, bool searchSourunding = true);
     
