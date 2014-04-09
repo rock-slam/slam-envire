@@ -428,6 +428,14 @@ struct SurfacePatch
 	return height;
     }
 
+    /**
+     * Returns the amount of measurements
+     * which are represented by this SufacePatch
+     * */
+    float getMeasurementCount() const
+    {
+        return n;
+    }
 public:
     /** The mean Z value. This always represents the top of the patch,
      * regardless whether the patch is horizontal or vertical
