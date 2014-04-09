@@ -185,6 +185,7 @@ void TraversabilityGrid::setProbabilityArray()
     if(!probabilityArray)
     {
         probabilityArray = &(getData<ArrayType>(PROBABILITY));
+        probabilityArray->resize(boost::extents[getCellSizeY()][getCellSizeX()]);
     }
 }
 
