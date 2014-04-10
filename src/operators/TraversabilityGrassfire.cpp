@@ -37,13 +37,6 @@ void TraversabilityGrassfire::setProbability(size_t x, size_t y)
 void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
 {
     bool debug = false;
-    Eigen::Vector3d posWorld = mlsGrid->fromGrid(x, y, mlsGrid->getEnvironment()->getRootNode());
-    if(posWorld.x() < 0 && posWorld.x() > -1 
-        && posWorld.y() < -1 && posWorld.y() > -2 
-    )
-    {
-        debug = true;
-    }
     totalCnt++;
 
     SurfacePatch *currentPatch = bestPatchMap[y][x];
@@ -217,13 +210,11 @@ void TraversabilityGrassfire::addNeightboursToSearchList(size_t x, size_t y, Sur
 
 bool TraversabilityGrassfire::determineDrivePlane(base::Vector3d startPos, bool searchSourunding)
 {
-    std::cout << "Input pos is " << startPos.transpose() << std::endl;
     size_t startX;
     size_t startY;
     if(!mlsGrid->toGrid(startPos, startX, startY, mlsGrid->getEnvironment()->getRootNode()))
         return false;
 
-    std::cout << "Start is " << startX << " " << startY << std::endl;
     
     //make shure temp maps have correct size
     bestPatchMap.resize(boost::extents[mlsGrid->getCellSizeY()][mlsGrid->getCellSizeX()]);
