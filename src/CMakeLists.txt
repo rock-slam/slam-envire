@@ -37,6 +37,7 @@ rock_library(envire
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
+    operators/ObjectGrowing.cpp
     operators/ScanMeshing.cpp
     operators/MLSSlope.cpp
     operators/SimpleTraversability.cpp
@@ -97,6 +98,7 @@ install(FILES
 install(FILES operators/MergeMLS.hpp
     operators/MergePointcloud.hpp
     operators/MLSProjection.hpp
+    operators/ObjectGrowing.hpp
     operators/SimpleTraversability.hpp
     operators/TraversabilityGrassfire.hpp
     operators/GridFloatToMLS.hpp
