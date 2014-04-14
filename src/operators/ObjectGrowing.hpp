@@ -53,8 +53,13 @@ public:
             throw std::runtime_error("ObjectGrowing, input and output data have differens sizes");
     
         memcpy(data.data(), orig_data.data(), sizeof(Y) * orig_data.num_elements());
+
+        assert(data.shape()[0] == mapIn.getCellSizeY());
+        assert(data.shape()[1] == mapIn.getCellSizeX());
+        assert(orig_data.shape()[0] == mapIn.getCellSizeY());
+        assert(orig_data.shape()[1] == mapIn.getCellSizeX());
         
-        for (unsigned int y = 0; y < mapIn.getCellSizeX(); ++y)
+        for (unsigned int y = 0; y < mapIn.getCellSizeY(); ++y)
         {
             for (unsigned int x = 0; x < mapIn.getCellSizeX(); ++x)
             {
