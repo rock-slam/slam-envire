@@ -1,14 +1,13 @@
 #ifndef TRAVERSABILITYGROWCLASSES_H
 #define TRAVERSABILITYGROWCLASSES_H
 
-#include <envire/operators/ObjectGrowing.hpp>
 #include <envire/maps/TraversabilityGrid.hpp>
 
 namespace envire {
     
-class TraversabilityGrowClasses : public ObjectGrowing<uint8_t>, public envire::Operator 
+class TraversabilityGrowClasses : public envire::Operator 
 {
-        ENVIRONMENT_ITEM( TraversabilityGrowClasses );
+    ENVIRONMENT_ITEM( TraversabilityGrowClasses );
 public:
     virtual bool updateAll();
     
@@ -16,6 +15,8 @@ public:
     
     void setTraversabilityGrid(TraversabilityGrid *grid);
 private:
+    void growTerrains(envire::TraversabilityGrid& mapIn, envire::TraversabilityGrid& mapOut);
+
     TraversabilityGrid *grid;
     TraversabilityGrid *gridOut;
     double radius;
