@@ -291,11 +291,23 @@ SurfacePatch* TraversabilityGrassfire::getNearestPatchWhereRobotFits(size_t x, s
     for(; it != itEnd; it++)
     {
         bool gapTooSmall = false;
+        
+        //HACK filter outliers
+        if(it->getMeasurementCount() < config.outliertFilterMinMeasurements && it->getStdev() > config.outliertFilterMaxStdDev)
+        {
+            continue;
+        }
+        
         MLSGrid::iterator hcIt= mlsGrid->beginCell(x, y);
         MLSGrid::iterator hcItEnd = mlsGrid->endCell();
         double curFloorHeight = it->getMean() + it->getStdev();
         for(; hcIt != hcItEnd; hcIt++)
         {
+            if(hcIt->getMeasurementCount() < config.outliertFilterMinMeasurements && hcIt->getStdev() > config.outliertFilterMaxStdDev)
+            {
+                continue;
+            }
+
             //check if the robot can pass between this and the other patches
             double otherCeilingHeight = hcIt->getMean() - hcIt->getStdev();
             if((curFloorHeight < otherCeilingHeight) && otherCeilingHeight - curFloorHeight < config.robotHeight)

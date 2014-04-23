@@ -28,6 +28,9 @@ public:
          * to get a probability of 1.0
          * */
         int numNominalMeasurements;
+        
+        int outliertFilterMinMeasurements;
+        int outliertFilterMaxStdDev;
     };
     
     virtual bool updateAll();
