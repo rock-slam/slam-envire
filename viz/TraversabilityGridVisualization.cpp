@@ -35,6 +35,16 @@ bool colorForCoordinate(int x, int y, envire::GridVisualizationBase::Color &ret,
     assert(y >= 0);
     assert(y < 1600);
     
+    double certainty = grid.getProbability(x, y);
+    if(certainty < 0.001)
+    {
+        //unkown
+        ret.r = 0;
+        ret.g = 0;
+        ret.b = 255;
+        return true;
+    }
+    
     //sec color arcording to value of the field
     uint8_t value = trGridData[y][x];
     switch(value)
