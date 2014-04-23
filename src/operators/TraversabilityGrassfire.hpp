@@ -18,7 +18,7 @@ public:
     class Config
     {
     public:
-        Config(): maxStepHeight(0), maxSlope(0), robotHeight(0), numTraversabilityClasses(0), numNominalMeasurements(1) {};
+        Config(): maxStepHeight(0), maxSlope(0), robotHeight(0), numTraversabilityClasses(0), numNominalMeasurements(1), outliertFilterMinMeasurements(0), outliertFilterMaxStdDev(0.0) {};
         double maxStepHeight;
         double maxSlope;
         double robotHeight;
@@ -30,7 +30,7 @@ public:
         int numNominalMeasurements;
         
         int outliertFilterMinMeasurements;
-        int outliertFilterMaxStdDev;
+        double outliertFilterMaxStdDev;
     };
     
     virtual bool updateAll();
