@@ -406,18 +406,21 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                 // slopes need to be handled differently
 		if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
 		{
-                    osg::Vec4 heights(0,0,0,0);
-		    heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
-		    heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
-		    heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
-		    heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
+                    if( !p.isNegative() )
+                    {
+                        osg::Vec4 heights(0,0,0,0);
+		        heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
+		        heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
+		        heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
+		        heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
 
-                    geode->drawPlane(  
-                            osg::Vec3( xp, yp, p.mean ), 
-                            heights, 
-                            osg::Vec3( xs, ys, 0.0 ), 
-                            Vec3( p.getNormal() ),
-                            p.min, p.max );
+                        geode->drawPlane(  
+                                osg::Vec3( xp, yp, p.mean ), 
+                                heights, 
+                                osg::Vec3( xs, ys, 0.0 ), 
+                                Vec3( p.getNormal() ),
+                                p.min, p.max );
+                    }
 		}
                 else
                 {
