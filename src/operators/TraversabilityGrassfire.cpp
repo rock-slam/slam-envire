@@ -226,7 +226,11 @@ bool TraversabilityGrassfire::determineDrivePlane(base::Vector3d startPos, bool 
     //Note passing directly NULL to fill makes the compiler cry....
     std::fill(bestPatchMap.data(), bestPatchMap.data() + bestPatchMap.num_elements(), emptyPatch);
     std::fill(visited.data(), visited.data() + visited.num_elements(), false);
-    std::fill(trData->data(), trData->data() + trData->num_elements(), UNKNOWN);    
+    std::fill(trData->data(), trData->data() + trData->num_elements(), UNKNOWN);
+    
+    //init probability with zero
+    TraversabilityGrid::ArrayType *probabilityArray = &(trGrid->getGridData(TraversabilityGrid::PROBABILITY));
+    std::fill(probabilityArray->data(), probabilityArray->data() + probabilityArray->num_elements(), 0);  
     
     double bestHeightDiff = std::numeric_limits< double >::max();
     SurfacePatch *bestMatchingPatch = NULL;
