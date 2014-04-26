@@ -253,19 +253,25 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D& rectCenter_w, dou
         minXOut /= multiplier;
         maxXOut /= multiplier;
         
+        if(outY >= cellSizeY)
+            continue;
+        
         if(inY == outY)
         {
             for(size_t x = minXOut; x < minX; x++)
             {
-                outerCallback(x, outY);
+                if(x < cellSizeX)
+                    outerCallback(x, outY);
             }
             for(size_t x = minX; x <= maxX; x++)
             {
-                innerCallback(x, outY);
+                if(x < cellSizeX)
+                    innerCallback(x, outY);
             }
             for(size_t x = maxX+1; x <= maxXOut; x++)
             {
-                outerCallback(x, outY);
+                if(x < cellSizeX)
+                    outerCallback(x, outY);
             }
 
         }
@@ -273,7 +279,8 @@ bool envire::GridBase::forEachInRectangles(const base::Pose2D& rectCenter_w, dou
         {
             for(size_t x = minXOut; x <= maxXOut; x++)
             {
-                outerCallback(x, outY);
+                if(x < cellSizeX)
+                    outerCallback(x, outY);
             }        
         }
         
@@ -354,10 +361,14 @@ bool envire::GridBase::forEachInRectangle(const base::Pose2D& pose, double sizeX
         
         minX /= multiplier;
         maxX /= multiplier;
+        
+        if(curY >= cellSizeY)
+            continue;
 
         for(size_t x = minX; x <= maxX; x++)
         {
-            callbackGrid(x, curY);
+            if(x < cellSizeX)
+                callbackGrid(x, curY);
         }        
     }
     return true;
