@@ -42,7 +42,7 @@ public:
     }
     
 private:
-    SurfacePatch *getNearestPatchWhereRobotFits(size_t x, size_t y, double height);
+    SurfacePatch *getNearestPatchWhereRobotFits(size_t x, size_t y, double height, bool& isObstace);
     void addNeightboursToSearchList(size_t x, size_t y, SurfacePatch *patch);
     
     double getStepHeight(SurfacePatch *from, SurfacePatch *to);

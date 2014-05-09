@@ -172,11 +172,22 @@ void TraversabilityGrassfire::checkRecursive(size_t x, size_t y, SurfacePatch* o
     }
     
     visited[y][x] = true;
-    SurfacePatch *bestMatchingPatch = getNearestPatchWhereRobotFits(x, y, origin->getMean() + origin->getStdev());
+    
+    bool isKnownObstacle;
+    
+    SurfacePatch *bestMatchingPatch = getNearestPatchWhereRobotFits(x, y, origin->getMean() + origin->getStdev(), isKnownObstacle);
 
     if(bestMatchingPatch)
     {
-        addNeightboursToSearchList(x, y, bestMatchingPatch);
+        if(isKnownObstacle)
+        {
+            bestPatchMap[y][x] = bestMatchingPatch;
+            visited[y][x] = true;
+        }
+        else
+        {
+            addNeightboursToSearchList(x, y, bestMatchingPatch);
+        }
     } 
     else
     {
@@ -252,8 +263,9 @@ bool TraversabilityGrassfire::determineDrivePlane(base::Vector3d startPos, bool 
                 size_t newY = startY + yi;
                 if(newX < mlsGrid->getCellSizeX() && newY < mlsGrid->getCellSizeY())
                 {
+                    bool isObstacle;
                     //look for patch with best height
-                    SurfacePatch *curPatch = getNearestPatchWhereRobotFits(newX, newY, startPos.z());
+                    SurfacePatch *curPatch = getNearestPatchWhereRobotFits(newX, newY, startPos.z(), isObstacle);
                     if(curPatch)
                     {
                         double curHeightDiff = fabs(startPos.z() - curPatch->getMean() + curPatch->getStdev());
@@ -285,43 +297,51 @@ bool TraversabilityGrassfire::determineDrivePlane(base::Vector3d startPos, bool 
     return true;
 }
 
-SurfacePatch* TraversabilityGrassfire::getNearestPatchWhereRobotFits(size_t x, size_t y, double height)
+SurfacePatch* TraversabilityGrassfire::getNearestPatchWhereRobotFits(size_t x, size_t y, double height, bool &isObstacle)
 {
     SurfacePatch *bestMatchingPatch = NULL;
     double minDistance = std::numeric_limits< double >::max();
+    
+    isObstacle = true;
     
     MLSGrid::iterator it = mlsGrid->beginCell(x, y);
     MLSGrid::iterator itEnd = mlsGrid->endCell();
     for(; it != itEnd; it++)
     {
-        bool gapTooSmall = false;
-        
         //HACK filter outliers
         if(it->getMeasurementCount() < config.outliertFilterMinMeasurements && it->getStdev() > config.outliertFilterMaxStdDev)
         {
             continue;
         }
         
-        MLSGrid::iterator hcIt= mlsGrid->beginCell(x, y);
-        MLSGrid::iterator hcItEnd = mlsGrid->endCell();
         double curFloorHeight = it->getMean() + it->getStdev();
-        for(; hcIt != hcItEnd; hcIt++)
-        {
-            if(hcIt->getMeasurementCount() < config.outliertFilterMinMeasurements && hcIt->getStdev() > config.outliertFilterMaxStdDev)
-            {
-                continue;
-            }
+        
+        //we need to check for patches blocking our way from the current height to this coorindate
+        double curPatchTop = it->getMean() + it->getStdev();
+        double curPatchBottom = it->getMean() - it->getStdev();
 
-            //check if the robot can pass between this and the other patches
-            double otherCeilingHeight = hcIt->getMean() - hcIt->getStdev();
-            if((curFloorHeight < otherCeilingHeight) && otherCeilingHeight - curFloorHeight < config.robotHeight)
-            {
-                gapTooSmall = true;
-                break;
-            }
-        }
-        if(gapTooSmall)
+        if(curPatchBottom > (height + config.robotHeight + config.maxStepHeight))
+        {
+            //robot can never reach this patch, so it is not part of the drive plane
+            //discard it
             continue;
+        }
+        
+        //check if patch blocks the robot 'at the top'
+        if(curPatchBottom < height + config.robotHeight && curPatchTop > height + config.robotHeight)
+        {
+            //found a patch that is blocking the robot
+            bestMatchingPatch = &(*it);
+            return bestMatchingPatch;
+        }
+        
+        //check if patch blocks the robot 'at the ground'
+        if(curPatchBottom < height + config.maxStepHeight && curPatchTop > height + config.maxStepHeight)
+        {
+            //found a patch that is blocking the robot
+            bestMatchingPatch = &(*it);
+            return bestMatchingPatch;
+        }
         
         double curDist = fabs(curFloorHeight - height);
         if(curDist < minDistance)
@@ -331,6 +351,45 @@ SurfacePatch* TraversabilityGrassfire::getNearestPatchWhereRobotFits(size_t x, s
         }        
     }
     
+    if(!bestMatchingPatch)
+        return bestMatchingPatch;
+    
+    double curFloorHeight;
+    bool gapTooSmall = true;
+    
+    while(gapTooSmall)
+    {
+        //now we need to check if there is a blocking patch above this matching patch
+        MLSGrid::iterator hcIt= mlsGrid->beginCell(x, y);
+        MLSGrid::iterator hcItEnd = mlsGrid->endCell();
+        
+        gapTooSmall = false;
+        curFloorHeight = bestMatchingPatch->getMean() + bestMatchingPatch->getStdev();
+
+        //check if selected patch is allready an obstacle
+        if(curFloorHeight - height > config.maxStepHeight)
+            return bestMatchingPatch;
+        
+        for(; hcIt != hcItEnd; hcIt++)
+        {
+            //HACK filter outliers
+            if(hcIt->getMeasurementCount() < config.outliertFilterMinMeasurements && hcIt->getStdev() > config.outliertFilterMaxStdDev)
+            {
+                continue;
+            }
+
+            //check if the robot can pass between this and the other patches
+            double otherCeilingHeight = hcIt->getMean() - hcIt->getStdev();
+            if((curFloorHeight < otherCeilingHeight) && otherCeilingHeight - curFloorHeight < config.robotHeight)
+            {
+                bestMatchingPatch = &(*hcIt);
+                gapTooSmall = true;
+                break;
+            }
+        }
+        
+    }
+    isObstacle = false;
     return bestMatchingPatch;
 }
 
