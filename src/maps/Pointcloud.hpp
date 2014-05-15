@@ -4,6 +4,7 @@
 #include <envire/Core.hpp>
 #include <envire/core/Serialization.hpp>
 #include <Eigen/Core>
+#include <base/samples/Pointcloud.hpp>
 
 namespace envire {
     class Pointcloud : public Map<3> 
@@ -61,9 +62,11 @@ namespace envire {
 	};
 
 	Pointcloud();
+	Pointcloud(const base::samples::Pointcloud& source);
 	~Pointcloud();
 
 	void copyFrom( Pointcloud* source, bool transform = true );
+	void copyFrom(const base::samples::Pointcloud& source);
 
 	void serialize(Serialization& so);
 	void serialize(Serialization& so, bool handleMap = true);

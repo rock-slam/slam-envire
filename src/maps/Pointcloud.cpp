@@ -17,6 +17,12 @@ Pointcloud::Pointcloud() : sensor_origin(Eigen::Affine3d::Identity())
 {
 }
 
+Pointcloud::Pointcloud(const base::samples::Pointcloud &pointcloud) : sensor_origin(Eigen::Affine3d::Identity())
+{
+    copyFrom(pointcloud);
+}
+
+
 Pointcloud::~Pointcloud()
 {
 }
@@ -140,6 +146,20 @@ void Pointcloud::copyFrom( Pointcloud* source, bool transform )
 	for( std::vector<Eigen::Vector3d>::iterator it = source->vertices.begin(); it != source->vertices.end(); it ++ )
 	    vertices.push_back( t * *it );
     }
+}
+
+void Pointcloud::copyFrom(const base::samples::Pointcloud& source)
+{
+    clear();
+    // we have to use iterators here because of eigen do not align problem
+    vertices.resize(source.points.size());
+    std::copy(source.points.begin(),source.points.end(),vertices.begin());
+
+    std::vector<Eigen::Vector3d>& colors(getVertexData<Eigen::Vector3d>(VERTEX_COLOR));
+    std::vector<base::Vector4d>::const_iterator iter = source.colors.begin();
+    colors.reserve(source.colors.size());
+    for(;iter != source.colors.end();++iter)
+        colors.push_back(Eigen::Vector3d((*iter)(0),(*iter)(1),(*iter)(2)));
 }
 
 Pointcloud::Extents Pointcloud::getExtents() const
