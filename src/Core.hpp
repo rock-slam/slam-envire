@@ -55,6 +55,7 @@ namespace envire
 	typedef boost::intrusive_ptr<CartesianMap> Ptr; 
 
     public:
+        virtual ~CartesianMap(){};
 	static const std::string className;
 
 	explicit CartesianMap(std::string const& id);
@@ -90,6 +91,7 @@ namespace envire
 
         // Defined later as it requires Environment
         Map();
+        virtual ~Map(){};
 
         explicit Map(std::string const& id)
             : CartesianMap(id) {}

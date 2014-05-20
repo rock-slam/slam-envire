@@ -52,6 +52,7 @@ namespace envire
                 std::string const& id = Environment::ITEM_NOT_ATTACHED) 
 	    : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety, id ) {}
 	virtual void createBand( const std::string& key ) = 0;
+        virtual ~BandedGrid(){};
     };
 
     /** Generic handling of a multi-layer grid
@@ -105,7 +106,7 @@ namespace envire
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0,
                 std::string const& id = Environment::ITEM_NOT_ATTACHED);
-	~Grid();
+	virtual ~Grid();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 

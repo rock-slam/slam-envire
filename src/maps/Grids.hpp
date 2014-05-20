@@ -17,7 +17,7 @@ namespace envire
     public:
       ConfidenceGrid() : Grid<uint8_t>() {};
       ConfidenceGrid(size_t width, size_t height, double scalex, double scaley):Grid<uint8_t>::Grid(width,height,scalex,scaley){};
-      ~ConfidenceGrid(){};
+      virtual ~ConfidenceGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
 
@@ -35,6 +35,7 @@ namespace envire
 	  : Grid<float>::Grid(dimage.width,dimage.height,dimage.scale_x,dimage.scale_y,dimage.center_x,dimage.center_y) {}
       DistanceGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 )
 	  : Grid<float>::Grid(width,height,scalex,scaley,offsetx,offsety) {}
+      virtual ~DistanceGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;}
 
       void copyFromDistanceImage( const base::samples::DistanceImage& dimage );
@@ -50,7 +51,7 @@ namespace envire
     public:
       OccupancyGrid() : Grid<unsigned char>() {};
       OccupancyGrid(size_t width, size_t height, double scalex, double scaley):Grid<unsigned char>::Grid(width,height,scalex,scaley){};
-      ~OccupancyGrid(){};
+      virtual ~OccupancyGrid(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
   };
   
@@ -67,7 +68,7 @@ namespace envire
       ImageRGB24() : Grid<unsigned char>() {};
       ImageRGB24(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0 ) 
 	  : Grid<unsigned char>::Grid(width,height,scalex,scaley,offsetx,offsety){};
-      ~ImageRGB24(){};
+      virtual ~ImageRGB24(){};
       virtual const std::vector<std::string>& getBands() const {return bands;};
       
       // write all bands into a single tiff file

@@ -81,7 +81,7 @@ namespace envire
         MLSGrid();
 	MLSGrid(const MLSGrid& other);
 	MLSGrid(size_t width, size_t height, double scalex, double scaley, double offsetx = 0.0, double offsety = 0.0);
-	~MLSGrid();
+	virtual ~MLSGrid();
 
 	MLSGrid& operator=(const MLSGrid& other);
 

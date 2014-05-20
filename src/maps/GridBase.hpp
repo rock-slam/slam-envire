@@ -110,7 +110,7 @@ namespace envire
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0,
                 std::string const& id = Environment::ITEM_NOT_ATTACHED);
-	~GridBase();
+	virtual ~GridBase();
 	void serialize(Serialization& so);
 	void unserialize(Serialization& so);
 
