@@ -72,6 +72,10 @@ public:
     {
     }
 
+    ~ListGrid(){
+    	delete mem_pool;
+    }
+
     ListGrid( const ListGrid<C>& other )
     {
 	// use the assignment operator
