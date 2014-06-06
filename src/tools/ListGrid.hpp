@@ -64,16 +64,17 @@ public:
     typedef iterator_base<const Item, const C> const_iterator;
 
 public:
-    ListGrid(){}
+    ListGrid():mem_pool(new boost::object_pool<Item>()){}
 
     ListGrid( size_t sizeX, size_t sizeY )
-	: cells( boost::extents[sizeX][sizeY] )
+	: cells( boost::extents[sizeX][sizeY]),
+	  mem_pool(new boost::object_pool<Item>())
     {
     }
 
     ListGrid( const ListGrid<C>& other )
     {
-	// use the assignment operator 
+	// use the assignment operator
 	this->operator=( other );
     }
 
@@ -151,7 +152,7 @@ public:
                     {
                         Item *cur = p;
                         p = cur->next;
-                        mem_pool.free(cur);
+                        mem_pool->free(cur);
                     }
                 }
                 else
@@ -202,7 +203,7 @@ public:
      */
     void insertHead( size_t xi, size_t yi, const C& value )
     {
-	Item* n_item = mem_pool.malloc();
+	Item* n_item = mem_pool->malloc();
 	static_cast<C&>(*n_item).operator=(value);
 	n_item->next = cells[xi][yi];
 	n_item->pthis = &cells[xi][yi];
@@ -225,7 +226,7 @@ public:
 	    it++;
 	}
 
-	Item* n_item = mem_pool.malloc();
+	Item* n_item = mem_pool->malloc();
 	static_cast<C&>(*n_item).operator=(value);
 	n_item->next = NULL;
 
@@ -251,37 +252,25 @@ public:
 	if( p->next )
 	    p->next->pthis = p->pthis; 
 
-	mem_pool.free(p);
+	mem_pool->free(p);
 
 	return res; 
     }
 
     void clear()
     {
-        int width = cells.shape()[0];
-        int height = cells.shape()[1];
-        for(int x=0; x<width; ++x)
-        {
-            for(int y=0; y<height; ++y)
-            {
-                //cell moved off the grid
-                //delete all entries
-                Item *p = cells[x][y];
-                while(p)
-                {
-                    Item *cur = p;
-                    p = cur->next;
-                    mem_pool.free(cur);
-                }
-                cells[x][y] = NULL;
-            }
-        }
+
+    	if (mem_pool) delete mem_pool;
+    	mem_pool = new boost::object_pool<Item>();
+
+    	memset(cells.origin(),NULL,sizeof(Item*)*cells.num_elements());
+
     }
 
 protected:
     typedef boost::multi_array<Item*,2> ArrayType; 
     ArrayType cells;
-    boost::object_pool<Item> mem_pool;
+    boost::object_pool<Item>* mem_pool;
 };
 
 }
