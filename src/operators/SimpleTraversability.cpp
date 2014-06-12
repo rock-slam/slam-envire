@@ -129,6 +129,9 @@ bool SimpleTraversability::updateAll()
     static float const DEFAULT_UNKNOWN_INPUT = -std::numeric_limits<float>::infinity();
     Grid<float> const* input_layers[INPUT_COUNT] = { 0, 0};
     float input_unknown[INPUT_COUNT];
+    //init probability with zero
+    TraversabilityGrid::ArrayType &probabilityArray(output_layer->getGridData(TraversabilityGrid::PROBABILITY));
+    std::fill(probabilityArray.data(), probabilityArray.data() + probabilityArray.num_elements(), 0);  
 
     boost::multi_array<float, 2> const* inputs[INPUT_COUNT] = { 0, 0 };
     bool has_data = false;
@@ -187,6 +190,7 @@ bool SimpleTraversability::updateAll()
             if (has_max_step && conf.ground_clearance && (values[MAX_STEP] > conf.ground_clearance))
             {
                 result[y][x] = CLASS_OBSTACLE;
+                probabilityArray[y][x] = std::numeric_limits< uint8_t >::max();
                 continue;
             }
             
@@ -202,6 +206,8 @@ bool SimpleTraversability::updateAll()
                 if(meanSlope > conf.maximum_slope)
                 {
                     result[y][x] = CLASS_OBSTACLE;
+                    probabilityArray[y][x] = std::numeric_limits< uint8_t >::max();
+
                     continue;
                 }
                 else
@@ -209,6 +215,7 @@ bool SimpleTraversability::updateAll()
                     //scale current slope to cost classes
                     int klass = conf.class_count - rint(meanSlope / conf.maximum_slope * conf.class_count);
                     result[y][x] = CUSTOM_CLASSES + klass;
+                    probabilityArray[y][x] = std::numeric_limits< uint8_t >::max();
                 }
 
                 
@@ -282,7 +289,7 @@ struct RadialLUT
         }
     }
 
-    void markAllRadius(boost::multi_array<uint8_t, 2>& result, int result_width, int result_height, int centerx, int centery, int value)
+    void markAllRadius(boost::multi_array<uint8_t, 2>& result, TraversabilityGrid::ArrayType &probabilityArray, int result_width, int result_height, int centerx, int centery, int value)
     {
         int base_x = centerx - this->centerx;
         int base_y = centery - this->centery;
@@ -300,13 +307,13 @@ struct RadialLUT
                 if (in_distance[y][x] && result[map_y][map_x] == value)
                 {
 //                     LOG_DEBUG("  found cell with value %i (expected %i) at %i %i, marking radius", result[map_y][map_x], value, map_x, map_y);
-                    markSingleRadius(result, centerx, centery, x, y, value, 255);
+                    markSingleRadius(result, probabilityArray, centerx, centery, x, y, value, 255);
                 }
             }
         }
     }
 
-    void markSingleRadius(boost::multi_array<uint8_t, 2>& result, int centerx, int centery, int x, int y, int expected_value, int mark_value)
+    void markSingleRadius(boost::multi_array<uint8_t, 2>& result, TraversabilityGrid::ArrayType &probabilityArray, int centerx, int centery, int x, int y, int expected_value, int mark_value)
     {
         boost::tie(x, y) = parents[y][x];
         while (x != -1 && y != -1)
@@ -318,6 +325,7 @@ struct RadialLUT
 	    {
 		current = mark_value;
 // 		LOG_DEBUG("  marking %i %i", map_x, map_y);
+                probabilityArray[map_y][map_x] = std::numeric_limits<uint8_t>::max();
 	    }
             boost::tie(x, y) = parents[y][x];
         }
@@ -340,6 +348,7 @@ void SimpleTraversability::growObstacles(OutputLayer& map, std::string const& ba
         map.getGridData(output_band);
 
     OutputLayer::ArrayType data( orig_data );
+    TraversabilityGrid::ArrayType &probabilityArray(map.getGridData(TraversabilityGrid::PROBABILITY));
 
     for (unsigned int y = 0; y < map.getHeight(); ++y)
     {
@@ -359,7 +368,10 @@ void SimpleTraversability::growObstacles(OutputLayer& map, std::string const& ba
 			if( (pow(ox*sx,2) + pow(oy*sy,2) < width_square )
 				&& tx >= 0 && tx < (int)map.getWidth()
 				&& ty >= 0 && ty < (int)map.getHeight() )
+                        {
 			    data[ty][tx] = CLASS_OBSTACLE;
+                            probabilityArray[y][x] = std::numeric_limits< uint8_t >::max();
+                        }
 		    }
 		}
 	    }
@@ -392,6 +404,8 @@ void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer
     }
     LOG_DEBUG(oss.str().c_str());
 
+    TraversabilityGrid::ArrayType &probabilityArray(map.getGridData(TraversabilityGrid::PROBABILITY));
+
     OutputLayer::ArrayType& data = band_name.empty() ?
         map.getGridData() :
         map.getGridData(output_band);
@@ -403,7 +417,7 @@ void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer
             if (value == CLASS_OBSTACLE)
             {
 //                 LOG_DEBUG("inspecting around obstacle cell %i %i", x, y);
-                lut.markAllRadius(data, map.getWidth(), map.getHeight(), x, y, CLASS_OBSTACLE);
+                lut.markAllRadius(data, probabilityArray, map.getWidth(), map.getHeight(), x, y, CLASS_OBSTACLE);
             }
         }
     }
@@ -413,7 +427,10 @@ void SimpleTraversability::closeNarrowPassages(SimpleTraversability::OutputLayer
         for (size_t x = 0; x < map.getWidth(); ++x)
         {
             if (data[y][x] == 255)
+            {
                 data[y][x] = CLASS_OBSTACLE;
+                probabilityArray[y][x] = std::numeric_limits< uint8_t >::max();
+            }
         }
     }
 }
