@@ -55,9 +55,9 @@ namespace envire
         std::vector< std::vector<uint8_t> > binaryStreams;
         
         BinaryEvent()
-         : id_a(""), id_b(""), className("") {};
+         : time(base::Time::now()), id_a(""), id_b(""), className("") {};
         BinaryEvent(event::Type type, event::Operation operation, std::string id_a, std::string id_b)
-         : id_a(id_a), id_b(id_b), type(type), operation(operation), className("") {};
+         : time(base::Time::now()), id_a(id_a), id_b(id_b), type(type), operation(operation), className("") {};
 
         /** Sets values in @a this using the data in @a event, modifying @a
          * event in the process
