@@ -350,6 +350,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     assert(mls);
 
     // draw the extents of the mls
+    group->removeChild( 1 );
     if( showExtents )
     {
 	// get the color as a function of the environmentitem pointer
@@ -357,7 +358,6 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	osg::Vec4 col(0,0,0,1);
 	vizkit3d::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
 
-	group->removeChild( 1 );
 	group->addChild( 
 		new ExtentsRectangle( mls->getExtents(), col ) );
     }
@@ -598,6 +598,7 @@ void MLSVisualization::setUncertaintyColor(QColor color)
 void MLSVisualization::setShowExtents( bool value ) 
 {
     showExtents = value;
+    emit propertyChanged("show_extents");
 }
 
 bool MLSVisualization::areExtentsShown() const
