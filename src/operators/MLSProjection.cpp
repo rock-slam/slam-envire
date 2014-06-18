@@ -57,8 +57,11 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     // empty
     boost::intrusive_ptr<envire::MultiLevelSurfaceGrid> t_grid;
     if( !grid->empty() )
+    {
 	t_grid = new MultiLevelSurfaceGrid( 
 		grid->getWidth(), grid->getHeight(), grid->getScaleX(), grid->getScaleY(), grid->getOffsetX(), grid->getOffsetY() );
+	t_grid->getConfig() = grid->getConfig();
+    }
     else
 	t_grid = grid;
 
