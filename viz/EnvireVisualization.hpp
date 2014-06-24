@@ -46,6 +46,12 @@ public:
     Q_INVOKABLE void updateBinaryEvent( envire::BinaryEvent const& data );
     Q_INVOKABLE void updateBinaryEvents( std::vector<envire::BinaryEvent> const& data );
 
+    public slots:
+    /**
+     * makes the Visualizers available on ruby layer in order to change properties on them
+     */
+    QObject* getVisualizer(QString name);
+
 protected:
     virtual void updateMainNode(osg::Node* node);
     virtual void updateDataIntern( envire::Environment* const& data );
@@ -66,6 +72,7 @@ private:
     boost::shared_ptr<TreeViewListener> twl;
 
     envire::BinarySerialization serialization;
+
 };
 
 }

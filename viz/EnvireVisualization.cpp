@@ -177,5 +177,15 @@ osg::ref_ptr< osg::Node > EnvireVisualization::createMainNode()
     return ownNode;
 }
 
+QObject* EnvireVisualization::getVisualizer(QString name){
+	for (std::vector<boost::shared_ptr<EnvironmentItemVisualizer> >::iterator it = visualizers.begin();it !=visualizers.end();it++){
+		if ( name == (*it)->getPluginName()){
+			return it->get();
+		}
+	}
+	perror("Visualizer not found\n");
+	return NULL;
+}
+
 VizkitQtPlugin(EnvireVisualization);
 
