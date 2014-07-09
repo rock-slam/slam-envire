@@ -32,6 +32,7 @@ rock_library(envire
     maps/MLSMap.cpp
     maps/MapSegment.cpp
     maps/Pointcloud.cpp
+    maps/PolygonMap.cpp
     maps/TraversabilityGrid.cpp
     maps/TriMesh.cpp
     operators/MLSProjection.cpp
@@ -57,7 +58,7 @@ rock_library(envire
     tools/GraphViz.cpp
     ${ADDITIONAL_SOURCES}
     HEADERS Core.hpp
-    DEPS_PKGCONFIG ply base-types base-lib
+    DEPS_PKGCONFIG ply base-types base-lib box2d
     DEPS_CMAKE LibYAML GDAL
     DEPS_PLAIN Boost_SYSTEM Boost_FILESYSTEM Boost_THREAD)
 
@@ -92,6 +93,7 @@ install(FILES
     maps/MLSMap.hpp
     maps/MultiLevelSurfaceGrid.hpp
     maps/Pointcloud.hpp
+    maps/PolygonMap.hpp
     maps/TraversabilityGrid.hpp
     maps/TriMesh.hpp
     DESTINATION include/envire/maps)

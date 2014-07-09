@@ -9,6 +9,9 @@ rock_testsuite(test_icp unit/icp.cpp
     DEPS envire icp
     DEPS_CMAKE GDAL)
 
+rock_testsuite(test_polymap unit/polyMap.cpp
+    DEPS envire)
+
 rock_testsuite(test_mls unit/mls.cpp
     DEPS envire
     DEPS_CMAKE GDAL)

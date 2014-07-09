@@ -75,6 +75,7 @@ namespace envire
     {
     public:
 	typedef boost::multi_array<T,2> ArrayType; 
+        typedef T DataType;
 	static const std::string className;
 	static const std::string GRID_DATA;
 
