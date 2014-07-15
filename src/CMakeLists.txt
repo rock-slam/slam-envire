@@ -127,6 +127,7 @@ install(FILES tools/GraphViz.hpp
     tools/ExpectationMaximization.hpp
     tools/BresenhamLine.hpp
     tools/VoxelTraversal.hpp
+    tools/RadialLookUpTable.hpp
     DESTINATION include/envire/tools)
 
 if (USE_CGAL AND CGAL_FOUND)
