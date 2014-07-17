@@ -149,7 +149,7 @@ bool PolygonSet::isInside(const envire::Polygon& poly)
     const b2PolygonShape *shape2 = &(data->collisionPoly->data->shape);
     
     //perform point test for every vertex in poly
-    for(int i = 0;i < shape1->m_vertexCount; i++)
+    for(int i = 0;i < shape1->GetVertexCount(); i++)
     {
 	if(!shape2->TestPoint(poly.data->pose, shape1->m_vertices[i]))
 	    return false;
