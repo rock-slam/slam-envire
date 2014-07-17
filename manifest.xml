@@ -18,5 +18,6 @@
     <rosdep name="cgal" />
     <rosdep name="blas" />
     <rosdep name="lapack" />
+    <rosdep name="box2d" />
     <tags>needs_opt</tags>
 </package>
