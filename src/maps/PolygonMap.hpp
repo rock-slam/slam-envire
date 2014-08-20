@@ -3,6 +3,7 @@
 
 #include <envire/Core.hpp>
 #include <stdint.h>
+#include <iostream>
 
 namespace envire
 {  
