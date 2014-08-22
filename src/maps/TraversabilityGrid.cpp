@@ -164,7 +164,7 @@ double TraversabilityGrid::getWorstProbabilityInRectangle(const base::Pose2D& po
 
 void TraversabilityGrid::setTraversabilityClass(uint8_t num, const TraversabilityClass& klass)
 {
-    if(traversabilityClasses.size() >= num)
+    if(traversabilityClasses.size() <= num)
         traversabilityClasses.resize(num + 1);
     
     traversabilityClasses[num] = klass;

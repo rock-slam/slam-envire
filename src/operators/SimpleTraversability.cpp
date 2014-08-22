@@ -1,5 +1,6 @@
 #include "SimpleTraversability.hpp"
 #include <base/logging.h>
+#include <base/logging/logging_printf_style.h>
 #include <sstream>
 
 using namespace envire;
@@ -217,26 +218,69 @@ bool SimpleTraversability::updateAll()
                     result[y][x] = CUSTOM_CLASSES + klass;
                     probabilityArray[y][x] = std::numeric_limits< uint8_t >::max();
                 }
+            }
+        }
+    }
+    
+    // perform some post processing if required
+    if( conf.min_width > 0 ) 
+    {
+        closeNarrowPassages(*output_layer, output_band, conf.min_width);
+    }
 
-                
+    if( conf.obstacle_clearance > 0 ) 
+    {
+        growObstacles(*output_layer, output_band, conf.obstacle_clearance);
+    }
+	  
+	// Registers klasses in traversability map.
+    output_layer->setTraversabilityClass(CLASS_OBSTACLE, TraversabilityClass(0));
+    double driveability = 0.0;
+    for(int i = 0; i <= conf.class_count; i++)
+    {
+        driveability = (1.0 / conf.class_count) + 
+                (1.0 - (1.0 / conf.class_count)) / conf.class_count * (i);
+        output_layer->setTraversabilityClass(CUSTOM_CLASSES + i, TraversabilityClass(driveability));
+    }
+    
+    // Calculates the mean traversability class of the current map ignoring unknown areas.
+    uint8_t class_value = 0;
+    double sum_classes = 0.0;
+    double counter = 0.0;
+    for (int y = 0; y < height; ++y)
+    {
+        for (int x = 0; x < width; ++x)
+        {
+            class_value = result[y][x];
+            // Sum up if not unknown.
+            if(class_value != CLASS_UNKNOWN) {
+                sum_classes += class_value;
+                counter++;
             }
         }
     }
 
-    //register klasses in traversability map
-    output_layer->setTraversabilityClass(CLASS_UNKNOWN, TraversabilityClass(1.0));
-    output_layer->setTraversabilityClass(CLASS_OBSTACLE, TraversabilityClass(0));
-    for(int i = 0; i <= conf.class_count; i++)
-    {
-        output_layer->setTraversabilityClass(CUSTOM_CLASSES + i, TraversabilityClass((1.0 / conf.class_count) + (1.0 - (1.0 / conf.class_count)) / conf.class_count * (i)));
+    // Traversability class 7 contains the mean driveability (0.55).
+    double mean_driveability = output_layer->getTraversabilityClass(7).getDrivability();
+    uint8_t mean_class_value = counter == 0 ? 0 : sum_classes / counter + 0.5;
+    
+    // If the map is completely unkown or full with obstacles, 
+    // set the driveability of unknown areas to the mean driveability.    
+    if(mean_class_value <= 1) {
+        output_layer->setTraversabilityClass(CLASS_UNKNOWN, TraversabilityClass(mean_driveability)); 
+    } else {
+        TraversabilityClass mean_trav_class = output_layer->getTraversabilityClass(mean_class_value);
+        output_layer->setTraversabilityClass(CLASS_UNKNOWN, mean_trav_class);
     }
     
-    // perform some post processing if required
-    if( conf.min_width > 0 )
-	closeNarrowPassages(*output_layer, output_band, conf.min_width);
-
-    if( conf.obstacle_clearance > 0 )
-	growObstacles(*output_layer, output_band, conf.obstacle_clearance);
+    std::stringstream ss;
+    ss << "Traversability classes:" << std::endl;
+    for(int i = 0; i <= CUSTOM_CLASSES + conf.class_count; i++)
+    {
+        ss << "Driveability of traversability class " << i << ": " << 
+                output_layer->getTraversabilityClass(i).getDrivability() << std::endl;
+    }
+    LOG_INFO(ss.str().c_str());
 
     return true;
 }
