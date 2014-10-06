@@ -267,7 +267,7 @@ public:
     	if (mem_pool) delete mem_pool;
     	mem_pool = new boost::object_pool<Item>();
 
-    	memset(cells.origin(),NULL,sizeof(Item*)*cells.num_elements());
+    	memset(cells.origin(), 0,sizeof(Item*)*cells.num_elements());
 
     }
 
