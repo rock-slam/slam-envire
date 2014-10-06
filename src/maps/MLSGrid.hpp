@@ -248,6 +248,11 @@ namespace envire
 	 */
 	void initIndex();
 
+        /**
+         * Generates an index for the current map
+         * */
+        void generateIndex(boost::shared_ptr<Index> gindex) const;
+        
 	/** returns a pointer to the index. The pointer is only valid
 	 * if the index has been initialized through initIndex()
 	 */

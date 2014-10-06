@@ -569,9 +569,20 @@ std::pair<SurfacePatch*, double>
 
 void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, const SurfacePatch& offset )
 {
+    const std::set<Position> *cells;
+    boost::shared_ptr<Index> tmpIndex;
     if( !other.getIndex() )
-	throw std::runtime_error("MLSGrid::merge() currently only indexed sources are supported.");
-
+    {
+        tmpIndex.reset(new Index);
+        other.generateIndex(tmpIndex);
+        cells = &(tmpIndex->cells);
+    }
+    else
+    {
+        cells = &(other.getIndex()->cells);
+    }
+    
+    
     // need to handle cell color here for the update
     // we need to set the pgrid cell color, such that it matches
     // that of the scanmap for the update. Afterwards, we set it 
@@ -580,10 +591,9 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
     bool hadCellColor = config.useColor;
     config.useColor = other.config.useColor;
 
-    const std::set<Position> &cells = other.getIndex()->cells;
 
     // go through the index and merge each cell  
-    for(std::set<Position>::iterator it = cells.begin(); it != cells.end(); it++)
+    for(std::set<Position>::iterator it = cells->begin(); it != cells->end(); it++)
     {
 	// get center of cell and transform position
 	// to this grid
@@ -617,13 +627,14 @@ float MLSGrid::match( const MLSGrid& other, const Eigen::Affine3d& other2this, c
 {
     if( !other.getIndex() )
 	throw std::runtime_error("MLSGrid::merge() currently only indexed sources are supported.");
-    const std::set<Position> &cells = other.getIndex()->cells;
+    
+    const std::set<Position> *cells = &(other.getIndex()->cells);
 
     // go through the index and match each cell  
     size_t idx = 0;
     size_t count = 0;
     size_t match = 0;
-    for(std::set<Position>::iterator it = cells.begin(); it != cells.end(); it++)
+    for(std::set<Position>::iterator it = cells->begin(); it != cells->end(); it++)
     {
 	if( idx++ % sampling == 0 )
 	{
@@ -726,9 +737,26 @@ void MLSGrid::addCell( const Position& pos )
     extents.extend( Eigen::Vector2i( pos.x, pos.y ) );
 }
 
+void MLSGrid::generateIndex(boost::shared_ptr<Index> gindex) const
+{
+    for(size_t x = 0; x < getCellSizeX(); x++)
+    {
+        for(size_t y = 0; y < getCellSizeY(); y++)
+        {
+            GridBase::Position pos(x, y);
+            for(const_iterator it = beginCell(x, y); it != endCell(); it++)
+            {
+                gindex->addCell(pos);
+            }
+        }
+    }
+}
+
 void MLSGrid::initIndex()
 {
    index = boost::shared_ptr<Index>( new Index() ); 
+   if(cellcount > 0)
+       generateIndex(index);
 }
 
 void MLSGrid::move(int x, int y)
