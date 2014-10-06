@@ -610,7 +610,7 @@ void MLSGrid::merge( const MLSGrid& other, const Eigen::Affine3d& other2this, co
 	    for(envire::MLSGrid::const_iterator cit = other.beginCell(it->x,it->y); cit != other.endCell(); cit++ )
 	    {
 		SurfacePatch meas_patch( *cit );
-		meas_patch.mean += offset.mean - mappos.z();
+		meas_patch.mean += offset.mean + mappos.z();
 		meas_patch.stdev = sqrt( pow( meas_patch.stdev, 2 ) + pow( offset.stdev, 2 ) );
 		meas_patch.update_idx = offset.update_idx;
 
