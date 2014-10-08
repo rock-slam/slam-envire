@@ -6,8 +6,8 @@
 #include <osg/PositionAttitudeTransform>
 #include <envire/maps/Grids.hpp>
 #include <osg/Texture2D>
-#include <osg/Image>
 #include <osgDB/ReadFile>
+#include <osgDB/WriteFile>
 #include <iostream>
 #include <osg/ShapeDrawable>
 #include <osg/BlendFunc>
@@ -84,25 +84,27 @@ namespace envire
     geode->addDrawable(geom.get());  
   }
   
-void GridVisualizationBase::showGridAsImage(osg::ref_ptr< osg::Geode > geode, GridBase* grid, boost::function<bool (int x, int y, Color &ret)> colorForGridCoordinate) const
-{
+  void GridVisualizationBase::showGridAsImage(osg::ref_ptr< osg::Geode > geode, GridBase* grid, boost::function<bool (int x, int y, Color &ret)> colorForGridCoordinate) const
+  {
     //std::cout << "showGridAsImage: Update" << std::endl;
     
     //Load the texture image
-    osg::ref_ptr<osg::Image> image = new osg::Image();
-    
-    size_t image_width = grid->getCellSizeX();
-    size_t image_height = grid->getCellSizeY();
-    
-    int size = image_width*image_height*3;
-    unsigned char* mydata = new unsigned char[size]; 
+    if(!image.valid()){
+        image = new osg::Image();
+
+        image_width = grid->getCellSizeX();
+        image_height = grid->getCellSizeY();
+
+        int size = image_width*image_height*3;
+        image_data = new unsigned char[size];
+    }
+
     Color c;
-    
     for(size_t y = 0; y < image_height; y++)
     {
 	for(size_t x = 0; x < image_width; x++)
 	{
-	    unsigned char* pos = mydata + (y * image_width * 3 + x * 3);
+        unsigned char* pos = image_data + (y * image_width * 3 + x * 3);
 	    if(!colorForGridCoordinate(x, y, c))
 		throw std::runtime_error("GridVisualizationBase::showGridAsImage: No Color given for cooridnate");
 	    *pos = c.r;
@@ -120,13 +122,20 @@ void GridVisualizationBase::showGridAsImage(osg::ref_ptr< osg::Geode > geode, Gr
 	    GL_RGB, //GLint internalTextureformat, (GL_LINE_STRIP, 0x0003)
 	    GL_RGB, // GLenum pixelFormat, (GL_RGB, 0x1907)
 	    GL_UNSIGNED_BYTE, // GLenum type, (GL_UNSIGNED_BYTE, 0x1401)
-	    (unsigned char*)(mydata), // unsigned char* data
-	    osg::Image::USE_NEW_DELETE, //osg::Image::NO_DELETE // AllocationMode mode (shallow copy)
+        (unsigned char*)(image_data), // unsigned char* data
+        osg::Image::NO_DELETE, //osg::Image::NO_DELETE // AllocationMode mode (shallow copy)
 	    1);
     
     loadImageAsRectangle(geode,image,grid->getOffsetX(),grid->getOffsetY(),
 			image_width*grid->getScaleX() + grid->getOffsetX(),
 			image_height*grid->getScaleY() + grid->getOffsetY());
-  }   
+  }
+
+  void GridVisualizationBase::storeGridAsImage(QString filepath) const{
+      if(image.valid())
+        osgDB::writeImageFile(*image, filepath.toLatin1().data());
+      else
+        throw std::runtime_error("Image not initialized. showGridAsImage has to be called first.");
+  }
 
 }
