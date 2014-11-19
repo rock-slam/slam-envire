@@ -7,9 +7,8 @@ rock_init(envire 1.0)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
-rock_find_pkgconfig(VIZKIT3D vizkit3d REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem thread system regex program_options)
-include_directories(${Boost_INCLUDE_DIRS} ${VIZKIT3D_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIRS})
 
 option( USE_CGAL "Switch on CGAL related functionality" OFF )
 include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
