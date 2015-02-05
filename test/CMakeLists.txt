@@ -26,6 +26,11 @@ rock_testsuite(test_uncertainty unit/uncertainty.cpp
 rock_testsuite(test_serialization unit/serialization.cpp
     DEPS envire
     DEPS_CMAKE GDAL)
+    
+rock_testsuite(test_mlstopointcloud unit/mlstopointcloud.cpp
+    DEPS envire
+    DEPS_CMAKE GDAL)
+
 
 if( vizkit3d_FOUND )
     add_subdirectory(viz)
