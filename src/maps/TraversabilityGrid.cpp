@@ -162,6 +162,24 @@ double TraversabilityGrid::getWorstProbabilityInRectangle(const base::Pose2D& po
     return ret;
 }
 
+void TraversabilityGrid::setTraversabilityAndProbability(uint8_t klass, double probability, size_t x, size_t y)
+{
+    setProbability(probability, x, y);
+    setTraversability(klass, x, y);
+}
+
+void TraversabilityGrid::setTraversability(uint8_t klass, size_t x, size_t y)
+{
+    setTraversabilityArray();
+    (*traversabilityArray)[y][x] = klass;
+}
+
+const TraversabilityClass& TraversabilityGrid::getTraversability(size_t x, size_t y) const
+{
+    setTraversabilityArray();
+    return traversabilityClasses[(*traversabilityArray)[y][x]];
+}
+
 void TraversabilityGrid::setTraversabilityClass(uint8_t num, const TraversabilityClass& klass)
 {
     if(traversabilityClasses.size() <= num)
@@ -185,8 +203,30 @@ void TraversabilityGrid::setProbabilityArray()
     if(!probabilityArray)
     {
         probabilityArray = &(getData<ArrayType>(PROBABILITY));
+        //hm, why is the resize done here ?
         probabilityArray->resize(boost::extents[getCellSizeY()][getCellSizeX()]);
     }
+}
+
+void TraversabilityGrid::setTraversabilityArray()
+{
+    if(!traversabilityArray)
+    {
+        traversabilityArray = &(getData<ArrayType>(TRAVERSABILITY));
+    }
+}
+
+
+void TraversabilityGrid::setProbabilityArray() const
+{
+    TraversabilityGrid *nonConst = const_cast<TraversabilityGrid *>(this);
+    nonConst->setProbabilityArray();
+}
+
+void TraversabilityGrid::setTraversabilityArray() const
+{
+    TraversabilityGrid *nonConst = const_cast<TraversabilityGrid *>(this);
+    nonConst->setTraversabilityArray();
 }
 
 void TraversabilityGrid::setProbability(double probability, size_t x, size_t y) 
@@ -225,4 +265,20 @@ void TraversabilityGrid::unserialize(Serialization& so)
             setTraversabilityClass(i, TraversabilityClass(drivability));
     }
 }
+
+TraversabilityGrid& TraversabilityGrid::operator=(const TraversabilityGrid& other)
+{
+    const Grid<uint8_t> *obaseGrid = dynamic_cast<const Grid<uint8_t> *>(&other);
+    Grid<uint8_t> *baseGrid = dynamic_cast<Grid<uint8_t> *>(this);
+    assert(baseGrid);
+    assert(obaseGrid);
+    *baseGrid = *obaseGrid;
+    
+    traversabilityClasses = other.traversabilityClasses;
+    
+    traversabilityArray = NULL;
+    probabilityArray = NULL;
+    return *this;
+}
+
 

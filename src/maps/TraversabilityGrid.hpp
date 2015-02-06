@@ -113,9 +113,13 @@ private:
     const static std::vector<std::string> &bands;
     std::vector<TraversabilityClass> traversabilityClasses;
     ArrayType *probabilityArray;
+    ArrayType *traversabilityArray;
     
     void probabilityCallback(size_t x, size_t y, double &worst) const; 
+    void setProbabilityArray() const;
+    void setTraversabilityArray() const;
     void setProbabilityArray();
+    void setTraversabilityArray();
 public:
     TraversabilityGrid() : Grid<uint8_t>(), probabilityArray(NULL) 
     {
@@ -130,6 +134,21 @@ public:
     };
     
     ~TraversabilityGrid(){};
+
+    TraversabilityGrid &operator=(const TraversabilityGrid &other);
+    
+    void setTraversabilityAndProbability(uint8_t klass, double probability, size_t x, size_t y);
+    
+    /**
+     * Sets the traversability of a grid cell to a given klass.
+     * klass must be registered before by using setTraversabilityClass.
+     * 
+     * @arg klass the integer representing the current traversability class.
+     * @arg x X-Coordinate of the position
+     * @arg y Y-Coordinate of the position
+     * */
+    void setTraversability(uint8_t klass, size_t x, size_t y);
+    const TraversabilityClass &getTraversability(size_t x, size_t y) const;
     
     void setTraversabilityClass(uint8_t num, const TraversabilityClass &klass);
     const TraversabilityClass &getTraversabilityClass(uint8_t klass) const;
