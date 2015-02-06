@@ -11,9 +11,17 @@ namespace envire
 class TraversabilityClass
 {
 public:
+    
+    /**
+     * Default constructor.  
+     * Drivability must be given in the rande of [0,1] (0 - 100%)
+     * */
     TraversabilityClass(double drivability) : drivability(drivability) 
     {
-        assert(drivability <= 1.000001);
+        if(drivability < 0 || drivability <= 1.000001)
+        {
+            throw std::runtime_error("TraversabilityClass: Error, drivability must be in range [0,1]");
+        }
     }
 
     TraversabilityClass() : drivability(-1) 
@@ -51,7 +59,10 @@ public:
 private:
     double drivability;
 };
-    
+
+/**
+ * A Helper class for computing statistics in the Traversability grid.
+ * */
 class TraversabilityStatistic
 {
 public:
@@ -61,6 +72,15 @@ public:
         counts.resize(std::numeric_limits<uint8_t>::max());
     }
 
+    /**
+     * Adds a measurment of a given klass with a given dist to a center 
+     * to the statistic. 
+     * The center is a point that is defined outside of this class. 
+     * 
+     * @arg klass : A integer that represents a TraversabilityClass
+     * @arg distToCenter : Distance to a point (defined outside)
+     * 
+     * */
     void addMeasurement(uint8_t klass, double distToCenter)
     {
         countTotal++;
@@ -102,7 +122,7 @@ private:
     ///contains the amount of occurences of every class
     std::vector<size_t> counts;
 };
-    
+
 class TraversabilityGrid : public Grid<uint8_t>
 {
     ENVIRONMENT_ITEM( TraversabilityGrid )
@@ -150,17 +170,39 @@ public:
     void setTraversability(uint8_t klass, size_t x, size_t y);
     const TraversabilityClass &getTraversability(size_t x, size_t y) const;
     
+    /**
+     * Registeres a TraversabilityClass as a value in the grid.
+     * 
+     * The Grid can only save values from 0-256. To associate 
+     * the grid values with actuall drivability values one must
+     * register a TraversabilityClass for each used value.
+     * */
     void setTraversabilityClass(uint8_t num, const TraversabilityClass &klass);
+
+    
     const TraversabilityClass &getTraversabilityClass(uint8_t klass) const;
     const std::vector<TraversabilityClass> &getTraversabilityClasses() const 
     {
         return traversabilityClasses;
     }
-    
+
+    /**
+     * Sets the probability of the registered TraversabilityClass 
+     * for a given point in the map. 
+     * */
     void setProbability(double probability, size_t x, size_t y);
     double getProbability(size_t x, size_t y) const;
     double getWorstProbabilityInRectangle(const base::Pose2D &pose, double sizeX, double sizeY) const;
-    
+
+    /**
+     * Computes the statistic for an oriented rectangle in the grid.
+     * The center and orientation of the rectangle is given by the
+     * parameter pose. 
+     * @arg pose Center and Orientation of the rectangle
+     * @arg sizeX Size in X of the rectangle (before orienting)
+     * @arg sizeY Size in Y of the rectangle (before orienting)
+     * @arg innerStatistic resulting statistic
+     * */
     void computeStatistic(const base::Pose2D& pose, double sizeX, double sizeY,  envire::TraversabilityStatistic& innerStatistic) const;
     void computeStatistic(const base::Pose2D &pose, double sizeX, double sizeY, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const;
 
