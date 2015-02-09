@@ -50,6 +50,7 @@ rock_library(envire
     operators/GridIllumination.cpp 
     operators/TraversabilityGrassfire.cpp
     operators/TraversabilityGrowClasses.cpp
+    operators/MLSToPointCloud.cpp
     tools/BresenhamLine.cpp
     tools/PlyFile.cpp
     tools/RadialLookUpTable.cpp
@@ -116,6 +117,7 @@ install(FILES operators/MergeMLS.hpp
     operators/ClassGridProjection.hpp
     operators/CutPointcloud.hpp
     operators/GridIllumination.hpp
+    operators/MLSToPointCloud.hpp
     DESTINATION include/envire/operators)
 
 install(FILES tools/GraphViz.hpp
