@@ -18,7 +18,7 @@ public:
      * */
     TraversabilityClass(double drivability) : drivability(drivability) 
     {
-        if(drivability < 0 || drivability <= 1.000001)
+        if(drivability < 0 || drivability >= 1.000001)
         {
             throw std::runtime_error("TraversabilityClass: Error, drivability must be in range [0,1]");
         }
