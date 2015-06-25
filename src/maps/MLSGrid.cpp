@@ -424,17 +424,21 @@ MLSGrid::SurfacePatch* MLSGrid::get(const Position& position, double zpos, doubl
 SurfacePatch* MLSGrid::get( const Position& position, const SurfacePatch& patch, double sigma_threshold, bool ignore_negative )
 {
     MLSGrid::iterator it = beginCell(position.x, position.y);
+    SurfacePatch* found_patch = NULL;
+    float nearest_distance = std::numeric_limits<float>::max();
     while( it != endCell() )
     {
 	SurfacePatch &p(*it);
 	const double interval = sqrt(sq(patch.stdev) + sq(p.stdev)) * sigma_threshold;
-	if( p.distance( patch ) < interval && (!ignore_negative || !p.isNegative()) )
+	const float distance = p.distance( patch );
+	if( distance < interval && distance < nearest_distance && (!ignore_negative || !p.isNegative()) )
 	{
-	    return &p;
+	    nearest_distance = distance;
+	    found_patch = &p;
 	}
 	it++;
     }
-    return NULL;
+    return found_patch;
 }
 
 SurfacePatch* MLSGrid::get( const Eigen::Vector3d& position, double& zpos, double& zstdev )
@@ -544,6 +548,21 @@ bool MLSGrid::update( const Eigen::Vector2d& pos, const SurfacePatch& patch )
 bool MLSGrid::mergePatch( SurfacePatch& p, SurfacePatch& o )
 {
     return p.merge( o, config.thickness, config.gapSize, config.updateModel );
+}
+
+bool MLSGrid::isCovered(const Eigen::Vector3d& pos)
+{
+    size_t xi, yi;
+    if( toGrid(pos.x(), pos.y(), xi, yi) )
+    {
+        for(MLSGrid::iterator it = beginCell( xi, yi ); it != endCell(); it++ )
+        {
+	    MLSGrid::SurfacePatch patch( pos.z(), 0.01 );
+            if(it->isCovered(patch))
+                return true;
+        }
+    }
+    return false;
 }
 
 std::pair<SurfacePatch*, double> 

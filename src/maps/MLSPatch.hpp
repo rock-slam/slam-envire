@@ -62,8 +62,8 @@ struct SurfacePatch
 	};
 
     SurfacePatch( const Eigen::Vector3f &p, float stdev )
-	: mean(p.z()), stdev(stdev), height(0),
-        plane( p, 1.0f/pow(stdev,2)),  
+	: plane( p, 1.0f/pow(stdev,2)), 
+        height(0.0f),
 	min(p.z()), max(p.z()),
 	n(1.0), 
 	normsq(1.0/pow(stdev,4)),
@@ -99,6 +99,14 @@ struct SurfacePatch
 	float norm = plane.n / ( pow(plane.n,2) - 3.0*normsq );
 	float var = std::max(1e-6f, (float)((res.getResiduals()) * norm));
 	stdev = sqrt(var);
+	
+	// check if patch state should be changed
+	Eigen::Vector3f plane_normal = Eigen::Vector3f( -res.getCoeffs().x(), -res.getCoeffs().y(), 1.0 ).normalized();
+	float plane_angle = acos( std::abs( plane_normal.dot( Eigen::Vector3f::UnitZ() ) ) );
+	if(plane_angle > (M_PI * 0.45))
+	    setVertical();
+	else
+	    setHorizontal();
     }
 
     /** Experimental code. Don't use it unless you know what you are
@@ -203,6 +211,12 @@ struct SurfacePatch
     {
 	// todo do some caching
 	float zpos = Eigen::Vector3f( pos.x(), pos.y(), 1.0 ).dot( plane.getCoeffs() );
+
+        if(zpos > max)
+            zpos = max;
+        else if(zpos < min)
+            zpos = min;
+
 	return zpos;
     }
 
@@ -214,6 +228,19 @@ struct SurfacePatch
     Eigen::Vector3f getNormal() const
     {
 	return Eigen::Vector3f( -plane.getCoeffs().x(), -plane.getCoeffs().y(), 1.0 ).normalized();
+    }
+
+    bool isCovered( SurfacePatch& o )
+    {
+        SurfacePatch &p(*this);
+        if(p.isNegative() && !o.isNegative() 
+           && (p.mean-p.height) <= o.min && p.mean >= o.max
+           && p.update_idx > o.update_idx )
+        {
+            return true;
+        }
+
+        return false;
     }
 
     bool mergeSum( SurfacePatch& o, float gapSize )
@@ -245,20 +272,81 @@ struct SurfacePatch
     bool mergePlane( SurfacePatch& o, float gapSize )
     {
 	SurfacePatch &p(*this);
+        const float delta_dev = sqrt( p.stdev * p.stdev + o.stdev * o.stdev );
 
-	if( overlap( min-gapSize, max+gapSize, o.min, o.max ) )
+	if( !p.isNegative() && !o.isNegative()
+             && overlap( p.min-gapSize, p.max+gapSize, o.min, o.max ) )
 	{
 	    p.n += o.n;
 	    p.normsq += o.normsq;
 	    p.min = std::min( p.min, o.min );
 	    p.max = std::max( p.max, o.max );
+            p.height = p.max - p.min;
 
 	    // sum the plane between the two
 	    p.plane.update( o.plane );
+	    /** To don't use updatePlane here, only works if it is done for all
+		Patches at the end of the Map generation. */
 	    p.updatePlane();
 	    
 	    return true;
 	}
+        else if( p.isNegative() && o.isNegative() )
+        {
+	    // the new patch fully encloses the old one, 
+	    // so will overwrite it
+	    const float o_min = o.mean - o.height;
+	    const float p_min = p.mean - p.height;
+	    //if( o.update_idx >= p.update_idx && o.mean >= p.mean && o_min <= p_min )
+	    if( overlap( p_min-gapSize, p.mean+gapSize, o_min, o.mean ) )
+	    //if( o.mean >= p.mean && o_min <= p_min )
+	    {
+		p = o;
+		return true; 
+	    }
+	    
+	    if( overlap( p_min-delta_dev, p.mean+delta_dev, o_min, o.mean ) )
+	    {
+		if( true || p.update_idx == o.update_idx )
+		{
+		    if( o.mean > p.mean )
+		    {
+			p.height += ( o.mean - p.mean );
+			p.mean = o.mean;
+			p.max = p.mean;
+			p.min = p.mean;
+			p.stdev = o.stdev;
+		    }
+		    else if( o_min < p_min )
+		    {
+			p.height = p.mean - o_min;
+		    }
+
+		    return true;
+		}/*
+		else
+		{
+		    SurfacePatch &rp( p.update_idx < o.update_idx ? p : o );
+		    SurfacePatch &ro( p.update_idx < o.update_idx ? o : p );
+		    
+		    // the other patch is occupied, so cut
+		    // the free patch accordingly
+		    if( ro.mean < rp.mean )
+		    {
+			rp.height = rp.mean - ro.mean;
+		    }
+		    else if( ro.mean - ro.height < rp.mean )
+		    {
+			double new_mean = ro.mean - ro.height;
+			rp.height -= rp.mean - new_mean;
+			rp.mean = new_mean;
+		    }
+
+		    // both patches can live 
+		    return false;
+		}*/
+	    }
+        }
 	
 	return false;
     }
@@ -316,7 +404,7 @@ struct SurfacePatch
 		    {
 			// the new patch fully encloses the old one, 
 			// so will overwrite it
-			if( ro.mean > rp.mean && ro.mean - ro.height < rp.mean - rp.height )
+			if( ro.mean > rp.mean && (ro.mean - ro.height) < (rp.mean - rp.height) )
 			{
 			    p = ro;
 			    return true; 
@@ -325,7 +413,9 @@ struct SurfacePatch
 			// the other patch is occupied, so cut
 			// the free patch accordingly
 			if( ro.mean < rp.mean )
+                        {
 			    rp.height = rp.mean - ro.mean;
+                        }
 			else if( ro.mean - ro.height < rp.mean )
 			{
 			    double new_mean = ro.mean - ro.height;
@@ -436,6 +526,23 @@ struct SurfacePatch
     {
         return n;
     }
+
+    std::string getTypeName() const 
+    {
+        switch( type )
+        {
+            case NEGATIVE:
+                return "negative";
+
+            case VERTICAL:
+                return "vertical";
+
+            case HORIZONTAL:
+                return "horizontal";
+        }
+        return "unknown";
+    };
+
 public:
     /** The mean Z value. This always represents the top of the patch,
      * regardless whether the patch is horizontal or vertical

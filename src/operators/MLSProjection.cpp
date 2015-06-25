@@ -67,7 +67,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 
     // make sure we are recording the cell positions in a set
     t_grid->initIndex();
-    projectPointcloud( t_grid.get(), pc );
+    projectPointcloud( t_grid.get(), pc, grid );
 
     Eigen::Affine3d C_g2m( C_m2g.getTransform().inverse( Eigen::Isometry ) );
 
@@ -81,6 +81,9 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     // go through all the cells that have been touched
     typedef MultiLevelSurfaceGrid::Position position;
     const std::set<position> &cells = t_grid->getIndex()->cells;
+    
+    const double xs = t_grid->getScaleX();
+    const double ys = t_grid->getScaleY();
 
     for(std::set<position>::iterator it = cells.begin(); it != cells.end(); it++)
     {
@@ -118,7 +121,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	    if( t_grid != grid )
 		grid->updateCell( xi, yi, *cit );
 
-	    if( m_negativeInformation )
+	    if( m_negativeInformation && fabs(cit->stdev) <= 1.0 && !cit->isNegative() ) //TODO check for negativ patches
 	    {
 		// in order to handle negative information (e.g. knowledge that
 		// a cell is free), we use bresenhams line algorithm to find the cells
@@ -130,14 +133,45 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 		const double plane_dist = (grid->fromGrid( origin ) - grid->fromGrid( *it )).norm();
 
 		// this is the height difference between the origin and the cell
-		const double plane_z = origin_m.z() - cit->mean;
+		double plane_z = 0.0;
+		if(grid->getConfig().updateModel == MLSConfiguration::KALMAN)
+		    plane_z = origin_m.z() - cit->mean;
+		else if(grid->getConfig().updateModel == MLSConfiguration::SLOPE)
+		    plane_z = origin_m.z() - (cit->min + (cit->max - cit->min) * 0.5);
+		
+		
+		// this is only used on the new slope neg info version
+		float min_z = std::numeric_limits<float>::max();
+		float max_z = std::numeric_limits<float>::min();
+		
+		std::vector<float> heights(4.0);
+		heights[0] = cit->getHeight( Eigen::Vector2f( 0, 0 ) );
+		heights[1] = cit->getHeight( Eigen::Vector2f( xs, 0 ) );
+		heights[2] = cit->getHeight( Eigen::Vector2f( xs, ys ) );
+		heights[3] = cit->getHeight( Eigen::Vector2f( 0, ys ) );
+		
+		for(unsigned i = 0; i < heights.size(); i++)
+		{
+		    min_z = std::min(min_z, heights[i]);
+		    max_z = std::max(max_z, heights[i]);
+		}
+		
+		if(max_z > cit->max)
+		    max_z = cit->max;
+		if(min_z < cit->min)
+		    min_z = cit->min;
+		
+		double plane_z_min = origin_m.z() - min_z;
+		double plane_z_max = origin_m.z() - max_z;
+		
 
 		// this is the maximum height of the negative cell,
 		// which joins the height of the cell, and how high it
 		// is perceived from the origin point of view
 		double height = 0; //cit->height;
 		if( plane_dist * plane_z != 0 )
-		    height += grid->getScaleX() / plane_dist * plane_z;
+		    height += fabs((grid->getScaleX() * plane_z) / plane_dist);
+		    //height += grid->getScaleX() / plane_dist * plane_z;
 
 		std::vector<GridBase::Position> line_cells;
 		lineBresenham( *it, origin, line_cells );
@@ -153,25 +187,78 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 			factor = (int)(line_cells[li].x - origin.x) / (double)xdiff;
 		    else if( ydiff )
 			factor = (int)(line_cells[li].y - origin.y) / (double)ydiff;
-
-		    const double p_height = fabs((cit->height + height) * factor);
-		    const double z_mean = cit->mean + height * factor + plane_z * (1.0 - factor);
-		    const double z_stdev = cit->stdev * factor; 
-
-		    MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
-
+		    
 		    // for now don't put anything into the cell with the
 		    // positive information. This could be changed later
 		    // for partial information
-		    if( factor < 1.0 )
+		    if( factor >= 1.0 || factor < 0.0 )
+			continue;
+
+		    if(grid->getConfig().updateModel == MLSConfiguration::KALMAN)
+		    {
+			//const double p_height = fabs((cit->height + height) * factor);
+			const double p_height = height; //fabs((cit->height) * factor) + height;
+			if(p_height <= 0.01)
+			    continue;
+			//const double z_mean = cit->mean + height * factor + plane_z * (1.0 - factor);
+			const double z_mean = cit->mean + p_height * 0.5 + plane_z * (1.0 - factor);
+			const double z_stdev = cit->stdev * factor; 
+
+			MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
+			np.update_idx = cit->update_idx;
+
 			grid->updateCell( line_cells[li], np );
+		    }/*
+		    else if(grid->getConfig().updateModel == MLSConfiguration::SLOPE)
+		    {
+			const double p_var = 0.02;
+			double p_height = fabs((cit->height) * factor) + height;
+			if(p_height <= (0.01 + p_var*2.0))
+			    continue;
+			double z_mean = (cit->min + (cit->max - cit->min) * 0.5) + p_height * 0.5 + plane_z * (1.0 - factor);
+			const double z_stdev = cit->stdev * factor;
+			
+			z_mean -= p_var;
+			p_height -= 2.0*p_var;
+
+			MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
+			np.update_idx = cit->update_idx;
+
+			grid->updateCell( line_cells[li], np );
+		    }*/
+		    else if(grid->getConfig().updateModel == MLSConfiguration::SLOPE)
+		    {
+			const double p_var = 0.05; //0.02;
+			
+			double z_mean = cit->max + plane_z_max * (1.0 - factor);
+			double p_height = z_mean - (cit->min + plane_z_min * (1.0 - factor));
+			
+			//if(p_height <= (0.01 + p_var*2.0))
+			    //continue;
+			if(p_height < 0.01)
+			{
+			    double res = 0.01 - p_height;
+			    z_mean += 0.5*res;
+			    p_height += res;
+			}
+			
+			const double z_stdev = cit->stdev * factor;
+			
+			z_mean -= p_var;
+			p_height -= 2.0*p_var;
+
+			MLSGrid::SurfacePatch np( z_mean, z_stdev, p_height, MLSGrid::SurfacePatch::NEGATIVE );
+			np.update_idx = cit->update_idx;
+
+			grid->updateCell( line_cells[li], np );
+		    }
 		}
 	    }
 	}
     }
 }
 
-void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc )
+void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc, envire::MultiLevelSurfaceGrid* main_grid )
 {
     // note: the grid might actually be a local copy and not attached to an
     // environment
@@ -195,16 +282,40 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 
         if(use_boundary_box && !boundary_box.contains(mean))
             continue;
+	if(main_grid && m_negativeInformation && main_grid->isCovered(mean))
+	    continue;
 
-        // create patch to update
-        MLSGrid::SurfacePatch patch( mean.z(), sqrt(p_var) );
-        if( color )
-            patch.setColor( (*color)[i] );
+	size_t xi, yi;
+        double xmod, ymod;
+	if( grid->toGrid( mean.x(), mean.y(), xi, yi, xmod, ymod ) )
+	{
+	    const double stdev = sqrt(p_var);
 
-        // and use the update method of the mls to determine
-        // which cell and update model to use
-        grid->update( mean.head<2>(), patch );
+	    if(grid->getConfig().updateModel == MLSConfiguration::KALMAN)
+	    {
+		MLSGrid::SurfacePatch patch( mean.z(), stdev );
+		if( color )
+		    patch.setColor( (*color)[i] );
+		grid->updateCell(xi, yi, patch);
+	    }
+	    else
+	    {
+		MLSGrid::SurfacePatch patch( Eigen::Vector3f(xmod, ymod, mean.z()) , stdev );
+		patch.update_idx = pc->getUniqueIdNumericalSuffix();
+		if( color )
+		    patch.setColor( (*color)[i] );
+		grid->updateCell(xi, yi, patch);
+	    }
+
+	}
     }
+}
+
+bool compare_envire_date(EnvironmentItem* item1, EnvironmentItem* item2)
+{
+    if(item1->getUniqueIdNumericalSuffix() > item2->getUniqueIdNumericalSuffix())
+        return true;
+    return false;
 }
 
 bool MLSProjection::updateAll() 
@@ -218,6 +329,8 @@ bool MLSProjection::updateAll()
         return false;
     
     std::list<Layer*> inputs = env->getInputs(this);
+    if(m_negativeInformation)
+	inputs.sort(compare_envire_date);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
 	Pointcloud* mesh = dynamic_cast<envire::Pointcloud*>(*it);
@@ -230,6 +343,28 @@ bool MLSProjection::updateAll()
 	else
 	    projectPointcloud( grid, mesh );
     }
+    
+    /** updatePlane on all patches */
+    /* This can be done when not updating the plane while merging the patches.
+     * It is much faster, but not possible when also negative information is processed.
+    if(grid->getConfig().updateModel == MLSConfiguration::SLOPE)
+    {
+	// go through all the cells that have been touched
+	typedef MultiLevelSurfaceGrid::Position position;
+	const std::set<position> &cells = grid->getIndex()->cells;
+
+	for(std::set<position>::iterator it = cells.begin(); it != cells.end(); it++)
+	{
+	    const size_t xi = it->x;
+	    const size_t yi = it->y;
+
+	    for(MultiLevelSurfaceGrid::iterator cit = grid->beginCell(xi,yi); cit != grid->endCell(); cit++ )
+	    {
+		cit->updatePlane();
+	    }
+	}
+    }
+    */
 
     env->itemModified( grid );
     return true;

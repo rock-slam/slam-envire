@@ -309,6 +309,12 @@ protected:
 
 
 osg::Vec3 estimateNormal( MultiLevelSurfaceGrid::SurfacePatch patch, MultiLevelSurfaceGrid::Position pos, MultiLevelSurfaceGrid* grid ) {
+    if( grid->getConfig().updateModel == MLSConfiguration::SLOPE )
+    {
+	Eigen::Vector3f n = patch.getNormal();
+	return osg::Vec3(n.x(), n.y(), n.z());
+    }
+    
     patch.stdev = grid->getScaleX() * 2;
 
     Eigen::Vector3d center;
@@ -379,9 +385,13 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 	    for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
 	    {
 		const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+                
+                if(!showNegative && p.isNegative())
+                    continue;
+		
 		double xp = (x+0.5) * xs + xo;
 		double yp = (y+0.5) * ys + yo; 
-
+                
                 // setup the color for the next geometry
                 if( mls->getHasCellColor() )
                 {
@@ -390,29 +400,35 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                     osg::Vec4 col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
                     geode->setColor( col );
                 }
-                else if( cycleHeightColor )
-                {
-                    geode->cycleColor = true;
-                    geode->cycleColorInterval = cycleColorInterval;
-                    double hue = (p.mean - std::floor(p.mean / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
-                    double sat = 1.0;
-                    double lum = 0.6;
-                    double alpha = std::max( 0.0, 1.0 - p.stdev );
-                    geode->setColorHSVA( hue, sat, lum, alpha );
-                }
-                else
-                    geode->setColor( horizontalCellColor );
 
-                // slopes need to be handled differently
-		if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
-		{
-                    if( !p.isNegative() )
+                // draw horizontal patches
+                if( p.isHorizontal() )
+                {
+                    // setup the color for the next geometry
+                    if( !mls->getHasCellColor() )
+                    {
+                        if( cycleHeightColor )
+                        {
+                            geode->cycleColor = true;
+                            geode->cycleColorInterval = cycleColorInterval;
+                            double hue = (p.mean - std::floor(p.mean / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
+                            double sat = 1.0;
+                            double lum = 0.6;
+                            double alpha = std::max( 0.0, 1.0 - p.stdev );
+                            geode->setColorHSVA( hue, sat, lum, alpha );
+                        }
+                        else
+                            geode->setColor( horizontalCellColor );
+                    }
+                    
+                    // slopes need to be handled differently
+                    if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
                     {
                         osg::Vec4 heights(0,0,0,0);
-		        heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
-		        heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
-		        heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
-		        heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
+                        heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
+                        heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
+                        heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
+                        heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
 
                         geode->drawPlane(  
                                 osg::Vec3( xp, yp, p.mean ), 
@@ -421,10 +437,7 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                                 Vec3( p.getNormal() ),
                                 p.min, p.max );
                     }
-		}
-                else
-                {
-                    if( p.isHorizontal() )
+                    else
                     {
                         geode->drawBox( 
                                 osg::Vec3( xp, yp, p.mean ), 
@@ -432,26 +445,64 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                                 estimateNormals ? 
                                     estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
                                     osg::Vec3( 0, 0, 1.0 ) );
-                        hor++;
+                    }
+                    hor++;
+                }
+                else
+                {
+                    // draw vertical and free space information patches
+                    
+                    // setup the color for the next geometry
+                    if( !mls->getHasCellColor() )
+                    {
+                        geode->cycleColor = false;
+                        geode->setColor( 
+                                p.isVertical() ? verticalCellColor : negativeCellColor );
+                    }
+                    
+                    // slopes need to be handled differently
+                    if( p.isVertical() && mls->getConfig().updateModel == MLSConfiguration::SLOPE )
+                    {
+                        float height = p.max - p.min;
+                        geode->drawBox( 
+                                osg::Vec3( xp, yp, p.max-height*.5 ), 
+                                osg::Vec3( xs, ys, p.height ), 
+                                osg::Vec3(0, 0, 1.0) );
                     }
                     else
                     {
-                        if( p.isVertical() || showNegative )
-                        {	
-                            geode->setColor( 
-                                    p.isVertical() ? verticalCellColor : negativeCellColor );
-                            geode->drawBox( 
-                                    osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
-                                    osg::Vec3( xs, ys, p.height ), 
-                                    osg::Vec3(0, 0, 1.0) );
-                        }
+                        geode->drawBox( 
+                                osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
+                                osg::Vec3( xs, ys, p.height ), 
+                                osg::Vec3(0, 0, 1.0) );
                     }
                 }
 
+
 		if( showUncertainty )
 		{
-		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
-		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
+                    if(!p.isNegative())
+                    {
+                        if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
+                        {
+                            if(p.isVertical())
+                            {
+                                float height = p.max - p.min;
+                                var_vertices->push_back( osg::Vec3( xp, yp, p.max - height * 0.5 + (height * 0.5 + p.stdev) ) );
+                                var_vertices->push_back( osg::Vec3( xp, yp, p.max - height * 0.5 - (height * 0.5 + p.stdev) ) );
+                            }
+                            else
+                            {
+                                var_vertices->push_back( osg::Vec3( xp, yp, p.mean + p.stdev ) );
+                                var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.stdev ) );
+                            }
+                        }
+                        else
+                        {
+                            var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
+                            var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
+                        }
+                    }
 		}
 	    }
 	}

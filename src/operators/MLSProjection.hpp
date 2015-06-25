@@ -38,7 +38,7 @@ namespace envire {
 
     protected:
 	void projectPointcloudWithUncertainty( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
-	void projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc );
+	void projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc, envire::MultiLevelSurfaceGrid* main_grid = NULL );
 
 	bool withUncertainty;
 	bool m_negativeInformation;

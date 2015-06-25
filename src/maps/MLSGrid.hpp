@@ -262,6 +262,8 @@ namespace envire
 	 * contains cells.
 	 */
 	CellExtents getCellExtents() const { return extents.isEmpty() ? CellExtents(Eigen::Vector2i(0,0),Eigen::Vector2i(0,0)) : extents; }
+	
+	bool isCovered( const Eigen::Vector3d& pos );
 
 	/**
          * Moves the content of the MLSGrid by 
