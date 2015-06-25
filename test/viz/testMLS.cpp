@@ -67,6 +67,7 @@ BOOST_AUTO_TEST_CASE( mlsmatch_test )
     }
 }
 
+
 BOOST_AUTO_TEST_CASE( mlsnegative_test ) 
 {
     QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
@@ -87,6 +88,13 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     env->getRootNode()->addChild( pcfn );
     pc->setFrameNode( pcfn );
 
+    Pointcloud *pc2 = new Pointcloud();
+    env->attachItem( pc2 );
+    FrameNode *pc2fn = new FrameNode( 
+	    Eigen::Affine3d( Eigen::Translation3d( 0, -0.5, 1 ) ) );
+    env->getRootNode()->addChild( pc2fn );
+    pc2->setFrameNode( pc2fn );
+
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.5, 0.5, -25, -25);
     env->attachItem( mls );
     FrameNode *mlsfn = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
@@ -97,6 +105,7 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     mlsp->useNegativeInformation( true );
     env->attachItem( mlsp );
     mlsp->addInput( pc );
+    mlsp->addInput( pc2 );
     mlsp->addOutput( mls );
 
     // fill the pointcloud 
@@ -111,29 +120,103 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
 	}
     }
 
+    // fill the 2. pointcloud 
+    for(int i=0; i<20; i++)
+    {
+	for(int j=0; j<20; j++)
+	{
+	    if( i == 0 || j == 0 || j == 19 )
+	    {
+		pc2->vertices.push_back( Eigen::Vector3d( 2.0*(j / 4.0 - 2.5), 2.0, i / 4.0 - 2.5 ) );
+	    }
+	}
+    }
+
     mlsp->updateAll();
 
-    /*
-    MLSGrid::SurfacePatch p1( 0.5, 0.1, 0.0, MLSGrid::SurfacePatch::HORIZONTAL );
-    p1.update_idx = 1;
-    mls->updateCell( 50, 51, p1 );
-
-    MLSGrid::SurfacePatch p2( 0.1, 0.1, 1.0, MLSGrid::SurfacePatch::NEGATIVE );
-    p2.update_idx = 1;
-    mls->updateCell( 50, 52, p2 );
-
-    mls->itemModified();
-    */
-
-    //while( app.isRunning() );
     for(int i=0;i<500 && app.isRunning();i++)
     {
 	usleep( 1000*1000 );
 
 	Eigen::Affine3d t = pcfn->getTransform();
-	t.translation() += Eigen::Vector3d( 0, 0.25, 0 ); 
+	t.translation() += Eigen::Vector3d( 0, 0.5, 0 ); 
 	pcfn->setTransform( t );
 
+	Eigen::Affine3d t2 = pc2fn->getTransform();
+	t2.translation() += Eigen::Vector3d( 0, 0.5, 0 ); 
+	pc2fn->setTransform( t2 );
+
+	mlsp->updateAll();
+
+        GridBase::Position origin;
+        if( mls->toGrid( Eigen::Vector2d(-1.5, 3.0), origin ) )
+        {       
+                std::cerr << "origin: (" << origin.x << "," << origin.y << ")" << std::endl;
+                for(MultiLevelSurfaceGrid::iterator cit = mls->beginCell(origin.x, origin.y); cit != mls->endCell(); cit++ )
+	        {
+                    std::cerr << cit->getTypeName() << ": idx: " <<  cit->update_idx << ", mean: " << cit->mean << ", height: " << cit->height << std::endl;
+                }
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE( mlsslope_test ) 
+{
+    QtThreadedWidget<vizkit3d::Vizkit3DWidget> app;
+    envire::EnvireVisualization envViz;
+    app.start();
+    app.getWidget()->addPlugin( &envViz );
+
+    boost::scoped_ptr<Environment> env( new Environment() );
+    envViz.updateData( env.get() );
+
+    // setup a transformation chain
+    // pointcloud -> mls
+
+    Pointcloud *pc = new Pointcloud();
+    env->attachItem( pc );
+    FrameNode *pcfn = new FrameNode( 
+        Eigen::Affine3d( Eigen::Translation3d( 0, 0.5, 2 ) ) );
+    env->getRootNode()->addChild( pcfn );
+    pc->setFrameNode( pcfn );
+
+    MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.5, 0.5, -25, -25);
+    envire::MLSConfiguration& config = mls->getConfig();
+    config.updateModel = envire::MLSConfiguration::SLOPE;
+    env->attachItem( mls );
+    FrameNode *mlsfn = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
+    env->getRootNode()->addChild( mlsfn );
+    mls->setFrameNode( mlsfn );
+
+    MLSProjection *mlsp = new MLSProjection();
+    env->attachItem( mlsp );
+    mlsp->addInput( pc );
+    mlsp->addOutput( mls );
+
+    // fill the pointcloud 
+    for(int i=0; i<20; i++)
+    {
+        for(int j=0; j<20; j++)
+        {
+            if( i == 0 || j == 0 || j == 19 )
+            {
+                pc->vertices.push_back( Eigen::Vector3d( j / 4.0 - 2.5, 2.0, i / 4.0 - 2.5 ) );
+            }
+        }
+    }
+
+    mlsp->updateAll();
+
+    for(int i=0;i<500 && app.isRunning();i++)
+    {
+	usleep( 1000*1000 );
+
+	Eigen::Affine3d last_transform = pcfn->getTransform();
+        Eigen::Affine3d next_transform(Eigen::AngleAxisd(0.01, Eigen::Vector3d::UnitY()));
+        next_transform.translation() = Eigen::Vector3d( 0, 0.1, 0 );
+	pcfn->setTransform( last_transform * next_transform );
+
+        env->itemModified(pc);
 	mlsp->updateAll();
     }
 }
