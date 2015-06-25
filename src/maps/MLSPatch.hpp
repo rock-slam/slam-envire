@@ -62,8 +62,7 @@ struct SurfacePatch
 	};
 
     SurfacePatch( const Eigen::Vector3f &p, float stdev )
-	: plane( p, 1.0f/pow(stdev,2)), 
-        height(0.0f),
+	: height(0.0f), plane( p, 1.0f/pow(stdev,2)), 
 	min(p.z()), max(p.z()),
 	n(1.0), 
 	normsq(1.0/pow(stdev,4)),
