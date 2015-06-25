@@ -26,7 +26,6 @@ namespace envire {
 	bool updateAll();
 
 	void useUncertainty( bool use ) { withUncertainty = use; }
-	void useNegativeInformation( bool use ) { m_negativeInformation = use; }
 	void setDefaultUncertainty( double uncertainty ) { defaultUncertainty = uncertainty; }
     
         /** 
@@ -41,7 +40,6 @@ namespace envire {
 	void projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envire::Pointcloud* pc, envire::MultiLevelSurfaceGrid* main_grid = NULL );
 
 	bool withUncertainty;
-	bool m_negativeInformation;
 	double defaultUncertainty;
         bool use_boundary_box;
         Eigen::AlignedBox<double,3> boundary_box;

@@ -14,7 +14,8 @@ struct MLSConfiguration
 	: gapSize( 1.0 ), 
 	thickness( 0.05 ),
 	useColor( false ),
-	updateModel( KALMAN ) {}
+	updateModel( KALMAN ),
+	useNegativeInformation( false ) {}
 
     enum update_model
     {
@@ -27,6 +28,7 @@ struct MLSConfiguration
     float thickness;
     bool useColor;
     update_model updateModel;
+    bool useNegativeInformation;
 };
 
 }

@@ -9,7 +9,7 @@ using namespace envire;
 ENVIRONMENT_ITEM_DEF( MLSProjection )
 
 MLSProjection::MLSProjection()
-    : withUncertainty( true ), m_negativeInformation( false ), defaultUncertainty( 0.01 ), use_boundary_box(false)
+    : withUncertainty( true ), defaultUncertainty( 0.01 ), use_boundary_box(false)
 {
 }
 
@@ -75,7 +75,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
     Eigen::Vector3d origin_m = C_m2g.getTransform() * pc->getSensorOrigin().translation();
     GridBase::Position origin;
     if( !grid->toGrid( origin_m.head<2>(), origin ) )
-	if( m_negativeInformation )
+	if( grid->getConfig().useNegativeInformation )
 	    throw std::runtime_error( "origin of pointcloud needs to be within grid." );
 
     // go through all the cells that have been touched
@@ -121,7 +121,7 @@ void MLSProjection::projectPointcloudWithUncertainty( envire::MultiLevelSurfaceG
 	    if( t_grid != grid )
 		grid->updateCell( xi, yi, *cit );
 
-	    if( m_negativeInformation && fabs(cit->stdev) <= 1.0 && !cit->isNegative() ) //TODO check for negativ patches
+	    if( grid->getConfig().useNegativeInformation && fabs(cit->stdev) <= 1.0 && !cit->isNegative() ) //TODO check for negativ patches
 	    {
 		// in order to handle negative information (e.g. knowledge that
 		// a cell is free), we use bresenhams line algorithm to find the cells
@@ -282,7 +282,7 @@ void MLSProjection::projectPointcloud( envire::MultiLevelSurfaceGrid* grid, envi
 
         if(use_boundary_box && !boundary_box.contains(mean))
             continue;
-	if(main_grid && m_negativeInformation && main_grid->isCovered(mean))
+	if(main_grid && main_grid->getConfig().useNegativeInformation && main_grid->isCovered(mean))
 	    continue;
 
 	size_t xi, yi;
@@ -329,7 +329,7 @@ bool MLSProjection::updateAll()
         return false;
     
     std::list<Layer*> inputs = env->getInputs(this);
-    if(m_negativeInformation)
+    if(grid->getConfig().useNegativeInformation)
 	inputs.sort(compare_envire_date);
     for( std::list<Layer*>::iterator it = inputs.begin(); it != inputs.end(); it++ )
     {
@@ -338,7 +338,7 @@ bool MLSProjection::updateAll()
 	C_m2g = env->relativeTransformWithUncertainty(
 	    mesh->getFrameNode(), grid->getFrameNode() );
 
-	if( withUncertainty || m_negativeInformation )
+	if( withUncertainty || grid->getConfig().useNegativeInformation )
 	    projectPointcloudWithUncertainty( grid, mesh );
 	else
 	    projectPointcloud( grid, mesh );

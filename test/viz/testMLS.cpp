@@ -96,13 +96,13 @@ BOOST_AUTO_TEST_CASE( mlsnegative_test )
     pc2->setFrameNode( pc2fn );
 
     MultiLevelSurfaceGrid *mls = new MultiLevelSurfaceGrid(100, 100, 0.5, 0.5, -25, -25);
+    mls->getConfig().useNegativeInformation = true;
     env->attachItem( mls );
     FrameNode *mlsfn = new FrameNode( Eigen::Affine3d( Eigen::Translation3d( 0, 0, 0 ) ) );
     env->getRootNode()->addChild( mlsfn );
     mls->setFrameNode( mlsfn );
 
     MLSProjection *mlsp = new MLSProjection();
-    mlsp->useNegativeInformation( true );
     env->attachItem( mlsp );
     mlsp->addInput( pc );
     mlsp->addInput( pc2 );
