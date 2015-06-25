@@ -485,7 +485,7 @@ GridBase::Extents GridBase::getExtents() const
     Eigen::Vector2d min( offsetx, offsety );
     Extents scaled( 
 	    min + (cellExtents.min().array().cast<double>() * scale.array()).matrix(), 
-	    min + ((cellExtents.max().array().cast<double>() + 1.0) * scale.array()).matrix() );
+	    min + (cellExtents.max().array().cast<double>() * scale.array()).matrix() + scale );
     return scaled;
 }
 
