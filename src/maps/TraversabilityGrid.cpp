@@ -213,6 +213,7 @@ void TraversabilityGrid::setTraversabilityArray()
     if(!traversabilityArray)
     {
         traversabilityArray = &(getData<ArrayType>(TRAVERSABILITY));
+		traversabilityArray->resize(boost::extents[getCellSizeY()][getCellSizeX()]);
     }
 }
 

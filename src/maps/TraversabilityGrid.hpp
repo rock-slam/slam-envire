@@ -141,14 +141,15 @@ private:
     void setProbabilityArray();
     void setTraversabilityArray();
 public:
-    TraversabilityGrid() : Grid<uint8_t>(), probabilityArray(NULL) 
+    TraversabilityGrid() : Grid<uint8_t>(), probabilityArray(NULL), traversabilityArray(NULL)
     {
         traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
     TraversabilityGrid(size_t cellSizeX, size_t cellSizeY, 
                         double scalex, double scaley, 
                         double offsetx = 0.0, double offsety = 0.0,
-                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id), probabilityArray(NULL)
+                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id), 
+                        probabilityArray(NULL), traversabilityArray(NULL)
     {
         traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
