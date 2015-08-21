@@ -157,7 +157,7 @@ public:
     TraversabilityGrid &operator=(const TraversabilityGrid &other);
     
     void setTraversabilityAndProbability(uint8_t klass, double probability, size_t x, size_t y);
-    
+
     /**
      * Sets the traversability of a grid cell to a given klass.
      * klass must be registered before by using setTraversabilityClass.
@@ -177,6 +177,13 @@ public:
      * register a TraversabilityClass for each used value.
      * */
     void setTraversabilityClass(uint8_t num, const TraversabilityClass &klass);
+
+    /**
+     * Registeres a TraversabilityClass at the grid
+     * 
+     * @arg retId if sccessfull, the id inside of the grif for the klass is returned.
+     * */
+    bool registerNewTraversabilityClass(uint8_t &retId, const TraversabilityClass &klass);
 
     
     const TraversabilityClass &getTraversabilityClass(uint8_t klass) const;

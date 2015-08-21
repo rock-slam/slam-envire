@@ -180,6 +180,16 @@ const TraversabilityClass& TraversabilityGrid::getTraversability(size_t x, size_
     return traversabilityClasses[(*traversabilityArray)[y][x]];
 }
 
+bool TraversabilityGrid::registerNewTraversabilityClass(uint8_t& retId, const TraversabilityClass& klass)
+{
+    if(traversabilityClasses.size() >= std::numeric_limits< uint8_t >::max())
+        return false;
+    
+    retId = traversabilityClasses.size() + 1;
+    setTraversabilityClass(retId, klass);
+    return true;
+}
+
 void TraversabilityGrid::setTraversabilityClass(uint8_t num, const TraversabilityClass& klass)
 {
     if(traversabilityClasses.size() <= num)
