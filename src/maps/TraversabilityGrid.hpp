@@ -143,7 +143,6 @@ private:
 public:
     TraversabilityGrid() : Grid<uint8_t>(), probabilityArray(NULL), traversabilityArray(NULL)
     {
-        traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
     TraversabilityGrid(size_t cellSizeX, size_t cellSizeY, 
                         double scalex, double scaley, 
@@ -151,7 +150,6 @@ public:
                         std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id), 
                         probabilityArray(NULL), traversabilityArray(NULL)
     {
-        traversabilityClasses.resize(std::numeric_limits<uint8_t>::max());
     };
     
     ~TraversabilityGrid(){};
