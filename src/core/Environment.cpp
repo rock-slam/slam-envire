@@ -802,7 +802,7 @@ void Environment::serialize(std::string const& path)
     boost::filesystem::path sceneDir( path ); 
     boost::filesystem::path scene( sceneDir / serialization.STRUCTURE_FILE );
 
-    boost::filesystem::create_directory( path );
+    boost::filesystem::create_directories( path );
 
     serialization.setSceneDir(sceneDir.string());
     serialization.writeToFile( this, scene.string() );
