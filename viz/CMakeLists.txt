@@ -23,6 +23,7 @@ rock_vizkit_plugin(envire-viz
     HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp
     EnvironmentItemVisualizer.hpp)
 target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
+target_link_libraries(envire-viz pthread)
 
 rock_executable(envireViewer envireViewer.cpp
     DEPS envire-viz
