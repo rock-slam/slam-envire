@@ -331,6 +331,7 @@ namespace envire
     {
     public:
         SynchronizationEventQueue();
+      virtual ~SynchronizationEventQueue() {};
 
 	/** @brief pops all events and clears the internal queue
 	 */

@@ -21,6 +21,7 @@ class EventFilter
 {
 public:
     EventFilter() : handler(NULL) {}
+    virtual ~EventFilter() {};
 
     /** @brief callback for eventfilter
      * Should return true if the message can be passed
@@ -49,6 +50,7 @@ class EventHandler
 
 public:
     EventHandler() : filter(NULL) {}
+    virtual ~EventHandler() {};
 
     /** @brief call this message to pass a message to the EventHandler
      */
@@ -72,6 +74,8 @@ protected:
 class EventDispatcher
 {
 public:
+    virtual ~EventDispatcher() {};
+
     static void dispatch( event::Type type, event::Operation operation, EnvironmentItem* a, EnvironmentItem* b, EventDispatcher* dispatch );
 
     virtual void itemAttached(EnvironmentItem *item);
