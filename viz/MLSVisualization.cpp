@@ -14,16 +14,17 @@
 using namespace envire;
 
 MLSVisualization::MLSVisualization()
-    : horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)), 
-    verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)), 
-    negativeCellColor(osg::Vec4(0.1,0.5,0.9,0.2)), 
-    uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)), 
-    showUncertainty(false),
-    showNegative(false),
-    estimateNormals(false),
-    cycleHeightColor(true),
-    cycleColorInterval(1.0),
-    showExtents(true)
+: horizontalCellColor(osg::Vec4(0.1,0.5,0.9,1.0)),
+  verticalCellColor(osg::Vec4(0.8,0.9,0.5,1.0)),
+  negativeCellColor(osg::Vec4(0.1,0.5,0.9,0.2)),
+  uncertaintyColor(osg::Vec4(0.5,0.1,0.1,0.3)),
+  showUncertainty(false),
+  showNegative(false),
+  estimateNormals(false),
+  cycleHeightColor(true),
+  cycleColorInterval(1.0),
+  showExtents(true),
+  connectedSurface(false)
 {
 }
 
@@ -43,44 +44,44 @@ class ExtentsRectangle : public osg::Geode
 
 public:
     ExtentsRectangle( 
-	    const envire::GridBase::Extents& extents, 
-	    const osg::Vec4& col = osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) ) :
-	geom( new osg::Geometry() ),
-	color( new osg::Vec4Array() ), 
-	vertices( new osg::Vec3Array() )
-    {
-	Eigen::Vector2d min = extents.min(), max = extents.max();
-	vertices->push_back( osg::Vec3( min.x(), min.y(), 0 ));
-	vertices->push_back( osg::Vec3( min.x(), max.y(), 0 ));
-	vertices->push_back( osg::Vec3( max.x(), max.y(), 0 ));
-	vertices->push_back( osg::Vec3( max.x(), min.y(), 0 ));
+            const envire::GridBase::Extents& extents,
+            const osg::Vec4& col = osg::Vec4( 0.0f, 0.9f, 0.1f, 0.8f ) ) :
+                geom( new osg::Geometry() ),
+                color( new osg::Vec4Array() ),
+                vertices( new osg::Vec3Array() )
+{
+        Eigen::Vector2d min = extents.min(), max = extents.max();
+        vertices->push_back( osg::Vec3( min.x(), min.y(), 0 ));
+        vertices->push_back( osg::Vec3( min.x(), max.y(), 0 ));
+        vertices->push_back( osg::Vec3( max.x(), max.y(), 0 ));
+        vertices->push_back( osg::Vec3( max.x(), min.y(), 0 ));
 
-	geom->setVertexArray(vertices);
-	osg::ref_ptr<osg::DrawArrays> drawArrays = 
-	    new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
-	geom->addPrimitiveSet(drawArrays.get());
+        geom->setVertexArray(vertices);
+        osg::ref_ptr<osg::DrawArrays> drawArrays =
+                new osg::DrawArrays( osg::PrimitiveSet::LINE_LOOP, 0, vertices->size() );
+        geom->addPrimitiveSet(drawArrays.get());
 
-	color->push_back( col );
-	geom->setColorArray(color.get());
-	geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+        color->push_back( col );
+        geom->setColorArray(color.get());
+        geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-	addDrawable(geom.get());    
+        addDrawable(geom.get());
 
-	osg::StateSet* ss = getOrCreateStateSet();
-	ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-	ss->setAttribute( new osg::LineWidth( 2.0 ) );
-    }
+        osg::StateSet* ss = getOrCreateStateSet();
+        ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+        ss->setAttribute( new osg::LineWidth( 2.0 ) );
+}
 };
 
 osg::Group* MLSVisualization::getNodeForItem(envire::EnvironmentItem* item) const
 {
     osg::ref_ptr<osg::Group> group = new osg::Group();
     osg::ref_ptr<osg::Geode> geode = new osg::Geode();
-    
+
     group->addChild(geode.get());
-    
+
     updateNode(item, group);
-    
+
     return group.release();
 }
 
@@ -119,9 +120,9 @@ public:
     float cycleColorInterval;
 
     PatchesGeode()
-        : vertexIndex( 0 ),
-        hue( 0.0 ), sat( 1.0 ), alpha( 1.0 ), lum( 1.0 ),
-        cycleColor( false )
+    : vertexIndex( 0 ),
+      hue( 0.0 ), sat( 1.0 ), alpha( 1.0 ), lum( 1.0 ),
+      cycleColor( false )
     {
         colors = new osg::Vec4Array;
         vertices = new osg::Vec3Array;
@@ -158,10 +159,10 @@ public:
         {
             switch( i%4 )
             {
-                case 0: p = osg::Vec3(xp-xs*0.5, yp-ys*0.5, heights[0]); break;
-                case 1: p = osg::Vec3(xp+xs*0.5, yp-ys*0.5, heights[1]); break;
-                case 2: p = osg::Vec3(xp+xs*0.5, yp+ys*0.5, heights[2]); break;
-                case 3: p = osg::Vec3(xp-xs*0.5, yp+ys*0.5, heights[3]); break;
+            case 0: p = osg::Vec3(xp-xs*0.5, yp-ys*0.5, heights[0]); break;
+            case 1: p = osg::Vec3(xp+xs*0.5, yp-ys*0.5, heights[1]); break;
+            case 2: p = osg::Vec3(xp+xs*0.5, yp+ys*0.5, heights[2]); break;
+            case 3: p = osg::Vec3(xp-xs*0.5, yp+ys*0.5, heights[3]); break;
             }
 
             if( p.z() < min )
@@ -198,7 +199,7 @@ public:
 
         closePolygon();
     }
-    
+
     void drawBox(
             const osg::Vec3& position, 
             const osg::Vec3& extents, 
@@ -272,18 +273,11 @@ public:
         this->color = color;
     }
 
-protected:
-    void updateColor()
-    {
-        vizkit3d::hslToRgb( hue, sat, lum , color.x(), color.y(), color.z());
-        color.w() = alpha;
-    }
-
     void addVertex( const osg::Vec3& p, const osg::Vec3& n )
     {
         vertices->push_back( p );
         normals->push_back( n );
-        
+
         if( cycleColor )
         {
             hue = (p.z() - std::floor(p.z() / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
@@ -292,6 +286,13 @@ protected:
 
         colors->push_back( color );
     }
+protected:
+    void updateColor()
+    {
+        vizkit3d::hslToRgb( hue, sat, lum , color.x(), color.y(), color.z());
+        color.w() = alpha;
+    }
+
 
     void closePolygon()
     {
@@ -317,27 +318,27 @@ osg::Vec3 estimateNormal( MultiLevelSurfaceGrid::SurfacePatch patch, MultiLevelS
     Eigen::Vector3d d[2] = { Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero() };
     for(int n=0;n<2;n++)
     {
-	for(int i=-1;i<2;i+=2)
-	{
-	    MultiLevelSurfaceGrid::Position p( pos.x + n*i, pos.y + (n-1)*i );
-	    MultiLevelSurfaceGrid::SurfacePatch *res;
-	    if( grid->contains( p ) && (res = grid->get( p, patch )) )
-	    {
-		Eigen::Vector3d v;
-		v << grid->fromGrid( p ), res->mean;
-		d[n] += (v-center)*i;
-	    }
-	}
+        for(int i=-1;i<2;i+=2)
+        {
+            MultiLevelSurfaceGrid::Position p( pos.x + n*i, pos.y + (n-1)*i );
+            MultiLevelSurfaceGrid::SurfacePatch *res;
+            if( grid->contains( p ) && (res = grid->get( p, patch )) )
+            {
+                Eigen::Vector3d v;
+                v << grid->fromGrid( p ), res->mean;
+                d[n] += (v-center)*i;
+            }
+        }
     }
 
     Eigen::Vector3d n = d[0].cross( d[1] );
     if( n.norm() > 0.0 )
     {
-	n.normalize();
-	return osg::Vec3(n.x(), n.y(), n.z());
+        n.normalize();
+        return osg::Vec3(n.x(), n.y(), n.z());
     }
     else
-	return osg::Vec3(0,0,1.0);
+        return osg::Vec3(0,0,1.0);
 }
 
 
@@ -353,16 +354,16 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     group->removeChild( 1 );
     if( showExtents )
     {
-	// get the color as a function of the environmentitem pointer
-	float scale = ((long)item%1000)/1000.0;
-	osg::Vec4 col(0,0,0,1);
-	vizkit3d::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
+        // get the color as a function of the environmentitem pointer
+        float scale = ((long)item%1000)/1000.0;
+        osg::Vec4 col(0,0,0,1);
+        vizkit3d::hslToRgb( scale, 1.0, 0.6, col.x(), col.y(), col.z() );
 
-	group->addChild( 
-		new ExtentsRectangle( mls->getExtents(), col ) );
+        group->addChild(
+                new ExtentsRectangle( mls->getExtents(), col ) );
     }
 
-    
+
     const double xs = mls->getScaleX();
     const double ys = mls->getScaleY();
 
@@ -374,13 +375,16 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     int hor = 0;
     for(size_t x=0;x<mls->getWidth();x++)
     {
-	for(size_t y=0;y<mls->getHeight();y++)
-	{
-	    for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
-	    {
-		const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-		double xp = (x+0.5) * xs + xo;
-		double yp = (y+0.5) * ys + yo; 
+        for(size_t y=0;y<mls->getHeight();y++)
+        {
+            for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
+            {
+
+                const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+                double cellize  = xs + xo;
+                double halfcellize  = cellize/2.0;
+                double xp = (x+0.5) * cellize;
+                double yp = (y+0.5) * cellize;
 
                 // setup the color for the next geometry
                 if( mls->getHasCellColor() )
@@ -404,15 +408,15 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                     geode->setColor( horizontalCellColor );
 
                 // slopes need to be handled differently
-		if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
-		{
+                if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
+                {
                     if( !p.isNegative() )
                     {
                         osg::Vec4 heights(0,0,0,0);
-		        heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
-		        heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
-		        heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
-		        heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
+                        heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
+                        heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
+                        heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
+                        heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
 
                         geode->drawPlane(  
                                 osg::Vec3( xp, yp, p.mean ), 
@@ -420,8 +424,33 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                                 osg::Vec3( xs, ys, 0.0 ), 
                                 Vec3( p.getNormal() ),
                                 p.min, p.max );
+
+//                        if (connectedSurface && it == mls->beginCell( x, y )){
+//                            envire::MultiLevelSurfaceGrid::iterator neighbor;
+//                            neighbor = mls->beginCell( x+1, y );
+//                            if (neighbor != mls->endCell()){
+//                                //neighbor has a lowest entry
+//                                const envire::MultiLevelSurfaceGrid::SurfacePatch &np(*neighbor);
+//
+//                                double nxp = (x+1.5) * cellize;
+//                                double nyp = (y+0.5) * cellize;
+//
+//
+//                                geode->addVertex(osg::Vec3d(xp+halfcellize,yp+halfcellize,p.getHeight( Eigen::Vector2f( xs, 0 ))),Vec3( p.getNormal() ));
+//                                geode->addVertex(osg::Vec3d(xp+halfcellize,yp-halfcellize,p.getHeight( Eigen::Vector2f( xs, ys ))),Vec3( p.getNormal() ));
+//                                geode->addVertex(osg::Vec3d(nxp-halfcellize,nyp-halfcellize,np.getHeight( Eigen::Vector2f( xs, 0 ))),Vec3( np.getNormal() ));
+//                                geode->addVertex(osg::Vec3d(nxp-halfcellize,nyp+halfcellize,np.getHeight( Eigen::Vector2f( xs, ys ))),Vec3( np.getNormal() ));
+//
+//                            }
+//
+//
+//                        }
                     }
-		}
+
+
+
+
+                }
                 else
                 {
                     if( p.isHorizontal() )
@@ -430,8 +459,8 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                                 osg::Vec3( xp, yp, p.mean ), 
                                 osg::Vec3( xs, ys, 0.0 ), 
                                 estimateNormals ? 
-                                    estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
-                                    osg::Vec3( 0, 0, 1.0 ) );
+                                        estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
+                                        osg::Vec3( 0, 0, 1.0 ) );
                         hor++;
                     }
                     else
@@ -448,29 +477,32 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                     }
                 }
 
-		if( showUncertainty )
-		{
-		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
-		    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
-		}
-	    }
-	}
+                if( showUncertainty )
+                {
+                    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
+                    var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
+                }
+            }
+        }
     }
 
     if( showUncertainty )
     {
-	osg::ref_ptr<osg::Geometry> var_geom = new osg::Geometry;
-	var_geom->setVertexArray( var_vertices );
-	osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINES, 0, var_vertices->size() );
-	var_geom->addPrimitiveSet(drawArrays.get());
+        osg::ref_ptr<osg::Geometry> var_geom = new osg::Geometry;
+        var_geom->setVertexArray( var_vertices );
+        osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays( osg::PrimitiveSet::LINES, 0, var_vertices->size() );
+        var_geom->addPrimitiveSet(drawArrays.get());
 
-	osg::ref_ptr<osg::Vec4Array> var_color = new osg::Vec4Array;
-	var_color->push_back( osg::Vec4( 0.5, 0.1, 0.8, 1.0 ) );
-	var_geom->setColorArray( var_color.get() );
-	var_geom->setColorBinding( osg::Geometry::BIND_OVERALL );
+        osg::ref_ptr<osg::Vec4Array> var_color = new osg::Vec4Array;
+        var_color->push_back( osg::Vec4( 0.5, 0.1, 0.8, 1.0 ) );
+        var_geom->setColorArray( var_color.get() );
+        var_geom->setColorBinding( osg::Geometry::BIND_OVERALL );
 
-	geode->addDrawable( var_geom.get() );
+        geode->addDrawable( var_geom.get() );
     }
+
+
+
 }
 
 bool MLSVisualization::isUncertaintyShown() const
@@ -604,4 +636,15 @@ void MLSVisualization::setShowExtents( bool value )
 bool MLSVisualization::areExtentsShown() const
 {
     return showExtents;
+}
+
+bool MLSVisualization::isConnectedSurface() const
+{
+    return connectedSurface;
+}
+
+void MLSVisualization::setConnectedSurface(bool enabled)
+{
+    connectedSurface = enabled;
+    emit propertyChanged("connected_surface");
 }
