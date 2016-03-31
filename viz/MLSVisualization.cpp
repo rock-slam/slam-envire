@@ -286,6 +286,12 @@ public:
 
         colors->push_back( color );
     }
+
+    void closeTriangleStrip(){
+        geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLE_STRIP,vertexIndex,vertices->size()-vertexIndex));
+        vertexIndex = vertices->size();
+    }
+
 protected:
     void updateColor()
     {
@@ -373,26 +379,135 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     osg::ref_ptr<osg::Vec3Array> var_vertices = new osg::Vec3Array;
 
     int hor = 0;
-    for(size_t x=0;x<mls->getWidth();x++)
-    {
-        for(size_t y=0;y<mls->getHeight();y++)
+    double halfcellsize = xs/2.0;
+
+
+        for(size_t x=0;x<mls->getWidth();x++)
         {
-            for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
+            for(size_t y=0;y<mls->getHeight();y++)
+            {
+                for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
+                {
+
+                    if ( connectedSurface && it == mls->beginCell( x, y )){
+                        //lowest patches are drawn later
+                        continue;
+                    }
+                    const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+                    double xp = (x+0.5) * xs + xo;
+                    double yp = (y+0.5) * xs + xo;
+
+
+                    // setup the color for the next geometry
+                    if( mls->getHasCellColor() )
+                    {
+                        geode->cycleColor = false;
+                        base::Vector3d c = p.getColor();
+                        osg::Vec4 col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
+                        geode->setColor( col );
+                    }
+                    else if( cycleHeightColor )
+                    {
+                        geode->cycleColor = true;
+                        geode->cycleColorInterval = cycleColorInterval;
+                        double hue = (p.mean - std::floor(p.mean / cycleColorInterval) * cycleColorInterval) / cycleColorInterval;
+                        double sat = 1.0;
+                        double lum = 0.6;
+                        double alpha = std::max( 0.0, 1.0 - p.stdev );
+                        geode->setColorHSVA( hue, sat, lum, alpha );
+                    }
+                    else
+                        geode->setColor( horizontalCellColor );
+
+
+                    // slopes need to be handled differently
+                    if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
+                    {
+                        if( !p.isNegative() )
+                        {
+                            osg::Vec4 heights(0,0,0,0);
+                            heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
+                            heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
+                            heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
+                            heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
+
+                            geode->drawPlane(
+                                    osg::Vec3( xp, yp, p.mean ),
+                                    heights,
+                                    osg::Vec3( xs, ys, 0.0 ),
+                                    Vec3( p.getNormal() ),
+                                    p.min, p.max );
+                        }
+                    }
+                    else
+                    {
+                        if( p.isHorizontal() )
+                        {
+                            geode->drawBox(
+                                    osg::Vec3( xp, yp, p.mean ),
+                                    osg::Vec3( xs, ys, 0.0 ),
+                                    estimateNormals ?
+                                            estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
+                                            osg::Vec3( 0, 0, 1.0 ) );
+                            hor++;
+                        }
+                        else
+                        {
+                            if( p.isVertical() || showNegative )
+                            {
+                                geode->setColor(
+                                        p.isVertical() ? verticalCellColor : negativeCellColor );
+                                geode->drawBox(
+                                        osg::Vec3( xp, yp, p.mean-p.height*.5 ),
+                                        osg::Vec3( xs, ys, p.height ),
+                                        osg::Vec3(0, 0, 1.0) );
+                            }
+                        }
+                    }
+
+
+                    if( showUncertainty )
+                    {
+                        var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
+                        var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
+                    }
+                }
+            }
+
+        }
+if (connectedSurface){
+        for(size_t x=0;x<mls->getWidth();x++)
+        {
+            for(size_t y=0;y<mls->getHeight();y++)
             {
 
+                envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y );
+                envire::MultiLevelSurfaceGrid::iterator side = mls->beginCell( x+1, y );
+
+                if (it == mls->endCell() || side == mls->endCell()){
+                    geode->closeTriangleStrip();
+                    continue;
+                }
                 const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-                double cellize  = xs + xo;
-                double halfcellize  = cellize/2.0;
-                double xp = (x+0.5) * cellize;
-                double yp = (y+0.5) * cellize;
+                const envire::MultiLevelSurfaceGrid::SurfacePatch &sp(*side);
+                double xp = (x+0.5) * xs + xo;
+                double yp = (y+0.5) * xs + xo;
+                double xsp = (x+1.5) * xs + xo;
+
 
                 // setup the color for the next geometry
+                //TODO: align properly to positions
                 if( mls->getHasCellColor() )
                 {
                     geode->cycleColor = false;
                     base::Vector3d c = p.getColor();
                     osg::Vec4 col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
                     geode->setColor( col );
+                    geode->addVertex(osg::Vec3d(xp,yp,p.getHeight( Eigen::Vector2f( 0, 0 ))),Vec3( p.getNormal() ));
+                    c = sp.getColor();
+                    col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
+                    geode->setColor( col );
+
                 }
                 else if( cycleHeightColor )
                 {
@@ -403,78 +518,13 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                     double lum = 0.6;
                     double alpha = std::max( 0.0, 1.0 - p.stdev );
                     geode->setColorHSVA( hue, sat, lum, alpha );
+                    geode->addVertex(osg::Vec3d(xp,yp,p.getHeight( Eigen::Vector2f( 0, 0 ))),Vec3( p.getNormal() ));
+                    alpha = std::max( 0.0, 1.0 - sp.stdev );
+                    geode->setColorHSVA( hue, sat, lum, alpha );
+                    geode->addVertex(osg::Vec3d(xsp,yp,sp.getHeight( Eigen::Vector2f( 0, 0 ))),Vec3( p.getNormal() ));
                 }
-                else
+                else{
                     geode->setColor( horizontalCellColor );
-
-                // slopes need to be handled differently
-                if( mls->getConfig().updateModel == MLSConfiguration::SLOPE )
-                {
-                    if( !p.isNegative() )
-                    {
-                        osg::Vec4 heights(0,0,0,0);
-                        heights[0] = p.getHeight( Eigen::Vector2f( 0, 0 ) );
-                        heights[1] = p.getHeight( Eigen::Vector2f( xs, 0 ) );
-                        heights[2] = p.getHeight( Eigen::Vector2f( xs, ys ) );
-                        heights[3] = p.getHeight( Eigen::Vector2f( 0, ys ) );
-
-                        geode->drawPlane(  
-                                osg::Vec3( xp, yp, p.mean ), 
-                                heights, 
-                                osg::Vec3( xs, ys, 0.0 ), 
-                                Vec3( p.getNormal() ),
-                                p.min, p.max );
-
-//                        if (connectedSurface && it == mls->beginCell( x, y )){
-//                            envire::MultiLevelSurfaceGrid::iterator neighbor;
-//                            neighbor = mls->beginCell( x+1, y );
-//                            if (neighbor != mls->endCell()){
-//                                //neighbor has a lowest entry
-//                                const envire::MultiLevelSurfaceGrid::SurfacePatch &np(*neighbor);
-//
-//                                double nxp = (x+1.5) * cellize;
-//                                double nyp = (y+0.5) * cellize;
-//
-//
-//                                geode->addVertex(osg::Vec3d(xp+halfcellize,yp+halfcellize,p.getHeight( Eigen::Vector2f( xs, 0 ))),Vec3( p.getNormal() ));
-//                                geode->addVertex(osg::Vec3d(xp+halfcellize,yp-halfcellize,p.getHeight( Eigen::Vector2f( xs, ys ))),Vec3( p.getNormal() ));
-//                                geode->addVertex(osg::Vec3d(nxp-halfcellize,nyp-halfcellize,np.getHeight( Eigen::Vector2f( xs, 0 ))),Vec3( np.getNormal() ));
-//                                geode->addVertex(osg::Vec3d(nxp-halfcellize,nyp+halfcellize,np.getHeight( Eigen::Vector2f( xs, ys ))),Vec3( np.getNormal() ));
-//
-//                            }
-//
-//
-//                        }
-                    }
-
-
-
-
-                }
-                else
-                {
-                    if( p.isHorizontal() )
-                    {
-                        geode->drawBox( 
-                                osg::Vec3( xp, yp, p.mean ), 
-                                osg::Vec3( xs, ys, 0.0 ), 
-                                estimateNormals ? 
-                                        estimateNormal( p, MultiLevelSurfaceGrid::Position(x,y), mls ) :
-                                        osg::Vec3( 0, 0, 1.0 ) );
-                        hor++;
-                    }
-                    else
-                    {
-                        if( p.isVertical() || showNegative )
-                        {	
-                            geode->setColor( 
-                                    p.isVertical() ? verticalCellColor : negativeCellColor );
-                            geode->drawBox( 
-                                    osg::Vec3( xp, yp, p.mean-p.height*.5 ), 
-                                    osg::Vec3( xs, ys, p.height ), 
-                                    osg::Vec3(0, 0, 1.0) );
-                        }
-                    }
                 }
 
                 if( showUncertainty )
@@ -482,9 +532,12 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                     var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 + (p.height * 0.5 + p.stdev) ) );
                     var_vertices->push_back( osg::Vec3( xp, yp, p.mean - p.height * 0.5 - (p.height * 0.5 + p.stdev) ) );
                 }
+
             }
+            geode->closeTriangleStrip();
         }
     }
+
 
     if( showUncertainty )
     {
