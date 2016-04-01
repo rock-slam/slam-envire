@@ -379,8 +379,6 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
     osg::ref_ptr<osg::Vec3Array> var_vertices = new osg::Vec3Array;
 
     int hor = 0;
-    double halfcellsize = xs/2.0;
-
 
         for(size_t x=0;x<mls->getWidth();x++)
         {
@@ -388,12 +386,13 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
             {
                 for( envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y ); it != mls->endCell(); it++ )
                 {
-
-                    if ( connectedSurface && it == mls->beginCell( x, y )){
+                    const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+                    if ( connectedSurface && !p.isVertical()){
                         //lowest patches are drawn later
                         continue;
                     }
-                    const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+
+
                     double xp = (x+0.5) * xs + xo;
                     double yp = (y+0.5) * xs + xo;
 
@@ -416,8 +415,9 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
                         double alpha = std::max( 0.0, 1.0 - p.stdev );
                         geode->setColorHSVA( hue, sat, lum, alpha );
                     }
-                    else
+                    else{
                         geode->setColor( horizontalCellColor );
+                    }
 
 
                     // slopes need to be handled differently
@@ -476,24 +476,44 @@ void MLSVisualization::updateNode(envire::EnvironmentItem* item, osg::Group* gro
 
         }
 if (connectedSurface){
-        for(size_t x=0;x<mls->getWidth();x++)
+    double halfcellsize = xs/2.0;
+        for(size_t x=0;x<mls->getWidth()-1;x++)
         {
             for(size_t y=0;y<mls->getHeight();y++)
             {
 
                 envire::MultiLevelSurfaceGrid::iterator it = mls->beginCell( x, y );
                 envire::MultiLevelSurfaceGrid::iterator side = mls->beginCell( x+1, y );
+                const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
+                const envire::MultiLevelSurfaceGrid::SurfacePatch &sp(*side);
 
+                //dont'draw to empty cells or to empty neighbor
                 if (it == mls->endCell() || side == mls->endCell()){
                     geode->closeTriangleStrip();
                     continue;
                 }
-                const envire::MultiLevelSurfaceGrid::SurfacePatch &p(*it);
-                const envire::MultiLevelSurfaceGrid::SurfacePatch &sp(*side);
+
+
                 double xp = (x+0.5) * xs + xo;
                 double yp = (y+0.5) * xs + xo;
                 double xsp = (x+1.5) * xs + xo;
 
+                double height = p.getHeight( Eigen::Vector2f( 0, 0 ));
+                double sheight = sp.getHeight( Eigen::Vector2f( 0, 0 ));
+
+                //connect plane to bottom
+                if (p.isVertical()){
+                    height = p.mean-p.height*.5;
+                }
+                if (sp.isVertical()){
+                    sheight = sp.mean-sp.height*.5;
+                }
+
+                if (fabs((height-sheight)) > mls->getGapSize()){
+                    //do not connect on high gap size (if there is an object in the auir and no entry below)
+                    geode->closeTriangleStrip();
+                    continue;
+                }
 
                 // setup the color for the next geometry
                 //TODO: align properly to positions
@@ -503,10 +523,11 @@ if (connectedSurface){
                     base::Vector3d c = p.getColor();
                     osg::Vec4 col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
                     geode->setColor( col );
-                    geode->addVertex(osg::Vec3d(xp,yp,p.getHeight( Eigen::Vector2f( 0, 0 ))),Vec3( p.getNormal() ));
+                    geode->addVertex(osg::Vec3d(xp,yp,height),Vec3( p.getNormal()));
                     c = sp.getColor();
                     col = osg::Vec4( c.x(), c.y(), c.z(), 1.0 );
                     geode->setColor( col );
+                    geode->addVertex(osg::Vec3d(xsp,yp,sheight),Vec3( sp.getNormal()));
 
                 }
                 else if( cycleHeightColor )
@@ -518,13 +539,15 @@ if (connectedSurface){
                     double lum = 0.6;
                     double alpha = std::max( 0.0, 1.0 - p.stdev );
                     geode->setColorHSVA( hue, sat, lum, alpha );
-                    geode->addVertex(osg::Vec3d(xp,yp,p.getHeight( Eigen::Vector2f( 0, 0 ))),Vec3( p.getNormal() ));
+                    geode->addVertex(osg::Vec3d(xp,yp,height),Vec3( p.getNormal() ));
                     alpha = std::max( 0.0, 1.0 - sp.stdev );
                     geode->setColorHSVA( hue, sat, lum, alpha );
-                    geode->addVertex(osg::Vec3d(xsp,yp,sp.getHeight( Eigen::Vector2f( 0, 0 ))),Vec3( p.getNormal() ));
+                    geode->addVertex(osg::Vec3d(xsp,yp,sheight),Vec3( sp.getNormal() ));
                 }
                 else{
                     geode->setColor( horizontalCellColor );
+                    geode->addVertex(osg::Vec3d(xp,yp,height),Vec3( p.getNormal() ));
+                    geode->addVertex(osg::Vec3d(xsp,yp,sheight),Vec3( sp.getNormal() ));
                 }
 
                 if( showUncertainty )
