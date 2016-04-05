@@ -39,6 +39,8 @@ class MLSVisualization : public EnvironmentItemVisualizer
         void setShowNegative(bool enabled);
         bool areNormalsEstimated() const;
         void setEstimateNormals(bool enabled);
+        bool isConnectedSurface() const;
+        void setConnectedSurface(bool enabled);
         bool isHeightColorCycled() const;
         void setCycleHeightColor(bool enabled);
         double getCycleColorInterval() const;
@@ -51,8 +53,6 @@ class MLSVisualization : public EnvironmentItemVisualizer
         void setNegativeCellColor(QColor color);
         QColor getUncertaintyColor() const;
         void setUncertaintyColor(QColor color);
-        bool isConnectedSurface() const;
-        void setConnectedSurface(bool enabled);
 	void setShowExtents( bool value );
 	bool areExtentsShown() const;
 
