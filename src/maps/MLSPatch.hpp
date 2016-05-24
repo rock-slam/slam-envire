@@ -94,7 +94,7 @@ struct SurfacePatch
 	    updateSum();
 	    return;
 	}
-	base::PlaneFitting<float>::Result res = plane.solve();
+	numeric::PlaneFitting<float>::Result res = plane.solve();
 	mean = res.getCoeffs()[2];
 	float norm = plane.n / ( pow(plane.n,2) - 3.0*normsq );
 	float var = std::max(1e-6f, (float)((res.getResiduals()) * norm));
@@ -446,7 +446,7 @@ public:
     /** For vertical patches, the height of the patch */
     float height;
 
-    base::PlaneFitting<float> plane;
+    numeric::PlaneFitting<float> plane;
     float min, max;
     float n;
     float normsq;

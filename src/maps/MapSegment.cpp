@@ -60,7 +60,7 @@ void MapSegment::update()
     // instead of using a full GMM model,
     // for now we just use a single gaussian.
 
-    base::Stats< base::Vector6d > stats;
+    numeric::Stats< base::Vector6d > stats;
     for( size_t i=0; i<parts.size(); i++ )
     {
 	stats.update(

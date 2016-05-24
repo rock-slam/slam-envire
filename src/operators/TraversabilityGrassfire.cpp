@@ -46,7 +46,7 @@ void TraversabilityGrassfire::setTraversability(size_t x, size_t y)
         return;
     }
     
-    base::PlaneFitting<double> fitter;
+    numeric::PlaneFitting<double> fitter;
     int count = 0;
     
     double thisHeight = currentPatch->getMean() + currentPatch->getStdev();

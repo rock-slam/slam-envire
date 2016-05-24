@@ -263,7 +263,7 @@ struct SurfacePatchStore13
     float mean;
     float stdev;
     float height;
-    base::PlaneFitting<float> plane;
+    numeric::PlaneFitting<float> plane;
     float min, max;
     float n, normsq;
     size_t update_idx;

@@ -149,7 +149,7 @@ bool MLSSlope::updateAll()
                     BOTTOM_RIGHT, x, y, TOP_LEFT, x - 1, y + 1,
                     this_cell);            
             
-            base::PlaneFitting<double> fitter;
+            numeric::PlaneFitting<double> fitter;
             int count = 0;
             double thisHeight = this_cell->mean;
             for(int xi = -1; xi <= 1; xi++) {
