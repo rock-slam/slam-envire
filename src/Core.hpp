@@ -21,7 +21,7 @@
 #include <envire/core/FrameNode.hpp>
 #include <envire/core/Layer.hpp>
 #include <envire/core/Operator.hpp>
-#include <base/samples/rigid_body_state.h>
+#include <base/samples/RigidBodyState.hpp>
 
 
 namespace envire

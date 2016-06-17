@@ -2,7 +2,7 @@
 #define __ENVIRE_CORE_TRANSFORM_HPP__
 
 #include <Eigen/Core>
-#include <base/samples/rigid_body_state.h>
+#include <base/samples/RigidBodyState.hpp>
 
 namespace envire
 {

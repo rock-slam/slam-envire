@@ -1,7 +1,7 @@
 #ifndef __ENVIRE_FEATURES_HPP__
 #define __ENVIRE_FEATURES_HPP__
 
-#include <base/eigen.h>
+#include <base/Eigen.hpp>
 
 namespace envire
 {

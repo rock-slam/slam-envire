@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
-#include <base/time.h>
+#include <base/Time.hpp>
 
 namespace envire
 {

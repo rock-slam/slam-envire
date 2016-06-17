@@ -23,6 +23,8 @@ struct MLSTest
 	: norm( eng, boost::normal_distribution<float>(0,1) ),
 	uni( eng, boost::uniform_real<float>(0,1) ) {};
 
+    virtual ~MLSTest() {};
+        
     /** generate a grid on 0x0 to 1x1 */
     void init( size_t cell_count )
     {

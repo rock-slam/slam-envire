@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 #include <iostream>
-#include <base/logging.h>
+#include <base/Logging.hpp>
 
 using namespace envire;
 using namespace std;

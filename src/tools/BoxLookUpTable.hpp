@@ -1,6 +1,5 @@
 #ifndef ENVIRE_BOXLOOKUPTABLE_HPP
 #define ENVIRE_BOXLOOKUPTABLE_HPP
-#include <base/pose.h>
 
 namespace envire
 {

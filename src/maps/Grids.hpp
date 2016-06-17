@@ -2,7 +2,7 @@
 #define __ENVIRE_GRIDS_HPP__
 
 #include <envire/maps/Grid.hpp>
-#include <base/samples/distance_image.h>
+#include <base/samples/DistanceImage.hpp>
 #include "TraversabilityGrid.hpp"
 
 namespace envire

@@ -19,8 +19,8 @@
 
 #include "icpConfigurationTypes.hpp"
 
-#include <base/timemark.h>
-#include <base/samples/laser_scan.h>
+#include <base/TimeMark.hpp>
+#include <base/samples/LaserScan.hpp>
 #include <deque>
 namespace envire {
 namespace icp {

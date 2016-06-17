@@ -9,12 +9,12 @@
 #include <boost/pool/pool.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <base/geometry/spline.h>
+#include <base/geometry/Spline.hpp>
 
 #include <algorithm>
 #include <set>
 
-#include <base/eigen.h>
+#include <base/Eigen.hpp>
 
 #include <envire/maps/MLSPatch.hpp>
 #include <envire/maps/MLSConfiguration.hpp>

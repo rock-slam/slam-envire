@@ -5,7 +5,7 @@
 #include <envire/core/Serialization.hpp>
 #include <envire/Core.hpp>
 #include <vector>
-#include <base/samples/laser_scan.h>
+#include <base/samples/LaserScan.hpp>
 
 namespace envire {
 

@@ -3,7 +3,7 @@
 
 #include <string> 
 #include <boost/concept_check.hpp>
-#include <base/eigen.h>
+#include <base/Eigen.hpp>
 
 namespace envire {
 namespace icp

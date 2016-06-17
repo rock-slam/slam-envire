@@ -3,7 +3,7 @@
 
 #include <envire/core/Serialization.hpp>
 #include <envire/Core.hpp>
-#include <base/pose.h>
+#include <base/Pose.hpp>
 #include <boost/function.hpp>
 
 namespace envire 

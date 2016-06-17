@@ -3,7 +3,7 @@
 
 #include <envire/Core.hpp>
 #include <envire/core/Serialization.hpp>
-#include <base/samples/frame.h>
+#include <base/samples/Frame.hpp>
 #include <envire/maps/GridBase.hpp>
 
 #include <boost/tuple/tuple.hpp>
@@ -22,7 +22,7 @@
 
 #include <vector>
 #include <stdexcept>
-#include <base/logging.h>
+#include <base/Logging.hpp>
 
 namespace envire 
 {
