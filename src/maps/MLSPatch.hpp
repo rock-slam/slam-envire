@@ -279,7 +279,6 @@ struct SurfacePatch
 			(p.mean + thickness + delta_dev) > o.mean )
 		{
 			kalman_update( p.mean, p.stdev, o.mean, o.stdev );
-			p.n += o.n;
 		}
 		else
 		{
@@ -353,7 +352,7 @@ struct SurfacePatch
 		    p.height = p.mean - o_min;
 		}
 	    }
-
+	    p.n += o.n;
 	    return true;
 	}
 
