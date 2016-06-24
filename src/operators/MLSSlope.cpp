@@ -19,12 +19,15 @@ static void updateGradient(MLSGrid const& mls,
         double scale,
         int this_index, int this_x, int this_y,
         int other_index, int other_x, int other_y,
-        MLSGrid::const_iterator this_cell)
+        MLSGrid::const_iterator this_cell,
+        uint32_t required_measurements_per_patch = 0)
 {
     MLSGrid::const_iterator neighbour_cell = 
         std::max_element( mls.beginCell(other_x,other_y), mls.endCell() );
 
-    if( neighbour_cell != mls.endCell() )
+    // Neighbour cells with too little measurements will be ignored as well.
+    if( neighbour_cell != mls.endCell() && 
+            neighbour_cell->getMeasurementCount() >= required_measurements_per_patch)
     {
         double z0 = this_cell->mean;
         double z1 = neighbour_cell->mean;
@@ -135,20 +138,27 @@ bool MLSSlope::updateAll()
                 angles[y][x] = UNKNOWN;
                 continue;
             }
-
+            
+            // Patch will be ignored if it does not get enough measurements.
+            if (required_measurements_per_patch > 0 && 
+                    this_cell->getMeasurementCount() < required_measurements_per_patch) {
+                angles[y][x] = UNKNOWN;
+                continue;
+            }
+            
             updateGradient(mls, use_stddev, angles, diffs, counts, scaley,
                     BOTTOM_CENTER, x, y, TOP_CENTER, x, y + 1,
-                    this_cell);
+                    this_cell, required_measurements_per_patch);
             updateGradient(mls, use_stddev, angles, diffs, counts, diagonal_scale,
                     TOP_RIGHT, x, y, BOTTOM_LEFT, x - 1, y - 1,
-                    this_cell);
+                    this_cell, required_measurements_per_patch);
             updateGradient(mls, use_stddev, angles, diffs, counts, scalex,
                     CENTER_RIGHT, x, y, CENTER_LEFT, x - 1, y,
-                    this_cell);
+                    this_cell, required_measurements_per_patch);
             updateGradient(mls, use_stddev, angles, diffs, counts, diagonal_scale,
                     BOTTOM_RIGHT, x, y, TOP_LEFT, x - 1, y + 1,
-                    this_cell);            
-            
+                    this_cell, required_measurements_per_patch);            
+              
             numeric::PlaneFitting<double> fitter;
             int count = 0;
             double thisHeight = this_cell->mean;
