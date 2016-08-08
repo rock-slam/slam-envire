@@ -1,5 +1,5 @@
 #include "SimpleTraversability.hpp"
-#include <base/Logging.hpp>
+#include <base-logging/Logging.hpp>
 #include <sstream>
 
 using namespace envire;

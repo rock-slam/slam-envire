@@ -12,6 +12,7 @@
     <depend package="external/libply" />
     <depend package="base/types" />
     <depend package="base/numeric" />
+    <depend package="base/logging" />
     <rosdep name="libkdtree" />
     <rosdep name="yaml" />
     <rosdep name="gdal" />
