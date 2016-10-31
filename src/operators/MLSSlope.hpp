@@ -23,12 +23,14 @@ namespace envire
         double corrected_step_threshold;
         bool use_stddev;
         uint32_t required_measurements_per_patch;
+        int window_size;
 
     public:
         MLSSlope()
             : corrected_step_threshold(0.25)
             , use_stddev(false)
-            , required_measurements_per_patch(0) {}
+            , required_measurements_per_patch(0)
+            , window_size(1) {}
         MLSSlope(double corrected_step_threshold, bool use_stddev) 
             : corrected_step_threshold(corrected_step_threshold)
             , use_stddev(use_stddev) {}
@@ -46,6 +48,8 @@ namespace envire
         inline void setRequiredMeasurementsPerPatch(uint32_t required_measurements_per_patch_) {
             required_measurements_per_patch = required_measurements_per_patch_;
         }
+        
+        inline void setWindowSize(uint32_t ws){ window_size = ws; }
         
         inline uint32_t getRequiredMeasurementsPerPatch() {
             return required_measurements_per_patch;
