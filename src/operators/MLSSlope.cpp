@@ -162,8 +162,8 @@ bool MLSSlope::updateAll()
             numeric::PlaneFitting<double> fitter;
             int count = 0;
             double thisHeight = this_cell->mean;
-            for(int xi = -1; xi <= 1; xi++) {
-                for(int yi = -1; yi <= 1; yi++) {
+            for(int xi = -window_size; xi <= window_size; xi++) {
+                for(int yi = -window_size; yi <= window_size; yi++) {
                     //skip onw entry
                     if(xi == 0 && yi == 0)
                         continue;
