@@ -59,7 +59,7 @@ rock_library(envire
     tools/GraphViz.cpp
     ${ADDITIONAL_SOURCES}
     HEADERS Core.hpp
-    DEPS_PKGCONFIG ply base-types base-lib box2d
+    DEPS_PKGCONFIG ply base-types base-lib base-logging box2d
     DEPS_CMAKE LibYAML GDAL
     DEPS_PLAIN Boost_SYSTEM Boost_FILESYSTEM Boost_THREAD)
 
