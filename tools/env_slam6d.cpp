@@ -106,12 +106,12 @@ int main( int argc, char* argv[] )
 #endif
 
 	    // create pose file
-	    ofstream pose_stream( (slam6d_dir / (scan_prefix + ".pose")).string().c_str() );
+	    std::ofstream pose_stream( (slam6d_dir / (scan_prefix + ".pose")).string().c_str() );
 	    pose_stream << (S*fn->getTransform().translation()).transpose() << endl;
 	    pose_stream << ((S*fn->getTransform().linear()*S.transpose()).eulerAngles(0,1,2)).transpose() << endl;
 
 	    // create id file
-	    ofstream id_stream( (slam6d_dir / (scan_prefix + ".id")).string().c_str() );
+	    std::ofstream id_stream( (slam6d_dir / (scan_prefix + ".id")).string().c_str() );
 	    id_stream << pc->getUniqueId() << endl;
 
 	    map_idx++;
@@ -135,7 +135,7 @@ int main( int argc, char* argv[] )
 		string scan_prefix = str(format("scan%03d") % map_idx);
 
 		// load transforms
-		ifstream frame_stream( (slam6d_dir / (scan_prefix + ".frames")).string().c_str() );
+		std::ifstream frame_stream( (slam6d_dir / (scan_prefix + ".frames")).string().c_str() );
 		Eigen::Affine3d trans;
 		string line;
 		while( getline( frame_stream, line ) )
@@ -150,7 +150,7 @@ int main( int argc, char* argv[] )
 		trans.linear() = S.transpose() * trans.linear() * S;
 
 		// load id file 
-		ifstream id_stream( (slam6d_dir / (scan_prefix + ".id")).string().c_str() );
+		std::ifstream id_stream( (slam6d_dir / (scan_prefix + ".id")).string().c_str() );
 		string unique_id;
 		id_stream >> unique_id;
 
