@@ -59,7 +59,7 @@ rock_executable(env_mls_slopes env_mls_slopes.cpp
 
 rock_executable(env_slam6d env_slam6d.cpp
     DEPS envire
-    DEPS_PLAIN Boost_FILESYSTEM Boost_SYSTEM Boost_REGEX
+    DEPS_PLAIN Boost_FILESYSTEM Boost_SYSTEM
     )
 
 rock_executable(asc2ply asc2ply.cpp

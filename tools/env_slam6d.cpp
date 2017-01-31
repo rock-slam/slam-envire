@@ -4,7 +4,7 @@
 #include "boost/scoped_ptr.hpp"
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/lexical_cast.hpp>
 #include <boost/version.hpp>
 
@@ -18,9 +18,9 @@ using namespace std;
 using namespace boost::filesystem;
 using boost::format;
 using boost::str;
-using boost::regex;
-using boost::regex_match;
-using boost::smatch;
+//using boost::regex;
+//using boost::regex_match;
+//using boost::smatch;
 using boost::lexical_cast;
      
 void usage()
@@ -123,8 +123,8 @@ int main( int argc, char* argv[] )
 	boost::scoped_ptr<Environment> env( Environment::unserialize( env_dat ) );
 
 	path slam6d_dir = slam6d_dat;
-	regex rx("scan(\\d{3})\\.frames");
-	smatch r;
+	std::regex rx("scan(\\d{3})\\.frames");
+	std::smatch r;
 	for( directory_iterator it( slam6d_dir ); it != directory_iterator(); it++ )
 	{
 	    string file_name = it->path().string();
