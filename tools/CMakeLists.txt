@@ -57,10 +57,19 @@ rock_executable(env_traversability env_traversability.cpp
 rock_executable(env_mls_slopes env_mls_slopes.cpp
     DEPS envire)
 
-rock_executable(env_slam6d env_slam6d.cpp
+if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+    add_definitions(-DHAVE_STD_REGEX)
+    rock_executable(env_slam6d env_slam6d.cpp
+    DEPS envire
+    DEPS_PLAIN Boost_FILESYSTEM Boost_SYSTEM
+    )
+else()
+    rock_executable(env_slam6d env_slam6d.cpp
     DEPS envire
     DEPS_PLAIN Boost_FILESYSTEM Boost_SYSTEM Boost_REGEX
     )
+endif()
+
 
 rock_executable(asc2ply asc2ply.cpp
     DEPS envire
