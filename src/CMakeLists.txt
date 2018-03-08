@@ -35,6 +35,7 @@ rock_library(envire
     maps/PolygonMap.cpp
     maps/TraversabilityGrid.cpp
     maps/TriMesh.cpp
+    operators/Projection.cpp
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
