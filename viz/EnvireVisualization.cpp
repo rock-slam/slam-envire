@@ -28,8 +28,9 @@ EnvireVisualization::EnvireVisualization()
     // setup eventlistener
     eventListener = boost::shared_ptr<EnvireEventListener>(
 	    new EnvireEventListener( 
-		boost::bind( &osg::Group::addChild, ownNode->asGroup(), _1 ),
-		boost::bind( &osg::Group::removeChild, ownNode->asGroup(), _1 ) ) );
+            [this](osg::Node* n) { ownNode->asGroup()->addChild(n);},
+            [this](osg::Node* n) { ownNode->asGroup()->removeChild(n);}
+         ) );
 
     // create and register visualizers
     // NOTE: the visualizers at the back have higher priority 
