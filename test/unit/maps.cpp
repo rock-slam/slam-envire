@@ -196,6 +196,53 @@ BOOST_AUTO_TEST_CASE( test_forEachInRects )
     printMap(tr);  
 }
 
+BOOST_AUTO_TEST_CASE(test_traversabilityGrid_set_get_probability)
+{
+    size_t cellsX = 10;
+    size_t cellsY = 15;
+    double scaleX = 0.1;
+    double scaleY = 0.2;
+    double offsetX = 0.5;
+    double offsetY = 0.15;
+
+    // As probability is stored as a uint8_t this should be the maximum a value ever deviates from
+    // the originally set value.
+    double maxError = 1.0L/255 * 0.5000001;
+
+    envire::TraversabilityGrid traversabilityGrid = envire::TraversabilityGrid(cellsX,
+                                                                               cellsY,
+                                                                               scaleX,
+                                                                               scaleY,
+                                                                               offsetX,
+                                                                               offsetY);
+
+    // Set probabilites in some cells.
+    traversabilityGrid.setProbability(0.0, 0, 0);
+    traversabilityGrid.setProbability(0.1, 0, cellsY - 1);
+    traversabilityGrid.setProbability(0.2, cellsX - 1, 0);
+    traversabilityGrid.setProbability(0.3, cellsX - 1, cellsY -1);
+    traversabilityGrid.setProbability(0.4, 2, 2);
+    traversabilityGrid.setProbability(0.5, 3, 7);
+    traversabilityGrid.setProbability(0.6, 1, 13);
+
+    // Check if we get the same values back.
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(0, 0) - 0, maxError);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(0, cellsY - 1) - 0.1, maxError);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(cellsX - 1, 0) -  0.2, maxError);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(cellsX - 1, cellsY - 1) - 0.3, maxError);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(2, 2) - 0.4, maxError);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(3, 7) - 0.5, maxError);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(1, 13) - 0.6, maxError);
+
+    // Check unset cell being 0.
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(0, 1) - 0, maxError);
+
+    // Check setting probability to a new value.
+    double newProbability = 0.31525624343;
+    traversabilityGrid.setProbability(newProbability, 0, 0);
+    BOOST_CHECK_SMALL(traversabilityGrid.getProbability(0, 0) - newProbability, maxError);
+}
+
 class DistanceHelper
 {
 public:
