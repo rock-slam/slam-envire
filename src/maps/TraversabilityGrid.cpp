@@ -244,7 +244,7 @@ void TraversabilityGrid::setProbability(double probability, size_t x, size_t y)
 {
     setProbabilityArray();
     
-    const uint8_t probVal = std::max<uint32_t>(std::numeric_limits< uint8_t >::max(), probability * std::numeric_limits< uint8_t >::max());
+    const uint8_t probVal = std::min<uint32_t>(std::numeric_limits< uint8_t >::max(), probability * std::numeric_limits< uint8_t >::max());
     
     (*probabilityArray)[y][x] = probVal;
 }
