@@ -6,17 +6,17 @@
 #include <boost/function.hpp>
 
 namespace envire
-{  
+{
 
 class TraversabilityClass
 {
 public:
-    
+
     /**
-     * Default constructor.  
+     * Default constructor.
      * Drivability must be given in the rande of [0,1] (0 - 100%)
      * */
-    TraversabilityClass(double drivability) : drivability(drivability) 
+    TraversabilityClass(double drivability) : drivability(drivability)
     {
         if(drivability < 0 || drivability >= 1.000001)
         {
@@ -24,7 +24,7 @@ public:
         }
     }
 
-    TraversabilityClass() : drivability(-1) 
+    TraversabilityClass() : drivability(-1)
     {
     }
 
@@ -35,7 +35,7 @@ public:
     bool isSet() const {
         return drivability < 0;
     }
-    
+
     /**
      * Returns whether the terrain is drivable
      * */
@@ -52,10 +52,10 @@ public:
     {
         if(drivability < 0)
             return 0;
-        
+
         return drivability;
     };
-    
+
 private:
     double drivability;
 };
@@ -73,13 +73,13 @@ public:
     }
 
     /**
-     * Adds a measurment of a given klass with a given dist to a center 
-     * to the statistic. 
-     * The center is a point that is defined outside of this class. 
-     * 
+     * Adds a measurment of a given klass with a given dist to a center
+     * to the statistic.
+     * The center is a point that is defined outside of this class.
+     *
      * @arg klass : A integer that represents a TraversabilityClass
      * @arg distToCenter : Distance to a point (defined outside)
-     * 
+     *
      * */
     void addMeasurement(uint8_t klass, double distToCenter)
     {
@@ -88,7 +88,7 @@ public:
         minDistance[klass] = std::min(distToCenter, minDistance[klass]);
         counts[klass]++;
     }
-    
+
     void getStatisticForClass(uint8_t klass, double &minDistToCenter, size_t &count) const
     {
         minDistToCenter = minDistance[klass];
@@ -104,21 +104,21 @@ public:
     {
         return countTotal;
     }
-    
+
     uint8_t getHighestTraversabilityClass() const
     {
         return highestTraversabilityClass;
     }
-    
+
 private:
-    ///total count of all classes that are covered by this statistic 
+    ///total count of all classes that are covered by this statistic
     size_t countTotal;
-    
+
     uint8_t highestTraversabilityClass;
-    
+
     ///contains the min distance to center of every class
     std::vector<double> minDistance;
-    
+
     ///contains the amount of occurences of every class
     std::vector<size_t> counts;
 };
@@ -130,12 +130,12 @@ public:
     static const std::string TRAVERSABILITY;
     static const std::string PROBABILITY;
 private:
-    const static std::vector<std::string> &bands;
+    const static std::vector<std::string> bands;
     std::vector<TraversabilityClass> traversabilityClasses;
     ArrayType *probabilityArray;
     ArrayType *traversabilityArray;
-    
-    void probabilityCallback(size_t x, size_t y, double &worst) const; 
+
+    void probabilityCallback(size_t x, size_t y, double &worst) const;
     void setProbabilityArray() const;
     void setTraversabilityArray() const;
     void setProbabilityArray();
@@ -144,35 +144,35 @@ public:
     TraversabilityGrid() : Grid<uint8_t>(), probabilityArray(NULL), traversabilityArray(NULL)
     {
     };
-    TraversabilityGrid(size_t cellSizeX, size_t cellSizeY, 
-                        double scalex, double scaley, 
+    TraversabilityGrid(size_t cellSizeX, size_t cellSizeY,
+                        double scalex, double scaley,
                         double offsetx = 0.0, double offsety = 0.0,
-                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id), 
+                        std::string const& id = Environment::ITEM_NOT_ATTACHED):Grid<uint8_t>::Grid(cellSizeX,cellSizeY,scalex,scaley,offsetx, offsety, id),
                         probabilityArray(NULL), traversabilityArray(NULL)
     {
     };
-    
+
     ~TraversabilityGrid(){};
 
     TraversabilityGrid &operator=(const TraversabilityGrid &other);
-    
+
     void setTraversabilityAndProbability(uint8_t klass, double probability, size_t x, size_t y);
 
     /**
      * Sets the traversability of a grid cell to a given klass.
      * klass must be registered before by using setTraversabilityClass.
-     * 
+     *
      * @arg klass the integer representing the current traversability class.
      * @arg x X-Coordinate of the position
      * @arg y Y-Coordinate of the position
      * */
     void setTraversability(uint8_t klass, size_t x, size_t y);
     const TraversabilityClass &getTraversability(size_t x, size_t y) const;
-    
+
     /**
      * Registeres a TraversabilityClass as a value in the grid.
-     * 
-     * The Grid can only save values from 0-256. To associate 
+     *
+     * The Grid can only save values from 0-256. To associate
      * the grid values with actuall drivability values one must
      * register a TraversabilityClass for each used value.
      * */
@@ -180,21 +180,21 @@ public:
 
     /**
      * Registeres a TraversabilityClass at the grid
-     * 
+     *
      * @arg retId if sccessfull, the id inside of the grif for the klass is returned.
      * */
     bool registerNewTraversabilityClass(uint8_t &retId, const TraversabilityClass &klass);
 
-    
+
     const TraversabilityClass &getTraversabilityClass(uint8_t klass) const;
-    const std::vector<TraversabilityClass> &getTraversabilityClasses() const 
+    const std::vector<TraversabilityClass> &getTraversabilityClasses() const
     {
         return traversabilityClasses;
     }
 
     /**
-     * Sets the probability of the registered TraversabilityClass 
-     * for a given point in the map. 
+     * Sets the probability of the registered TraversabilityClass
+     * for a given point in the map.
      * */
     void setProbability(double probability, size_t x, size_t y);
     double getProbability(size_t x, size_t y) const;
@@ -203,7 +203,7 @@ public:
     /**
      * Computes the statistic for an oriented rectangle in the grid.
      * The center and orientation of the rectangle is given by the
-     * parameter pose. 
+     * parameter pose.
      * @arg pose Center and Orientation of the rectangle
      * @arg sizeX Size in X of the rectangle (before orienting)
      * @arg sizeY Size in Y of the rectangle (before orienting)
@@ -213,10 +213,10 @@ public:
     void computeStatistic(const base::Pose2D &pose, double sizeX, double sizeY, double borderWidth, TraversabilityStatistic &innerStatistic, TraversabilityStatistic &outerStatistic) const;
 
     const TraversabilityClass &getWorstTraversabilityClassInRectangle(const base::Pose2D &pose, double sizeX, double sizeY) const;
-    
+
     virtual void serialize(Serialization& so);
     virtual void unserialize(Serialization& so);
-    
+
     virtual const std::vector<std::string>& getBands() const {return bands;};
 };
 

@@ -24,7 +24,7 @@
 #include <stdexcept>
 #include <base-logging/Logging.hpp>
 
-namespace envire 
+namespace envire
 {
     /** Tests if a path points to an existing file or not
      *
@@ -44,12 +44,12 @@ namespace envire
     class BandedGrid : public GridBase
     {
     public:
-        explicit BandedGrid(std::string const& id = Environment::ITEM_NOT_ATTACHED) 
+        explicit BandedGrid(std::string const& id = Environment::ITEM_NOT_ATTACHED)
 	    : GridBase( id ) {}
 	BandedGrid(size_t cellSizeX, size_t cellSizeY,
                 double scalex, double scaley,
                 double offsetx = 0.0, double offsety = 0.0,
-                std::string const& id = Environment::ITEM_NOT_ATTACHED) 
+                std::string const& id = Environment::ITEM_NOT_ATTACHED)
 	    : GridBase( cellSizeX, cellSizeY, scalex, scaley, offsetx, offsety, id ) {}
 	virtual void createBand( const std::string& key ) = 0;
         virtual ~BandedGrid(){};
@@ -74,16 +74,16 @@ namespace envire
     class Grid : public BandedGrid
     {
     public:
-	typedef boost::multi_array<T,2> ArrayType; 
+	typedef boost::multi_array<T,2> ArrayType;
         typedef T DataType;
 	static const std::string className;
 	static const std::string GRID_DATA;
 
     private:
-	const static std::vector<std::string> &bands;
+	static const std::vector<std::string> bands;
         std::map<std::string, T> nodata;
 
-    protected:	
+    protected:
         /** @deprecated
          *
          * This is used to re-read maps that were serialized before the Grid
@@ -91,8 +91,8 @@ namespace envire
          */
         void readMap(const std::string& path);
 
-	/** 
-	 * override this method and return true if the bands in the 
+	/**
+	 * override this method and return true if the bands in the
 	 * grid should be written to a single file instead
 	 * of multiple files.
 	 */
@@ -122,7 +122,7 @@ namespace envire
         {
             nodata[key] = value;
         }
-        
+
         /**
          * @overload because this class has its own declaration of className
          */
@@ -155,16 +155,16 @@ namespace envire
         /** Returns the nodata value of the first band */
         std::pair<T, bool> getNoData() const
         { return getNoData(getBands().front()); }
-	
+
         /** Returns the boost::multiarray that stores the data of the first band
          */
 	ArrayType& getGridData(){return getGridData(getBands().front());};
         /** Returns the boost::multiarray that stores the data of the first band
          */
 	const ArrayType& getGridData() const {return getGridData(getBands().front());};
-	
+
 	/** @brief create a band with the given name
-	 * 
+	 *
 	 * this method allows the generation of named bands from the base class,
 	 * without actually knowing the grid type
 	 */
@@ -173,7 +173,7 @@ namespace envire
 	    getGridData( key );
 	}
 
-        /** 
+        /**
          * @return the minimum and maximum values in the grid
          */
         void getMinMaxValues( const std::string& key, T& min, T& max )
@@ -206,11 +206,11 @@ namespace envire
 	{
 	    return getData<ArrayType>(key);
 	};
-	
+
         /** Returns the list of bands defined on this grid
          */
 	virtual const std::vector<std::string>& getBands() const {return bands;};
-	
+
 	Grid* clone() const;
 	void set( EnvironmentItem* other );
 
@@ -219,14 +219,14 @@ namespace envire
         T getFromRaster(std::string const& band, size_t xi, size_t yi) const
         {
             return getGridData(band)[yi][xi];
-        } 
+        }
 
         /** Returns the value of the cell (xi, yi) in band \c band
          */
         T& getFromRaster(std::string const& band, size_t xi, size_t yi)
         {
             return getGridData(band)[yi][xi];
-        } 
+        }
 
         /** Returns the value of the cell in band \c band that is at the world
          * position (x, y), given relative to the (0, 0) cell
@@ -237,7 +237,7 @@ namespace envire
             if (!toGrid(x, y, raster_x, raster_y))
                 throw std::runtime_error("provided coordinates are out of the grid");
             return getFromRaster(band, raster_x, raster_y);
-        } 
+        }
 
         T& get(std::string const& band, double x, double y)
 	{
@@ -249,12 +249,12 @@ namespace envire
 
 	bool inGrid( double x, double y) const
 	{
-	    return (x >= 0) && (x < cellSizeX) && (y >= 0) && (y < cellSizeY); 
+	    return (x >= 0) && (x < cellSizeX) && (y >= 0) && (y < cellSizeY);
 	}
-	
+
 	unsigned int getGridDepth(){return sizeof(T);};	//returns the depth per grid element
 
-        //converts the grid to base/samples/frame/Frame 
+        //converts the grid to base/samples/frame/Frame
         void convertToFrame(const std::string &key,base::samples::frame::Frame &frame);
 
 	/** Helper method for serialization
@@ -276,7 +276,7 @@ namespace envire
          * provided stream
          */
         void writeGridData(const std::string &key, std::ostream& os);
-	
+
 	/** Helper method for deserialization
          *
          * Reads the data contained in the provided band of the GDAL-readable
@@ -317,15 +317,15 @@ namespace envire
         }
 
       protected:
-	
+
 	//this function is called after a band is safed to the file
 	//overwrite this function if you want to add specific meta data
 	virtual void preCallWriteBand(std::string key,GDALRasterBand  *poBand){};
-	
+
 	//returns the path of the GTiff image
 	std::string getFullPath(const std::string &path,const std::string &key)
 	{return path+"_"+key+".tiff";};
-	
+
 	//checks if poBand can be loaded into this
 	void checkBandType(GDALRasterBand  *poBand);
 	GDALDataType getGDALDataTypeOfArray();
@@ -340,21 +340,14 @@ namespace envire
     extern template class Grid<uint16_t>;
     extern template class Grid<int32_t>;
     extern template class Grid<uint32_t>;
-    
+
     //set unique class name for each template type
     #define GRID_DATA_VALUE "grid_data"
     template <class T> const std::string envire::Grid<T>::className = "envire::Grid_"+ std::string(typeid(T).name());
     template <class T> const std::string envire::Grid<T>::GRID_DATA = GRID_DATA_VALUE;
-    template <class T> static const std::vector<std::string> & initbands()
-    {
-      static std::vector<std::string> bands;
-      if(bands.empty())
-	 bands.push_back(GRID_DATA_VALUE);
-      return bands;
-    };
-    template <class T> const std::vector<std::string> & Grid<T>::bands = initbands<T>();
- 
-    
+    template <class T> const std::vector<std::string> Grid<T>::bands = { GRID_DATA_VALUE };
+
+
     template<class T>Grid<T>::Grid(size_t cellSizeX, size_t cellSizeY,
             double scalex, double scaley, double offsetx, double offsety,
             std::string const& id) :
@@ -373,10 +366,10 @@ namespace envire
 	   throw std::runtime_error("envire::Grid<T> typeid is not working like expected. ClassName can not be set to an unique string value.");
       }
     }
-    
+
     template<class T>Grid<T>::~Grid()
     {
-      
+
     }
     template<class T>void Grid<T>::unserialize(Serialization& so)
     {
@@ -392,7 +385,7 @@ namespace envire
 
 	if (so.hasKey("map_count"))
 	{
-	    // read in the layer names 
+	    // read in the layer names
 	    int count = so.read<int>("map_count");
 	    std::vector<std::string> layers;
 	    for (int i = 0; i < count; ++i)
@@ -420,7 +413,7 @@ namespace envire
 	    // old way of using bands
 	    if(fso)
 	    {
-		readMap(fso->getMapPath()); 
+		readMap(fso->getMapPath());
 	    }
 	    else
 	    {
@@ -431,12 +424,12 @@ namespace envire
     template<class T>void Grid<T>::serialize(Serialization& so)
     {
 	GridBase::serialize(so);
-        
+
         FileSerialization* fso = dynamic_cast<FileSerialization*>(&so);
 
 	// get layers vector first
 	// base it on the bands and see if there additional layers available
-	std::vector<std::string> layers; 
+	std::vector<std::string> layers;
         for (DataMap::const_iterator it = data_map.begin(); it != data_map.end(); ++it)
             if (it->second->isOfType<ArrayType>() && find( layers.begin(), layers.end(), it->first ) == layers.end() )
 		layers.push_back( it->first );
@@ -472,7 +465,7 @@ namespace envire
     {
 	return new Grid<T>(*this);
     }
-   
+
     template<class T>void Grid<T>::set(EnvironmentItem* other)
     {
 	Grid<T>* gp = dynamic_cast<Grid<T>*>( other );
@@ -495,7 +488,7 @@ namespace envire
         ArrayType &data = getGridData(key);
         os.write(reinterpret_cast<const char*>(data.data()), sizeof(T) * data.num_elements());
     }
-    
+
     template<class T>void Grid<T>::readGridData(const std::string &key, std::istream& is, boost::enable_if< boost::is_fundamental<T> >* enabler)
     {
         ArrayType &data = getGridData(key);
@@ -508,7 +501,7 @@ namespace envire
 	string_vector.push_back(key);
 	writeGridData(string_vector,path);
     }
-   
+
     template<class T> void Grid<T>::writeGridData(const std::vector<std::string> &keys,const std::string& path)
     {
 	LOG_DEBUG_S << "writing file "<< path;
@@ -516,22 +509,22 @@ namespace envire
         GDALAllRegister();
 	const char *pszFormat = "GTiff";
 	GDALDriver *poDriver;
-	GDALDataset *poDstDS;       
+	GDALDataset *poDstDS;
 	char **papszOptions = NULL;
 
 	poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
 	if( poDriver == NULL )
 	    throw std::runtime_error("GDALDriver not found.");
-        
+
         GDALDataType data_type = getGDALDataTypeOfArray();
 	poDstDS = poDriver->Create( path.c_str(), cellSizeX, cellSizeY,
-                keys.size(), data_type, 
+                keys.size(), data_type,
 		papszOptions );
 
         if (!poDstDS)
             throw std::runtime_error("failed to create file " + path);
 
-	// get the scale and transform value so that they can be 
+	// get the scale and transform value so that they can be
 	// added as a geotransform
 	Eigen::Affine2d gridTransform = Eigen::Affine2d::Identity();
 	gridTransform.translate( Eigen::Vector2d( offsetx, offsety ) );
@@ -539,7 +532,7 @@ namespace envire
 
 	if(getEnvironment())
 	{
-	    // get the frame transformation to the root frame 
+	    // get the frame transformation to the root frame
 	    Transform t = getEnvironment()->relativeTransform(
 		    getFrameNode(),
 		    getEnvironment()->getRootNode() );
@@ -557,7 +550,7 @@ namespace envire
 	    LOG_DEBUG_S << className << " has no environment!!!";
 	}
 
-	//calc GeoTransform	
+	//calc GeoTransform
 	Eigen::Matrix3d m( gridTransform.matrix() );
 	double adfGeoTransform[6] = { m(0,2), m(0,0), m(0,1), m(1,2), m(1,0), m(1,1) };
 
@@ -579,7 +572,7 @@ namespace envire
 	  if(!poBand)
 	  {
 	    std::stringstream strstr;
-	    strstr << "Can not write file: " << path << ". Raster band " << i 
+	    strstr << "Can not write file: " << path << ". Raster band " << i
 		  << " could not be written.";
 	    throw std::runtime_error(strstr.str());
 	  }
@@ -592,7 +585,7 @@ namespace envire
 	}
 	GDALClose( (GDALDatasetH) poDstDS );
     }
-      
+
     template<class T>void Grid<T>::readGridData(const std::vector<std::string> &keys,const std::string& path, int base_band, boost::enable_if< boost::is_fundamental<T> >* enabler)
     {
       LOG_DEBUG_S << "reading file "<< path;
@@ -601,16 +594,16 @@ namespace envire
       poDataset = (GDALDataset *) GDALOpen(path.c_str(), GA_ReadOnly );
       if( poDataset == NULL )
 	  throw std::runtime_error("can not open file " + path);
-      
+
       double file_cellSizeX =  poDataset->GetRasterXSize();
-      double file_cellSizeY =  poDataset->GetRasterYSize();  
+      double file_cellSizeY =  poDataset->GetRasterYSize();
       if (cellSizeX != 0 && file_cellSizeX != cellSizeX)
           throw std::runtime_error("file and map sizes differ along the X direction");
       if (cellSizeY != 0 && file_cellSizeY != cellSizeY)
           throw std::runtime_error("file and map sizes differ along the Y direction");
       cellSizeX = file_cellSizeX;
       cellSizeY = file_cellSizeY;
-      
+
       // If the map does not yet have a scale, allow reading it from file
       //
       // It is made optional as sometime one wants to load existing bitmap
@@ -624,7 +617,7 @@ namespace envire
       if (getScaleX() == 0 || getScaleY() == 0)
       {
           double adfGeoTransform[6];
-          if( poDataset->GetGeoTransform(adfGeoTransform) == CE_Failure )  
+          if( poDataset->GetGeoTransform(adfGeoTransform) == CE_Failure )
 	      throw std::runtime_error("file has no geotransform information");
 
           scalex = fabs(adfGeoTransform[1]);
@@ -642,12 +635,12 @@ namespace envire
       if((unsigned int )(poDataset->GetRasterCount()-base_band+1) < keys.size())
       {
 	std::stringstream strstr;
-	strstr << "Can not read file: " << path << ". File has " << poDataset->GetRasterCount() 
+	strstr << "Can not read file: " << path << ". File has " << poDataset->GetRasterCount()
 	      << " raster bands but " << keys.size() << " are expected.";
 	throw std::runtime_error(strstr.str());
       }
-      
-      //loaded all bands 
+
+      //loaded all bands
       std::vector<std::string>::const_iterator iter = keys.begin();
       for(int i=0;iter != keys.end(); iter++,i++)
       {
@@ -655,7 +648,7 @@ namespace envire
 	if(!poBand)
 	{
 	  std::stringstream strstr;
-	  strstr << "Can not read file: " << path << ". Raster band " << base_band+i 
+	  strstr << "Can not read file: " << path << ". Raster band " << base_band+i
 		 << " could not be opened.";
 	  throw std::runtime_error(strstr.str());
 	}
@@ -696,7 +689,7 @@ namespace envire
       }
       GDALClose(poDataset);
     }
-    
+
     template<class T>void Grid<T>::readGridData(const std::string &key,const std::string& path, int base_band, boost::enable_if< boost::is_fundamental<T> >* enabler)
     {
 	std::vector<std::string> string_vector;
@@ -720,10 +713,10 @@ namespace envire
 	return GDT_Float32;
       else if(typeid(T) == typeid(double)&& sizeof(double)==8)
 	return GDT_Float64;
-      
+
       throw std::runtime_error(std::string("enview::Grid<T>:") + std::string("type ") + typeid(T).name() + " is not supported by " + getClassName());
     }
-    
+
     //will throw a runtime_error if the grid array has another type than poBand
     template<class T> void Grid<T>::checkBandType(GDALRasterBand  *poBand)
     {
@@ -774,7 +767,7 @@ namespace envire
 	    size = 8;
 	    break;
 	  default:
-	    throw std::runtime_error("enview::Grid<T>: GDT type is not supported.");  
+	    throw std::runtime_error("enview::Grid<T>: GDT type is not supported.");
 	}
 	std::stringstream strstr;
 	strstr << "enview::Grid<T>: type missmatch: the array is of type "<< typeid(T).name()

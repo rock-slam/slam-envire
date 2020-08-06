@@ -26,34 +26,16 @@ static envire::SerializationPlugin< Grid<uint32_t> > Grid_uint32_plugin("Grid_j"
 
 ENVIRONMENT_ITEM_DEF( ConfidenceGrid )
 const std::string ConfidenceGrid::CONFIDENCE = "confidence";
-static const std::vector<std::string> &initConfidenceBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(ConfidenceGrid::CONFIDENCE);
-  }
-  return bands;
-}
-const std::vector<std::string> &ConfidenceGrid::bands = initConfidenceBands();
+const std::vector<std::string> ConfidenceGrid::bands = { ConfidenceGrid::CONFIDENCE };
 
 ENVIRONMENT_ITEM_DEF( DistanceGrid )
 const std::string DistanceGrid::DISTANCE = "distance";
 const std::string DistanceGrid::CONFIDENCE = "confidence";
-static const std::vector<std::string> &initDistanceBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(DistanceGrid::DISTANCE);
-    bands.push_back(DistanceGrid::CONFIDENCE);
-  }
-  return bands;
-}
-const std::vector<std::string> &DistanceGrid::bands = initDistanceBands();
+const std::vector<std::string> DistanceGrid::bands = { DistanceGrid::DISTANCE, DistanceGrid::CONFIDENCE };
+
 void DistanceGrid::copyFromDistanceImage( const base::samples::DistanceImage& dimage )
 {
-    envire::DistanceGrid::ArrayType& distance = 
+    envire::DistanceGrid::ArrayType& distance =
 	getGridData( envire::DistanceGrid::DISTANCE );
 
     // copy the content not very performant but should do for now.
@@ -68,31 +50,11 @@ void DistanceGrid::copyFromDistanceImage( const base::samples::DistanceImage& di
 
 ENVIRONMENT_ITEM_DEF( OccupancyGrid )
 const std::string OccupancyGrid::OCCUPANCY = "occupancy";
-static const std::vector<std::string> &initOccupancyBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(OccupancyGrid::OCCUPANCY);
-  }
-  return bands;
-}
-const std::vector<std::string> &OccupancyGrid::bands = initOccupancyBands();
+const std::vector<std::string> OccupancyGrid::bands = { OccupancyGrid::OCCUPANCY };
 
 ENVIRONMENT_ITEM_DEF( ImageRGB24 )
 const std::string ImageRGB24::R = "r";
 const std::string ImageRGB24::G = "g";
 const std::string ImageRGB24::B = "b";
-static const std::vector<std::string> &initImageRGB24Bands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(ImageRGB24::R);
-    bands.push_back(ImageRGB24::G);
-    bands.push_back(ImageRGB24::B);
-  }
-  return bands;
-}
-const std::vector<std::string> &ImageRGB24::bands = initImageRGB24Bands();
+const std::vector<std::string> ImageRGB24::bands = { ImageRGB24::R, ImageRGB24::G, ImageRGB24::B };
 

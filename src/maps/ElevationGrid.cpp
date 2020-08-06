@@ -8,19 +8,8 @@ const std::string ElevationGrid::ELEVATION_MIN = "elevation_min";
 const std::string ElevationGrid::ELEVATION_MAX = "elevation_max";
 const std::string ElevationGrid::ILLUMINATION = "illumination";
 const std::string ElevationGrid::VISIBILITY = "visibility";
-static const std::vector<std::string> &initElevationBands()
-{
-  static std::vector<std::string> bands;
-  if(bands.empty())
-  {
-    bands.push_back(ElevationGrid::ELEVATION_MIN);
-    bands.push_back(ElevationGrid::ELEVATION_MAX);
-    bands.push_back(ElevationGrid::ILLUMINATION);
-    bands.push_back(ElevationGrid::VISIBILITY);
-  }
-  return bands;
-}
-const std::vector<std::string> &ElevationGrid::bands = initElevationBands();
+const std::vector<std::string> ElevationGrid::bands = { ElevationGrid::ELEVATION_MIN,
+    ElevationGrid::ELEVATION_MAX, ElevationGrid::ILLUMINATION, ElevationGrid::VISIBILITY };
 
 Eigen::Vector3d envire::ElevationGrid::getNormal(const envire::GridBase::Position& pos) const
 {
@@ -59,7 +48,7 @@ double envire::ElevationGrid::getElevation(const Point2D& pos) const
     double slope_x = normal.x() / normal.z();
     double slope_y = normal.y() / normal.z();
 
-    double height = 
+    double height =
         getFromRaster( ELEVATION, m, n ) +
         x * slope_x +
         y * slope_y;
