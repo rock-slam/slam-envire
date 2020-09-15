@@ -11,6 +11,13 @@
 using namespace envire;
 using namespace std;
 
+//Concurrency
+#ifdef CGAL_LINKED_WITH_TBB
+typedef CGAL::Parallel_tag Concurrency_tag;
+#else
+typedef CGAL::Sequential_tag Concurrency_tag;
+#endif
+
 ENVIRONMENT_ITEM_DEF( SimplifyPointcloud )
 
 void SimplifyPointcloud::initDefaults()
@@ -36,7 +43,7 @@ void SimplifyPointcloud::unserialize(Serialization& so)
     Operator::unserialize(so);
 }
 
-void SimplifyPointcloud::addInput( Pointcloud* mesh ) 
+void SimplifyPointcloud::addInput( Pointcloud* mesh )
 {
     if( env->getInputs(this).size() > 0 )
         throw std::runtime_error("SimplifyPointcloud can only have one input.");
@@ -52,14 +59,14 @@ void SimplifyPointcloud::addOutput( Pointcloud* grid )
     Operator::addOutput(grid);
 }
 
-bool SimplifyPointcloud::updateAll() 
+bool SimplifyPointcloud::updateAll()
 {
     // we'll convert the input pc to cgal first and convert back afterwards
     // probably not fully efficient, but easiest way for now
 
     Pointcloud* pc_in = static_cast<envire::Pointcloud*>(*env->getInputs(this).begin());
     assert(pc_in);
-	
+
     Pointcloud* pc_out = static_cast<envire::Pointcloud*>(*env->getOutputs(this).begin());
     assert(pc_out);
 
@@ -82,7 +89,7 @@ bool SimplifyPointcloud::updateAll()
     }
 
     std::cout << "copied to cgal struct" << std::endl;
- 
+
     if( simplifyCellSize > 0 )
     {
 	// simplification of point set
@@ -98,7 +105,7 @@ bool SimplifyPointcloud::updateAll()
     {
 	// compute average spacing
 	const unsigned int as_neighbors = 6; // 1 ring
-	FT average_spacing = CGAL::compute_average_spacing(
+	FT average_spacing = CGAL::compute_average_spacing<Concurrency_tag>(
 		points.begin(), points.end(),
 		CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
 		as_neighbors);
@@ -114,7 +121,7 @@ bool SimplifyPointcloud::updateAll()
 	const int or_neighbors = 24; // considers 24 nearest neighbor points
 	points.erase(CGAL::remove_outliers(points.begin(), points.end(),
 		    CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
-		    or_neighbors, removed_percentage), 
+		    or_neighbors, removed_percentage),
 		points.end());
 
 	std::cout << "removed outliers. total points " << points.size() << std::endl;
@@ -123,7 +130,7 @@ bool SimplifyPointcloud::updateAll()
     if( smoothNeighbours > 0 )
     {
 	const int sm_neighbors = 24; // considers 24 nearest neighbor points
-	CGAL::jet_smooth_point_set(points.begin(), points.end(), 
+	CGAL::jet_smooth_point_set<Concurrency_tag>(points.begin(), points.end(),
 		CGAL::Nth_of_tuple_property_map<1,IndexedPoint>(),
 		sm_neighbors);
 
@@ -131,8 +138,8 @@ bool SimplifyPointcloud::updateAll()
     }
 
     // copy back into pointcloud structure
-    std::vector<Eigen::Vector3d> 
-	*normals = 0, *normals_in = 0, 
+    std::vector<Eigen::Vector3d>
+	*normals = 0, *normals_in = 0,
 	*colors = 0, *colors_in = 0;
     if( use_normals )
     {

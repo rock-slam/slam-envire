@@ -15,8 +15,8 @@ namespace envire
         static const std::string ILLUMINATION;
         static const std::string VISIBILITY;
     private:
-        const static std::vector<std::string> &bands;
-        
+        const static std::vector<std::string> bands;
+
         ElevationGrid::ArrayType *elevationArray;
     public:
         ElevationGrid() : Grid<double>() {};
@@ -48,7 +48,7 @@ namespace envire
         Eigen::Vector3d getNormal( const Point2D& pos ) const;
 
 
-        /** @brief get the elevation at the given point 
+        /** @brief get the elevation at the given point
         *
         * The underlying model assumes the height value to be at
         * the center of the cell, and a surface is approximated
@@ -58,6 +58,6 @@ namespace envire
         double getElevation( const Point2D& pos ) const;
 
   };
-    
+
 }
 #endif
