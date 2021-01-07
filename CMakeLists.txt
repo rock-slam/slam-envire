@@ -10,8 +10,6 @@ rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem thread system regex program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
-rock_activate_cxx11()
-
 option( USE_CGAL "Switch on CGAL related functionality" OFF )
 include(${PROJECT_SOURCE_DIR}/cmake/UseCGAL.cmake)
 if (USE_CGAL)
