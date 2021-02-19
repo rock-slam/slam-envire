@@ -10,7 +10,8 @@ rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem thread system regex program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
-set(CMAKE_CXX_STANDARD 14)
+option(CMAKE_CXX_STANDARD "CXX standard" 14)
+set(CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD})
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
