@@ -10,8 +10,15 @@ rock_find_pkgconfig(EIGEN3 eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem thread system regex program_options)
 include_directories(${Boost_INCLUDE_DIRS})
 
-option(CMAKE_CXX_STANDARD "CXX standard" 14)
-set(CMAKE_CXX_STANDARD ${CMAKE_CXX_STANDARD})
+# on ubutnu 16.04 using c++14 runs into this cashxml error:
+# https://github.com/CastXML/CastXML/issues/76
+# option can be removed once it is resolved in the deb package
+option(USE_CXX_11 "USE c++11 instead of c++14" OFF)
+if (USE_CXX_11)
+    set(CMAKE_CXX_STANDARD 11)
+else()
+    set(CMAKE_CXX_STANDARD 14)
+endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
