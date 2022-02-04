@@ -188,5 +188,3 @@ QObject* EnvireVisualization::getVisualizer(QString name){
 	return NULL;
 }
 
-VizkitQtPlugin(EnvireVisualization);
-

@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.3)
+project(envire VERSION 1.0 DESCRIPTION "Environment Representation Library")
 find_package(Rock)
 
 
-rock_init(envire 1.0)
+rock_init()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 

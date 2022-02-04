@@ -7,7 +7,6 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QDialogButtonBox>
-#include <QPlastiqueStyle>
 #include <QFileDialog>
 
 namespace enview 
@@ -44,7 +43,6 @@ CsvDialog::CsvDialog(QWidget* parent, Qt::WindowFlags f): QDialog(parent, f)
     
     button_box->setStandardButtons(QDialogButtonBox::Open | QDialogButtonBox::Cancel);
     
-    style.reset(new QPlastiqueStyle);
     options_box->setStyle(style.get());
     
     // set layout

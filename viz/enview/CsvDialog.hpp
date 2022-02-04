@@ -13,7 +13,6 @@ class QSpinBox;
 class QGridLayout;
 class QGroupBox;
 class QDialogButtonBox;
-class QPlastiqueStyle;
 
 namespace enview 
 {
@@ -44,7 +43,7 @@ protected:
     boost::shared_ptr<QDialogButtonBox> button_box;
     boost::shared_ptr<QGridLayout> layout;
     boost::shared_ptr<QGridLayout> options_layout;
-    boost::shared_ptr<QPlastiqueStyle> style;
+    boost::shared_ptr<QStyle> style;
 };
 
 }
