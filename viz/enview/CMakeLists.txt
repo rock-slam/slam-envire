@@ -27,4 +27,4 @@ target_link_libraries(enview
     ${PROJECT_NAME}-viz
     envire
     ${VIZKIT3D_LIBRARIES}
-    icp Qt::Gui)
+    icp Qt5::Gui)
