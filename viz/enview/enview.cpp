@@ -1,4 +1,4 @@
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <osg/ArgumentParser>
 #include <iostream>
 #include <stdexcept>

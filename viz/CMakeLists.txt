@@ -1,4 +1,5 @@
 # compile shared library
+rock_find_qt5(Core Widgets)
 rock_vizkit_plugin(envire-viz
     ElevationGridVisualization.cpp
     EnvireEventListener.cpp
@@ -26,7 +27,9 @@ target_link_libraries(envire-viz pthread)
 
 rock_executable(envireViewer envireViewer.cpp
     DEPS envire-viz
-    DEPS_PKGCONFIG vizkit3d)
+    DEPS_PKGCONFIG vizkit3d
+    DEPS_CMAKE GDAL box2d
+    LIBS Qt5::Core box2d::box2d)
 target_link_libraries(envireViewer
     ${QT_QTGUI_LIBRARY})
     

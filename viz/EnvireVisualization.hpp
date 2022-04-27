@@ -75,5 +75,7 @@ private:
 
 };
 
+VizkitQtPlugin(EnvireVisualization);
+
 }
 #endif 
