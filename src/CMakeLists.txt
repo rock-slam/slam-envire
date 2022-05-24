@@ -12,6 +12,25 @@ endif()
 rock_add_public_dependencies(envire
     CMAKE GDAL)
 
+pkg_check_modules(box2d_pkgcfg QUIET box2d)
+if(box2d_pkgcfg_FOUND)
+    set(BOX2D_DEPS_PKGCONFIG box2d)
+    set(BOX2D_DEFINITIONS )
+    message(STATUS "box2d found using pkg-config")
+else()
+    find_package(box2d)
+    if(box2d_FOUND)
+        #with box2d 2.4, there was a reorganization that moved headers and functions around
+        #and also added the cmake configuration files
+        set(BOX2D_DEPS_CMAKE box2d)
+        set(BOX2D_LIBS box2d::box2d)
+        set(BOX2D_DEFINITIONS -DBOX2D_2_4)
+        message(STATUS "box2d found using cmake config")
+    else()
+        message(FATAL_ERROR "box2d could not be found using either pkg-config or cmake config")
+    endif()
+endif()
+
 rock_library(envire
     core/Environment.cpp
     core/FrameNode.cpp
@@ -35,7 +54,6 @@ rock_library(envire
     maps/PolygonMap.cpp
     maps/TraversabilityGrid.cpp
     maps/TriMesh.cpp
-    operators/Projection.cpp
     operators/MLSProjection.cpp
     operators/MergeMLS.cpp
     operators/MergePointcloud.cpp
@@ -60,9 +78,12 @@ rock_library(envire
     tools/GraphViz.cpp
     ${ADDITIONAL_SOURCES}
     HEADERS Core.hpp
-    DEPS_PKGCONFIG ply base-types base-lib base-logging box2d numeric
-    DEPS_CMAKE LibYAML GDAL
+    DEPS_PKGCONFIG ply base-types base-lib base-logging numeric ${BOX2D_DEPS_PKGCONFIG}
+    DEPS_CMAKE LibYAML GDAL ${BOX2D_DEPS_CMAKE}
+    LIBS ${BOX2D_LIBS}
     DEPS_PLAIN Boost_SYSTEM Boost_FILESYSTEM Boost_THREAD)
+
+target_compile_definitions(envire PRIVATE ${BOX2D_DEFINITIONS})
 
 install(FILES core/EventHandler.hpp
     core/Environment.hpp

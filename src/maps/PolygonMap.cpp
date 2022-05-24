@@ -1,8 +1,14 @@
 #include "PolygonMap.hpp"
 #include <envire/core/Serialization.hpp>
+
+#ifdef BOX2D_2_4
+#include <box2d/b2_collision.h>
+#include <box2d/b2_distance.h>
+#include <box2d/box2d.h>
+#else
 #include <Box2D/Collision/b2Collision.h>
 #include <Box2D/Box2D.h>
-
+#endif
 
 namespace envire
 {  
@@ -149,7 +155,11 @@ bool PolygonSet::isInside(const envire::Polygon& poly)
     const b2PolygonShape *shape2 = &(data->collisionPoly->data->shape);
     
     //perform point test for every vertex in poly
+#ifdef BOX2D_2_4
+    for(int i = 0;i < shape1->m_count; i++)
+#else
     for(int i = 0;i < shape1->GetVertexCount(); i++)
+#endif
     {
 	if(!shape2->TestPoint(poly.data->pose, shape1->m_vertices[i]))
 	    return false;

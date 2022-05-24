@@ -28,8 +28,7 @@ target_link_libraries(envire-viz pthread)
 rock_executable(envireViewer envireViewer.cpp
     DEPS envire-viz
     DEPS_PKGCONFIG vizkit3d
-    DEPS_CMAKE GDAL box2d
-    LIBS Qt5::Core box2d::box2d)
+    LIBS Qt5::Core)
 target_link_libraries(envireViewer
     ${QT_QTGUI_LIBRARY})
     
