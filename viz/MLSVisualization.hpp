@@ -20,6 +20,7 @@ class MLSVisualization : public EnvironmentItemVisualizer
     Q_PROPERTY(QColor vertical_cell_color READ getVerticalCellColor WRITE setVerticalCellColor)
     Q_PROPERTY(QColor negative_cell_color READ getNegativeCellColor WRITE setNegativeCellColor)
     Q_PROPERTY(QColor uncertainty_color READ getUncertaintyColor WRITE setUncertaintyColor)
+    Q_PROPERTY(bool connected_surface READ isConnectedSurface WRITE setConnectedSurface)
     
     public:
 	MLSVisualization();
@@ -38,6 +39,8 @@ class MLSVisualization : public EnvironmentItemVisualizer
         void setShowNegative(bool enabled);
         bool areNormalsEstimated() const;
         void setEstimateNormals(bool enabled);
+        bool isConnectedSurface() const;
+        void setConnectedSurface(bool enabled);
         bool isHeightColorCycled() const;
         void setCycleHeightColor(bool enabled);
         double getCycleColorInterval() const;
@@ -65,6 +68,7 @@ class MLSVisualization : public EnvironmentItemVisualizer
 	bool cycleHeightColor;
         double cycleColorInterval;
 	bool showExtents;
+    bool connectedSurface;
 };
 }
 
