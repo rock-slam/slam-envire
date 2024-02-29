@@ -62,7 +62,7 @@ rock_library(envire
     HEADERS Core.hpp
     DEPS_PKGCONFIG ply base-types base-lib base-logging box2d numeric
     DEPS_CMAKE LibYAML GDAL
-    DEPS_PLAIN Boost_SYSTEM Boost_FILESYSTEM Boost_THREAD)
+    DEPS Boost::system Boost::filesystem Boost::thread)
 
 install(FILES core/EventHandler.hpp
     core/Environment.hpp
