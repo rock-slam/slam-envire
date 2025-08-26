@@ -4,26 +4,25 @@ set(QT_HEADERS
     ICPHandler.hpp
     CsvDialog.hpp
     )
-QT5_WRAP_CPP(SOURCES_MOC ${QT_HEADERS})
 
 set(SOURCES_UI MainWindow.ui)
-QT5_WRAP_UI(SOURCES_UI_H ${SOURCES_UI})
-include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src )
 
 set(TARGET_SRC 
-    ${SOURCES_MOC}
-    ${SOURCES_UI}
     ApplicationWindow.cpp
     ICPHandler.cpp
     enview.cpp
     CsvDialog.cpp
     )
 
-add_executable(enview ${TARGET_SRC})
-target_link_libraries(enview
-    ${VIZKIT_LIBRARIES}
-    ${PROJECT_NAME}-viz-qt5
-    envire
-    icp Qt5::Gui)
+rock_qt_executable(
+    TARGETPREFIX enview
+    QT4_SUFFIX ""
+    SOURCES ${TARGET_SRC}
+    MOC ${QT_HEADERS}
+    UI ${SOURCES_UI}
+    LIBS_QT ${PROJECT_NAME}-viz
+    LIBS_QT5 Qt5::Gui
+    LIBS envire icp
+    )
