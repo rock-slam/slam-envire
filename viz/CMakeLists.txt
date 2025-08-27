@@ -7,6 +7,7 @@ include(RockQt)
 rock_qt_vizkit_plugin(
     TARGETPREFIX envire-viz
     QT4_SUFFIX ""
+    MISSINGQTDEPS_NOBUILD
     SOURCES
     ElevationGridVisualization.cpp
     EnvireEventListener.cpp
@@ -34,6 +35,7 @@ rock_qt_vizkit_plugin(
 rock_qt_executable(
     TARGETPREFIX envireViewer
     QT4_SUFFIX ""
+    MISSINGQTDEPS_NOBUILD
     SOURCES envireViewer.cpp
     DEPS_QT envire-viz
     DEPS_PKGCONFIG_QT vizkit3d

@@ -19,6 +19,7 @@ set(TARGET_SRC
 rock_qt_executable(
     TARGETPREFIX enview
     QT4_SUFFIX ""
+    MISSINGQTDEPS_NOBUILD
     SOURCES ${TARGET_SRC}
     MOC ${QT_HEADERS}
     UI ${SOURCES_UI}
