@@ -75,5 +75,7 @@ private:
 
 };
 
+VizkitQtPluginHeaderDecls(EnvireVisualization)
+
 }
 #endif 

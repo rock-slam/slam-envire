@@ -1,5 +1,14 @@
 # compile shared library
-rock_vizkit_plugin(envire-viz
+rock_find_qt4(OPTIONAL)
+rock_find_qt5(OPTIONAL)
+
+include(RockQt)
+
+rock_qt_vizkit_plugin(
+    TARGETPREFIX envire-viz
+    QT4_SUFFIX ""
+    MISSINGQTDEPS_NOBUILD
+    SOURCES
     ElevationGridVisualization.cpp
     EnvireEventListener.cpp
     EnvireVisualization.cpp
@@ -18,16 +27,20 @@ rock_vizkit_plugin(envire-viz
     TraversabilityGridVisualization.cpp
     MOC ItemManipulator.hpp TreeViewListener.hpp EnvireVisualization.hpp MLSVisualization.hpp PointcloudVisualization.hpp EnvireEventListener.hpp ElevationGridVisualization.hpp MapSegmentVisualization.hpp FrameNodeVisualization.hpp GridVisualization.hpp
     DEPS envire
-    DEPS_PKGCONFIG base-viz
+    DEPS_PKGCONFIG_QT base-viz
     HEADERS EnvireVisualization.hpp EnvireEventListener.hpp TreeViewListener.hpp EnvireWidget.hpp
-    EnvironmentItemVisualizer.hpp)
-target_link_libraries(envire-viz ${Boost_THREAD_LIBRARY})
-target_link_libraries(envire-viz pthread)
+    EnvironmentItemVisualizer.hpp
+    LIBS ${Boost_THREAD_LIBRARY} pthread)
 
-rock_executable(envireViewer envireViewer.cpp
-    DEPS envire-viz
-    DEPS_PKGCONFIG vizkit3d)
-target_link_libraries(envireViewer
-    ${QT_QTGUI_LIBRARY})
-    
+rock_qt_executable(
+    TARGETPREFIX envireViewer
+    QT4_SUFFIX ""
+    MISSINGQTDEPS_NOBUILD
+    SOURCES envireViewer.cpp
+    DEPS_QT envire-viz
+    DEPS_PKGCONFIG_QT vizkit3d
+    LIBS_QT4 Qt4::QtGui
+    LIBS_QT5 Qt5::Core Qt5::Gui)
+
+
 add_subdirectory(enview)
