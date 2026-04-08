@@ -23,12 +23,12 @@ ApplicationWindow::ApplicationWindow( envire::Environment* _env )
     // connect menu items to functions
     ui.setupUi( this );
     this->setCentralWidget(ui.graphicsArea);
-    connect( ui.actionQuit, SIGNAL(activated(void)), this, SLOT(close()) );
-    connect( ui.actionAdd_From_Scanfile, SIGNAL(activated(void)), this, SLOT(addFromScanFileDialog()) );
-    connect( ui.actionAdd_From_Csv, SIGNAL(activated(void)), this, SLOT(addFromCsvDialog()) );
-    connect( ui.actionOpen_Envire, SIGNAL(activated(void)), this, SLOT(loadEnvironment()) );
-    connect( ui.actionSave_Envire, SIGNAL(activated(void)), this, SLOT(saveEnvironment()) );
-    connect( ui.actionSave_As, SIGNAL(activated(void)), this, SLOT(saveAsEnvironment()) );
+    connect( ui.actionQuit, SIGNAL(triggered(void)), this, SLOT(close()) );
+    connect( ui.actionAdd_From_Scanfile, SIGNAL(triggered(void)), this, SLOT(addFromScanFileDialog()) );
+    connect( ui.actionAdd_From_Csv, SIGNAL(triggered(void)), this, SLOT(addFromCsvDialog()) );
+    connect( ui.actionOpen_Envire, SIGNAL(triggered(void)), this, SLOT(loadEnvironment()) );
+    connect( ui.actionSave_Envire, SIGNAL(triggered(void)), this, SLOT(saveEnvironment()) );
+    connect( ui.actionSave_As, SIGNAL(triggered(void)), this, SLOT(saveAsEnvironment()) );
     connect( ui.updateOperatorsButton, SIGNAL(clicked(void)), this, SLOT(updateOperators()) );
     
 
